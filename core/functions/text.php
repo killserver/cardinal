@@ -61,13 +61,13 @@ function or_saves($text, $db=false) {
 	if($db) {
 		$text = str_replace("\\", "\\\\", $text);
 		$text = str_replace("\"", "\\\"", $text);
-		$text = str_replace("&quot;", "\"", $text);
+		$text = str_replace("&quot;", "\\\"", $text);
 	}
 	$text = preg_replace('#<script[^>]*>.*?</script>#is', "", $text);
 	$text = strip_tags($text);
 	$text = htmlspecialchars($text);
 	//if($db) {
-		$text = str_replace("&quot;", "\"", $text);
+		$text = str_replace("&quot;", '"', $text);
 	//}
 return $text;
 }

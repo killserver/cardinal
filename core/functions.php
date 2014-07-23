@@ -12,6 +12,8 @@ spl_autoload_register(function($class) {
 		include_once(ROOT_PATH."core/class/".$class.".".ROOT_EX);
 	} elseif(file_exists(ROOT_PATH."core/class/system/".$class.".".ROOT_EX)) {
 		include_once(ROOT_PATH."core/class/system/".$class.".".ROOT_EX);
+	} elseif(file_exists(ROOT_PATH."core/modules/".$class.".".ROOT_EX)) {
+		include_once(ROOT_PATH."core/modules/".$class.".".ROOT_EX);
 	}
 });
 
@@ -31,7 +33,8 @@ function include_dir($dir = null, $modules = null) {
 					require_once($dir.$file);
 					if(!empty($modules)) {
 						$class = str_replace($strpos, "", $file);
-						new $class();
+						$classes = new $class();
+						unset($classes);
 					}
 				}
 			}

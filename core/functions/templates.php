@@ -5,22 +5,20 @@ die;
 }
 
 function meta($array=array()) {
-global $templates;
-	$te = array();
+global $templates, $user;
 	$templates->assign_vars(array(
 		"url" => "{C_default_http_host}",
 		"title" => "{L_site_name}",
-	));
-	$te[] = $templates->view($templates->complited_assing_vars("meta", null));
+	), "meta", "1");
 	if(sizeof($array)>0) {
 		for($i=0;$i<sizeof($array);$i++) {
 			$templates->assign_vars(array(
 				"url" => $array[$i]['url'],
 				"title" => $array[$i]['title'],
-			));
-			$te[] = $templates->view($templates->complited_assing_vars("meta", null));
+			), "meta", ($i+3));
 		}
 	}
+	$te = $templates->lcud($templates->complited_assing_vars("meta", null));
 	unset($templates);
 return $te;
 }
@@ -55,6 +53,12 @@ global $user, $config;
 			$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}min/index.php?charset=".$config['charset']."&amp;f=/js/inspector.js".($js ? ",".$js : "")."&g=general&13\"></script>\n";
 		} else {
 			$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}min/index.php?charset=".$config['charset'].($js ? "&amp;f=".$js : "")."&amp;g=general&13\"></script>\n";
+		}
+	}
+	$all = modules::manifest_get(array("create_js", "js"));
+	if($all) {
+		for($i=0;$i<sizeof($all);$i++) {
+			$sRet .= "<script type=\"text/javascript\">".$all[$i]."</script>\n";
 		}
 	}
 	$all = modules::manifest_get(array("create_js", "full"));
@@ -109,11 +113,12 @@ if(!$clear) {
 	}
 	$header .= create_js($clear);
 	$header .= "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"{L_sitename}\" href=\"{C_default_http_host}rss.xml\" />\n";
-if(isset($array['title']) && isset($array['meta']['watch']) && $user['id'] == 1) {
+/*if(isset($array['title']) && isset($array['meta']['watch']) && $user['id'] == 1) {
 	$header .= "<link rel=\"alternate\" type=\"application/json+oembed\" href=\"{C_default_http_host}oembed?url={C_default_http_host}?watch%26v=".$array['meta']['watch']."&format=json\" title=\"".$array['title']."\" />\n";
 	$header .= "<link rel=\"alternate\" type=\"text/xml+oembed\" href=\"{C_default_http_host}oembed?url={C_default_http_host}?watch%26v=".$array['meta']['watch']."&type=xml\" title=\"".$array['title']."\" />\n";
-}
+}*/
 	$header .= modules::use_modules("watch", $array);
+
 	$header .= "<meta name=\"application-name\" content=\"{L_sitename}\" />\n".
 		"<meta name=\"msapplication-TileColor\" content=\"#e0161d\"/>\n".
 		"<meta name=\"msapplication-notification\" content=\"frequency=30;polling-uri=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=1;polling-uri2=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=2;polling-uri3=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=3;polling-uri4=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=4;polling-uri5=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=5; cycle=1\"/>\n\n";

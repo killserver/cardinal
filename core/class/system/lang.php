@@ -74,7 +74,12 @@ class lang {
 		}
 		if(file_exists(ROOT_PATH."core/lang/".self::$lang."/".$page.".php")) {
 			include(ROOT_PATH."core/lang/".self::$lang."/".$page.".php");
-			return array_merge($lang, self::lang_db());
+			$langs = self::lang_db();
+			if(is_array($langs)) {
+				return array_merge($lang, $langs);
+			} else {
+				return $lang;
+			}
 		}
 	}
 

@@ -112,9 +112,11 @@ $lang = array_merge($lang, array(
 	"season" => "сезон",
 	"seriya_b" => "Серия",
 	"seriya" => "серия",
+	"seriya_b_ua" => "Серiя",
+	"seriya_ua" => "серiя",
 	"part_b" => "Часть",
 	"part" => "часть",
-	"others_search" => "Сезон|Серия|Часть|сезон|серия|часть|#|№",
+	"others_search" => "Сезон|Серия|Часть|сезон|серия|часть|#|№|серiя|Серiя",
 	"num_sim" => "№",
 
 //video
@@ -256,6 +258,10 @@ $lang = array_merge($lang, array(
 	"moder" => "Проверенно",
 	"users" => "Пользователи",
 	"styles" => "Стили",
+
+//relateds
+	"relateds" => "Похожее",
+	"sovet" => "Советуем к просмотру",
 
 ));
 

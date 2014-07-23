@@ -85,6 +85,7 @@ class modules {
 
 	function use_modules($page, $params=array()) {
 		$modules = self::init_modules();
+		$html = "";
 		for($i=0;$i<sizeof($modules[$page]);$i++) {
 			if(isset($modules[$page][$i]['module']) && class_exists($modules[$page][$i]['module'])) {
 				$class = $modules[$page][$i]['module'];
@@ -93,7 +94,7 @@ class modules {
 				}
 				$method = $modules[$page][$i]['method'];
 				$mod = new $class();
-				$mod->$method($params);
+				$html .= $mod->$method($params);
 				if(!empty($modules[$page][$i]['tpl'])) {
 					$tpl = json_decode($modules[$page][$i]['tpl'], true);
 					self::init_templates()->assign_vars($tpl);
@@ -101,6 +102,7 @@ class modules {
 			}
 		}
 		unset($tpl, $modules);
+	return $html;
 	}
 
 	function change_db($page, $db) {

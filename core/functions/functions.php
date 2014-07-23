@@ -7,19 +7,27 @@ die();
 function function_call($func_name, $func_arg = array()) {
 global $manifest;
 	if(isset($manifest['functions'][$func_name]) && is_array($manifest['functions'][$func_name]) && !is_callable($manifest['functions'][$func_name])) {
-		foreach($manifest['functions'][$func_name] as $func_chain_name) {
+		/*foreach($manifest['functions'][$func_name] as $func_chain_name) {
 			if(is_callable($func_chain_name)) {
 				$result = call_user_func_array($func_chain_name, $func_arg);
 			}
+		}*/
+		for($is=0;$is<sizeof($manifest['functions'][$func_name]);$is++) {
+			if(is_callable($func_chain_name)) {
+				$result = call_user_func_array($manifest['functions'][$func_name][$is], $func_arg);
+			}
 		}
 	} else {
-		$func_name = isset($manifest['functions'][$func_name]) && is_callable($manifest['functions'][$func_name]) ? $manifest['functions'][$func_name] : ('or_' . $func_name);
+		if(isset($manifest['functions'][$func_name]) && is_callable($manifest['functions'][$func_name])) {
+			$func_name = $manifest['functions'][$func_name];
+		} else {
+			$func_name = 'or_' . $func_name;
+		}
 		if(is_callable($func_name)) {
 			$result = call_user_func_array($func_name, $func_arg);
 		}
 	}
-
- return $result;
+	return $result;
 }
 
 function mrand($min, $max){return function_call('mrand', array($min, $max));}
@@ -57,7 +65,7 @@ function or_search_file($file, $dir = null) {
 	}
 }
 
-function check_smartphone() {
+/*function check_smartphone() {
 	$phone_array = array('iphone', 'android', 'pocket', 'palm', 'windows ce', 'windowsce', 'mobile windows', 'cellphone', 'opera mobi', 'operamobi', 'ipod', 'small', 'sharp', 'sonyericsson', 'symbian', 'symbos', 'opera mini', 'nokia', 'htc_', 'samsung', 'motorola', 'smartphone', 'blackberry', 'playstation portable', 'windows phone', 'ucbrowser');
 	$agent = strtolower($_SERVER['HTTP_USER_AGENT']);
 	foreach($phone_array as $value) {
@@ -65,5 +73,5 @@ function check_smartphone() {
 	}
 	return false;
 
-}
+}*/
 ?>

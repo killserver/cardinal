@@ -40,6 +40,9 @@ global $lang, $user;
 	if(preg_match("/(.*)([0-9]+) ".$lang['seriya']."(.*)/iu", strtolowers($video))) {
 		return preg_replace("/(.*?)([0-9]+) ".$lang['seriya']."(.*)/iu", "$1", strtolowers($video));
 	}
+	if(preg_match("/(.*)([0-9]+) ".$lang['seriya_ua']."(.*)/iu", strtolowers($video))) {
+		return preg_replace("/(.*?)([0-9]+) ".$lang['seriya_ua']."(.*)/iu", "$1", strtolowers($video));
+	}
 	if(preg_match("/(.*)([0-9]+) ".$lang['part']."(.*)/iu", strtolowers($video))) {
 		return preg_replace("/(.*?)([0-9]+) ".$lang['part']."(.*)/iu", "$1", strtolowers($video));
 	}
@@ -49,6 +52,10 @@ global $lang, $user;
 	}
 	if(stripos(strtolowers($video), $lang['seriya']) !== false) {
 		$ex = explode($lang['seriya'], strtolowers($video));
+		return trim($type($ex));
+	}
+	if(stripos(strtolowers($video), $lang['seriya_ua']) !== false) {
+		$ex = explode($lang['seriya_ua'], strtolowers($video));
 		return trim($type($ex));
 	}
 	if(stripos($video, $lang['part_b']) !== false) {

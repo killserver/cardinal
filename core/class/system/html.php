@@ -1,0 +1,160 @@
+<?php
+if(!defined("IS_CORE")) {
+die();
+}
+
+class html {
+
+	private $html = "";
+	private $tag = "";
+	private $type = 1;
+	private $sc = "\"";
+
+	function open($tag, $type=1, $sc="\"") {
+		$this->tag = $tag;
+		$this->type = $type;
+		$this->sc = $sc;
+		$this->html = "<".$this->tag;
+	return $this;
+	}
+
+	function nam($name) {
+		$this->html .= " name=".$this->sc.$name.$this->sc;
+	return $this;
+	}
+
+	function width($width) {
+		$this->html .= " width=".$this->sc.$width.$this->sc;
+	return $this;
+	}
+
+	function height($height) {
+		$this->html .= " height=".$this->sc.$height.$this->sc;
+	return $this;
+	}
+
+	function border($border) {
+		$this->html .= " border=".$this->sc.$border.$this->sc;
+	return $this;
+	}
+
+	function id($id) {
+		$this->html .= " id=".$this->sc.$id.$this->sc;
+	return $this;
+	}
+
+	function clas($class) {
+		$this->html .= " class=".$this->sc.$class.$this->sc;
+	return $this;
+	}
+
+	function color($color) {
+		$this->html .= " color=".$this->sc.$color.$this->sc;
+	return $this;
+	}
+
+	function style($style) {
+		$this->html .= " style=".$this->sc.$style.$this->sc;
+	return $this;
+	}
+
+	function rel($rel) {
+		$this->html .= " rel=".$this->sc.$rel.$this->sc;
+	return $this;
+	}
+
+	function type($type) {
+		$this->html .= " type=".$this->sc.$type.$this->sc;
+	return $this;
+	}
+
+	function href($href) {
+		$this->html .= " href=".$this->sc.$href.$this->sc;
+	return $this;
+	}
+
+	function title($title) {
+		$this->html .= " title=".$this->sc.$title.$this->sc;
+	return $this;
+	}
+
+	function alt($alt) {
+		$this->html .= " alt=".$this->sc.$alt.$this->sc;
+	return $this;
+	}
+
+	function onclick($onclick) {
+		$this->html .= " onclick=".$this->sc.$onclick.$this->sc;
+	return $this;
+	}
+
+	function val($val) {
+		$this->html .= " value=".$this->sc.$val.$this->sc;
+	return $this;
+	}
+
+	function src($src) {
+		$this->html .= " src=".$this->sc.$src.$this->sc;
+	return $this;
+	}
+
+	function frameborder($bor) {
+		$this->html .= " frameborder=".$this->sc.$bor.$this->sc;
+	return $this;
+	}
+
+	function allowscriptaccess($allow) {
+		$this->html .= " allowscriptaccess=".$this->sc.$allow.$this->sc;
+	return $this;
+	}
+
+	function allowfullscreen($allow) {
+		$this->html .= " allowfullscreen=".$this->sc.$allow.$this->sc;
+	return $this;
+	}
+
+	function cont($html) {
+		if($this->type==1) {
+			$this->html .= ">".$html;
+		} elseif($this->type==2) {
+			$this->html .= " content=".$this->sc.$html.$this->sc;
+		}
+	return $this;
+	}
+
+	function eof() {
+		$this->html .= ">";
+	return $this;
+	}
+
+	function close($tag=null) {
+		if(!empty($tag)) {
+			$this->html .= "</".$tag.">";
+			return $this;
+		}
+		if($this->type==1) {
+			$this->html .= "</".$this->tag.">";
+		} elseif($this->type==2) {
+			$this->html .= " />";
+		}
+	return $this;
+	}
+
+	function eol() {
+		$this->html .= "\n";
+	return $this;
+	}
+
+	function get_html() {
+		$html = $this->html;
+		unset($this->html);
+	return $html;
+	}
+
+	function __destruct() {
+		$this->html = "";
+	}
+
+}
+
+?>

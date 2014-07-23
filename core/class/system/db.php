@@ -191,7 +191,7 @@ final class db {
 		if(strpos($query, "SELECT") !== false || strpos($query, "SHOW TABLE") !== false) {
 			$qid = self::query($query);
 			$array = array();
-			while($row=self::fetch_array($qid)) {
+			while($row=self::fetch_assoc($qid)) {
 				$array[] = $row;
 			}
 			return $array;
