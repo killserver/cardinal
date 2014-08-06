@@ -65,6 +65,21 @@ function or_search_file($file, $dir = null) {
 	}
 }
 
+function read_dir($dir) {
+	$files = array();
+	if(is_dir($dir)) {
+		if($dh = dir($dir)) {
+			while(($file = $dh->read()) !== false) {
+				if(is_file($dir.$file)) {
+					$files[] = $file;
+				}
+			}
+		$dh->close();
+		}
+	}
+return $files;
+}
+
 /*function check_smartphone() {
 	$phone_array = array('iphone', 'android', 'pocket', 'palm', 'windows ce', 'windowsce', 'mobile windows', 'cellphone', 'opera mobi', 'operamobi', 'ipod', 'small', 'sharp', 'sonyericsson', 'symbian', 'symbos', 'opera mini', 'nokia', 'htc_', 'samsung', 'motorola', 'smartphone', 'blackberry', 'playstation portable', 'windows phone', 'ucbrowser');
 	$agent = strtolower($_SERVER['HTTP_USER_AGENT']);

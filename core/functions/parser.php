@@ -5,7 +5,7 @@ echo "403 ERROR";
 die();
 }
 
-function parser_url($url, $referer = null, $header=false, $coo=false, $coopath=null, $proxy=null, $error=false) {
+function parser_url($url, $referer = null, $header=false, $coo=false, $coopath=null, $proxy=null, $error=false, $gzip=false) {
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_URL, $url);
 	curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 6.1; rv:14.0) Gecko/20100101 Firefox/14.0.1");
@@ -43,6 +43,9 @@ function parser_url($url, $referer = null, $header=false, $coo=false, $coopath=n
 	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	if($gzip) {
+		curl_setopt($ch, CURLOPT_ENCODING, 'gzip');
+	}
 	if(!empty($proxy)) {
 		curl_setopt($ch, CURLOPT_PROXY, $proxy);
 	}
