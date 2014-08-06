@@ -124,6 +124,8 @@ final class templates {
 			$dd = str_replace('{$size_for}', $all+1, $dd);
 			$dd = preg_replace_callback("#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i", array(&$this, "is"), $dd);
 			$dd = preg_replace_callback("#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i", array(&$this, "is"), $dd);
+			$dd = preg_replace_callback("#\\[foreachif (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/foreachif\\]#i", array(&$this, "is"), $dd);
+			$dd = preg_replace_callback("#\\[foreachif (.*?)\\]([\s\S]*?)\\[/foreachif\\]#i", array(&$this, "is"), $dd);
 			$num++;
 			$rnum--;
 			$tt .= str_replace('\n', "\n", $dd);
@@ -270,7 +272,7 @@ final class templates {
 
 	function ajax($array) {
 		if(strpos($array[0], "!ajax") !== false) {
-			if(getenv('HTTP_X_REQUESTED_WITH') != 'XMLHttpRequest') {
+			if(getenv('HTTP_X_REQUESTED_WITH') != 'XMLHttpRequest' || isset($_GET['jajax'])) {
 				return $array[1];
 			} else {
 				return "";
@@ -504,7 +506,7 @@ final class templates {
 				return $ret;
 			}
 		} elseif($type == "ajax") {
-			if(getenv('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest') {
+			if(getenv('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest' && !isset($_GET['jajax'])) {
 				unset($type);
 				return $data;
 			} else {
@@ -621,10 +623,12 @@ final class templates {
 				$tpls = preg_replace_callback("/{(.+?)\[(.+?)\]}/", array(&$this, "replace_tmp"), $tpls);
 			}
 		}
+if(!$test) {
 		$tpl = preg_replace_callback("#\{foreach\}([0-9]+)\{/foreach\}#i", array(&$this, "foreach_set"), $tpl);
 		$tpl = preg_replace_callback("#\\[foreach block=(.+?)\\](.+?)\\[/foreach\\]#is", array(&$this, "foreachs"), $tpls);
 		$tpl = preg_replace("#\{foreach\}([0-9]+)\{/foreach\}#i", "", $tpl);
 		$tpl = preg_replace_callback("#\{count\[(.*?)\]\}#is", array(&$this, "countforeach"), $tpl);
+}
 		$array_use = array();
 		foreach($this->blocks as $name => $val) {
 			if(is_array($name)) {
@@ -643,6 +647,12 @@ final class templates {
 
 		$tpl = preg_replace_callback("#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i", array(&$this, "is"), $tpl);
 		$tpl = preg_replace_callback("#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i", array(&$this, "is"), $tpl);
+if($test) {
+		$tpl = preg_replace_callback("#\{foreach\}([0-9]+)\{/foreach\}#i", array(&$this, "foreach_set"), $tpl);
+		$tpl = preg_replace_callback("#\\[foreach block=(.+?)\\](.+?)\\[/foreach\\]#is", array(&$this, "foreachs"), $tpl);
+		$tpl = preg_replace("#\{foreach\}([0-9]+)\{/foreach\}#i", "", $tpl);
+		$tpl = preg_replace_callback("#\{count\[(.*?)\]\}#is", array(&$this, "countforeach"), $tpl);
+}
 		$tpl = preg_replace_callback("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", array(&$this, "is"), $tpl);
 		$tpl = preg_replace_callback("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", array(&$this, "is"), $tpl);
 		if(strpos($tpl, "[clear]") !== false) {
@@ -817,6 +827,10 @@ final class templates {
 			$h = str_replace("{meta_tt}", meta(), $h);
 		}
 		$h = str_replace("{content}", $body, $h);
+		if((getenv('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest' && isset($_GET['jajax'])) || isset($_GET['jajax'])) {
+			unset($h);
+			$h = $body;
+		}
 		$tmp = modules::manifest_get(array("temp", "menu"));
 		if(sizeof($tmp)>0) {
 			$this->module['menu'] = array_merge($this->module['menu'], $tmp);
