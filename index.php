@@ -7,7 +7,7 @@ if(!userlevel::get("site")) {
 }
 
 $server = $_SERVER['QUERY_STRING'];
-//cut($server, nstrpos($server, "?")+1, nstrlen($server)) // <- ???
+//cut($server, nstrpos($server, "?")+1, nstrlen($server))
 if(!empty($server)) {
 	$page = $server;
 	if(strpos($page, "&") !== false) {
@@ -31,6 +31,10 @@ $manifest['mod_page'][getenv("REMOTE_ADDR")]['page'] = $page;
 view_pages($page);
 if(class_exists("page")) {
 	new page();
+}
+if(defined("DEBUG")) {
+	ini_set('display_errors',1);
+	error_reporting(E_ALL);
 }
 
 $Timer = microtime()-$Timer;

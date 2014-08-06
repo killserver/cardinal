@@ -12,7 +12,7 @@ spl_autoload_register(function($class) {
 		include_once(ROOT_PATH."core/class/".$class.".".ROOT_EX);
 	} elseif(file_exists(ROOT_PATH."core/class/system/".$class.".".ROOT_EX)) {
 		include_once(ROOT_PATH."core/class/system/".$class.".".ROOT_EX);
-	} elseif(file_exists(ROOT_PATH."core/modules/".$class.".".ROOT_EX)) {
+	} elseif(!defined("IS_ADMINPANEL") && file_exists(ROOT_PATH."core/modules/".$class.".".ROOT_EX)) {
 		include_once(ROOT_PATH."core/modules/".$class.".".ROOT_EX);
 	}
 });
@@ -42,7 +42,9 @@ function include_dir($dir = null, $modules = null) {
 		}
 	}
 }
-include_dir(ROOT_PATH."core/modules/", true);
+if(!defined("IS_ADMINPANEL")) {
+	include_dir(ROOT_PATH."core/modules/", true);
+}
 include_dir();
 
 ?>

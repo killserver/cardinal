@@ -1,9 +1,20 @@
 <?php
 if(!defined("IS_CORE")) {
-echo "ERROR";
-die();
+echo "403 ERROR";
+die;
 }
 
+ini_set("max_execution_time", 0);
+set_time_limit(0);
+
+if(function_exists("ob_start")) {
+	ob_start("ob_gzhandler");
+}
+if(function_exists("ob_implicit_flush")) {
+	ob_implicit_flush(0);
+}
+
+session_start();
 
 if(defined("DEBUG") || isset($_GET['debug'])) {
 	ini_set('display_errors',1);
@@ -62,5 +73,10 @@ if(!isset($_COOKIE['username']) or empty($_COOKIE['username'])) {
 }
 
 $templates = new templates();
+
+header('Content-Type: text/html; charset='.$config['charset']);
+header('X-UA-Compatible: IE=edge,chrome=1');
+header('Cache-Control: max-age');
+header_remove('x-powered-by');
 
 ?>
