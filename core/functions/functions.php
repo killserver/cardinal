@@ -80,6 +80,12 @@ function read_dir($dir) {
 return $files;
 }
 
+function vdump($var, $title = null) {
+	echo '<pre>'. (($title) ? "<b>".$title."</b>\n\n" : '');
+	var_dump($var);
+	echo '</pre>';
+}
+
 /*function check_smartphone() {
 	$phone_array = array('iphone', 'android', 'pocket', 'palm', 'windows ce', 'windowsce', 'mobile windows', 'cellphone', 'opera mobi', 'operamobi', 'ipod', 'small', 'sharp', 'sonyericsson', 'symbian', 'symbos', 'opera mini', 'nokia', 'htc_', 'samsung', 'motorola', 'smartphone', 'blackberry', 'playstation portable', 'windows phone', 'ucbrowser');
 	$agent = strtolower($_SERVER['HTTP_USER_AGENT']);

@@ -6,9 +6,9 @@ die;
 
 //namespace modules;
 
-class modules {
+final class modules {
 
-	function get_config($get, $array=null) {
+	public static function get_config($get, $array=null) {
 	global $config;
 		if(!empty($array)) {
 			if(isset($config[$get][$array])) {
@@ -25,7 +25,7 @@ class modules {
 		}
 	}
 
-	function get_lang($get, $array=null) {
+	public static function get_lang($get, $array=null) {
 	global $lang;
 		if(!empty($array)) {
 			if(isset($lang[$get][$array])) {
@@ -42,7 +42,7 @@ class modules {
 		}
 	}
 
-	function init_templates() {
+	public static function init_templates() {
 	global $templates;
 		if(empty($templates)) {
 			return new templates();
@@ -51,7 +51,7 @@ class modules {
 		}
 	}
 
-	function init_db() {
+	public static function init_db() {
 	global $db;
 		if(!$db) {
 			return new db();
@@ -60,7 +60,7 @@ class modules {
 		}
 	}
 
-	function init_cache() {
+	public static function init_cache() {
 	global $cache;
 		if(!$cache) {
 			return new cache();
@@ -69,7 +69,7 @@ class modules {
 		}
 	}
 
-	private function init_modules() {
+	private static function init_modules() {
 		if(!self::init_cache()->exists("modules")) {
 			self::init_db()->doquery("SELECT page, module, method, param, tpl FROM modules WHERE activ = \"yes\"", true);
 			while($row = self::init_db()->fetch_assoc()) {
@@ -83,7 +83,7 @@ class modules {
 	return $modules;
 	}
 
-	function use_modules($page, $params=array()) {
+	public static function use_modules($page, $params=array()) {
 		$modules = self::init_modules();
 		$html = "";
 		for($i=0;$i<sizeof($modules[$page]);$i++) {
@@ -105,7 +105,7 @@ class modules {
 	return $html;
 	}
 
-	function change_db($page, $db) {
+	public static function change_db($page, $db) {
 		$modules = self::init_modules();
 		for($i=0;$i<sizeof($modules[$page]);$i++) {
 			if(isset($modules[$page][$i]['module']) && class_exists($modules[$page][$i]['module'])) {
@@ -114,12 +114,13 @@ class modules {
 				if(method_exists($mod, "change_db")) {
 					$db = $mod->change_db($db);
 				}
+				unset($mod);
 			}
 		}
 	return $db;
 	}
 
-	function select_db($page, $db) {
+	public static function select_db($page, $db) {
 		$modules = self::init_modules();
 		for($i=0;$i<sizeof($modules[$page]);$i++) {
 			if(isset($modules[$page][$i]['module']) && class_exists($modules[$page][$i]['module'])) {
@@ -128,12 +129,13 @@ class modules {
 				if(method_exists($mod, "select_db")) {
 					$db = $mod->select_db($db);
 				}
+				unset($mod);
 			}
 		}
 	return $db;
 	}
 
-	function get_user($get) {
+	public static function get_user($get) {
 	global $user;
 		$assess = array('id', 'username', 'alt_name', 'level', 'email', 'time_reg', 'last_activ', 'activ');
 		if(in_array($get, $assess)) {
@@ -147,7 +149,7 @@ class modules {
 		}
 	}
 
-	function manifest_set($select, $set) {
+	public static function manifest_set($select, $set) {
 	global $manifest;
 		if(is_array($select)&&sizeof($select)==3) {
 			$manifest[$select[0]][$select[1]][$select[2]] = $set;
@@ -161,18 +163,24 @@ class modules {
 	return $manifest;
 	}
 
-	function manifest_get($get) {
+	public static function manifest_get($get) {
 	global $manifest;
-		if(is_array($get)&&sizeof($get)==3&&isset($manifest[$get[0]][$get[1]][$get[2]])) {
-			return $manifest[$get[0]][$get[1]][$get[2]];
-		} elseif(is_array($get)&&sizeof($get)==2&&isset($manifest[$get[0]][$get[1]])) {
-			return $manifest[$get[0]][$get[1]];
-		} elseif(is_array($get)&&sizeof($get)==1&&isset($manifest[$get[0]])) {
-			return $manifest[$get[0]];
-		} elseif(isset($manifest[$get])) {
-			return $manifest[$get];
+		if(is_array($get)) {
+			if(sizeof($get)==3&&isset($manifest[$get[0]][$get[1]][$get[2]])) {
+				return $manifest[$get[0]][$get[1]][$get[2]];
+			} elseif(sizeof($get)==2&&isset($manifest[$get[0]][$get[1]])) {
+				return $manifest[$get[0]][$get[1]];
+			} elseif(sizeof($get)==1&&isset($manifest[$get[0]])) {
+				return $manifest[$get[0]];
+			} else {
+				return false;
+			}
 		} else {
-			return false;
+			if(isset($manifest[$get])) {
+				return $manifest[$get];
+			} else {
+				return false;
+			}
 		}
 	}
 

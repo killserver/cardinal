@@ -1,4 +1,4 @@
-<?
+<?php
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
 die;
@@ -41,7 +41,7 @@ final class db {
 		}
 	}
 
-	private function time() {
+	private static function time() {
 		return microtime();
 	}
 
@@ -49,7 +49,7 @@ final class db {
 		self::$type_error = intval($int);
 	}
 
-	function query($query) {
+	static function query($query) {
 		$stime = self::time();
 		if(self::$type == "mysqli") {
 			if(!(self::$qid = $return = self::$mc->query($query))) {

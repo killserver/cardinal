@@ -18,12 +18,15 @@ function CheckCanGzip() {
 }
 
 
-function GzipOut($debug = false) {
-global $config, $Timer, $templates;
+function GzipOut($debug = false, $exit = false) {
+global $config, $Timer;
+	if($exit) {
+		return;
+	}
 	$s = "";
 	if($debug) {
 		$s = "\n<!-- Время выполнения скрипта ".$Timer." секунд -->\n".
-		"<!-- Время затраченное на компиляцию шаблонов ".round($templates->time, 5)." секунд -->\n".
+		"<!-- Время затраченное на компиляцию шаблонов ".round(templates::$time, 5)." секунд -->\n".
 		"<!-- Время затраченное на выполнение MySQL запросов: ".round(db::$time, 5)." секунд -->\n".
 		"<!-- Общее количество MySQL запросов ".db::$num." -->";
 	}
@@ -32,7 +35,7 @@ global $config, $Timer, $templates;
 		$s .="\n<!-- Затрачено оперативной памяти ".round((memory_get_peak_usage(true)-MEMORY_GET)/(1024*1024),2)." MB -->";
 	}
 
-	@header("Last-Modified: " . date('r', time()) ." GMT");
+	//@header("Last-Modified: " . date('r', time()) ." GMT");
 
 	if($config['gzip'] != "yes") {
 		if($debug) {
@@ -47,11 +50,11 @@ global $config, $Timer, $templates;
 		$Contents = ob_get_clean(); 
 		if($debug) {
 			$s .= "<!-- Общий размер файла: ".strlen($Contents)." байт ".
-				"После сжатия: ".strlen(gzencode($Contents, 1, FORCE_GZIP))." байт -->"; 
+				"После сжатия: ".strlen(gzencode($Contents, 9, FORCE_GZIP))." байт -->"; 
 			$Contents .= $s; 
 		}
 		header("Content-Encoding: ".$ENCODING); 
-		$Contents = gzencode($Contents, 1, FORCE_GZIP);
+		$Contents = gzencode($Contents, 9, FORCE_GZIP);
 		echo $Contents;
 		ob_end_flush();
         die();

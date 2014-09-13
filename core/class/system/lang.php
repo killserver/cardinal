@@ -8,7 +8,7 @@ class lang {
 
 	private static $lang = "";
 
-	function lang_db() {
+	static function lang_db() {
 	global $db;
 		if(!modules::init_cache()->exists("lang_".self::$lang)) {
 			$db->doquery("SELECT orig, translate FROM lang WHERE lang = \"".self::$lang."\"", true);
@@ -35,11 +35,11 @@ class lang {
 		}
 	}
 
-	function set_lang($langs) {
+	static function set_lang($langs) {
 		self::$lang = $langs;
 	}
 
-	function init_lang() {
+	static function init_lang() {
 	global $manifest;
 		$lang=array();
 		if(isset($manifest['lang']['main']) && file_Exists(ROOT_PATH."core/lang/".self::$lang."/".$manifest['lang']['main'].".php")) {
@@ -59,7 +59,7 @@ class lang {
 		}
 	}
 
-	function include_lang($page) {
+	static function include_lang($page) {
 	global $lang, $config, $user, $manifest;
 		$clang = $config['lang'];
 		$ulang = (!empty($user['lang']) ? $user['lang'] : "");

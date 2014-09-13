@@ -9,7 +9,7 @@ class bbcodes {
 	static private $bbcodes = array();
 	static private $clear_codes = array();
 
-	function add_code($array, $type) {
+	static function add_code($array, $type) {
 		if(isset(self::$bbcodes[$type])) {
 			self::$bbcodes[$type] = array_merge(self::$bbcodes[$type], $array);
 		} else {
@@ -17,7 +17,7 @@ class bbcodes {
 		}
 	}
 
-	function add_delcode($array, $type) {
+	static function add_delcode($array, $type) {
 		if(isset(self::$clear_codes[$type])) {
 			self::$clear_codes[$type] = array_merge(self::$clear_codes[$type], $array);
 		} else {
@@ -25,7 +25,7 @@ class bbcodes {
 		}
 	}
 
-	function colorit($text) {
+	static function colorit($text) {
 	global $manifest;
 		$bbcodes = array(
 			"\[(color|font)=(.+)\](.+)\[/(color|font)\]" => "<font color=\"$2\">$3</font>",
@@ -46,6 +46,11 @@ class bbcodes {
 		if(isset(self::$bbcodes['preg']) && sizeof(self::$bbcodes['preg'])>0) {
 			$bbcodes = array_merge($bbcodes, self::$bbcodes['preg']);
 		}
+		if(isset(self::$bbcodes['replace']) && sizeof(self::$bbcodes['replace'])>0) {
+			$codes = self::$bbcodes['replace'];
+			$key = array_keys($codes);
+			$text = str_replace($key, $codes, $text);
+		}
 
 		foreach($bbcodes as $key => $html) {
 			$text = preg_replace("#".$key."#isU", $html, $text);
@@ -59,7 +64,7 @@ class bbcodes {
 	return nl2br($text);
 	}
 
-	function clear_bbcode($text) {
+	static function clear_bbcode($text) {
 		$bbcodes = array(
 			"\[(color|font)=(.+)\](.+)\[/(color|font)\]" => "$3",
 			"\[url=(\"|)(.+)(\"|)\](.*)\[/url\]" => "$4",
@@ -89,7 +94,7 @@ class bbcodes {
 	return nl2br($text);
 	}
 
-	function html2bbcode($text, $activ = array("year"=>true,"genre"=>true,"descr"=>true)) {
+	static function html2bbcode($text, $activ = array("year"=>true,"genre"=>true,"descr"=>true)) {
 	global $lang;
 		$text=preg_replace("#<h([0-9]+)>(.+)</h([0-9]+)>#isU", "$2", $text);
 		$text=preg_replace("#<u>(.+)</u>#isU", "[u]$1[/u]", $text);

@@ -13,6 +13,7 @@ final class cardinal {
 
 		if($otime <= time()-12*60*60) {
 			$this->add();
+			$this->stats();
 		}
 	}
 
@@ -34,7 +35,11 @@ final class cardinal {
 			$rand = rand(0, 2);
 			$name = str_replace("\"", "\\\"", $row['name']);
 			$descr = str_replace("\"", "\\\"", $row['descr']);
-			db::doquery("INSERT IGNORE INTO movie SET name = \"".$name."\", name_id = \"".cut(md5($row['name']), 10)."\", data = \"".$row['data']."\", video_movie = \"".$row['video_movie']."\", descr = \"".$descr."\", subtitles = \"".$row['subtitles']."\", `time`=".(time()+($last_add*60)).", added = \"".$row['added']."\", moder = \"".$row['moder']."\", cat = \"".$row['cat']."\", album = \"".$row['album']."\"");
+			$name_id = cut(md5($row['name']), 10);
+
+			db::doquery("INSERT INTO shablons SET albums = \"".cut(md5(others_video($name)), 15)."\", name = \"".$name."\", descr = \"".$descr."\", ids = \"".$name_id."\" ON DUPLICATE KEY UPDATE ids=concat(`ids`,',".$name_id."')");
+
+			db::doquery("INSERT IGNORE INTO movie SET name = \"".$name."\", name_id = \"".$name_id."\", data = \"".$row['data']."\", video_movie = \"".$row['video_movie']."\", descr = \"".$descr."\", subtitles = \"".$row['subtitles']."\", `time`=".(time()+($last_add*60)).", added = \"".$row['added']."\", moder = \"".$row['moder']."\", cat = \"".$row['cat']."\", album = \"".$row['album']."\"");
 			$tag_list = explode(" ", preg_replace("/[^\w\s]/u", "", htmlspecialchars_decode($row['name'])));
 			$tags = array();
 			for($i=0;$i<sizeof($tag_list); $i++) {
@@ -66,6 +71,14 @@ final class cardinal {
 		} else {
 			return $data;
 		}
+	}
+
+	function stats() {
+		$res = db::doquery("SELECT SUM(views) AS views, name_id FROM stat GROUP BY name_id", true);
+		while($row = db::fetch_assoc($res)) {
+			db::doquery("UPDATE movie SET view = ".$row['views']." WHERE name_id = \"".$row['name_id']."\"");
+		}
+		db::free();
 	}
 
 	function hackers($page, $referer=null) {

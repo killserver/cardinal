@@ -4,7 +4,7 @@ echo "403 ERROR";
 die;
 }
 
-define("VERSION", "1.17.3");
+define("VERSION", "1.19.1");
 define("BLOCK", 15*1024);
 define("LEVEL_MODER", 2);
 define("LEVEL_USER", 1);

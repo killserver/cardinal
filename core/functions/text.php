@@ -56,19 +56,22 @@ global $config;
 	}
 }
 
-function saves($text, $db=false){return function_call('saves', array($text, $db));}
-function or_saves($text, $db=false) {
-	if($db) {
+function saves($text, $db=false, $ddb=false){return function_call('saves', array($text, $db, $ddb));}
+function or_saves($text, $db=false, $ddb=false) {
+	if($ddb) {
+		$text = str_replace('"', '\\\\"', $text);
+	} elseif($db) {
 		$text = str_replace("\\", "\\\\", $text);
-		$text = str_replace("\"", "\\\"", $text);
+		$text = str_replace('"', '\\"', $text);
+	} else {
 		$text = str_replace("&quot;", "\\\"", $text);
 	}
 	$text = preg_replace('#<script[^>]*>.*?</script>#is', "", $text);
 	$text = strip_tags($text);
 	$text = htmlspecialchars($text);
-	//if($db) {
+	if($db) {
 		$text = str_replace("&quot;", '"', $text);
-	//}
+	}
 return $text;
 }
 
@@ -107,6 +110,23 @@ function comp_search($text=null, $finds = array()) {
 	return $return;
 	} else {
 		return ($text);
+	}
+}
+
+function charcode($text, $code=null, $rev = false) {
+global $config;
+	if(!empty($code)) {
+		if(!$rev) {
+			return iconv($code, $config['charset'], $text);
+		} else {
+			return iconv($config['charset'], $code, $text);
+		}
+	} else {
+		if(!$rev) {
+			return iconv(iconv_charset($text), $config['charset'], $text);
+		} else {
+			return iconv($config['charset'], iconv_charset($text), $text);
+		}
 	}
 }
 

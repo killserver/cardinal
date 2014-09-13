@@ -2,7 +2,7 @@
 
 class userlevel {
 
-	function all() {
+	static function all() {
 		if(!modules::init_cache()->exists("userlevels")) {
 			$row = modules::init_db()->select_query("SELECT * FROM userlevels ORDER BY id ASC");
 			modules::init_cache()->set("userlevels", $row);
@@ -12,7 +12,7 @@ class userlevel {
 	return $row;
 	}
 
-	function get($get) {
+	static function get($get) {
 	global $user;
 		$all = self::all();
 		if(!isset($user['level'])) {
@@ -27,7 +27,7 @@ class userlevel {
 		}
 	}
 
-	private function define($array) {
+	private static function define($array) {
 		$def = array();
 		for($i=0;$i<sizeof($array);$i++) {
 			$def[$array[$i]['alt_name']] = $array[$i];
@@ -35,7 +35,7 @@ class userlevel {
 	return $def;
 	}
 
-	function check($get, $access=null) {
+	static function check($get, $access=null) {
 	global $user;
 		$all = self::all();
 		$all = self::define($all);
@@ -49,7 +49,7 @@ class userlevel {
 		}
 	}
 
-	function set($id, $set, $data) {
+	static function set($id, $set, $data) {
 		if(is_bool($data)) {
 			if($data) {
 				$data = "yes";

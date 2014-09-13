@@ -49,11 +49,12 @@ global $user, $config;
 		if($js) {
 			$js = implode(",", $js);
 		}
-		if(isset($user) && $user['id']==1) {
-			$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}min/index.php?charset=".$config['charset']."&amp;f=/js/inspector.js".($js ? ",".$js : "")."&g=general&13\"></script>\n";
+		if(isset($user['id']) && $user['id']==1) {
+			//$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}min/index.php?charset=".$config['charset']."&amp;f=/js/inspector.js".($js ? ",".$js : "")."&g=general&13\"></script>\n";
 		} else {
-			$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}min/index.php?charset=".$config['charset'].($js ? "&amp;f=".$js : "")."&amp;g=general&13\"></script>\n";
+			//$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}min/index.php?charset=".$config['charset'].($js ? "&amp;f=".$js : "")."&amp;g=general&13\"></script>\n";
 		}
+		$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}js/require.js\"></script>\n<script type=\"text/javascript\" src=\"{C_default_http_host}js/config.js\"></script>";
 	}
 	$all = modules::manifest_get(array("create_js", "js"));
 	if($all) {
@@ -125,7 +126,7 @@ if(!$clear) {
 
 	if(isset($array['meta']['type_meta'])) {
 		$is_use = true;
-		$header .= "<meta itemscope=\"itemscope\" itemtype=\"".$array['meta']['type_meta']."\" /><meta itemprop=\"video\" itemscope=\"itemscope\" itemtype=\"http://schema.org/VideoObject\" />\n";
+		$header .= "<meta itemscope=\"itemscope\" itemtype=\"".$array['meta']['type_meta']."\" />\n<meta itemprop=\"video\" itemscope itemtype=\"http://schema.org/VideoObject\" />\n";
 		unset($array['meta']['type_meta']);
 	} else {
 		$is_use = false;
