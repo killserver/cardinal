@@ -10,6 +10,8 @@
 * add fix lost password in templates and fix old call config
 * 3.1
 * fix userlevel data
+* 3.2
+* fix error in minify for position in page
 *
 */
 if(!defined("IS_CORE")) {
@@ -892,25 +894,37 @@ if($test) {
 		// TODO: Match <code> and <pre> too - in separate arrays
 		preg_match_all('/(<script[^>]*?>.*?<\/script>)/si', $html, $pre);
 		preg_match_all('/(<textarea[^>]*?>.*?<\/textarea>)/si', $html, $textarea);
-		$html = preg_replace('/(<script[^>]*?>.*?<\/script>)/si', '#pre#', $html);
-		$html = preg_replace('/(<textarea[^>]*?>.*?<\/textarea>)/si', '#textarea#', $html);
+		$i=0;
+		while(preg_match('/(<script[^>]*?>.*?<\/script>)/si', $html)) {
+			$html = preg_replace('/(<script[^>]*?>.*?<\/script>)/si', '#pre'.$i.'#', $html, 1);
+			$i++;
+		}
+		$i=0;
+		while(preg_match('/(<textarea[^>]*?>.*?<\/textarea>)/si', $html)) {
+			$html = preg_replace('/(<textarea[^>]*?>.*?<\/textarea>)/si', '#textarea'.$i.'#', $html, 1);
+			$i++;
+		}
 		$html = preg_replace('#<!-[^\[].+->#', '', $html);//ToDo: WTF?!
 		$html = preg_replace('/[\r\n\t]+/', ' ', $html);
 		$html = preg_replace('/>[\s]*</', '><', $html); // Strip spacechars between tags
 		$html = preg_replace('/[\s]+/', ' ', $html); // Replace several spacechars with one space
 		if(!empty($pre[0])) {
+			$i=0;
 			foreach($pre[0] as $tag) {
 				$tag = preg_replace('/^\ *\/\/[^\<]*?$/m', ' ', $tag); // Strips comments - except those that contains HTML comment inside
 				$tag = preg_replace('/[\ \t]{2,}/', ' ', $tag); // Replace several spaces by one
 				$tag = preg_replace('/\s{2,}/', "\r\n", $tag); // Replace several linefeeds by one
-				$html = preg_replace('/#pre#/', $tag, $html, 1);
+				$html = preg_replace('/#pre'.$i.'#/', $tag, $html, 1);
+				$i++;
 			}
 		}
 		if(!empty($textarea[0])) {
-			foreach($textarea[0] as $tag) {
-				$tag = preg_replace('/^\ *\/\/[^\<]*?$/m', ' ', $tag);
-				$tag = preg_replace('/[\ \t]{3,}/', ' ', $tag);
-				$html = preg_replace('/#textarea#/', $tag, $html,1);
+			$i=0;
+			foreach($textarea[0] as $tags) {
+				$tags = preg_replace('/^\ *\/\/[^\<]*?$/m', ' ', $tags);
+				$tags = preg_replace('/[\ \t]{3,}/', ' ', $tags);
+				$html = preg_replace('/#textarea'.$i.'#/', $tags, $html, 1);
+				$i++;
 			}
 		}
 	return $html;
