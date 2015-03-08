@@ -1,7 +1,7 @@
 <?php
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
-die;
+die();
 }
 
 $config = array_merge(array(
@@ -11,6 +11,7 @@ $config = array_merge(array(
 		"user" => "",
 		"pass" => "",
 		"db" => "",
+		"charset" => "utf8",
 	),
 ), $config);
 
