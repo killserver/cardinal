@@ -51,10 +51,15 @@ final class modules {
 		}
 	}
 
+	public static function init_lang() {
+		return new lang();
+	}
+
 	public static function init_db() {
 	global $db;
 		if(!$db) {
-			return new db();
+			$dbs = new db();
+			return $dbs;
 		} else {
 			return $db;
 		}
@@ -137,7 +142,7 @@ final class modules {
 
 	public static function get_user($get) {
 	global $user;
-		$assess = array('id', 'username', 'alt_name', 'level', 'email', 'time_reg', 'last_activ', 'activ');
+		$assess = array('id', 'username', 'alt_name', 'level', 'email', 'time_reg', 'last_activ', 'activ', 'avatar');
 		if(in_array($get, $assess)) {
 			if(isset($user[$get])) {
 				return $user[$get];
@@ -147,6 +152,12 @@ final class modules {
 		} else {
 			return false;
 		}
+	}
+
+	public static function manifest_log($select, $set) {
+	global $manifest;
+		$manifest[$select][] = $set;
+	return $manifest;
 	}
 
 	public static function manifest_set($select, $set) {

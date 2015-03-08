@@ -28,7 +28,8 @@ class bbcodes {
 	static function colorit($text) {
 	global $manifest;
 		$bbcodes = array(
-			"\[(color|font)=(.+)\](.+)\[/(color|font)\]" => "<font color=\"$2\">$3</font>",
+			'\[(color|font)=(.+)\]' => "<font color=\"$2\">",
+			'\[/(color|font)\]' => "</font>",
 			"\[url=(\"|)(.+)(\"|)\](.*)\[/url\]" => "<a href=\"$2\" target=\"_blank\"><u>$4</u></a>",
 			"\[url\](.*)\[/url\]" => "<a href=\"$1\" target=\"_blank\"><u>$1</u></a>",
 	//		"\[url=(ft|https?://)(.+)\](.+)\[/url\]" => "<a href=\"$1$2\" target=\"_blank\"><u>$3</u></a>",
@@ -53,7 +54,7 @@ class bbcodes {
 		}
 
 		foreach($bbcodes as $key => $html) {
-			$text = preg_replace("#".$key."#isU", $html, $text);
+			$text = preg_replace("~".$key."~isU", $html, $text);
 		}
 		if(isset(self::$bbcodes['call']) && sizeof(self::$bbcodes['call'])>0) {
 			foreach(self::$bbcodes['call'] as $key => $html) {
@@ -66,8 +67,8 @@ class bbcodes {
 
 	static function clear_bbcode($text) {
 		$bbcodes = array(
-			"\[(color|font)=(.+)\](.+)\[/(color|font)\]" => "$3",
-			"\[url=(\"|)(.+)(\"|)\](.*)\[/url\]" => "$4",
+			//"\[(color|font)=(.+)\](.+)\[/(color|font)\]" => "$3",
+			//"\[url=(\"|)(.+)(\"|)\](.*)\[/url\]" => "$4",
 			"\[url\](.+)\[/url\]" => "$1",
 			"\[b\](.+)\[/b\]" => "$1",
 			"\[i\](.+)\[/i\]" => "$1",
@@ -96,12 +97,13 @@ class bbcodes {
 
 	static function html2bbcode($text, $activ = array("year"=>true,"genre"=>true,"descr"=>true)) {
 	global $lang;
-		$text=preg_replace("#<h([0-9]+)>(.+)</h([0-9]+)>#isU", "$2", $text);
-		$text=preg_replace("#<u>(.+)</u>#isU", "[u]$1[/u]", $text);
-		$text=preg_replace("#<b>(.+)</b>#isU", "[b]$1[/b]", $text);
+		$text=preg_replace("#<h([0-9]+)>(.+?)</h([0-9]+)>#is", "$2", $text);
+		$text=preg_replace("#<u>(.+?)</u>#", "[u]$1[/u]", $text);
+		$text=preg_replace("#<b>(.+?)</b>#", "[b]$1[/b]", $text);
 		//$text=preg_replace("#[b](.+) [/b]#isU", "[b]$1[/b]", $text);
-		$text=preg_Replace("#<font color=('|\")(.+)('|\")>(.+)</font>#isU", "[color=$2]$4[/color]", $text);
-		$text=str_replace(array("<br>", "<br />"), "\n", $text);
+		$text=preg_Replace("#<font(.*?)color=('|\")(.+?)('|\")(.*?)>(.+?)</font>#", "[color=$3]$6[/color]", $text);
+		$text=preg_Replace("#<span(.*?)style=('|\")color:(.+?)('|\")(.*?)>(.+?)</span>#", "[color=$3]$6[/color]", $text);
+		$text=str_replace(array("<br>", "<br />"), "", $text);
 
 	if($activ['year']) {
 	//Год выхода
@@ -131,9 +133,14 @@ class bbcodes {
 		$text = strtr($text, array("<b>".$lang['descr']."</b>" => "[b]".$lang['descr']."[/b]"));
 		$text = strtr($text, array($lang['descr'] => "[b]".$lang['descr']."[/b]"));
 		$text = strtr($text, array("[b][b]".$lang['descr']."[/b][/b]" => "[b]".$lang['descr']."[/b]"));
+		$text = strtr($text, array("[/b]:[/b]" => "[/b]", "[b][b]" => "[b]"));
 	}
-
-		$text=strip_tags($text);
+	
+	$text = preg_replace("#<div class=\"title_spoiler\"><a href=\"javascript:ShowOrHide\('(.+?)'\)\"><!--spoiler_title-->(.+?)<!--spoiler_title_end--></a></div>#", "\n\n[spoiler=$2]", $text);
+	$text = preg_replace('#<!--spoiler_text_end--></div>#', "[/spoiler]", $text);
+	$text = preg_replace('#<a(.*?)href=(\'|")(.+?)(\'|")(.*?)>(.+?)</a>#', "[url=$3]$6[/url]", $text);
+//http://www.animespirit.ru/anime/rs/series-rus/10238-the-testament-of-sister-new-devil-po-veleniyu.html
+	$text=trim(strip_tags($text));
 	return $text;
 	}
 

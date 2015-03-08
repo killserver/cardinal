@@ -8,8 +8,8 @@ class lang {
 
 	private static $lang = "";
 
-	static function lang_db() {
-	global $db;
+	public static function lang_db() {
+	$db = modules::init_db();
 		if(!modules::init_cache()->exists("lang_".self::$lang)) {
 			$db->doquery("SELECT orig, translate FROM lang WHERE lang = \"".self::$lang."\"", true);
 			$langs = array();
@@ -24,9 +24,9 @@ class lang {
 	return $langs;
 	}
 
-	function __construct() {
-	global $config, $user;
-		$clang = $config['lang'];
+	public function __construct() {
+	global $user;
+		$clang = config::Select('lang');
 		$ulang = (!empty($user['lang']) ? $user['lang'] : "");
 		if(!empty($ulang)) {
 			self::$lang = $ulang;
@@ -35,11 +35,11 @@ class lang {
 		}
 	}
 
-	static function set_lang($langs) {
+	public static function set_lang($langs) {
 		self::$lang = $langs;
 	}
 
-	static function init_lang() {
+	public static function init_lang() {
 	global $manifest;
 		$lang=array();
 		if(isset($manifest['lang']['main']) && file_Exists(ROOT_PATH."core/lang/".self::$lang."/".$manifest['lang']['main'].".php")) {
@@ -58,10 +58,21 @@ class lang {
 			return "false";
 		}
 	}
+	
+	public static function get_lang($name, $sub=null) {
+	global $lang;
+		if(!empty($sub) && isset($lang[$name][$sub])) {
+			return $lang[$name][$sub];
+		} else if(isset($lang[$name])) {
+			return $lang[$name];
+		} else {
+			return "";
+		}
+	}
 
-	static function include_lang($page) {
-	global $lang, $config, $user, $manifest;
-		$clang = $config['lang'];
+	public static function include_lang($page) {
+	global $lang, $user, $manifest;
+		$clang = config::Select('lang');
 		$ulang = (!empty($user['lang']) ? $user['lang'] : "");
 		if(!empty($ulang)) {
 			self::$lang = $ulang;

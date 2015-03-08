@@ -14,7 +14,7 @@ function create_pass($pass) {
 return md5(md5($pass).$pass);
 }
 
-function user_link($user_link, $user=null, $type=null) {
+function user_link($user_link, $user=null, $type=null, $added=null) {
 	if(empty($type)) {
 		return "{C_default_http_host}user/".$user_link;
 	} elseif($type == "href" && !empty($user)) {
@@ -22,5 +22,7 @@ function user_link($user_link, $user=null, $type=null) {
 	} elseif($type == "user" && !empty($user)) {
 		return $user;
 	}
-return;
+return "";
 }
+
+?>

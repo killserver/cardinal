@@ -3,11 +3,10 @@ define("IS_CORE", true);
 include_once("core.php");
 
 if(!userlevel::get("site")) {
-	$templates->error("{L_error_level_full}", "{L_error_level}");
+	templates::error("{L_error_level_full}", "{L_error_level}");
 }
 
 $server = $_SERVER['QUERY_STRING'];
-//cut($server, nstrpos($server, "?")+1, nstrlen($server))
 if(!empty($server)) {
 	$page = $server;
 	if(strpos($page, "&") !== false) {
@@ -27,10 +26,12 @@ if(!empty($server)) {
 }
 
 
-$manifest['mod_page'][getenv("REMOTE_ADDR")]['page'] = $page;
+$manifest['now_page'] = $page;
+$manifest['mod_page'][HTTP::getip()]['page'] = $page;
 view_pages($page);
 if(class_exists("page")) {
-	new page();
+	$page = new page();
+	unset($page);
 }
 if(defined("DEBUG")) {
 	ini_set('display_errors',1);
@@ -38,7 +39,8 @@ if(defined("DEBUG")) {
 }
 
 $Timer = microtime()-$Timer;
-GzipOut($templates->gzip);
+GzipOut(templates::$gzip, templates::$gzip_activ);
+HTTP::echos();
 unset($templates);
 unset($db);
 

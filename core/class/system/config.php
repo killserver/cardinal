@@ -1,20 +1,25 @@
 <?php
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
-die;
+die();
 }
 
 final class config {
 
-	private $config = array();
+	private static $config = array();
+	
+	public static function StandAlone() {
+	global $config;
+		self::$config = $config;
+	}
 
-	function __construct() {
-	global $config, $db, $cache;
-		$this->config = array();
-		if(!$cache->exists("config")) {
+	public static function init() {
+	global $config;
+		self::$config = array();
+		if(!cache::Exists("config")) {
 			$configs = array();
-			$db->doquery("SELECT config_name, config_value FROM config", true);
-			while($conf = $db->fetch_array()) {
+			db::doquery("SELECT config_name, config_value FROM config", true);
+			while($conf = db::fetch_array()) {
 				if(strpos($conf['config_value'], ":-:")!==false) {
 					$vals = array();
 					if(strpos($conf['config_value'], ";-;")!==false) {
@@ -33,33 +38,49 @@ final class config {
 					$configs[$conf['config_name']] = $conf['config_value'];
 				}
 			}
-			$this->config = $configs;
-			$cache->set("config", $configs);
+			self::$config = $configs;
+			cache::Set("config", $configs);
 			unset($configs);
 		} else {
-			$this->config = $cache->get("config");
+			self::$config = cache::Get("config");
 		}
-		$this->config = (sizeof($this->config) > 0 ? array_merge($config, $this->config) : $config);
+		self::$config = (sizeof(self::$config) > 0 ? array_merge($config, self::$config) : $config);
 	}
 
-	function all() {
-		return $this->config;
+	public static function All() {
+		return self::$config;
 	}
-
-	function select($data) {
-		if(isset($this->config[$data])) {
-			return $this->config[$data];
+	
+	public static function Exists($data, $sub=null, $subst = null) {
+		if(!empty($sub) && !empty($subst) && isset(self::$config[$data]) && isset(self::$config[$data][$sub]) && isset(self::$config[$data][$subst])) {
+			return true;
+		} else if(!empty($sub) && isset(self::$config[$data]) && isset(self::$config[$data][$sub])) {
+			return true;
+		} else if(isset(self::$config[$data])) {
+			return true;
 		} else {
 			return false;
 		}
 	}
 
-	function update($name, $data=null) {
-	global $db, $cache;
-		$db->doquery("UPDATE config SET config_value = \"".$data."\" WHERE config_name = \"".$name."\"");
-		$cache->delete("config");
-		if(!empty($this->config[$data])) {
-			return $this->config[$data];
+	public static function Select($data, $sub=null, $subst = null) {
+//		var_dump(self::$config, ROOT_PATH, ROOT_EX);die();
+		if(!empty($sub) && !empty($subst) && isset(self::$config[$data]) && isset(self::$config[$data][$sub]) && isset(self::$config[$data][$subst])) {
+			return self::$config[$data][$sub][$subst];
+		} else if(!empty($sub) && isset(self::$config[$data]) && isset(self::$config[$data][$sub])) {
+			return self::$config[$data][$sub];
+		} else if(isset(self::$config[$data])) {
+			return self::$config[$data];
+		} else {
+			return false;
+		}
+	}
+
+	public static function Update($name, $data=null) {
+		db::doquery("UPDATE config SET config_value = \"".$data."\" WHERE config_name = \"".$name."\"");
+		cache::Delete("config");
+		if(!empty(self::$config[$data])) {
+			return self::$config[$data];
 		} else {
 			return true;
 		}

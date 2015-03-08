@@ -1,23 +1,38 @@
 <?php
+/*
+*
+* Version Engine: 1.25.3
+* Version File: 2
+*
+* 2.4
+* add support XXX category
+*
+*/
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
-die;
+die();
 }
 
 final class cardinal {
 
 	private $config;
-	function __construct() {
-		$this->config = new config();
-		$otime = $this->config->select("cardinal_time");
-
+	public function cardinal() {
+		if(!$this->robots($_SERVER["HTTP_USER_AGENT"])) {
+			define("IS_BOT", false);
+		} else {
+			define("IS_BOT", true);
+		}
+		if(isset($_COOKIE['plus18'])) {
+			define("IS_XXX", "true");
+		}
+		$otime = config::select("cardinal_time");
 		if($otime <= time()-12*60*60) {
-			$this->add();
-			$this->stats();
+			self::add();
+			self::stats();
 		}
 	}
 
-	function nstrlen($text) {
+	public static function nstrlen($text) {
 		if(function_exists("mb_strlen")) {
 			return mb_strlen($text);
 		} elseif(function_exists("iconv_strlen")) {
@@ -26,8 +41,48 @@ final class cardinal {
 			return strlen($text);
 		}
 	}
+	
+	private function robots($useragent) {
+	global $config;
+		$arr = array();
+		$pcre = array_keys(config::Select('robots'));
+		$dats = array_values(config::Select('robots'));
+		for($i=0;$i<sizeof($pcre);$i++) {
+			$arr["#.*".$pcre[$i].".*#si"] = $dats[$i];
+		}
+		$result = preg_replace(array_keys($arr), $arr, $useragent);
+		return $result == $useragent ? false : $result;
+	}
+	
+	public static function set_eighteen() {
+		if(!isset($_COOKIE['plus18'])) {
+			setcookie("plus18", "1", (time()+(60*24*60*60)), "/", ".".config::Select("default_http_hostname"), false, true);
+		} else {
+			setcookie("plus18", "", (time()-(120*24*60*60)), "/", ".".config::Select("default_http_hostname"), false, true);
+		}
+	}
+	
+	public static function get_eighteen() {
+		if(isset($_COOKIE['plus18'])) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public static function view_eighteen() {
+		if(!cardinal::get_eighteen()) {
+			templates::assign_vars(array(
+				"title" => "{L_alert}",
+				"error" => "{L_alert_up_eighteen}",
+			));
+			$view = templates::complited_assing_vars("info");
+			templates::complited($view);
+			templates::display();
+		}
+	}
 
-	private function add() {
+	private static function add() {
 		$sql = db::doquery("SELECT id, name, data, video_movie, descr, images, subtitles, `time`, added, moder, cat, album FROM cardinal_movie WHERE activ = \"yes\" ORDER BY id ASC LIMIT ".mrand(1, 3), true);
 		$last_add = 1;
 		$conv = array();
@@ -43,7 +98,7 @@ final class cardinal {
 			$tag_list = explode(" ", preg_replace("/[^\w\s]/u", "", htmlspecialchars_decode($row['name'])));
 			$tags = array();
 			for($i=0;$i<sizeof($tag_list); $i++) {
-				if($this->nstrlen($tag_list[$i])>2) {
+				if(self::nstrlen($tag_list[$i])>2) {
 					$tags[] = $tag_list[$i];
 				}
 			}
@@ -54,10 +109,10 @@ final class cardinal {
 			$last_add = ($last_add+$rand);
 		}
 		db::free();
-		$this->config->update("cardinal_time", time());
+		config::Update("cardinal_time", time());
 	}
 
-	protected function amper($data) {
+	protected static function amper($data) {
 		if(is_array($data)) {
 			$returns = array();
 			foreach($data as $name => $val) {
@@ -73,7 +128,7 @@ final class cardinal {
 		}
 	}
 
-	function stats() {
+	public static function stats() {
 		$res = db::doquery("SELECT SUM(views) AS views, name_id FROM stat GROUP BY name_id", true);
 		while($row = db::fetch_assoc($res)) {
 			db::doquery("UPDATE movie SET view = ".$row['views']." WHERE name_id = \"".$row['name_id']."\"");
@@ -81,13 +136,13 @@ final class cardinal {
 		db::free();
 	}
 
-	function hackers($page, $referer=null) {
+	public static function hackers($page, $referer=null) {
 		if(!empty($referer)) {
 			$ref = ", referer = \"".urlencode($referer)."\"";
 		} else {
 			$ref = "";
 		}
-		db::doquery("INSERT INTO hackers SET ip = \"".getenv("REMOTE_ADDR")."\", page = \"".urlencode($page)."\", post = \"".urlencode(cardinal::amper($_POST))."\", get = \"".urlencode(cardinal::amper($_GET))."\"".$ref.", activ = \"yes\"");
+		db::doquery("INSERT INTO hackers SET ip = \"".HTTP::getip()."\", page = \"".urlencode($page)."\", post = \"".urlencode(self::amper($_POST))."\", get = \"".urlencode(self::amper($_GET))."\"".$ref.", activ = \"yes\"");
 		location("{C_default_http_host}?hacker");
 	}
 

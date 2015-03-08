@@ -30,6 +30,7 @@ class userlevel {
 	private static function define($array) {
 		$def = array();
 		for($i=0;$i<sizeof($array);$i++) {
+			$array[$i]['id'] -= 1;
 			$def[$array[$i]['alt_name']] = $array[$i];
 		}
 	return $def;
@@ -42,10 +43,10 @@ class userlevel {
 		if(!isset($user['level'])) {
 			$user['level'] = modules::get_config("guest_level");
 		}
-		if((isset($all[$get]['id']) && $user['level'] == $all[$get]['id']) && (isset($all[$get]['access_'.$get]) && $all[$get]['access_'.$get] == "yes")) {
-			return true;
+		if((isset($all[$get]['id']) && $user['level'] == $all[$get]['id']) && (isset($all[$get]['access_'.$access]) && $all[$get]['access_'.$access] == "yes")) {
+			return "true";
 		} else {
-			return false;
+			return "false";
 		}
 	}
 

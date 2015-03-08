@@ -10,6 +10,8 @@ $lang = array_merge($lang, array(
 	"roll_up_all" => "Свернуть все",
 	"size" => "Размер",
 	"self" => "Взят",
+	"torrent" => "Торрент",
+	"ones" => "раз",
 	"tracker" => "Трекер",
 	"seeders" => "Раздают",
 	"leechers" => "Качают",
@@ -17,7 +19,19 @@ $lang = array_merge($lang, array(
 	"reg_torrent" => "Зарегистрирован",
 	"downloaded" => "Скачан",
 
+	"download" => "Скачать",
 	"download_free" => "Скачать бесплатно",
+
+	"bolvan" => array(
+		"t0" => "болванка",
+		"t1" => "болванок",
+		"t2" => "блованок",
+	),
+	"descr_size" => "%s (занимает %s %s, для записи нужно: %s %s %sR/RW)",
+	"hash" => "Хэш",
+
+	"share" => "Поделиться",
+	"list_file" => "Список файлов",
 ));
 
 ?>

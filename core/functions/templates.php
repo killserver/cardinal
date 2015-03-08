@@ -1,4 +1,13 @@
 <?php
+/*
+*
+* Version Engine: 1.25.3
+* Version File: 21
+*
+* 21.1
+* add var for js detected system time in unix format
+*
+*/
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
 die;
@@ -54,7 +63,7 @@ global $user, $config;
 		} else {
 			//$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}min/index.php?charset=".$config['charset'].($js ? "&amp;f=".$js : "")."&amp;g=general&13\"></script>\n";
 		}
-		$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}js/require.js\"></script>\n<script type=\"text/javascript\" src=\"{C_default_http_host}js/config.js\"></script>";
+		$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}js/require.js?".time()."\"></script>\n<script type=\"text/javascript\" src=\"{C_default_http_host}js/config.js?".time()."\"></script>";
 	}
 	$all = modules::manifest_get(array("create_js", "js"));
 	if($all) {
@@ -106,6 +115,7 @@ if(!$clear) {
 		"	var username = \"".(isset($user['username']) ? $user['username'] : "")."\";\n".
 		"	var default_link = \"{C_default_http_host}\";\n".
 		"	var tskins = \"".$templates->get_skins()."\";\n".
+		"	var SystemTime = \"".time()."\";\n".
 		"</script>\n";
 }
 	if(isset($array['meta']['canonical'])) {
@@ -126,7 +136,7 @@ if(!$clear) {
 
 	if(isset($array['meta']['type_meta'])) {
 		$is_use = true;
-		$header .= "<meta itemscope=\"itemscope\" itemtype=\"".$array['meta']['type_meta']."\" />\n<meta itemprop=\"video\" itemscope itemtype=\"http://schema.org/VideoObject\" />\n";
+		$header .= "<span itemscope itemtype=\"".$array['meta']['type_meta']."\">\n";
 		unset($array['meta']['type_meta']);
 	} else {
 		$is_use = false;
@@ -147,6 +157,9 @@ if(!$clear) {
 			if(is_array($val)) continue;
 			$header .= "<meta name=\"".$name."\" content=\"".$val."\" />\n";
 		}
+	}
+	if($is_use) {
+		$header .= "</span>";
 	}
 	unset($array, $templates);
 /*

@@ -1,4 +1,17 @@
 <?php
+/*
+*
+* Version Engine: 1.25.3
+* Version File: 3
+*
+* 3.0
+* add fix foreach block. before - if given string in foreaching data - viewing error in page
+* 3.0.5
+* add fix lost password in templates and fix old call config
+* 3.1
+* fix userlevel data
+*
+*/
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
 die;
@@ -23,10 +36,10 @@ final class templates {
 		}
 		self::$skins = modules::get_config('skins', 'skins');
 		$test_shab = modules::get_config('skins', 'test_shab');
-		if(!empty($test_shab) && getenv("REMOTE_ADDR") == "193.109.129.144") {
+		if(!empty($test_shab) && in_array(HTTP::getip(), modules::get_config('ip_test_shab'))) {
 			self::$skins = $test_shab;
 		}
-		if(defined("MOBILE") && MOBILE) {
+		if(defined("MOBILE") && MOBILE && modules::get_config('skins', 'mobile')) {
 			self::$skins = modules::get_config('skins', 'mobile');
 		}
 	}
@@ -121,6 +134,9 @@ final class templates {
 			if(isset(self::$foreach['count']) && self::$foreach['count']!=0 && $num >= self::$foreach['count']) {
 				$num = 1;
 			}
+			if(!is_array($data[$key[$i]])) {
+				continue;
+			}
 			$dd = $text;
 			$nams = array_keys($data[$key[$i]]);$vals = array_values($data[$key[$i]]);
 			for($is=0;$is<sizeof($data[$key[$i]]);$is++) {
@@ -134,6 +150,8 @@ final class templates {
 			$dd = str_replace('{$size_for}', $all+1, $dd);
 			$dd = preg_replace_callback("#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $dd);
 			$dd = preg_replace_callback("#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $dd);
+			$dd = preg_replace_callback('#\[foreachif (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/foreachif \\1\]#i', ("templates::is"), $dd);
+			$dd = preg_replace_callback('#\[foreachif (.*?)\]([\s\S]*?)\[/foreachif \\1\]#i', ("templates::is"), $dd);
 			$dd = preg_replace_callback("#\\[foreachif (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/foreachif\\]#i", ("templates::is"), $dd);
 			$dd = preg_replace_callback("#\\[foreachif (.*?)\\]([\s\S]*?)\\[/foreachif\\]#i", ("templates::is"), $dd);
 			$num++;
@@ -157,6 +175,22 @@ final class templates {
 		} else {
 			return $array[0];
 		}
+	}
+	
+	private static function systems($array) {
+		$return = $array[0];
+		switch($array[1]) {
+			case "rand":
+				$return = mt_rand(1, mt_getrandmax());
+			break;
+			case "time":
+				$return = time();
+			break;
+			default:
+			$return = $array[0];
+			break;
+		}
+		return $return;
 	}
 
 	private static function config($array) {
@@ -220,7 +254,25 @@ final class templates {
 		}
 	}
 
+	private static function sys_date($data) {
+		if(is_array($data)) {
+			if(empty($data[2])) {
+				return date($data[1]);
+			} else {
+				if(is_numeric($data[1])) {
+					return date($data[2], $data[1]);
+				} elseif(is_string($data[1])) {
+					$tmp = strtotime($data[1]);
+					return date($data[2], $tmp);
+				}
+			}
+		}
+		return "";
+	}
+
 	private static function ecomp($tmp) {
+		$tmp = preg_replace_callback("#\{include templates=['\"](.*?)['\"]\}#", ("templates::include_tpl"), $tmp);
+		$tmp = preg_replace_callback("#\{include module=['\"](.*?)['\"]\}#", ("templates::include_module"), $tmp);
 		$tmp = preg_replace("~\{\#is_last\[(\"|)(.*?)(\"|)\]\}~", "\\1", $tmp);
 		$tmp = preg_replace_callback("#\\[(not-group)=(.+?)\\](.+?)\\[/not-group\\]#is", ("templates::group"), $tmp);
 		$tmp = preg_replace_callback("#\\[(group)=(.+?)\\](.+?)\\[/group\\]#is", ("templates::group"), $tmp);
@@ -233,15 +285,25 @@ final class templates {
 		$tmp = preg_replace_callback("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tmp);
 		$tmp = preg_replace_callback("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tmp);
 		$tmp = preg_replace_callback("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tmp);
-		$tmp = str_replace("{reg_link}", modules::get_config('link', 'reg'), $tmp);
-		$tmp = str_replace("{login_link}", modules::get_config('link', 'login'), $tmp);
-		$tmp = str_replace("{logout-link}", modules::get_config('link', 'logout'), $tmp);
-		$tmp = str_replace("{lost_link}", modules::get_config('link', 'lost'), $tmp);
+		$tmp = str_replace("{reg_link}", config::Select('link', 'reg'), $tmp);
+		$tmp = str_replace("{login_link}", config::Select('link', 'login'), $tmp);
+		$tmp = str_replace("{logout-link}", config::Select('link', 'logout'), $tmp);
+		$tmp = str_replace("{lost_link}", config::Select('link', 'lost'), $tmp);
 		$tmp = str_replace("{login}", modules::get_user('username'), $tmp);
-		$tmp = str_replace("{addnews-link}", modules::get_config('link', 'add'), $tmp);
+		$tmp = str_replace("{addnews-link}", config::Select('link', 'add'), $tmp);
+		$tmp = str_replace("{lostpassword-link}", config::Select('link', 'recover'), $tmp);
 		$tmp = preg_replace_callback("#\{UL_(.*?)\[(.*?)\]\}#", ("templates::level"), $tmp);
+		
+		$tmp = preg_replace_callback('#\[page=(.*?)\]([^[]*)\[/page\]#i', ("templates::nowpage"), $tmp);
+		$tmp = preg_replace_callback('#\[not-page=(.*?)\]([^[]*)\[/not-page\]#i', ("templates::npage"), $tmp);
+		
+		$tmp = preg_replace_callback('#\[if (.+?)\](.*?)\[else \\1\](.*?)\[/if \\1\]#i', ("templates::is"), $tmp);
+		$tmp = preg_replace_callback('~\[if (.+?)\]([^[]*)\[/if \\1\]~iU', ("templates::is"), $tmp);
+		
 		$tmp = preg_replace_callback("#\\[if (.+?)\\](.*?)\\[else\\](.*?)\\[/if\\]#i", ("templates::is"), $tmp);
 		$tmp = preg_replace_callback('~\[if (.+?)\]([^[]*)\[/if\]~iU', ("templates::is"), $tmp);
+		$tmp = preg_replace_callback("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tmp);
+		$tmp = preg_replace_callback("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tmp);
 		return $tmp;
 	}
 
@@ -311,40 +373,11 @@ final class templates {
 		}
 	}
 
-	private static function level($array, $elseif=false) {
-		$else=false;
-		$good = true;
-		$ret = (isset($array[3]) ? (!$elseif ? $array[3] : false) : "false");
-		if(isset($array[1]) && strpos($array[1], "||") !== false) {
-			$data = explode("||", $array[1]);
-			$array[1] = $data[0];
-			$else = self::is(array($array, $data[1], $array[2], $ret), true);
-		}
-		if(isset($array[1]) && strpos($array[1], "&&") !== false) {
-			$data = explode("&&", $array[1]);
-			$array[1] = $data[0];
-			$good = self::is(array($array, $data[1], $array[2], $ret), true);
-		}
-		if(!$elseif) {
-			$data = "true";
-		} else {
-			$data = true;
-		}
-		$array[1] = str_replace("\"", "", $array[1]);
-		if(strpos($array[1], "[") !== false) {
-			preg_match("#(.+)\[(.+)\]#i", $array[1], $rep);
-			if((userlevel::check($rep[1], $rep[2]) || $else) && $good) {
-				return $data;
-			} else {
-				return $ret;
-			}
-		} else {
-			if((userlevel::check($array[1]) || $else) && $good) {
-				return $data;
-			} else {
-				return $ret;
-			}
-		}
+	private static function level($array) {
+		$ret = "false";
+		$data = "true";
+		$array[2] = str_replace("\"", "", $array[2]);
+		return userlevel::check($array[1], $array[2]);
 	}
 
 	private static function is($array, $elseif=false) {
@@ -552,7 +585,11 @@ final class templates {
 	}
 
 	private static function countforeach($array) {
-		$data = self::$foreach["all"][$array[1]]+1;
+		if(isset(self::$foreach["all"][$array[1]])) {
+			$data = self::$foreach["all"][$array[1]]+1;
+		} else {
+			$data = 1;
+		}
 		return $data;
 	}
 
@@ -584,7 +621,7 @@ final class templates {
 			$files = file_get_contents($dir);
 			return self::comp_datas($files, $file[0]);
 		} else {
-			return $array[0];
+			return $array[0]."1";
 		}
 	}
 
@@ -600,7 +637,7 @@ final class templates {
 			$ret = $array[0];
 		}
 		$class = str_replace(array(".class", ".php"), "", $array[1]);
-		if(!file_exists(ROOT_PATH."core/modules/".$array[1])) {
+		if(!file_exists(ROOT_PATH."core/modules/".$array[1]) && !file_exists(ROOT_PATH."core/modules/autoload/".$array[1])) {
 			return $ret;
 		}
 		if(!class_exists($class)) {
@@ -621,10 +658,34 @@ final class templates {
 	private static function count_blocks($array) {
 		return sizeof(self::$blocks[$array[2]]);
 	}
+	
+	private static function npage($array) {
+	global $manifest;
+		if(strpos($array[1], "|")!==false) {
+			$search = explode("|", $array[1]);
+		} else {
+			$search = array($array[1]);
+		}
+		if(!in_array($manifest['mod_page'][HTTP::getip()]['page'], $search)) {
+			return $array[2];
+		}
+	}
+	
+	private static function nowpage($array) {
+	global $manifest;
+		if(strpos($array[1], "|")!==false) {
+			$search = explode("|", $array[1]);
+		} else {
+			$search = array($array[1]);
+		}
+		if(in_array($manifest['mod_page'][HTTP::getip()]['page'], $search)) {
+			return $array[2];
+		}
+	}
 
 	private static function comp_datas($tpl, $file="null", $test = false) {
-		$tpl = preg_replace_callback("#\\{include templates=['\"](.*?)['\"]\\}#i", ("templates::include_tpl"), $tpl);
-		$tpl = preg_replace_callback("#\\{include module=['\"](.*?)['\"]\\}#i", ("templates::include_module"), $tpl);
+		$tpl = preg_replace_callback("#\{include templates=['\"](.*?)['\"]\}#", ("templates::include_tpl"), $tpl);
+		$tpl = preg_replace_callback("#\{include module=['\"](.*?)['\"]\}#", ("templates::include_module"), $tpl);
 		$tpl = preg_replace(array('~\{\#\#(.+?)}~', '~\{\#(.+?)}~', '~\{\_(.+?)}~'), "{\\1}", $tpl);
 		$tpl = preg_replace_callback("~\{is_last\[(\"|)(.+?)(\"|)\]\}~", ("templates::count_blocks"), $tpl);
 		$tpl = preg_replace_callback("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tpl);
@@ -633,6 +694,8 @@ final class templates {
 		$tpl = preg_replace_callback("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tpl);
 		$tpl = preg_replace_callback("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tpl);
 		$tpl = preg_replace_callback("#\{UL_(.*?)\[(.*?)\]\}#", ("templates::level"), $tpl);
+		$tpl = preg_replace_callback('#\[page=(.*?)\](.*)\[/page\]#i', ("templates::nowpage"), $tpl);
+		$tpl = preg_replace_callback('#\[not-page=(.*?)\](.*)\[/not-page\]#i', ("templates::npage"), $tpl);
 		if(modules::manifest_get(array("temp", "block"))!==false) {
 			self::$blocks = array_merge(self::$blocks, modules::manifest_get(array("temp", "block")));
 		}
@@ -649,6 +712,7 @@ final class templates {
 		}
 if(!$test) {
 		$tpl = preg_replace_callback("#\{foreach\}([0-9]+)\{/foreach\}#i", ("templates::foreach_set"), $tpl);
+		$tpl = preg_replace_callback("#\\[foreach block=(.+?)\\](.+?)\\[/foreach $1\\]#is", ("templates::foreachs"), $tpls);
 		$tpl = preg_replace_callback("#\\[foreach block=(.+?)\\](.+?)\\[/foreach\\]#is", ("templates::foreachs"), $tpls);
 		$tpl = preg_replace("#\{foreach\}([0-9]+)\{/foreach\}#i", "", $tpl);
 		$tpl = preg_replace_callback("#\{count\[(.*?)\]\}#is", ("templates::countforeach"), $tpl);
@@ -671,14 +735,23 @@ if(!$test) {
 		$tpl = preg_replace_callback("#\\[!ajax_click\\]([\s\S]*?)\\[/!ajax_click\\]#i", ("templates::ajax_click"), $tpl);
 		$tpl = preg_replace_callback("#\\[!ajax\\]([\s\S]*?)\\[/!ajax\\]#i", ("templates::ajax"), $tpl);
 
+		$tpl = preg_replace_callback('#\[if (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/if \\1\]#i', ("templates::is"), $tpl);
+		$tpl = preg_replace_callback('#\[if (.*?)\]([\s\S]*?)\[/if \\1\]#i', ("templates::is"), $tpl);
+		
 		$tpl = preg_replace_callback("#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $tpl);
 		$tpl = preg_replace_callback("#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $tpl);
+/*
+ToDo: WTF?!
 if($test) {
 		$tpl = preg_replace_callback("#\{foreach\}([0-9]+)\{/foreach\}#i", ("templates::foreach_set"), $tpl);
+		$tpl = preg_replace_callback("#\\[foreach block=(.+?)\\](.+?)\\[/foreach $1\\]#is", ("templates::foreachs"), $tpl);
 		$tpl = preg_replace_callback("#\\[foreach block=(.+?)\\](.+?)\\[/foreach\\]#is", ("templates::foreachs"), $tpl);
 		$tpl = preg_replace("#\{foreach\}([0-9]+)\{/foreach\}#i", "", $tpl);
 		$tpl = preg_replace_callback("#\{count\[(.*?)\]\}#is", ("templates::countforeach"), $tpl);
 }
+*/
+		$tpl = preg_replace_callback("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tpl);
+		$tpl = preg_replace_callback("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tpl);
 		$tpl = preg_replace_callback("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
 		$tpl = preg_replace_callback("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
 		if(strpos($tpl, "[clear]") !== false) {
@@ -715,6 +788,8 @@ if($test) {
 			$tpl = file_get_contents(ROOT_PATH."skins/".self::$skins."/".$file.".tpl");
 		} elseif($dir=="admin") {
 			$tpl = file_get_contents(ROOT_PATH."admincp.php/temp/".$file.".tpl");
+		} elseif($dir=="book") {
+			$tpl = file_get_contents(ROOT_PATH."book/skins/".$file.".tpl");
 		} elseif(empty($dir)) {
 			$tpl = file_get_contents(ROOT_PATH."skins/".$file.".tpl");
 		} else {
@@ -759,12 +834,15 @@ if($test) {
 		$tmp = preg_replace_callback("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tmp);
 		$tmp = preg_replace_callback("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tmp);
 		$tmp = preg_replace_callback("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tmp);
+		$tmp = preg_replace_callback("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tmp);
+		$tmp = preg_replace_callback("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tmp);
 	return $tmp;
 	}
 
 	public static function view($data, $header = null) {
 		self::complited($data, $header);
 		$h = self::$tmp;
+		$h = str_replace("{THEME}", "/skins/".self::$skins, $h);
 		return self::ecomp($h);
 	}
 
@@ -776,7 +854,7 @@ if($test) {
 		} else {
 			self::$header = $header;
 		}
-		if(!isset($header['title'])) {
+		if(is_array($header) && !isset($header['title'])) {
 			$header['title'] = "";
 		}
 		if(isset(self::$header['code']) && self::$header['code']=="404") {
@@ -786,7 +864,7 @@ if($test) {
 			}
 			header('HTTP/1.1 404 Not Found');
 		}
-		self::$blocks = array_merge(self::$blocks, array("error" => $data, "title" => $header['title']));
+		self::$blocks = array_merge(self::$blocks, array("error" => $data, "title" => (isset($header['title']) ? $header['title'] : "")));
 		self::$tmp = self::complited_assing_vars("info");
 		self::display();
 		exit();
@@ -811,12 +889,13 @@ if($test) {
 		if(!modules::get_config('tpl_minifier')) {
 			return $html;
 		}
-
 		// TODO: Match <code> and <pre> too - in separate arrays
 		preg_match_all('/(<script[^>]*?>.*?<\/script>)/si', $html, $pre);
+		preg_match_all('/(<textarea[^>]*?>.*?<\/textarea>)/si', $html, $textarea);
 		$html = preg_replace('/(<script[^>]*?>.*?<\/script>)/si', '#pre#', $html);
-		//$html = preg_replace('#<!-[^\[].+->#', '', $html);
-		//$html = preg_replace('/[\r\n\t]+/', ' ', $html);
+		$html = preg_replace('/(<textarea[^>]*?>.*?<\/textarea>)/si', '#textarea#', $html);
+		$html = preg_replace('#<!-[^\[].+->#', '', $html);//ToDo: WTF?!
+		$html = preg_replace('/[\r\n\t]+/', ' ', $html);
 		$html = preg_replace('/>[\s]*</', '><', $html); // Strip spacechars between tags
 		$html = preg_replace('/[\s]+/', ' ', $html); // Replace several spacechars with one space
 		if(!empty($pre[0])) {
@@ -824,7 +903,14 @@ if($test) {
 				$tag = preg_replace('/^\ *\/\/[^\<]*?$/m', ' ', $tag); // Strips comments - except those that contains HTML comment inside
 				$tag = preg_replace('/[\ \t]{2,}/', ' ', $tag); // Replace several spaces by one
 				$tag = preg_replace('/\s{2,}/', "\r\n", $tag); // Replace several linefeeds by one
-				$html = preg_replace('/#pre#/', $tag, $html,1);
+				$html = preg_replace('/#pre#/', $tag, $html, 1);
+			}
+		}
+		if(!empty($textarea[0])) {
+			foreach($textarea[0] as $tag) {
+				$tag = preg_replace('/^\ *\/\/[^\<]*?$/m', ' ', $tag);
+				$tag = preg_replace('/[\ \t]{3,}/', ' ', $tag);
+				$html = preg_replace('/#textarea#/', $tag, $html,1);
 			}
 		}
 	return $html;
@@ -870,7 +956,7 @@ if($test) {
 			$h = str_replace("{meta_tt}", meta(), $h);
 		}
 		$h = str_replace("{content}", $body, $h);
-		if((getenv('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest' && isset($_GET['jajax'])) || isset($_GET['jajax'])) {
+		if(isset($_GET['jajax']) || (getenv('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest' && isset($_GET['jajax']))) {
 			unset($h);
 			$thead = "<script type=\"text/javascript\" src=\"{C_default_http_host}js/gooan.js\"></script><div id=\"pretitle\">{L_sitename}</div>";
 			if(isset(self::$header['title'])) {
@@ -879,7 +965,7 @@ if($test) {
 			$h = $thead.$body;
 		}
 		$tmp = modules::manifest_get(array("temp", "menu"));
-		if(sizeof($tmp)>0) {
+		if(is_array($tmp) && sizeof($tmp)>0) {
 			self::$module['menu'] = array_merge(self::$module['menu'], $tmp);
 		}
 		unset($tmp);
@@ -907,12 +993,22 @@ if($test) {
 			}
 			$h = preg_replace($find_preg, $replace_preg, $h);
 		}
-		echo self::minify($h);
+		HTTP::echos(self::minify($h));
 		unset($this);
 		if(function_exists("memory_get_usage")) {
 			echo "<!-- ".round((memory_get_usage()/1024/1024), 2)." -->";
 		}
 		self::$time += self::time()-$time;
+	}
+	
+	public static function clean() {
+		self::$blocks = array();
+		self::$foreach = array("count" => 0, "all" => array());
+		self::$module = array("head" => array(), "body" => array(), "blocks" => array(), "menu" => array());
+		self::$editor = array();
+		self::$header = null;
+		//self::$tmp = "";
+		//self::$skins = "";
 	}
 
 	public function __destruct() { 

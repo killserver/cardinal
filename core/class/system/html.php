@@ -5,10 +5,14 @@ die();
 
 class html {
 
-	private $html = "";
+	protected $html = "";
 	private $tag = "";
 	private $type = 1;
 	private $sc = "\"";
+	
+	function __construct() {
+		$this->html = "";
+	}
 
 	function open($tag, $type=1, $sc="\"") {
 		$this->tag = $tag;
@@ -40,6 +44,11 @@ class html {
 
 	function id($id) {
 		$this->html .= " id=".$this->sc.$id.$this->sc;
+	return $this;
+	}
+
+	function colspan($colspan) {
+		$this->html .= " colspan=".$this->sc.$colspan.$this->sc;
 	return $this;
 	}
 
@@ -128,6 +137,9 @@ class html {
 	}
 
 	function close($tag=null) {
+		if(!isset($this->html)) {
+			$this->html = "";
+		}
 		if(!empty($tag)) {
 			$this->html .= "</".$tag.">";
 			return $this;

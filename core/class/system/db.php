@@ -1,4 +1,13 @@
 <?php
+/*
+*
+* Version Engine: 1.25.3
+* Version File: 16
+*
+* 16.1
+* fix errors
+*
+*/
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
 die;
@@ -15,8 +24,11 @@ final class db {
 	public static $num = 0;
 	public static $querys = array();
 
-	function __construct() {
-	global $config;
+	private static function connect() {
+		if (!class_exists('mysqli') && !function_exists('mysql_connect')) {
+			echo ('Server database MySQL not support PHP');
+			die();
+		}
 		if(function_exists("mysqli_connect")) {
 			self::$type = "mysqli";
 
@@ -24,21 +36,70 @@ final class db {
 				echo "[error]";
 				die();
 			}
-			self::$mc->options(MYSQLI_INIT_COMMAND, "SET NAMES 'utf8'");
-			self::$mc->options(MYSQLI_INIT_COMMAND, "SET CHARACTER SET 'utf8'");
-			if(!self::$mc->real_connect($config['db']['host'], $config['db']['user'], $config['db']['pass'], $config['db']['db'], 3306, false, MYSQLI_CLIENT_COMPRESS)) {
-				echo "[".self::$mc->connect_errno."]: ".self::$mc->connect_error;
+			self::$mc->options(MYSQLI_INIT_COMMAND, "SET NAMES '".config::Select('db', 'charset')."'");
+			self::$mc->options(MYSQLI_INIT_COMMAND, "SET CHARACTER SET '".config::Select('db', 'charset')."'");
+			
+//			mysql_query ("set character_set_client='utf8'"); 
+//mysql_query ("set character_set_results='utf8'"); 
+//mysql_query ("set collation_connection='utf8_general_ci'");
+
+			if(!self::$mc->real_connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'), config::Select('db','db'), 3306, false, MYSQLI_CLIENT_COMPRESS)) {
+				HTTP::echos();
+				switch(self::$mc->connect_errno) {
+					case 1044:
+					case 1045:
+						echo ("Connect to database not exists, incorrect login-password");
+						break;
+					case 1049:
+						echo ("Select database not exists");
+						break;
+					case 2003:
+						echo ("Connect to database not exists, error in port database");
+						break;
+					case 2005:
+						echo ("Connect to database is not exists, addres database or server database not exists");
+						break;
+					case 2006:
+						echo ("Connect to database in not exists, server database is not exists");
+						break;
+					default:
+						echo ("[".self::$mc->connect_errno."]: ".self::$mc->connect_errno);
+						break;
+				}
 				die();
 			}
+			self::$mc->autocommit(false);
 		} else {
-			if(!@self::$mc = mysql_connect($config['db']['host'], $config['db']['user'], $config['db']['pass'])) {
-				echo "[".mysql_errno(self::$mc)."]: ".mysql_error(self::$mc);
+			if(!@self::$mc = mysql_connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'))) {
+				HTTP::echos();
+				switch(mysql_errno(self::$mc)) {
+					case 1045:
+						echo ("Connect to database not exists, incorrect login-password");
+						break;
+					case 2003:
+						echo ("Connect to database not exists, error in port database");
+						break;
+					case 2005:
+						echo ("Connect to database is not exists, addres database or server database not exists");
+						break;
+					case 2006:
+						echo ("Connect to database in not exists, server database is not exists");
+						break;
+					default:
+						echo "[".mysql_errno(self::$mc)."]: ".mysql_error(self::$mc);
+						break;
+				}
 				die();
 			}
-			mysql_select_db($config['db']['db'], self::$mc);
-			self::doquery("SET NAMES 'utf8'", true);
-			self::doquery("SET CHARACTER SET 'utf8'", true);
+			mysql_select_db(config::Select('db', 'db'), self::$mc);
+			self::doquery("SET NAMES '".config::Select('db','charset')."'", true);
+			self::doquery("SET CHARACTER SET '".config::Select('db','charset')."'", true);
 		}
+	}
+
+	function db() {
+		config::StandAlone();
+		self::connect();
 	}
 
 	private static function time() {
@@ -49,18 +110,21 @@ final class db {
 		self::$type_error = intval($int);
 	}
 
-	static function query($query) {
+	public static function query($query) {
 		$stime = self::time();
 		if(self::$type == "mysqli") {
+			self::$mc->begin_transaction();
 			if(!(self::$qid = $return = self::$mc->query($query))) {
 				self::error($query);
 			}
+			self::$mc->commit();
 		} else {
+			mysql_query("START TRANSACTION;", self::$mc);
 			if(!(self::$qid = $return = mysql_query($query, self::$mc))) {
 				self::error($query);
 			}
+			mysql_query("COMMIT;", self::$mc);
 		}
-		
 		$etime = self::time()-$stime;
 		self::$time += $etime;
 		self::$num += 1;
@@ -68,11 +132,11 @@ final class db {
 	return $return;
 	}
 
-	function prepare($sql) {
+	public static function prepare($sql) {
 		self::$param['sql'] = $sql;
 	}
 
-	function param() {
+	public static function param() {
 		$params = func_get_args();
 		if(is_array($params[0])) {
 			$param = $params[0];
@@ -82,7 +146,7 @@ final class db {
 		self::$param['param'] = $param;
 	}
 
-	function execute() {
+	public static function execute() {
 		$sql = self::$param['sql'];
 		foreach(self::$param['param'] as $n => $v) {
 			$sql = str_replace(array("::".$n, ":".$n, "$".$n), $v, $sql);
@@ -91,7 +155,7 @@ final class db {
 	return self::$query($sql);
 	}
 
-	function doquery($query, $only = null, $check = false) {
+	public static function doquery($query, $only = null, $check = false) {
 		$table = preg_replace("/(.*)(FROM|TABLE|UPDATE|INSERT INTO) (.+?) (.*)/", "$3", $query);
 		$badword = false;
 		if((stripos($query, 'RUNCATE TABL') != FALSE) && ($table != 'shoutbox')) {
@@ -158,7 +222,7 @@ final class db {
 		}
 	}
 
-	function affected_rows() {
+	public static function affected_rows() {
 		if(self::$type == "mysqli") {
 			return self::$mc->affected_rows;
 		} else {
@@ -166,7 +230,7 @@ final class db {
 		}
 	}
 
-	function insert_id() {
+	public static function insert_id() {
 		if(self::$type == "mysqli") {
 			return self::$mc->insert_id;
 		} else {
@@ -174,12 +238,12 @@ final class db {
 		}
 	}
 
-	function last_id($table) {
+	public static function last_id($table) {
 		$table = self::doquery("SHOW TABLE STATUS LIKE '".$table."'");
 		return $table['Auto_increment'];
 	}
 
-	function num_fields() {
+	public static function num_fields() {
 		if(self::$type == "mysqli") {
 			return self::$mc->field_count;
 		} else {
@@ -187,7 +251,7 @@ final class db {
 		}
 	}
 
-	function select_query($query) {
+	public static function select_query($query) {
 		if(strpos($query, "SELECT") !== false || strpos($query, "SHOW TABLE") !== false) {
 			$qid = self::query($query);
 			$array = array();
@@ -200,7 +264,7 @@ final class db {
 		}
 	}
 
-	function fetch_row($query = null) {
+	public static function fetch_row($query = null) {
 		if(empty($query)) {
 			$query = self::$qid;
 		}
@@ -211,7 +275,7 @@ final class db {
 		}
 	}
 
-	function fetch_array($query = null) {
+	public static function fetch_array($query = null) {
 		if(empty($query)) {
 			$query = self::$qid;
 		}
@@ -222,7 +286,7 @@ final class db {
 		}
 	}
 
-	function fetch_assoc($query = null) {
+	public static function fetch_assoc($query = null) {
 		if(empty($query)) {
 			$query = self::$qid;
 		}
@@ -233,7 +297,7 @@ final class db {
 		}
 	}
 
-	function fetch_object($query = null, $class_name = null, $params = array()) {
+	public static function fetch_object($query = null, $class_name = null, $params = array()) {
 		if(empty($query)) {
 			$query = self::$qid;
 		}
@@ -244,7 +308,7 @@ final class db {
 		}
 	}
 
-	function num_rows($query = null) {
+	public static function num_rows($query = null) {
 		if(empty($query)) {
 			$query = self::$qid;
 		}
@@ -255,14 +319,17 @@ final class db {
 		}
 	}
 
-	function free($query = null){
+	public static function free($query = null){
 		if(empty($query)) {
 			$query = self::$qid;
 		}
+		if(is_bool($query)) {
+			return false;
+		}
 		if(self::$type == "mysqli") {
-			return @mysqli_free_result($query);
+			return mysqli_free_result($query);
 		} else {
-			return @mysql_free_result($query);
+			return mysql_free_result($query);
 		}
 	}
 
@@ -277,7 +344,7 @@ final class db {
 		}
 	}
 
-	private function error($query) {
+	private static function error($query) {
 		if(self::$type == "mysqli") {
 			$mysql_error = self::$mc->error;
 			$mysql_error_num = self::$mc->errno;

@@ -24,12 +24,15 @@ function or_iconv_charset($string) {
 	return mb_detect_encoding($string, array('UTF-8', 'Windows-1251', 'KOI8-R', 'ISO-8859-5'));
 }
 
+function get_chmod($path) {
+	return substr(sprintf('%o', fileperms($path)), -4);
+}
+
 function nsubstr($text, $start, $end) {
-global $config;
 	if(function_exists("mb_substr")) {
-		return mb_substr($text, $start, $end, $config['charset']);
+		return mb_substr($text, $start, $end, config::Select('charset'));
 	} elseif(function_exists("iconv_substr")) {
-		return iconv_substr($text, $start, $end, $config['charset']);
+		return iconv_substr($text, $start, $end, config::Select('charset'));
 	} else {
 		return substr($text, $start, $end);
 	}
@@ -46,9 +49,8 @@ function nstrlen($text) {
 }
 
 function nstrpos($text, $search, $pos = 0) {
-global $config;
 	if(function_exists("mb_strpos")) {
-		return mb_strpos($text, $search, $pos, $config['charset']);
+		return mb_strpos($text, $search, $pos, config::Select('charset'));
 	} elseif(function_exists("iconv_strpos")) {
 		return iconv_strpos($text, $search, $pos);
 	} else {
@@ -76,9 +78,8 @@ return $text;
 }
 
 function strtolowers($text) {
-global $config;
 	if(function_exists("mb_strtolower")) {
-		return mb_strtolower($text, $config['charset']);
+		return mb_strtolower($text, config::Select('charset'));
 	} else {
 		return strtolower($text);
 	}
@@ -114,18 +115,17 @@ function comp_search($text=null, $finds = array()) {
 }
 
 function charcode($text, $code=null, $rev = false) {
-global $config;
 	if(!empty($code)) {
 		if(!$rev) {
-			return iconv($code, $config['charset'], $text);
+			return iconv($code, config::Select('charset'), $text);
 		} else {
-			return iconv($config['charset'], $code, $text);
+			return iconv(config::Select('charset'), $code, $text);
 		}
 	} else {
 		if(!$rev) {
-			return iconv(iconv_charset($text), $config['charset'], $text);
+			return iconv(iconv_charset($text), config::Select('charset'), $text);
 		} else {
-			return iconv($config['charset'], iconv_charset($text), $text);
+			return iconv(config::Select('charset'), iconv_charset($text), $text);
 		}
 	}
 }

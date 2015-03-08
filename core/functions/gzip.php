@@ -19,8 +19,9 @@ function CheckCanGzip() {
 
 
 function GzipOut($debug = false, $exit = false) {
-global $config, $Timer;
+global $config, $Timer, $manifest;
 	if($exit) {
+		session_destroy();
 		return;
 	}
 	$s = "";
@@ -37,7 +38,7 @@ global $config, $Timer;
 
 	//@header("Last-Modified: " . date('r', time()) ." GMT");
 
-	if($config['gzip'] != "yes") {
+	if($config['gzip'] != "yes" && $manifest['gzip'] != true) {
 		if($debug) {
 			echo $s;
 		}
@@ -57,9 +58,11 @@ global $config, $Timer;
 		$Contents = gzencode($Contents, 9, FORCE_GZIP);
 		echo $Contents;
 		ob_end_flush();
+		session_destroy();
         die();
 	} else {
-		ob_end_flush(); 
+		ob_end_flush();
+		session_destroy();
 		exit;
 	}
 }
