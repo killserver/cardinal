@@ -26,6 +26,7 @@ $manifest = array(
 	"functions" => array(), //in functions
 	"pages" => array(), //in page view
 	"class_pages" => array(), //in page view
+	"define" => array(), //in class defines
 	"lang" => array(), //in class lang
 	"bbcodes" => array(), //in colorit
 	"cbbcode" => array(), //in clear_bbcode
@@ -65,6 +66,7 @@ $Timer = microtime();
 
 require_once(ROOT_PATH."core/functions.".ROOT_EX);
 
+defines::init();
 $lang = array();
 $db = new db();
 $cache = new cache();
