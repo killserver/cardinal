@@ -1,0 +1,1 @@
+[foreach block=meta]<a href="{meta.url}" itemprop="url"><span itemprop="title">{meta.title}</span></a>[if {is_last[meta]}!={$id}] &raquo; [/if][/foreach]

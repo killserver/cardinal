@@ -46,6 +46,11 @@ final class templates {
 		}
 	}
 
+	public function __call($name,array $params) {
+		$new = __METHOD__;
+		return self::$new($name, $params);
+	}
+
 	public static function __callStatic($name,array $params) {
 		$new = __METHOD__;
 		return self::$new($name, $params);
@@ -904,7 +909,7 @@ if($test) {
 			$html = preg_replace('/(<textarea[^>]*?>.*?<\/textarea>)/si', '#textarea'.$i.'#', $html, 1);
 			$i++;
 		}
-		$html = preg_replace('#<!-[^\[].+->#', '', $html);//ToDo: WTF?!
+		$html = preg_replace('#<!-[^\[].+?->#', '', $html);//ToDo: WTF?!
 		$html = preg_replace('/[\r\n\t]+/', ' ', $html);
 		$html = preg_replace('/>[\s]*</', '><', $html); // Strip spacechars between tags
 		$html = preg_replace('/[\s]+/', ' ', $html); // Replace several spacechars with one space
@@ -915,6 +920,7 @@ if($test) {
 				$tag = preg_replace('/[\ \t]{2,}/', ' ', $tag); // Replace several spaces by one
 				$tag = preg_replace('/\s{2,}/', "\r\n", $tag); // Replace several linefeeds by one
 				$html = preg_replace('/#pre'.$i.'#/', $tag, $html, 1);
+				unset($pre[0][$i]);
 				$i++;
 			}
 		}

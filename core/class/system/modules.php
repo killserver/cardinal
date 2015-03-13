@@ -55,6 +55,10 @@ final class modules {
 		return new lang();
 	}
 
+	public static function init_bb() {
+		return new bbcodes();
+	}
+
 	public static function init_db() {
 	global $db;
 		if(!$db) {
@@ -77,6 +81,7 @@ final class modules {
 	private static function init_modules() {
 		if(!self::init_cache()->exists("modules")) {
 			self::init_db()->doquery("SELECT page, module, method, param, tpl FROM modules WHERE activ = \"yes\"", true);
+			$modules = array();
 			while($row = self::init_db()->fetch_assoc()) {
 				$modules[$row['page']][] = $row;
 			}

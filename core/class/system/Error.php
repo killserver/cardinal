@@ -77,7 +77,7 @@ final class Error {
 		try {
 			$file = str_replace(ROOT_PATH, "", $e->getFile());
 			$request = array(
-				'url' => modules::manifest_get('now_page'),
+				'url' => "http://".getenv('SERVER_NAME').getenv('REQUEST_URI'),
 				'_GET' => $_GET,
 				'_POST' => $_POST
 			);
