@@ -63,18 +63,16 @@ function include_dir($dir = null, $modules = null) {
 	if(empty($dir)) {
 		$dir = ROOT_PATH."core/functions/";
 	}
-	if(!empty($modules)) {
-		$strpos = ".class.".ROOT_EX;
-	} else {
-		$strpos = ".".ROOT_EX;
+	if(empty($modules)) {
+		$modules = ".".ROOT_EX;
 	}
 	if(is_dir($dir)) {
 		if($dh = dir($dir)) {
 			while(($file = $dh->read()) !== false) {
-				if($file != "index.".ROOT_EX && $file != "." && $file != ".." && strpos($file, $strpos) !== false) {
+				if($file != "index.".ROOT_EX && $file != "." && $file != ".." && strpos($file, $modules) !== false) {
 					require_once($dir.$file);
 					if(!empty($modules)) {
-						$class = str_replace($strpos, "", $file);
+						$class = str_replace($modules, "", $file);
 						$classes = new $class();
 						unset($classes);
 					}
@@ -85,7 +83,7 @@ function include_dir($dir = null, $modules = null) {
 	}
 }
 if(!defined("IS_ADMINPANEL")) {
-	include_dir(ROOT_PATH."core/modules/", true);
+	include_dir(ROOT_PATH."core/modules/", ".class.".ROOT_EX);
 }
 include_dir();
 
