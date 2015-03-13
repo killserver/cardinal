@@ -65,13 +65,16 @@ function include_dir($dir = null, $modules = null) {
 	}
 	if(empty($modules)) {
 		$modules = ".".ROOT_EX;
+		$inc = false;
+	} else {
+		$inc = true;
 	}
 	if(is_dir($dir)) {
 		if($dh = dir($dir)) {
 			while(($file = $dh->read()) !== false) {
 				if($file != "index.".ROOT_EX && $file != "." && $file != ".." && strpos($file, $modules) !== false) {
 					require_once($dir.$file);
-					if(!empty($modules)) {
+					if($inc) {
 						$class = str_replace($modules, "", $file);
 						$classes = new $class();
 						unset($classes);
