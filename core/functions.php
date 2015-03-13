@@ -5,6 +5,7 @@ die();
 }
 
 require_once(ROOT_PATH."core/media/config.".ROOT_EX);
+require_once(ROOT_PATH."core/media/config.global.".ROOT_EX);
 require_once(ROOT_PATH."core/media/db.".ROOT_EX);
 
 spl_autoload_register(function($class) {
