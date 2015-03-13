@@ -57,6 +57,7 @@ function parser_url($url, $referer = null, $header=false, $coo=false, $coopath=n
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 	}
+	curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
 	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 	if($gzip) {
@@ -91,7 +92,7 @@ function parser_host($url) {
 	/*$host = strtr($url, array("youtu.be/" => "youtube.com/watch?v=", "my1.imgsmail.ru" => "video.mail.ru", "vkontakte.ru" => "vk.com"));
 	$host = parse_url($host, PHP_URL_HOST);
 	$loc = str_replace(array(".com", ".ru", ".at.ua", ".ua", "www.", "."), "", $host);*/
-	$server = strtr($url, array("youtu.be/" => "youtube.com/watch?v=", "my1.imgsmail.ru" => "video.mail.ru", "vkontakte.ru" => "vk.com", "kwimg.kz" => "kiwi.kz", "-" => "", "video.rutube.ru" => "rutube.ru"));
+	$server = strtr($url, array("youtu.be/" => "youtube.com/watch?v=", "my1.imgsmail.ru" => "video.mail.ru", "vkontakte.ru" => "vk.com", "kwimg.kz" => "kiwi.kz", "-" => "", "video.rutube.ru" => "rutube.ru", "video.meta.ua" => "video.metas.ua"));
 	$host1 = explode("/", strtr($server, array("http://" => "", "https://" => "")));
 	$server = current($host1);
 	preg_match('/[a-zA-Z0-9]+\.[a-zA-Z0-9]{1,3}\.[a-zA-Z0-9]{2,4}$|[a-zA-Z0-9]{4,}\.[a-zA-Z0-9]{2,4}$/', $server, $host);
