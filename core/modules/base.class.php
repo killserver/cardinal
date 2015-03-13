@@ -30,12 +30,12 @@ class base {
 	}
 
 	private function ToTranslit($var, $rep=false, $norm=false) {
-	//global $user;
 		if(empty($var)) {
 			return;
 		}
-		lang::set_lang("ru");
-		$lang = lang::init_lang();
+		$lang = modules::init_lang();
+		$lang->set_lang("ru");
+		$lang = $lang->init_lang();
 		if($rep) {
 			if($norm) {
 				$lang['translate_en'] = array_flip($lang['translate_en']);
@@ -46,7 +46,7 @@ class base {
 		}
 		$return = str_replace(array_keys($lang['translate']), array_values($lang['translate']), self::strtolowers($var));
 		unset($lang);
-	return $return;//strtr(self::strtolowers($var), $lang['translate']);
+	return $return;
 	}
 
 	private function blocks() {
@@ -74,7 +74,6 @@ class base {
 			} elseif($row['menu']=="right") {
 				$right = str_replace(array("{title}", "{content}"), array($row['name'], (urldecode($row['data']))), $file_right)."\n";
 				self::set_menu("right_block", $right, self::ToTranslit($row['name']));
-				//modules::manifest_set(array("temp", "right_block"), array($right, ToTranslit($row['name'])));
 			}
 		}
 		self::set_menu("left_block", $left);
