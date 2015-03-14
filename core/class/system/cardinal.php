@@ -32,16 +32,6 @@ final class cardinal {
 			include_dir(ROOT_PATH."core/modules/cron/", ".".ROOT_EX);
 		}
 	}
-
-	public static function nstrlen($text) {
-		if(function_exists("mb_strlen")) {
-			return mb_strlen($text);
-		} elseif(function_exists("iconv_strlen")) {
-			return iconv_strlen($text);
-		} else {
-			return strlen($text);
-		}
-	}
 	
 	private function robots($useragent) {
 	global $config;
