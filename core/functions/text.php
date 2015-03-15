@@ -40,12 +40,39 @@ function nsubstr($text, $start, $end) {
 
 function nstrlen($text) {
 	if(function_exists("mb_strlen")) {
-		return mb_strlen($text);
+		return mb_strlen($text, config::Select('charset'));
 	} elseif(function_exists("iconv_strlen")) {
 		return iconv_strlen($text);
 	} else {
 		return strlen($text);
 	}
+}
+
+function nstr_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT) {
+	$str_len = nstrlen($str);
+	$pad_str_len = nstrlen($pad_str);
+	if(!$str_len && ($dir == STR_PAD_RIGHT || $dir == STR_PAD_LEFT)) {
+		$str_len = 1; // @debug
+	}
+	if(!$pad_len || !$pad_str_len || $pad_len <= $str_len) {
+		return $str;
+	}
+	$result = "";
+	if($dir == STR_PAD_BOTH) {
+		$length = ($pad_len-$str_len)/2;
+		$repeat = ceil($length/$pad_str_len);
+		$result = nsubstr(str_repeat($pad_str,$repeat), 0, floor($length)).$str.nsubstr(str_repeat($pad_str,$repeat), 0, ceil($length));
+	} else {
+		$repeat = ceil($str_len - $pad_str_len + $pad_len);
+		if($dir == STR_PAD_RIGHT) {
+			$result = $str.str_repeat($pad_str,$repeat);
+			$result = nsubstr($result, 0, $pad_len);
+		} elseif($dir == STR_PAD_LEFT) {
+			$result = str_repeat($pad_str,$repeat);
+			$result = nsubstr($result, 0, ($pad_len-(($str_len-$pad_str_len)+$pad_str_len))).$str;
+		}
+	}
+	return $result;
 }
 
 function nstrpos($text, $search, $pos = 0) {
