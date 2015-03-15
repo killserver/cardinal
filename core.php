@@ -6,6 +6,8 @@
 *
 * 12.1
 * add support initialize config before include page
+* 12.2
+* add support correct utf-8 text
 *
 */
 if(!defined("IS_CORE")) {
@@ -78,7 +80,9 @@ $langs = new lang();
 $lang = $langs->init_lang();
 unset($langs);
 new cardinal();
-
+if(mb_internal_encoding($config['charset'])) {
+	mb_internal_encoding($config['charset']);
+}
 date_default_timezone_set($config['date_timezone']);
 
 if(strpos($_SERVER['HTTP_HOST'], $config['default_http_hostname'])===false) {
