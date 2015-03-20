@@ -68,7 +68,6 @@ $Timer = microtime();
 
 require_once(ROOT_PATH."core/functions.".ROOT_EX);
 
-defines::init();
 $lang = array();
 $db = new db();
 $cache = new cache();
@@ -79,6 +78,8 @@ unset($cnf);
 $langs = new lang();
 $lang = $langs->init_lang();
 unset($langs);
+defines::add("CRON_TIME", config::Select("cardinal_time"));
+defines::init();
 new cardinal();
 if(mb_internal_encoding($config['charset'])) {
 	mb_internal_encoding($config['charset']);

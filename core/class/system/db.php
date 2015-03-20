@@ -42,58 +42,67 @@ final class db {
 //			mysql_query ("set character_set_client='utf8'"); 
 //mysql_query ("set character_set_results='utf8'"); 
 //mysql_query ("set collation_connection='utf8_general_ci'");
-
-			if(!self::$mc->real_connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'), config::Select('db','db'), 3306, false, MYSQLI_CLIENT_COMPRESS)) {
-				HTTP::echos();
-				switch(self::$mc->connect_errno) {
-					case 1044:
-					case 1045:
-						echo ("Connect to database not exists, incorrect login-password");
-						break;
-					case 1049:
-						echo ("Select database not exists");
-						break;
-					case 2003:
-						echo ("Connect to database not exists, error in port database");
-						break;
-					case 2005:
-						echo ("Connect to database is not exists, addres database or server database not exists");
-						break;
-					case 2006:
-						echo ("Connect to database in not exists, server database is not exists");
-						break;
-					default:
-						echo ("[".self::$mc->connect_errno."]: ".self::$mc->connect_errno);
-						break;
+			try {
+				if(!self::$mc->real_connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'), config::Select('db','db'), 3306, false, MYSQLI_CLIENT_COMPRESS)) {
+					HTTP::echos();
+					switch(self::$mc->connect_errno) {
+						case 1044:
+						case 1045:
+							echo ("Connect to database not exists, incorrect login-password");
+							break;
+						case 1049:
+							echo ("Select database not exists");
+							break;
+						case 2003:
+							echo ("Connect to database not exists, error in port database");
+							break;
+						case 2005:
+							echo ("Connect to database is not exists, addres database or server database not exists");
+							break;
+						case 2006:
+							echo ("Connect to database in not exists, server database is not exists");
+							break;
+						default:
+							echo ("[".self::$mc->connect_errno."]: ".self::$mc->connect_errno);
+							break;
+					}
+					die();
 				}
-				die();
+				self::$mc->autocommit(false);
+			} catch(Exception $e) {
+				Error::handlePhpError($e->code, $e->message, $e->file, $e->line);
+				exit();
 			}
-			self::$mc->autocommit(false);
 		} else {
-			if(!@self::$mc = mysql_connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'))) {
-				HTTP::echos();
-				switch(mysql_errno(self::$mc)) {
-					case 1045:
-						echo ("Connect to database not exists, incorrect login-password");
-						break;
-					case 2003:
-						echo ("Connect to database not exists, error in port database");
-						break;
-					case 2005:
-						echo ("Connect to database is not exists, addres database or server database not exists");
-						break;
-					case 2006:
-						echo ("Connect to database in not exists, server database is not exists");
-						break;
-					default:
-						echo "[".mysql_errno(self::$mc)."]: ".mysql_error(self::$mc);
-						break;
+			try {
+				if(!@self::$mc = mysql_connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'))) {
+					HTTP::echos();
+					switch(mysql_errno(self::$mc)) {
+						case 1045:
+							echo ("Connect to database not exists, incorrect login-password");
+							break;
+						case 2003:
+							echo ("Connect to database not exists, error in port database");
+							break;
+						case 2005:
+							echo ("Connect to database is not exists, addres database or server database not exists");
+							break;
+						case 2006:
+							echo ("Connect to database in not exists, server database is not exists");
+							break;
+						default:
+							echo "[".mysql_errno(self::$mc)."]: ".mysql_error(self::$mc);
+							break;
+					}
+					die();
 				}
-				die();
+				mysql_select_db(config::Select('db', 'db'), self::$mc);
+				self::doquery("SET NAMES '".config::Select('db','charset')."'", true);
+				self::doquery("SET CHARACTER SET '".config::Select('db','charset')."'", true);
+			} catch(Exception $e) {
+				Error::handlePhpError($e->code, $e->message, $e->file, $e->line);
+				exit();
 			}
-			mysql_select_db(config::Select('db', 'db'), self::$mc);
-			self::doquery("SET NAMES '".config::Select('db','charset')."'", true);
-			self::doquery("SET CHARACTER SET '".config::Select('db','charset')."'", true);
 		}
 	}
 

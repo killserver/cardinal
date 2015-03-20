@@ -27,9 +27,13 @@ final class cardinal {
 		if(isset($_COOKIE['plus18'])) {
 			define("IS_XXX", "true");
 		}
-		$otime = config::select("cardinal_time");
+		$otime = config::Select("cardinal_time");
+		if(isset($_GET['d'])) {
+			var_dump(CRON_TIME, $otime);die();
+		}
 		if($otime <= time()-12*60*60) {
 			include_dir(ROOT_PATH."core/modules/cron/", ".".ROOT_EX);
+			config::Update("cardinal_time", time());
 		}
 	}
 	
