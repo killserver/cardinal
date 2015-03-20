@@ -91,7 +91,7 @@ final class cache {
 		if(self::Exists($name)) {
 			if(self::$type !== "file") {
 				return self::$connect->delete($name);
-			} else if(file_exists(ROOT_PATH."core/cache/".$name.".txt")) {
+			} else if(file_exists(ROOT_PATH."core/cache/".$name.".txt") && !is_dir(ROOT_PATH.'core/cache/'.$name.".txt")) {
 				return unlink(ROOT_PATH."core/cache/".$name.".txt");
 			}
 		} else {
@@ -112,7 +112,7 @@ final class cache {
 
 		$fdir = opendir(ROOT_PATH.'core/cache');
 		while($file = readdir($fdir)) {
-			if($file != '.' && $file != '..' && $file != '.htaccess' && $file != 'index.php') {
+			if($file != '.' && $file != '..' && $file != '.htaccess' && $file != 'index.php' && !is_dir(ROOT_PATH.'core/cache/'.$file)) {
 				if($cache_areas) {
 					foreach($cache_areas as $cache_area)
 						if(strpos($file, $cache_area) !== false)
