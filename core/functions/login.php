@@ -15,6 +15,9 @@ return md5(md5($pass).$pass);
 }
 
 function user_link($user_link, $user=null, $type=null, $added=null) {
+	if(empty($user_link)) {
+		$user_link = "404";
+	}
 	if(empty($type)) {
 		return "{C_default_http_host}user/".$user_link;
 	} elseif($type == "href" && !empty($user)) {
