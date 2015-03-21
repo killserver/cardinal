@@ -19,7 +19,7 @@ final class cardinal {
 
 	private $config;
 	public function cardinal() {
-		if(!$this->robots($_SERVER["HTTP_USER_AGENT"])) {
+		if(!$this->robots(getenv("HTTP_USER_AGENT"))) {
 			define("IS_BOT", false);
 		} else {
 			define("IS_BOT", true);
@@ -38,7 +38,9 @@ final class cardinal {
 	}
 	
 	private function robots($useragent) {
-	global $config;
+		if(!isset($useragent) || empty($useragent) || is_bool($useragent)) {
+			return false;
+		}
 		$arr = array();
 		$pcre = array_keys(config::Select('robots'));
 		$dats = array_values(config::Select('robots'));
