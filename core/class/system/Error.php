@@ -79,7 +79,8 @@ final class Error {
 			$request = array(
 				'url' => "http://".getenv('SERVER_NAME').getenv('REQUEST_URI'),
 				'_GET' => $_GET,
-				'_POST' => $_POST
+				'_POST' => $_POST,
+				'_SERVER' => array("HTTP_REFERER" => getenv("HTTP_REFERER"), "HTTP_USER_AGENT" => getenv("HTTP_USER_AGENT")),
 			);
 /*
 CREATE TABLE `error_log` (
