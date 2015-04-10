@@ -12,11 +12,14 @@
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
-die;
+die();
 }
+define("CLOSE_FUNCTION", ini_get("disable_functions"));
 
 ini_set("max_execution_time", 0);
-set_time_limit(0);
+if(strpos(CLOSE_FUNCTION, "set_time_limit")===false) {
+	set_time_limit(0);
+}
 
 $manifest = array(
 	"before_ini_class" => array(), //configuration pages and modules before load
@@ -38,7 +41,11 @@ $manifest = array(
 );
 
 if(function_exists("ob_start")) {
-	ob_start("ob_gzhandler");
+	if(ini_get("zlib.output_compression")!="1") {
+		ob_start("ob_gzhandler");
+	} else {
+		ob_start();
+	}
 	$manifest['gzip'] = true;
 }
 if(function_exists("ob_implicit_flush")) {
