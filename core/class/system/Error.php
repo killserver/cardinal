@@ -19,7 +19,9 @@ final class Error {
 	}
 	
 	public static function FriendlyErrorType($type) {
-		if($type==E_ERROR) { // 1 // 
+		if($type==0) { // 0 // 
+			return 'E_CORE'; 
+		} else if($type==E_ERROR) { // 1 // 
 			return 'E_ERROR'; 
 		} else if($type==E_WARNING) { // 2 // 
 			return 'E_WARNING'; 
@@ -104,7 +106,7 @@ primary key `id`(`id`)
 				$db->doquery("INSERT INTO `error_log`(`times`, `ip`, `exception_type`, `message`, `filename`, `line`, `trace_string`, `request_state`) VALUES(UNIX_TIMESTAMP(), \"".HTTP::getip()."\", \"".self::FriendlyErrorType($e->getCode())."\", \"".self::saves($messagePrefix . $e->getMessage())."\", \"".self::saves($file)."\", \"".$e->getLine()."\", \"".self::saves($e->getTraceAsString())."\", \"".self::saves(serialize($request), true)."\")");
 			}
 			if(self::$_echo) {
-				echo "<div style=\"text-decoration:underline;\"><b>[".self::FriendlyErrorType($e->getCode())."]</b></div><br />\n<span style=\"border: 2px dotted black;\">".nl2br(self::saves($e->getTraceAsString()))."</span><br />\n<div style=\"padding-top: 10px;text-transform: uppercase;\">".self::saves($file)." (".$e->getLine().")</div>";
+				echo "<div style=\"text-decoration:underline;\"><div style=\"padding-top: 10px;text-transform: uppercase;\">[".self::FriendlyErrorType($e->getCode())."] ".$e->getMessage()." - ".self::saves($file)." (".$e->getLine().")</div><br />\n<b>[".self::FriendlyErrorType($e->getCode())."]</b></div><br />\n<span style=\"border: 2px dotted black;\">".nl2br(self::saves($e->getTraceAsString()))."</span></div>";
 			}
 		}
 		catch (Exception $e) {}

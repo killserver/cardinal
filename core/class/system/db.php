@@ -100,7 +100,7 @@ final class db {
 				self::doquery("SET NAMES '".config::Select('db','charset')."'", true);
 				self::doquery("SET CHARACTER SET '".config::Select('db','charset')."'", true);
 			} catch(Exception $e) {
-				Error::handlePhpError($e->code, $e->message, $e->file, $e->line);
+				Error::handlePhpError($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
 				exit();
 			}
 		}
