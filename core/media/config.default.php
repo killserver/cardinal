@@ -33,6 +33,7 @@ $config = array(
 	),
 	"date_timezone" => 'Europe/Kiev',
 	"cache" => array(
+		"activ" => false,
 		"type" => 3,
 		"server" => "localhost",
 		"port" => 11211,

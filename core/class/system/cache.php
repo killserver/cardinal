@@ -22,19 +22,23 @@ final class cache {
 
 	public function cache() {
 	global $config;
-		if((class_exists("Memcached") && $config['cache']['type'] == 2) || (class_exists("Memcached") && $config['cache']['type'] == 1)) {
-			self::$type = "memcached";
-			self::$connect = new Memcached();
-			self::$connect->addServer($config['cache']['server'], $config['cache']['port']) or die ("Could not connect");
-		} elseif((class_exists('Memcache') && $config['cache']['type'] == 2) || (class_exists("Memcache") && $config['cache']['type'] == 2)) {
-			self::$type = "memcache";
-			self::$connect = new Memcache();
-			self::$connect->addServer($config['cache']['server'], $config['cache']['port']) or die ("Could not connect");
+		if($config['cache']['activ']) {
+			if((class_exists("Memcached") && $config['cache']['type'] == 2) || (class_exists("Memcached") && $config['cache']['type'] == 1)) {
+				self::$type = "memcached";
+				self::$connect = new Memcached();
+				self::$connect->addServer($config['cache']['server'], $config['cache']['port']) or die ("Could not connect");
+			} elseif((class_exists('Memcache') && $config['cache']['type'] == 2) || (class_exists("Memcache") && $config['cache']['type'] == 2)) {
+				self::$type = "memcache";
+				self::$connect = new Memcache();
+				self::$connect->addServer($config['cache']['server'], $config['cache']['port']) or die ("Could not connect");
+			}
+		} else {
+			self::$type="off";
 		}
 	}
 
 	public static function Mtime($data) {
-		if(self::Exists($data)) {
+		if(self::Exists($data) && self::$type!="off") {
 			if(self::$type !== "file") {
 				$data = self::$connect->get($data);
 				return $data['time'];
@@ -47,7 +51,7 @@ final class cache {
 	}
 
 	public static function Get($data) {
-		if(self::Exists($data)) {
+		if(self::Exists($data) && self::$type!="off") {
 			if(self::$type !== "file") {
 				$data = self::$connect->get($data);
 				return $data['data'];
@@ -68,27 +72,31 @@ final class cache {
 	}
 
 	public static function Exists($data) {
-		if(self::$type !== "file") {
-			if(@(self::$connect->get($data))) {
-					return true;
+		if(self::$type!="off") {
+			if(self::$type !== "file") {
+				if(@(self::$connect->get($data))) {
+						return true;
+				} else {
+					return false;
+				}
 			} else {
-				return false;
+				return file_exists(ROOT_PATH."core/cache/".$data.".txt");
 			}
-		} else {
-			return file_exists(ROOT_PATH."core/cache/".$data.".txt");
 		}
 	}
 
 	public static function Set($name, $val) {
-		if(self::$type !== "file") {
-			return self::$connect->set($name, array("time" => time(), "data" => $val), MEMCACHE_COMPRESSED, self::$live_time);
-		} else {
-			return file_put_contents(ROOT_PATH."core/cache/".$name.".txt", serialize($val));
+		if(self::$type!="off") {
+			if(self::$type !== "file") {
+				return self::$connect->set($name, array("time" => time(), "data" => $val), MEMCACHE_COMPRESSED, self::$live_time);
+			} else {
+				return file_put_contents(ROOT_PATH."core/cache/".$name.".txt", serialize($val));
+			}
 		}
 	}
 
 	public static function Delete($name) {
-		if(self::Exists($name)) {
+		if(self::$type!="off" && self::Exists($name)) {
 			if(self::$type !== "file") {
 				return self::$connect->delete($name);
 			} else if(file_exists(ROOT_PATH."core/cache/".$name.".txt") && !is_dir(ROOT_PATH.'core/cache/'.$name.".txt")) {
