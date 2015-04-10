@@ -70,7 +70,7 @@ final class db {
 				}
 				self::$mc->autocommit(false);
 			} catch(Exception $e) {
-				Error::handlePhpError($e->code, $e->message, $e->file, $e->line);
+				Error::handlePhpError($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
 				exit();
 			}
 		} else {
@@ -379,6 +379,7 @@ final class db {
 		$trace[$level]['file'] = str_replace(ROOT_PATH, "", $trace[$level]['file']);
 
 		if(self::$type_error === 1) {
+			modules::init_templates()->dir_skins("skins/");
 			modules::init_templates()->assign_vars(array(
 				"query" => $query,
 				"error" => $mysql_error,

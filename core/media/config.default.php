@@ -14,6 +14,7 @@ die();
 }
 
 define("BLOCK", 4*1024);
+define("API_URL", "http://online-killer.pp.ua/api.php");
 
 if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off') {
 	$protocol = "https";
@@ -24,7 +25,9 @@ if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off') {
 }
 
 $config = array(
+	"api_key" => "1234567890",
 	"logs" => 'file',
+	"hosting" => true,//true - hosting, false - vps/vds
 	"ip_test_shab" => array(
 		"127.0.0.1",
 	),

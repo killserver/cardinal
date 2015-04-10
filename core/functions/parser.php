@@ -57,8 +57,10 @@ function parser_url($url, $referer = null, $header=false, $coo=false, $coopath=n
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 	}
-	curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
-	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+	if(!config::Select("hosting")) {
+		curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+	}
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 	if($gzip) {
 		curl_setopt($ch, CURLOPT_ENCODING, 'gzip');

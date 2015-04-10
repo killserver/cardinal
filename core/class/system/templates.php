@@ -28,6 +28,7 @@ final class templates {
 	private static $header;
 	private static $tmp = "";
 	private static $skins = "";
+	private static $dir_skins = "skins";
 	public static $gzip = true;
 	public static $gzip_activ = false;
 	public static $time = 0;
@@ -54,6 +55,14 @@ final class templates {
 	public static function __callStatic($name,array $params) {
 		$new = __METHOD__;
 		return self::$new($name, $params);
+	}
+
+	public static function dir_skins($skin = null) {
+		if(!empty($skin)) {
+			self::$dir_skins = $skin;
+		} else {
+			return self::$dir_skins;
+		}
 	}
 
 	public static function set_skins($skin) {
@@ -334,20 +343,6 @@ final class templates {
 	return $block;
 	}
 
-	public static function load_template($file, $no_skin = false) {
-		$time = self::time();
-		if($no_skin) {
-			if(file_exists(ROOT_PATH."skins/".$file.".tpl")) {
-				self::$tmp = file_get_contents(ROOT_PATH."skins/".$file.".tpl");
-			}
-		} else {
-			if(file_exists(ROOT_PATH."skins/".self::$skins."/".$file.".tpl")) {
-				self::$tmp = file_get_contents(ROOT_PATH."skins/".self::$skins."/".$file.".tpl");
-			}
-		}
-		self::$time += self::time()-$time;
-	}
-
 	public static function ajax($array) {
 		if(strpos($array[0], "!ajax") !== false) {
 			if((isset($_GET['tajax']) && isset($_GET['jajax'])) || getenv('HTTP_X_REQUESTED_WITH') != 'XMLHttpRequest') {
@@ -618,11 +613,11 @@ final class templates {
 			$file[0] = $file[0].".tpl";
 		}
 		if(!isset($file[1])) {
-			$dir = ROOT_PATH."skins/".self::$skins."/".$file[0];
+			$dir = ROOT_PATH."".self::$dir_skins."/".self::$skins."/".$file[0];
 		} elseif(isset($file[1]) && !empty($file[1])) {
-			$dir = ROOT_PATH."skins/".$file[1]."/".$file[0];
+			$dir = ROOT_PATH."".self::$dir_skins."/".$file[1]."/".$file[0];
 		} else {
-			$dir = ROOT_PATH."skins/".$file[0];
+			$dir = ROOT_PATH."".self::$dir_skins."/".$file[0];
 		}
 		if(file_Exists($dir)) {
 			$files = file_get_contents($dir);
@@ -771,16 +766,30 @@ if($test) {
 		return $tpl;
 	}
 
+	public static function load_template($file, $no_skin = false) {
+		$time = self::time();
+		if($no_skin) {
+			if(file_exists(ROOT_PATH."".self::$dir_skins."/".$file.".tpl")) {
+				self::$tmp = file_get_contents(ROOT_PATH."".self::$dir_skins."/".$file.".tpl");
+			}
+		} else {
+			if(file_exists(ROOT_PATH."".self::$dir_skins."/".self::$skins."/".$file.".tpl")) {
+				self::$tmp = file_get_contents(ROOT_PATH."".self::$dir_skins."/".self::$skins."/".$file.".tpl");
+			}
+		}
+		self::$time += self::time()-$time;
+	}
+
 	public static function load_templates($file, $charset = null, $dir = "null") {
 		$time = self::time();
 		if($dir == "null") {
-			$tpl = file_get_contents(ROOT_PATH."skins/".self::$skins."/".$file.".tpl");
+			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".self::$skins."/".$file.".tpl");
 		} elseif($dir=="admin") {
 			$tpl = file_get_contents(ROOT_PATH."admincp.php/temp/".$file.".tpl");
 		} elseif(empty($dir)) {
-			$tpl = file_get_contents(ROOT_PATH."skins/".$file.".tpl");
+			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".$file.".tpl");
 		} else {
-			$tpl = file_get_contents(ROOT_PATH."skins/".$dir."/".$file.".tpl");
+			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".$dir."/".$file.".tpl");
 		}
 		if(!empty($charset)) {
 			$tpl = iconv($charset, modules::get_config("charset"), $tpl);
@@ -792,18 +801,24 @@ if($test) {
 	public static function complited_assing_vars($file, $dir = "null", $test = false) {
 		$time = self::time();
 		if($dir == "null") {
-			$tpl = file_get_contents(ROOT_PATH."skins/".self::$skins."/".$file.".tpl");
-		} elseif($dir=="admin") {
-			$tpl = file_get_contents(ROOT_PATH."admincp.php/temp/".$file.".tpl");
-		} elseif($dir=="book") {
-			$tpl = file_get_contents(ROOT_PATH."book/skins/".$file.".tpl");
+			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".self::$skins."/".$file.".tpl");
 		} elseif(empty($dir)) {
-			$tpl = file_get_contents(ROOT_PATH."skins/".$file.".tpl");
+			try{
+			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".$file.".tpl");
+			}catch(Exception $ex) {
+				echo ROOT_PATH."".self::$dir_skins."/".$file.".tpl";die();
+			}
 		} else {
-			$tpl = file_get_contents(ROOT_PATH."skins/".$dir."/".$file.".tpl");
+			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".$dir."/".$file.".tpl");
 		}
 		$tpl = self::comp_datas($tpl, $file, $test);
-		$tpl = str_replace("{THEME}", "/skins/".self::$skins, $tpl);
+		if($dir == "null") {
+			$tpl = str_replace("{THEME}", "/".self::$dir_skins."/".self::$skins, $tpl);
+		} elseif(empty($dir)) {
+			$tpl = str_replace("{THEME}", "/".self::$dir_skins, $tpl);
+		} else {
+			$tpl = str_replace("{THEME}", "/".self::$dir_skins."/".$dir, $tpl);
+		}
 		self::$time += self::time()-$time;
 		return $tpl;
 	}
@@ -849,7 +864,7 @@ if($test) {
 	public static function view($data, $header = null) {
 		self::complited($data, $header);
 		$h = self::$tmp;
-		$h = str_replace("{THEME}", "/skins/".self::$skins, $h);
+		$h = str_replace("{THEME}", "/".self::$dir_skins."/".self::$skins, $h);
 		return self::ecomp($h);
 	}
 
@@ -940,15 +955,15 @@ if($test) {
 	public static function display() {
 	global $lang;
 		$time = self::time();
-		if(!file_exists(ROOT_PATH."skins/".self::$skins."/main.tpl")) {
+		if(!file_exists(ROOT_PATH."".self::$dir_skins."/".self::$skins."/main.tpl")) {
 			echo "error templates";
 			return;
 		}
-		if(file_exists(ROOT_PATH."skins/".self::$skins."/lang/tpl.php")) {
-			include_once(ROOT_PATH."skins/".self::$skins."/lang/tpl.php");
+		if(file_exists(ROOT_PATH."".self::$dir_skins."/".self::$skins."/lang/tpl.php")) {
+			include_once(ROOT_PATH."".self::$dir_skins."/".self::$skins."/lang/tpl.php");
 		}
-		$h = file_get_contents(ROOT_PATH."skins/".self::$skins."/main.tpl");
-		$l = file_get_contents(ROOT_PATH."skins/".self::$skins."/login.tpl");
+		$h = file_get_contents(ROOT_PATH."".self::$dir_skins."/".self::$skins."/main.tpl");
+		$l = file_get_contents(ROOT_PATH."".self::$dir_skins."/".self::$skins."/login.tpl");
 		$l = iconv("cp1251", modules::get_config('charset'), $l);
 		$h = str_replace("{login}", $l, $h);
 		$head = "";
@@ -1003,7 +1018,7 @@ if($test) {
 				}
 			}
 		}
-		$h = str_replace("{THEME}", "/skins/".self::$skins, $h);
+		$h = str_replace("{THEME}", "/".self::$dir_skins."/".self::$skins, $h);
 		$h = self::ecomp($h);
 		$find_preg = $replace_preg = array();
 		if(sizeof(self::$editor)) {
