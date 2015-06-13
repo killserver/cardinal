@@ -98,7 +98,7 @@ if(mb_internal_encoding($config['charset'])) {
 }
 date_default_timezone_set($config['date_timezone']);
 
-if(!defined("IS_CRON") && strpos($_SERVER['HTTP_HOST'], $config['default_http_hostname'])===false) {
+if(!defined("IS_CRON_FILE") && isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], $config['default_http_hostname'])===false) {
 	header("HTTP/1.1 301 Moved Permanently");
 	header("Location: http://".$config['default_http_hostname'].$_SERVER['REQUEST_URI']);
 die();
