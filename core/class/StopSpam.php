@@ -1,4 +1,9 @@
 <?php
+if(!defined("IS_CORE")) {
+echo "403 ERROR";
+exit();
+}
+
 class StopSpam
 {
  	private $check_level;
@@ -19,24 +24,6 @@ class StopSpam
  	public function __construct( $check_level = 1 ) {
  		// store variables
  		$this->check_level = intval($check_level);
- 	}
- 	
- 	/**
-    * Get record from spammers database.
-    *
-    * @param array $args associative array containing either one (or all) of these: username / email / ip.
-    * e.g. $args = array('email' => 'user@example.com', 'ip' => '8.8.8.8', 'username' => 'Spammer?' );
-    * @return object Response.
-    */
- 	public function get( $args )
- 	{
- 		// should check first if not already in database
- 		
- 		// url to poll
- 		$url = $this->endpoint.'api?f=json&'.http_build_query($args, '', '&');
- 		
- 		// 
- 		return $this->poll_json( $url );
  	}
  	
  	/**
@@ -80,6 +67,24 @@ class StopSpam
 
 		return $spammer;
 	}
+ 	
+ 	/**
+    * Get record from spammers database.
+    *
+    * @param array $args associative array containing either one (or all) of these: username / email / ip.
+    * e.g. $args = array('email' => 'user@example.com', 'ip' => '8.8.8.8', 'username' => 'Spammer?' );
+    * @return object Response.
+    */
+ 	public function get( $args )
+ 	{
+ 		// should check first if not already in database
+ 		
+ 		// url to poll
+ 		$url = $this->endpoint.'api?f=json&'.http_build_query($args, '', '&');
+ 		
+ 		// 
+ 		return $this->poll_json( $url );
+ 	}
  	
  	/**
  	* Get json and decode. Currently used for polling the database, but hoping for future 

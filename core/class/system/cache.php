@@ -32,7 +32,7 @@ final class cache {
 		} elseif(class_exists('Memcache') && $config['cache']['type'] == CACHE_MEMCACHE) {
 			self::$connect = new Memcache();
 			self::$connect->addServer($config['cache']['server'], $config['cache']['port']) or die ("Could not connect");
-		} elseif(self::$type == CACHE_FTP) {
+		} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 			self::$connect = ftp_connect($config['cache']['server'], $config['cache']['port']);
 			ftp_login(self::$connect, $config['cache']['login'], $config['cache']['pass']);
 			self::$conn_link = "ftp://".$config['cache']['login'].":".$config['cache']['pass']."@".$config['cache']['server'].":".$config['cache']['port'].self::$conn_path;
@@ -46,7 +46,7 @@ final class cache {
 				return $data['time'];
 			} elseif(self::$type == CACHE_FILE) {
 				return filemtime(ROOT_PATH."core/cache/".$data.".txt");
-			} elseif(self::$type == CACHE_FTP) {
+			} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 				return ftp_mdtm(self::$connect, self::$conn_path.$data.".txt");
 			}
 		} else {
@@ -65,7 +65,7 @@ final class cache {
 				} else {
 					return false;
 				}
-			} elseif(self::$type == CACHE_FTP) {
+			} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 				return unserialize(file_get_contents(self::$conn_link.$data.".txt"));
 			}
 		} else {
@@ -86,7 +86,7 @@ final class cache {
 			}
 		} elseif(self::$type == CACHE_FILE) {
 			return file_exists(ROOT_PATH."core/cache/".$data.".txt");
-		} elseif(self::$type == CACHE_FTP) {
+		} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 			return (ftp_size(self::$connect, self::$conn_path.$data.".txt")>0);
 		}
 	}
@@ -96,7 +96,7 @@ final class cache {
 			return self::$connect->set($name, array("time" => time(), "data" => $val), MEMCACHE_COMPRESSED, self::$live_time);
 		} elseif(self::$type == CACHE_FILE) {
 			return file_put_contents(ROOT_PATH."core/cache/".$name.".txt", serialize($val));
-		} elseif(self::$type == CACHE_FTP) {
+		} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 			return file_put_contents(self::$conn_link.$name.".txt", serialize($val), 0, stream_context_create(array('ftp' => array('overwrite' => true))));
 		}
 	}
@@ -107,7 +107,7 @@ final class cache {
 				return self::$connect->delete($name);
 			} else if(self::$type == CACHE_FILE && file_exists(ROOT_PATH."core/cache/".$name.".txt") && !is_dir(ROOT_PATH.'core/cache/'.$name.".txt")) {
 				return unlink(ROOT_PATH."core/cache/".$name.".txt");
-			} elseif(self::$type == CACHE_FTP) {
+			} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 				return ftp_delete(self::$connect, self::$conn_path.$name.".txt");
 			}
 		} else {
@@ -145,7 +145,7 @@ final class cache {
 			self::$connect->quit();
 		} elseif(self::$type == CACHE_MEMCACHE) {
 			self::$connect->close();
-		} elseif(self::$type == CACHE_FTP) {
+		} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 			ftp_close(self::$connect);
 		}
 	}

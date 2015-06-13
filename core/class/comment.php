@@ -36,23 +36,36 @@ final class comment {
 			templates::error("{L_error_level_full}", "{L_error_level}");
 		}
 		if(isset($user['id']) && ($user['level']>LEVEL_USER && $user['level']!=LEVEL_GUEST)) {
+			$is_guest = false;
+		} else {
+			$is_guest = true;
+		}
+		if(!$is_guest) {
 			$username = $user['username'];
 		} else if(isset($_POST['username'])) {
 			$username = saves($_POST['username']);
 		} else {
 			return;
 		}
-		if(isset($user['id']) && ($user['level']>LEVEL_USER && $user['level']!=LEVEL_GUEST)) {
-			$mail = "";
+		if(!$is_guest) {
+			$mail = $user['email'];
 		} else {
 			$mail = saves($_POST['email']);
 		}
 		$comment = saves($_POST['comment']);
-		$ip = getenv('REMOTE_ADDR');
+		$ip = HTTP::getip();
 		$client = getenv('HTTP_USER_AGENT');
 		//$content_id = intval($_POST['content']);
 		$parent_id = saves($_POST['parent']);
-		db::doquery("INSERT INTO comments SET `added`=\"".$user['username']."\", `email`=\"".$mail."\", `type`=\"".self::$param['type']."\", `ip`=\"".$ip."\", `user_agent`=\"".$client."\", `comment`=\"".$comment."\", name_id=\"".self::$param['name_id']."\", `parent_id`=\"".$parent_id."\", `time` = UNIX_TIMESTAMP()");
+		if($is_guest) {
+			$guest = "true";
+		} else {
+			$guest = "false";
+		}
+		$spam = new StopSpam();
+		if(!$spam->is_spammer(array('email' => $mail, 'ip' => $ip, 'username' => $username))) {
+			db::doquery("INSERT INTO comments SET `added`=\"".$user['username']."\", `email`=\"".$mail."\", `type`=\"".self::$param['type']."\", `ip`=\"".$ip."\", `user_agent`=\"".$client."\", `comment`=\"".$comment."\", name_id=\"".self::$param['name_id']."\", `parent_id`=\"".$parent_id."\", `time` = UNIX_TIMESTAMP(), `guest`=\"".$guest."\"");
+		}
 		unset($_POST);
 	}
 

@@ -82,6 +82,11 @@ $cnf = new config();
 $cnf->init();
 $config = $cnf->all();
 unset($cnf);
+if(isset($config['db_version'])) {
+	updater::update(VERSION, $config['db_version']);
+} else {
+	updater::update(VERSION, "");
+}
 $langs = new lang();
 $lang = $langs->init_lang();
 unset($langs);
