@@ -28,6 +28,12 @@ function get_chmod($path) {
 	return substr(sprintf('%o', fileperms($path)), -4);
 }
 
+function isoTOint($data) {
+	$datetime = new DateTime('@0');
+	$datetime->add(new DateInterval($data));
+	return $datetime->format('U');
+}
+
 function nsubstr($text, $start, $end) {
 	if(function_exists("mb_substr")) {
 		return mb_substr($text, $start, $end, config::Select('charset'));

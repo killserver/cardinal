@@ -10,7 +10,7 @@
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
-die;
+die();
 }
 
 final class db {
@@ -122,7 +122,11 @@ final class db {
 	public static function query($query) {
 		$stime = self::time();
 		if(self::$type == "mysqli") {
-			self::$mc->begin_transaction();
+			if(PHP_VERSION_ID>=55000) {
+				self::$mc->begin_transaction();
+			} else {
+				self::$mc->autocommit(FALSE);
+			}
 			if(!(self::$qid = $return = self::$mc->query($query))) {
 				self::error($query);
 			}

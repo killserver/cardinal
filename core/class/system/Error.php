@@ -99,7 +99,7 @@ primary key `id`(`id`)
 ) ENGINE=MyISAM;
 */
 
-			if(modules::get_config('logs')=="file") {
+			if(modules::get_config('logs')==ERROR_FILE) {
 				file_put_contents(ROOT_PATH."core/cache/system/php_log.txt", json_encode(array("times" => time(), "ip" => HTTP::getip(), "exception_type" => self::FriendlyErrorType($e->getCode()), "message" => self::saves($messagePrefix . $e->getMessage()), "filename" => self::saves($file), "line" => $e->getLine(), "trace_string" => self::saves($e->getTraceAsString()), "request_state" => self::saves(serialize($request), true)))."\n", FILE_APPEND);
 			} else {
 				$db = modules::init_db();

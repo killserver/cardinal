@@ -36,13 +36,24 @@ final class comment {
 			templates::error("{L_error_level_full}", "{L_error_level}");
 		}
 		if(isset($user['id']) && ($user['level']>LEVEL_USER && $user['level']!=LEVEL_GUEST)) {
-			$comment = saves($_POST['comment']);
-			$ip = getenv('REMOTE_ADDR');
-			$client = getenv('HTTP_USER_AGENT');
-			$content_id = intval($_POST['content']);
-			$parent_id = saves($_POST['parent']);
-			db::doquery("INSERT INTO comments SET `added`=\"".$user['username']."\", `type`=\"".self::$param['type']."\", `ip`=\"".$ip."\", `user_agent`=\"".$client."\", `comment`=\"".$comment."\", name_id=\"".self::$param['name_id']."\", `parent_id`=\"".$parent_id."\", `time` = UNIX_TIMESTAMP()");
+			$username = $user['username'];
+		} else if(isset($_POST['username'])) {
+			$username = saves($_POST['username']);
+		} else {
+			return;
 		}
+		if(isset($user['id']) && ($user['level']>LEVEL_USER && $user['level']!=LEVEL_GUEST)) {
+			$mail = "";
+		} else {
+			$mail = saves($_POST['email']);
+		}
+		$comment = saves($_POST['comment']);
+		$ip = getenv('REMOTE_ADDR');
+		$client = getenv('HTTP_USER_AGENT');
+		//$content_id = intval($_POST['content']);
+		$parent_id = saves($_POST['parent']);
+		db::doquery("INSERT INTO comments SET `added`=\"".$user['username']."\", `email`=\"".$mail."\", `type`=\"".self::$param['type']."\", `ip`=\"".$ip."\", `user_agent`=\"".$client."\", `comment`=\"".$comment."\", name_id=\"".self::$param['name_id']."\", `parent_id`=\"".$parent_id."\", `time` = UNIX_TIMESTAMP()");
+		unset($_POST);
 	}
 
 	/*delete(
@@ -52,7 +63,7 @@ final class comment {
 
 	public static function get() {
 	global $user;
-		if(isset($user['id']) && ($user['level']>LEVEL_USER && $user['level']!=LEVEL_GUEST) && userlevel::get("add_comments")) {
+		if(isset($user['id']) && $user['level']!=LEVEL_GUEST && userlevel::get("add_comments")) {
 			$add_com = templates::load_templates("addcomments", "cp1251");
 		} else {
 			$add_com = "";
@@ -66,7 +77,7 @@ final class comment {
 		} else {
 			$where = "type=\"movie\" AND name_id = \"".self::$param['name_id']."\"";
 		}
-		$result = db::doquery("SELECT id, name_id, (SELECT username FROM users WHERE username=added) as alt_name, (SELECT avatar FROM users WHERE username=added) as avatar, added, ip, time, comment, parent_id, level FROM comments WHERE ".$where, true);//." ORDER BY `comments`.`id` ASC"
+		$result = db::doquery("SELECT id, name_id, (SELECT last_activ FROM users WHERE username=added) as last_activ, (SELECT username FROM users WHERE username=added) as alt_name, (SELECT avatar FROM users WHERE username=added) as avatar, added, ip, time, comment, parent_id, level FROM comments WHERE ".$where, true);//." ORDER BY `comments`.`id` ASC"
 
 		while($row = db::fetch_assoc($result)){
 			$msg[] = $row;
@@ -92,8 +103,24 @@ final class comment {
 				} else {
 					$parentId = $msg[$i]['parent_id'];
 				}
-				$comments .= str_replace(array("{foto}", "{author_link}", "{author_name}", "{date}", "{comment}", "{id}", "{margin}", "{par}"), array($avatar, user_link($msg[$i]['alt_name'], $msg[$i]['added']), $msg[$i]['added'], date("d-m-Y H:j:s", $msg[$i]['time']), $msg[$i]['comment'], $msg[$i]['id'], $margin, $parentId), $file_com);
+				$comm = str_replace(array("{foto}", "{author_link}", "{author_name}", "{date}", "{comment}", "{id}", "{margin}", "{par}"), array($avatar, user_link($msg[$i]['alt_name'], $msg[$i]['added']), $msg[$i]['added'], date("d-m-Y H:j:s", $msg[$i]['time']), $msg[$i]['comment'], $msg[$i]['id'], $margin, $parentId), $file_com);
+				if($msg[$i]['last_activ']>time()-300) {
+					$comm=preg_replace('#\[online\]#is', '', $comm);
+					$comm=preg_replace('#\[/online\]#is', '', $comm);
+					$comm=preg_replace('#\[offline\](.+?)\[/offline\]#is', '', $comm);
+				} else {
+					$comm=preg_replace('#\[offline\]#is', '', $comm);
+					$comm=preg_replace('#\[/offline\]#is', '', $comm);
+					$comm=preg_replace('#\[online\](.+?)\[/online\]#is', '', $comm);
+				}
+				$comments .= $comm;
 			}  
+		}
+		if(isset($user['id']) && $user['level']!=LEVEL_GUEST) {
+			$add_com=preg_replace('#\[not-logged\](.+?)\[/not-logged\]#is', '', $add_com);
+		} else {
+			$add_com=preg_replace('#\[not-logged\]#is', '', $add_com);
+			$add_com=preg_replace('#\[/not-logged\]#is', '', $add_com);
 		}
 		$add_com = str_replace(array("{name_id}", "{parent}"), array(self::$param['name_id'], $parent), $add_com);
 	return $add_com.$comments;
