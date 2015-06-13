@@ -19,6 +19,9 @@ define("CACHE_FILE", 3);
 define("CACHE_FTP", 4);
 define("CACHE_NONE", 0);
 
+define("ERROR_FILE", 0);
+define("ERROR_DB", 1);
+
 define("BLOCK", 4*1024);
 define("API_URL", "http://online-killer.pp.ua/api.php");
 
@@ -32,7 +35,7 @@ if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off') {
 
 $config = array(
 	"api_key" => "1234567890",
-	"logs" => 'file',
+	"logs" => ERROR_FILE,
 	"hosting" => true,//true - hosting, false - vps/vds
 	"ip_test_shab" => array(
 		"127.0.0.1",
@@ -65,8 +68,8 @@ $config = array(
 	"gzip_output" => true,
 	"js_min" => true,
 
-	"default_http_hostname" => "online-killer.com",
-	"default_http_host" => $protocol."://online-killer.com/",
+	"default_http_hostname" => "online-killer.pp.ua",
+	"default_http_host" => $protocol."://online-killer.pp.ua/",
 	'lang' => "ru",
 	"charset" => "utf-8",
 
