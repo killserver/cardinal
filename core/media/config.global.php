@@ -13,7 +13,7 @@ define("CACHE_NONE", 0);
 define("ERROR_FILE", 0);
 define("ERROR_DB", 1);
 
-define("VERSION", "1.25.5a6");
+define("VERSION", "1.25.5a7");
 define("LEVEL_MODER", 2);
 define("LEVEL_USER", 1);
 define("LEVEL_GUEST", 0);

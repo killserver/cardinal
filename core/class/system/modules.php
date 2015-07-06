@@ -1,4 +1,13 @@
 <?php
+/*
+*
+* Version Engine: 1.25.5a7
+* Version File: 3
+*
+* 3.1
+* add support install system modules
+*
+*/
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
 die();
@@ -79,6 +88,9 @@ final class modules {
 	}
 
 	private static function init_modules() {
+		if(!db::connected()) {
+			return array();
+		}
 		if(!self::init_cache()->exists("modules")) {
 			self::init_db()->doquery("SELECT page, module, method, param, tpl FROM modules WHERE activ = \"yes\"", true);
 			$modules = array();
@@ -117,14 +129,16 @@ final class modules {
 
 	public static function change_db($page, $db) {
 		$modules = self::init_modules();
-		for($i=0;$i<sizeof($modules[$page]);$i++) {
-			if(isset($modules[$page][$i]['module']) && class_exists($modules[$page][$i]['module'])) {
-				$class = $modules[$page][$i]['module'];
-				$mod = new $class();
-				if(method_exists($mod, "change_db")) {
-					$db = $mod->change_db($db);
+		if(isset($modules[$page])) {
+			for($i=0;$i<sizeof($modules[$page]);$i++) {
+				if(isset($modules[$page][$i]['module']) && class_exists($modules[$page][$i]['module'])) {
+					$class = $modules[$page][$i]['module'];
+					$mod = new $class();
+					if(method_exists($mod, "change_db")) {
+						$db = $mod->change_db($db);
+					}
+					unset($mod);
 				}
-				unset($mod);
 			}
 		}
 	return $db;

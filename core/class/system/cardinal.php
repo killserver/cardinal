@@ -45,13 +45,18 @@ final class cardinal {
 			return false;
 		}
 		$arr = array();
-		$pcre = array_keys(config::Select('robots'));
-		$dats = array_values(config::Select('robots'));
-		for($i=0;$i<sizeof($pcre);$i++) {
-			$arr["#.*".$pcre[$i].".*#si"] = $dats[$i];
+		$bot_list = config::Select('robots');
+		if(!is_bool($bot_list)) {
+			$pcre = array_keys($bot_list);
+			$dats = array_values($bot_list);
+			for($i=0;$i<sizeof($pcre);$i++) {
+				$arr["#.*".$pcre[$i].".*#si"] = $dats[$i];
+			}
+			$result = preg_replace(array_keys($arr), $arr, $useragent);
+			return $result == $useragent ? false : $result;
+		} else {
+			return false;
 		}
-		$result = preg_replace(array_keys($arr), $arr, $useragent);
-		return $result == $useragent ? false : $result;
 	}
 	
 	public static function set_eighteen() {

@@ -22,7 +22,7 @@ class Core {
 			return;
 		}
 		if(!$print) {
-			$echo = (templates::complited_assing_vars($echo, "admin"));
+			$echo = (templates::complited_assing_vars($echo, null));
 		}
 		if(isset($_POST['jajax'])) {
 			HTTP::echos(templates::view($echo));
@@ -45,35 +45,6 @@ class Core {
 			$dh->close();
 			}
 		}
-		/*$row = db::doquery("SELECT `id`, `name`, `link`, `value`, `type` FROM `admin_menu` ORDER BY `id` ASC", true);
-		while($rows = db::fetch_assoc($row)) {
-			if(empty($rows['type'])) {
-				$rows['type'] = "item";
-			}
-			if(!empty($rows['link'])) {
-				$rows['link'] = "/admincp.php/".$rows['link'];
-			}
-			templates::assign_vars(array(
-				"name" => $rows['name'],
-				"link" => $rows['link'],
-				"value" => $rows['value'],
-				"type" => $rows['type'],
-			), "menu", "m".$rows['id']);
-		}*/
-		//SELECT `id`, `time`, `name`, `name_id` FROM `movie` WHERE `moder` = \"no\" ORDER BY `id` DESC LIMIT 10
-		$notice=0;
-		db::doquery("SELECT `id`, `time`, `name`, `name_id`, (SELECT COUNT(`id`) FROM `errors` WHERE name_id=`movie`.`name_id`) as errors FROM `movie` WHERE `moder` = \"no\" OR (`moder`=\"yes\" AND (SELECT COUNT(`id`) FROM `errors` WHERE name_id=`movie`.`name_id`)>0) ORDER BY `id` DESC LIMIT 10", true);
-		templates::assign_var("count_unmoder", db::num_rows());
-		while($row = db::fetch_assoc()) {
-			templates::assign_vars(array(
-				"name" => $row['name'],
-				"name_id" => $row['name_id'],
-				"errors" => $row['errors'],
-				"ago" => $this->unix($row['time']),
-			), "unmoders", $row['id']);
-			$notice++;
-		}
-		db::free();
 		$links = array();
 		if($dh = dir(ROOT_PATH."admincp.php/pages/menu/")) {
 			$i=1;
@@ -110,10 +81,9 @@ class Core {
 			$all++;
 		}
 		templates::assign_vars(array(
-			"notice" => $notice,
 			"main_admin" => $echo,
 		));
-		echo templates::view(templates::complited_assing_vars("main", "admin"));
+		echo templates::view(templates::complited_assing_vars("main", null));
 	}
 	
 }

@@ -803,10 +803,11 @@ if($test) {
 		if($dir == "null") {
 			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".self::$skins."/".$file.".tpl");
 		} elseif(empty($dir)) {
-			try{
-			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".$file.".tpl");
-			}catch(Exception $ex) {
-				echo ROOT_PATH."".self::$dir_skins."/".$file.".tpl";die();
+			try {
+				$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".$file.".tpl");
+			} catch(Exception $ex) {
+				echo ROOT_PATH."".self::$dir_skins."/".$file.".tpl";
+				die();
 			}
 		} else {
 			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".$dir."/".$file.".tpl");
