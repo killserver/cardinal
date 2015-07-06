@@ -8,6 +8,8 @@
 * add support initialize config before include page
 * 12.2
 * add support correct utf-8 text
+* 12.3
+* add support before install default timezone
 *
 */
 if(!defined("IS_CORE")) {
@@ -93,33 +95,37 @@ unset($langs);
 defines::add("CRON_TIME", config::Select("cardinal_time"));
 defines::init();
 new cardinal();
-if(mb_internal_encoding($config['charset'])) {
+if(function_exists("mb_internal_encoding") && mb_internal_encoding($config['charset'])) {
 	mb_internal_encoding($config['charset']);
 }
-date_default_timezone_set($config['date_timezone']);
-
-if(!defined("IS_CRON_FILE") && isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], $config['default_http_hostname'])===false) {
-	header("HTTP/1.1 301 Moved Permanently");
-	header("Location: http://".$config['default_http_hostname'].$_SERVER['REQUEST_URI']);
-die();
+if(isset($config['date_timezone'])) {
+	date_default_timezone_set($config['date_timezone']);
 }
 
-
-$user = array();
-if(!isset($_COOKIE['username']) or empty($_COOKIE['username'])) {
-	$user['level'] = 0;
-} else {
-	$username = saves($_COOKIE['username']);
-	$cache->delete("user_".$username);
-	if(!$cache->exists("user_".$username)) {
-		$row = db::doquery("SELECT * FROM users WHERE username = \"".$username."\" AND pass = \"".saves($_COOKIE['pass'])."\"");
-		$cache->set("user_".$username, $row);
-		$user = $row;
-		db::doquery("UPDATE users SET last_activ = UNIX_TIMESTAMP(), last_ip = \"".HTTP::getip()."\" WHERE id = ".$user['id']);
-	} else {
-		$user = $cache->get("user_".$username);
+if(!defined("INSTALLER")) {
+	if(!defined("IS_CRON_FILE") && isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], $config['default_http_hostname'])===false) {
+		header("HTTP/1.1 301 Moved Permanently");
+		header("Location: http://".$config['default_http_hostname'].$_SERVER['REQUEST_URI']);
+	die();
 	}
-	define("IS_AUTH", true);
+
+
+	$user = array();
+	if(!isset($_COOKIE['username']) or empty($_COOKIE['username'])) {
+		$user['level'] = 0;
+	} else {
+		$username = saves($_COOKIE['username']);
+		$cache->delete("user_".$username);
+		if(!$cache->exists("user_".$username)) {
+			$row = db::doquery("SELECT * FROM users WHERE username = \"".$username."\" AND pass = \"".saves($_COOKIE['pass'])."\"");
+			$cache->set("user_".$username, $row);
+			$user = $row;
+			db::doquery("UPDATE users SET last_activ = UNIX_TIMESTAMP(), last_ip = \"".HTTP::getip()."\" WHERE id = ".$user['id']);
+		} else {
+			$user = $cache->get("user_".$username);
+		}
+		define("IS_AUTH", true);
+	}
 }
 
 $templates = new templates();

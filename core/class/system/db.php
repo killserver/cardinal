@@ -1,11 +1,14 @@
 <?php
 /*
 *
-* Version Engine: 1.25.3
+* Version Engine: 1.25.5a6
 * Version File: 16
 *
 * 16.1
 * fix errors
+*
+* 16.2
+* add checker connection to db
 *
 */
 if(!defined("IS_CORE")) {
@@ -17,15 +20,21 @@ final class db {
 
 	private static $mc;
 	private static $qid;
+	private static $connecten = false;
 	private static $type = "mysql";
 	private static $type_error = 1;
 	private static $param = array("sql" => "", "param" => array());
 	public static $time = 0;
 	public static $num = 0;
 	public static $querys = array();
+	
+	public static function connected() {
+		return self::$connecten;
+	}
 
 	private static function connect() {
 		if (!class_exists('mysqli') && !function_exists('mysql_connect')) {
+			HTTP::echos();
 			echo ('Server database MySQL not support PHP');
 			die();
 		}
@@ -33,13 +42,13 @@ final class db {
 			self::$type = "mysqli";
 
 			if(!@self::$mc = mysqli_init()) {
+				HTTP::echos();
 				echo "[error]";
 				die();
 			}
 			self::$mc->options(MYSQLI_INIT_COMMAND, "SET NAMES '".config::Select('db', 'charset')."'");
 			self::$mc->options(MYSQLI_INIT_COMMAND, "SET CHARACTER SET '".config::Select('db', 'charset')."'");
-			
-//			mysql_query ("set character_set_client='utf8'"); 
+//mysql_query ("set character_set_client='utf8'"); 
 //mysql_query ("set character_set_results='utf8'"); 
 //mysql_query ("set collation_connection='utf8_general_ci'");
 			try {
@@ -68,6 +77,7 @@ final class db {
 					}
 					die();
 				}
+				self::$connecten = true;
 				self::$mc->autocommit(false);
 			} catch(Exception $e) {
 				Error::handlePhpError($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
@@ -99,6 +109,7 @@ final class db {
 				mysql_select_db(config::Select('db', 'db'), self::$mc);
 				self::doquery("SET NAMES '".config::Select('db','charset')."'", true);
 				self::doquery("SET CHARACTER SET '".config::Select('db','charset')."'", true);
+				self::$connecten = true;
 			} catch(Exception $e) {
 				Error::handlePhpError($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
 				exit();
@@ -107,8 +118,10 @@ final class db {
 	}
 
 	function db() {
-		config::StandAlone();
-		self::connect();
+		if(!defined("INSTALLER")) {
+			config::StandAlone();
+			self::connect();
+		}
 	}
 
 	private static function time() {

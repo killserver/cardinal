@@ -19,7 +19,10 @@ final class cardinal {
 
 	private $config;
 	public function cardinal() {
-		if(!$this->robots(getenv("HTTP_USER_AGENT"))) {
+		if(defined("INSTALLER")) {
+			return;
+		}
+		if(isset($_SERVER['HTTP_USER_AGENT']) && !$this->robots(getenv("HTTP_USER_AGENT"))) {
 			define("IS_BOT", false);
 		} else {
 			define("IS_BOT", true);

@@ -1,7 +1,16 @@
 <?php
+/*
+*
+* Version Engine: 1.25.5a6
+* Version File: 2
+*
+* 2.2
+* add checker connection to db and fix core
+*
+*/
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
-die;
+die();
 }
 
 class lang {
@@ -9,17 +18,19 @@ class lang {
 	private static $lang = "";
 
 	public static function lang_db() {
-	$db = modules::init_db();
-		if(!modules::init_cache()->exists("lang_".self::$lang)) {
-			$db->doquery("SELECT orig, translate FROM lang WHERE lang = \"".self::$lang."\"", true);
+		if(!db::connected()) {
+			return $config;
+		}
+		if(!cache::Exists("lang_".self::$lang)) {
+			db::doquery("SELECT orig, translate FROM lang WHERE lang = \"".self::$lang."\"", true);
 			$langs = array();
-			while($langs = $db->fetch_array()) {
+			while($langs = db::fetch_array()) {
 				$langs[$langs['orig']] = $langs['translate'];
 			}
-			modules::init_cache()->set("lang_".self::$lang, $langs);
-			$db->free();
+			cache::Set("lang_".self::$lang, $langs);
+			db::free();
 		} else {
-			$langs = modules::init_cache()->get("lang_".self::$lang);
+			$langs = cache::Get("lang_".self::$lang);
 		}
 	return $langs;
 	}

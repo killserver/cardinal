@@ -24,6 +24,9 @@ final class cache {
 
 	public function cache() {
 	global $config;
+		if(defined("INSTALLER")) {
+			return;
+		}
 		self::$type = $config['cache']['type'];
 		self::$conn_path = $config['cache']['path'];
 		if(class_exists("Memcached") && $config['cache']['type'] == CACHE_MEMCACHED) {

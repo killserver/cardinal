@@ -13,15 +13,6 @@ echo "403 ERROR";
 die();
 }
 
-define("CACHE_MEMCACHE", 1);
-define("CACHE_MEMCACHED", 2);
-define("CACHE_FILE", 3);
-define("CACHE_FTP", 4);
-define("CACHE_NONE", 0);
-
-define("ERROR_FILE", 0);
-define("ERROR_DB", 1);
-
 define("BLOCK", 4*1024);
 define("API_URL", "http://online-killer.pp.ua/api.php");
 
