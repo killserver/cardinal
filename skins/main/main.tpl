@@ -5,6 +5,18 @@
 {headers}
 </head>
 <body>
-{main}
+<table width="100%">
+	<tr>
+		<td>
+			{left_block}
+		</td>
+		<td>
+			{main}<br />{center_block}
+		</td>
+		<td>
+			{right_block}
+		</td>
+	</tr>
+</table>
 </body>
 </html>

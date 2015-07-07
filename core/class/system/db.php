@@ -1,31 +1,40 @@
 <?php
 /*
 *
-* Version Engine: 1.25.3
+* Version Engine: 1.25.5a6
 * Version File: 16
 *
 * 16.1
 * fix errors
 *
+* 16.2
+* add checker connection to db
+*
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
-die;
+die();
 }
 
 final class db {
 
 	private static $mc;
 	private static $qid;
+	private static $connecten = false;
 	private static $type = "mysql";
 	private static $type_error = 1;
 	private static $param = array("sql" => "", "param" => array());
 	public static $time = 0;
 	public static $num = 0;
 	public static $querys = array();
+	
+	public static function connected() {
+		return self::$connecten;
+	}
 
 	private static function connect() {
 		if (!class_exists('mysqli') && !function_exists('mysql_connect')) {
+			HTTP::echos();
 			echo ('Server database MySQL not support PHP');
 			die();
 		}
@@ -33,73 +42,86 @@ final class db {
 			self::$type = "mysqli";
 
 			if(!@self::$mc = mysqli_init()) {
+				HTTP::echos();
 				echo "[error]";
 				die();
 			}
 			self::$mc->options(MYSQLI_INIT_COMMAND, "SET NAMES '".config::Select('db', 'charset')."'");
 			self::$mc->options(MYSQLI_INIT_COMMAND, "SET CHARACTER SET '".config::Select('db', 'charset')."'");
-			
-//			mysql_query ("set character_set_client='utf8'"); 
+//mysql_query ("set character_set_client='utf8'"); 
 //mysql_query ("set character_set_results='utf8'"); 
 //mysql_query ("set collation_connection='utf8_general_ci'");
-
-			if(!self::$mc->real_connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'), config::Select('db','db'), 3306, false, MYSQLI_CLIENT_COMPRESS)) {
-				HTTP::echos();
-				switch(self::$mc->connect_errno) {
-					case 1044:
-					case 1045:
-						echo ("Connect to database not exists, incorrect login-password");
-						break;
-					case 1049:
-						echo ("Select database not exists");
-						break;
-					case 2003:
-						echo ("Connect to database not exists, error in port database");
-						break;
-					case 2005:
-						echo ("Connect to database is not exists, addres database or server database not exists");
-						break;
-					case 2006:
-						echo ("Connect to database in not exists, server database is not exists");
-						break;
-					default:
-						echo ("[".self::$mc->connect_errno."]: ".self::$mc->connect_errno);
-						break;
+			try {
+				if(!self::$mc->real_connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'), config::Select('db','db'), 3306, false, MYSQLI_CLIENT_COMPRESS)) {
+					HTTP::echos();
+					switch(self::$mc->connect_errno) {
+						case 1044:
+						case 1045:
+							echo ("Connect to database not exists, incorrect login-password");
+							break;
+						case 1049:
+							echo ("Select database not exists");
+							break;
+						case 2003:
+							echo ("Connect to database not exists, error in port database");
+							break;
+						case 2005:
+							echo ("Connect to database is not exists, addres database or server database not exists");
+							break;
+						case 2006:
+							echo ("Connect to database in not exists, server database is not exists");
+							break;
+						default:
+							echo ("[".self::$mc->connect_errno."]: ".self::$mc->connect_errno);
+							break;
+					}
+					die();
 				}
-				die();
+				self::$connecten = true;
+				self::$mc->autocommit(false);
+			} catch(Exception $e) {
+				Error::handlePhpError($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
+				exit();
 			}
-			self::$mc->autocommit(false);
 		} else {
-			if(!@self::$mc = mysql_connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'))) {
-				HTTP::echos();
-				switch(mysql_errno(self::$mc)) {
-					case 1045:
-						echo ("Connect to database not exists, incorrect login-password");
-						break;
-					case 2003:
-						echo ("Connect to database not exists, error in port database");
-						break;
-					case 2005:
-						echo ("Connect to database is not exists, addres database or server database not exists");
-						break;
-					case 2006:
-						echo ("Connect to database in not exists, server database is not exists");
-						break;
-					default:
-						echo "[".mysql_errno(self::$mc)."]: ".mysql_error(self::$mc);
-						break;
+			try {
+				if(!@self::$mc = mysql_connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'))) {
+					HTTP::echos();
+					switch(mysql_errno(self::$mc)) {
+						case 1045:
+							echo ("Connect to database not exists, incorrect login-password");
+							break;
+						case 2003:
+							echo ("Connect to database not exists, error in port database");
+							break;
+						case 2005:
+							echo ("Connect to database is not exists, addres database or server database not exists");
+							break;
+						case 2006:
+							echo ("Connect to database in not exists, server database is not exists");
+							break;
+						default:
+							echo "[".mysql_errno(self::$mc)."]: ".mysql_error(self::$mc);
+							break;
+					}
+					die();
 				}
-				die();
+				mysql_select_db(config::Select('db', 'db'), self::$mc);
+				self::doquery("SET NAMES '".config::Select('db','charset')."'", true);
+				self::doquery("SET CHARACTER SET '".config::Select('db','charset')."'", true);
+				self::$connecten = true;
+			} catch(Exception $e) {
+				Error::handlePhpError($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
+				exit();
 			}
-			mysql_select_db(config::Select('db', 'db'), self::$mc);
-			self::doquery("SET NAMES '".config::Select('db','charset')."'", true);
-			self::doquery("SET CHARACTER SET '".config::Select('db','charset')."'", true);
 		}
 	}
 
 	function db() {
-		config::StandAlone();
-		self::connect();
+		if(!defined("INSTALLER")) {
+			config::StandAlone();
+			self::connect();
+		}
 	}
 
 	private static function time() {
@@ -113,7 +135,11 @@ final class db {
 	public static function query($query) {
 		$stime = self::time();
 		if(self::$type == "mysqli") {
-			self::$mc->begin_transaction();
+			if(PHP_VERSION_ID>=55000) {
+				self::$mc->begin_transaction();
+			} else {
+				self::$mc->autocommit(FALSE);
+			}
 			if(!(self::$qid = $return = self::$mc->query($query))) {
 				self::error($query);
 			}
@@ -370,6 +396,7 @@ final class db {
 		$trace[$level]['file'] = str_replace(ROOT_PATH, "", $trace[$level]['file']);
 
 		if(self::$type_error === 1) {
+			modules::init_templates()->dir_skins("skins/");
 			modules::init_templates()->assign_vars(array(
 				"query" => $query,
 				"error" => $mysql_error,

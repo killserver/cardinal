@@ -19,7 +19,9 @@ final class Error {
 	}
 	
 	public static function FriendlyErrorType($type) {
-		if($type==E_ERROR) { // 1 // 
+		if($type==0) { // 0 // 
+			return 'E_CORE'; 
+		} else if($type==E_ERROR) { // 1 // 
 			return 'E_ERROR'; 
 		} else if($type==E_WARNING) { // 2 // 
 			return 'E_WARNING'; 
@@ -79,7 +81,8 @@ final class Error {
 			$request = array(
 				'url' => "http://".getenv('SERVER_NAME').getenv('REQUEST_URI'),
 				'_GET' => $_GET,
-				'_POST' => $_POST
+				'_POST' => $_POST,
+				'_SERVER' => array("HTTP_REFERER" => getenv("HTTP_REFERER"), "HTTP_USER_AGENT" => getenv("HTTP_USER_AGENT")),
 			);
 /*
 CREATE TABLE `error_log` (
@@ -96,14 +99,14 @@ primary key `id`(`id`)
 ) ENGINE=MyISAM;
 */
 
-			if(modules::get_config('logs')=="file") {
+			if(modules::get_config('logs')==ERROR_FILE) {
 				file_put_contents(ROOT_PATH."core/cache/system/php_log.txt", json_encode(array("times" => time(), "ip" => HTTP::getip(), "exception_type" => self::FriendlyErrorType($e->getCode()), "message" => self::saves($messagePrefix . $e->getMessage()), "filename" => self::saves($file), "line" => $e->getLine(), "trace_string" => self::saves($e->getTraceAsString()), "request_state" => self::saves(serialize($request), true)))."\n", FILE_APPEND);
 			} else {
 				$db = modules::init_db();
 				$db->doquery("INSERT INTO `error_log`(`times`, `ip`, `exception_type`, `message`, `filename`, `line`, `trace_string`, `request_state`) VALUES(UNIX_TIMESTAMP(), \"".HTTP::getip()."\", \"".self::FriendlyErrorType($e->getCode())."\", \"".self::saves($messagePrefix . $e->getMessage())."\", \"".self::saves($file)."\", \"".$e->getLine()."\", \"".self::saves($e->getTraceAsString())."\", \"".self::saves(serialize($request), true)."\")");
 			}
 			if(self::$_echo) {
-				echo "<div style=\"text-decoration:underline;\"><b>[".self::FriendlyErrorType($e->getCode())."]</b></div><br />\n<span style=\"border: 2px dotted black;\">".nl2br(self::saves($e->getTraceAsString()))."</span><br />\n<div style=\"padding-top: 10px;text-transform: uppercase;\">".self::saves($file)." (".$e->getLine().")</div>";
+				echo "<div style=\"text-decoration:underline;\"><div style=\"padding-top: 10px;text-transform: uppercase;\">[".self::FriendlyErrorType($e->getCode())."] ".$e->getMessage()." - ".self::saves($file)." (".$e->getLine().")</div><br />\n<b>[".self::FriendlyErrorType($e->getCode())."]</b></div><br />\n<span style=\"border: 2px dotted black;\">".nl2br(self::saves($e->getTraceAsString()))."</span></div>";
 			}
 		}
 		catch (Exception $e) {}

@@ -28,6 +28,12 @@ function get_chmod($path) {
 	return substr(sprintf('%o', fileperms($path)), -4);
 }
 
+function isoTOint($data) {
+	$datetime = new DateTime('@0');
+	$datetime->add(new DateInterval($data));
+	return $datetime->format('U');
+}
+
 function nsubstr($text, $start, $end) {
 	if(function_exists("mb_substr")) {
 		return mb_substr($text, $start, $end, config::Select('charset'));
@@ -40,11 +46,27 @@ function nsubstr($text, $start, $end) {
 
 function nstrlen($text) {
 	if(function_exists("mb_strlen")) {
-		return mb_strlen($text);
+		return mb_strlen($text, config::Select('charset'));
 	} elseif(function_exists("iconv_strlen")) {
 		return iconv_strlen($text);
 	} else {
 		return strlen($text);
+	}
+}
+
+function nstr_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT) {
+   return str_pad($str, strlen($str)-nstrlen($str)+$pad_len, $pad_str, $dir); 
+}
+
+function del_in_file($file, $row_number) {
+	if(file_exists($file)) {
+		$file_out = file($file);
+		unset($file_out[$row_number]);
+		unlink($file);
+		file_put_contents($file, implode("", $file_out));
+		return true;
+	} else {
+		return false;
 	}
 }
 

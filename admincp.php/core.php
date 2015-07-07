@@ -18,6 +18,7 @@ function ReadPlugins($dir, $page, $include=true) {
 	}
 }
 $in_page = "Main";
+templates::dir_skins("admincp.php/temp");
 
 spl_autoload_register(function($class) {
 global $in_page;
@@ -35,6 +36,7 @@ if(isset($_GET['pages'])) {
 } else {
 	$view = "Main";
 }
+
 if(in_array($view, array_keys($defined))) {
 	$view = $defined[$view];
 }

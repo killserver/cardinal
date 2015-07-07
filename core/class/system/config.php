@@ -1,4 +1,13 @@
 <?php
+/*
+*
+* Version Engine: 1.25.5a6
+* Version File: 2
+*
+* 2.2
+* add checker connection to db
+*
+*/
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
 die();
@@ -15,6 +24,10 @@ final class config {
 
 	public static function init() {
 	global $config;
+		if(!db::connected()) {
+			self::$config = $config;
+			return $config;
+		}
 		self::$config = array();
 		if(!cache::Exists("config")) {
 			$configs = array();

@@ -6,15 +6,22 @@
 *
 * 12.1
 * add support initialize config before include page
+* 12.2
+* add support correct utf-8 text
+* 12.3
+* add support before install default timezone
 *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
-die;
+die();
 }
+define("CLOSE_FUNCTION", ini_get("disable_functions"));
 
 ini_set("max_execution_time", 0);
-set_time_limit(0);
+if(strpos(CLOSE_FUNCTION, "set_time_limit")===false) {
+	set_time_limit(0);
+}
 
 $manifest = array(
 	"before_ini_class" => array(), //configuration pages and modules before load
@@ -36,7 +43,11 @@ $manifest = array(
 );
 
 if(function_exists("ob_start")) {
-	ob_start("ob_gzhandler");
+	if(ini_get("zlib.output_compression")!="1") {
+		ob_start("ob_gzhandler");
+	} else {
+		ob_start();
+	}
 	$manifest['gzip'] = true;
 }
 if(function_exists("ob_implicit_flush")) {
@@ -66,7 +77,6 @@ $Timer = microtime();
 
 require_once(ROOT_PATH."core/functions.".ROOT_EX);
 
-defines::init();
 $lang = array();
 $db = new db();
 $cache = new cache();
@@ -74,35 +84,48 @@ $cnf = new config();
 $cnf->init();
 $config = $cnf->all();
 unset($cnf);
+if(isset($config['db_version'])) {
+	updater::update(VERSION, $config['db_version']);
+} else {
+	updater::update(VERSION, "");
+}
 $langs = new lang();
 $lang = $langs->init_lang();
 unset($langs);
+defines::add("CRON_TIME", config::Select("cardinal_time"));
+defines::init();
 new cardinal();
-
-date_default_timezone_set($config['date_timezone']);
-
-if(strpos($_SERVER['HTTP_HOST'], $config['default_http_hostname'])===false) {
-	header("HTTP/1.1 301 Moved Permanently");
-	header("Location: http://".$config['default_http_hostname'].$_SERVER['REQUEST_URI']);
-die();
+if(function_exists("mb_internal_encoding") && mb_internal_encoding($config['charset'])) {
+	mb_internal_encoding($config['charset']);
+}
+if(isset($config['date_timezone'])) {
+	date_default_timezone_set($config['date_timezone']);
 }
 
-
-$user = array();
-if(!isset($_COOKIE['username']) or empty($_COOKIE['username'])) {
-	$user['level'] = 0;
-} else {
-	$username = saves($_COOKIE['username']);
-	$cache->delete("user_".$username);
-	if(!$cache->exists("user_".$username)) {
-		$row = db::doquery("SELECT * FROM users WHERE username = \"".$username."\" AND pass = \"".saves($_COOKIE['pass'])."\"");
-		$cache->set("user_".$username, $row);
-		$user = $row;
-		db::doquery("UPDATE users SET last_activ = UNIX_TIMESTAMP(), last_ip = \"".HTTP::getip()."\" WHERE id = ".$user['id']);
-	} else {
-		$user = $cache->get("user_".$username);
+if(!defined("INSTALLER")) {
+	if(!defined("IS_CRON_FILE") && isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], $config['default_http_hostname'])===false) {
+		header("HTTP/1.1 301 Moved Permanently");
+		header("Location: http://".$config['default_http_hostname'].$_SERVER['REQUEST_URI']);
+	die();
 	}
-	define("IS_AUTH", true);
+
+
+	$user = array();
+	if(!isset($_COOKIE['username']) or empty($_COOKIE['username'])) {
+		$user['level'] = 0;
+	} else {
+		$username = saves($_COOKIE['username']);
+		$cache->delete("user_".$username);
+		if(!$cache->exists("user_".$username)) {
+			$row = db::doquery("SELECT * FROM users WHERE username = \"".$username."\" AND pass = \"".saves($_COOKIE['pass'])."\"");
+			$cache->set("user_".$username, $row);
+			$user = $row;
+			db::doquery("UPDATE users SET last_activ = UNIX_TIMESTAMP(), last_ip = \"".HTTP::getip()."\" WHERE id = ".$user['id']);
+		} else {
+			$user = $cache->get("user_".$username);
+		}
+		define("IS_AUTH", true);
+	}
 }
 
 $templates = new templates();

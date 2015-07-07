@@ -19,7 +19,10 @@ final class cardinal {
 
 	private $config;
 	public function cardinal() {
-		if(!$this->robots($_SERVER["HTTP_USER_AGENT"])) {
+		if(defined("INSTALLER")) {
+			return;
+		}
+		if(isset($_SERVER['HTTP_USER_AGENT']) && !$this->robots(getenv("HTTP_USER_AGENT"))) {
 			define("IS_BOT", false);
 		} else {
 			define("IS_BOT", true);
@@ -27,32 +30,33 @@ final class cardinal {
 		if(isset($_COOKIE['plus18'])) {
 			define("IS_XXX", "true");
 		}
-		$otime = config::select("cardinal_time");
+		$otime = config::Select("cardinal_time");
+		if(isset($_GET['d'])) {
+			var_dump(CRON_TIME, $otime);die();
+		}
 		if($otime <= time()-12*60*60) {
 			include_dir(ROOT_PATH."core/modules/cron/", ".".ROOT_EX);
-		}
-	}
-
-	public static function nstrlen($text) {
-		if(function_exists("mb_strlen")) {
-			return mb_strlen($text);
-		} elseif(function_exists("iconv_strlen")) {
-			return iconv_strlen($text);
-		} else {
-			return strlen($text);
+			config::Update("cardinal_time", time());
 		}
 	}
 	
 	private function robots($useragent) {
-	global $config;
-		$arr = array();
-		$pcre = array_keys(config::Select('robots'));
-		$dats = array_values(config::Select('robots'));
-		for($i=0;$i<sizeof($pcre);$i++) {
-			$arr["#.*".$pcre[$i].".*#si"] = $dats[$i];
+		if(!isset($useragent) || empty($useragent) || is_bool($useragent)) {
+			return false;
 		}
-		$result = preg_replace(array_keys($arr), $arr, $useragent);
-		return $result == $useragent ? false : $result;
+		$arr = array();
+		$bot_list = config::Select('robots');
+		if(!is_bool($bot_list)) {
+			$pcre = array_keys($bot_list);
+			$dats = array_values($bot_list);
+			for($i=0;$i<sizeof($pcre);$i++) {
+				$arr["#.*".$pcre[$i].".*#si"] = $dats[$i];
+			}
+			$result = preg_replace(array_keys($arr), $arr, $useragent);
+			return $result == $useragent ? false : $result;
+		} else {
+			return false;
+		}
 	}
 	
 	public static function set_eighteen() {

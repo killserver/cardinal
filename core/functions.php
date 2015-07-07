@@ -1,12 +1,33 @@
 <?php
+/*
+*
+* Version Engine: 1.25.5a6
+* Version File: 3
+*
+* 3.2
+* add checker install system
+*
+* 3.3
+* add support include config file after installing
+*
+*/
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
 die();
 }
 
-require_once(ROOT_PATH."core/media/config.".ROOT_EX);
-require_once(ROOT_PATH."core/media/config.global.".ROOT_EX);
-require_once(ROOT_PATH."core/media/db.".ROOT_EX);
+if(file_exists(ROOT_PATH."core/media/config.".ROOT_EX) && file_exists(ROOT_PATH."core/media/db.".ROOT_EX)) {
+	if(file_exists(ROOT_PATH."core/media/config.install.".ROOT_EX)) {
+		require_once(ROOT_PATH."core/media/config.install.".ROOT_EX);
+	}
+	require_once(ROOT_PATH."core/media/config.".ROOT_EX);
+	require_once(ROOT_PATH."core/media/config.global.".ROOT_EX);
+	require_once(ROOT_PATH."core/media/db.".ROOT_EX);
+} else {
+	define("INSTALLER", true);
+	$config = array("charset" => "utf-8");
+	require_once(ROOT_PATH."core/media/config.global.".ROOT_EX);
+}
 
 spl_autoload_register(function($class) {
 	if(file_exists(ROOT_PATH."core/class/".$class.".".ROOT_EX)) {

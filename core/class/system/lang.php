@@ -1,25 +1,39 @@
 <?php
+/*
+*
+* Version Engine: 1.25.5a7
+* Version File: 2
+*
+* 2.2
+* add checker connection to db and fix core
+*
+* 2.3
+* add support lang without set variable for select lang pack
+*
+*/
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
-die;
+die();
 }
 
 class lang {
 
-	private static $lang = "";
+	private static $lang = "ru";
 
 	public static function lang_db() {
-	$db = modules::init_db();
-		if(!modules::init_cache()->exists("lang_".self::$lang)) {
-			$db->doquery("SELECT orig, translate FROM lang WHERE lang = \"".self::$lang."\"", true);
+		if(!db::connected()) {
+			return "";
+		}
+		if(!cache::Exists("lang_".self::$lang)) {
+			db::doquery("SELECT orig, translate FROM lang WHERE lang = \"".self::$lang."\"", true);
 			$langs = array();
-			while($langs = $db->fetch_array()) {
+			while($langs = db::fetch_array()) {
 				$langs[$langs['orig']] = $langs['translate'];
 			}
-			modules::init_cache()->set("lang_".self::$lang, $langs);
-			$db->free();
+			cache::Set("lang_".self::$lang, $langs);
+			db::free();
 		} else {
-			$langs = modules::init_cache()->get("lang_".self::$lang);
+			$langs = cache::Get("lang_".self::$lang);
 		}
 	return $langs;
 	}
@@ -30,7 +44,7 @@ class lang {
 		$ulang = (!empty($user['lang']) ? $user['lang'] : "");
 		if(!empty($ulang)) {
 			self::$lang = $ulang;
-		} else {
+		} elseif(!empty($clang)) {
 			self::$lang = $clang;
 		}
 	}
