@@ -36,6 +36,7 @@ if(isset($_GET['pages'])) {
 } else {
 	$view = "Main";
 }
+
 if(in_array($view, array_keys($defined))) {
 	$view = $defined[$view];
 }

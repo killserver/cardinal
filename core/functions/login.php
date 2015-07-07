@@ -1,11 +1,13 @@
 <?php
 /*
 *
-* Version Engine: 1.25.5a7
+* Version Engine: 1.25.5a8
 * Version File: 3
 *
 * 3.1
 * add support created password for modules
+*
+* add support writing and deleting data in cookies
 *
 */
 if(!defined("IS_CORE")) {
@@ -35,6 +37,14 @@ function user_link($user_link, $user=null, $type=null, $added=null) {
 		return $user;
 	}
 return "";
+}
+
+function ToCookie($name, $value=null, $method="write") {
+	if($method=="delete") {
+		setcookie($name, $value, time()-(60*24*60*60), "/", ".".config::Select('default_http_hostname'), 1);
+	} else {
+		setcookie($name, $value, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+	}
 }
 
 ?>

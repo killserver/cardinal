@@ -2,6 +2,9 @@
 
 class Core {
 	
+	private $count_unmoder = 0;
+	private $title = "{L_adminpanel}";
+	
 	private function vsort(&$array) {
 		$arrs = array();
 		foreach($array as $key => $val) {
@@ -13,6 +16,22 @@ class Core {
 	
 	private function unix($time) {
 		return timespan($time);
+	}
+	
+	public function unmoder($tick=null) {
+		if(!empty($tick)) {
+			$this->count_unmoder = $tick;
+		} else {
+			return $this->count_unmoder;
+		}
+	}
+	
+	public function title($titles=null) {
+		if(!empty($tick)) {
+			$this->title = $titles;
+		} else {
+			return $this->title;
+		}
 	}
 	
 	public function Prints($echo, $print=false) {
@@ -45,6 +64,8 @@ class Core {
 			$dh->close();
 			}
 		}
+		templates::assign_var("count_unmoder", $this->unmoder());
+		templates::assign_var("title_admin", $this->title());
 		$links = array();
 		if($dh = dir(ROOT_PATH."admincp.php/pages/menu/")) {
 			$i=1;
