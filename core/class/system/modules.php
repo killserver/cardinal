@@ -108,6 +108,9 @@ final class modules {
 	public static function use_modules($page, $params=array()) {
 		$modules = self::init_modules();
 		$html = "";
+		if(!isset($modules[$page])) {
+			return $html;
+		}
 		for($i=0;$i<sizeof($modules[$page]);$i++) {
 			if(isset($modules[$page][$i]['module']) && class_exists($modules[$page][$i]['module'])) {
 				$class = $modules[$page][$i]['module'];
