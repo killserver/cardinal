@@ -117,10 +117,15 @@ if(!defined("INSTALLER")) {
 		$username = saves($_COOKIE['username']);
 		$cache->delete("user_".$username);
 		if(!$cache->exists("user_".$username)) {
-			$row = db::doquery("SELECT * FROM users WHERE username = \"".$username."\" AND pass = \"".saves($_COOKIE['pass'])."\"");
-			$cache->set("user_".$username, $row);
-			$user = $row;
-			db::doquery("UPDATE users SET last_activ = UNIX_TIMESTAMP(), last_ip = \"".HTTP::getip()."\" WHERE id = ".$user['id']);
+			$row = db::doquery("SELECT * FROM users WHERE username = \"".$username."\" AND pass = \"".saves($_COOKIE['pass'])."\"", true);
+			if(db::num_rows()==0) {
+				ToCookie("username", null, 0, "delete");
+			} else {
+				$row = db::fetch_array();
+				$cache->set("user_".$username, $row);
+				$user = $row;
+				db::doquery("UPDATE users SET last_activ = UNIX_TIMESTAMP(), last_ip = \"".HTTP::getip()."\" WHERE id = ".$user['id']);
+			}
 		} else {
 			$user = $cache->get("user_".$username);
 		}

@@ -377,14 +377,6 @@ $insert['last_ip'] = "last_ip = \"".HTTP::getip()."\"";
 $insert['activ'] = "activ = \"yes\"";
 $insert = modules::change_db('reg', $insert);
 $SQL[] = "INSERT INTO users SET ".implode(", ", $insert);
-function create_passs($pass) {
-	$pass = md5(md5($pass).$pass);
-	$pass = strrev($pass);
-	$pass = sha1($pass);
-	//$pass = crypt($pass);
-	$pass = bin2hex($pass);
-return md5(md5($pass).$pass);
-}
 
 for($i=0;$i<sizeof($SQL);$i++) {
 	DB_install::query($SQL[$i]);
@@ -411,6 +403,7 @@ $config = array_merge(array(
 ?>';
 file_put_contents(ROOT_PATH."core/media/db.php", $db_config);
 
+$path = str_replace("http://", "", $_POST['PATH']);
 $config = '<?php
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
@@ -429,7 +422,7 @@ $config = array_merge($config, array(
 	"logs" => '.saves($_POST['error_type'], true).',
 	"hosting" => true,
 	"default_http_hostname" => "'.saves($_POST['SERVER'], true).'",
-	"default_http_host" => $protocol."://'.saves($_POST['PATH'], true).'/",
+	"default_http_host" => $protocol."://'.saves(nsubstr($path, 0, nstrlen($path)-1), true).'/",
 	"lang" => "ru",
 	"cache" => array(
 		"type" => '.saves($_POST['cache_type'], true).',
@@ -445,6 +438,22 @@ $config = array_merge($config, array(
 
 ?>';
 file_put_contents(ROOT_PATH."core/media/config.install.php", $config);
+
+$lang = '<?php
+if(!defined("IS_CORE")) {
+echo "403 ERROR";
+die();
+}
+
+$lang = array_merge($lang, array(
+	"sitename" => "'.saves($_POST['sitename'], true).'",
+	"s_description" => "'.saves($_POST['description'], true).'",
+	"s_keywords" => "'.saves($_POST['keywords'], true).'",
+));
+
+?>';
+$lang = charcode($lang);
+file_put_contents(ROOT_PATH."core/media/config.lang.php", $lang);
 rename(ROOT_PATH."core/media/config.default.php", ROOT_PATH."core/media/config.php");
 header("Location: install.php?done");
 ?>

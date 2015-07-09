@@ -40,27 +40,12 @@
 					
 					<div class="user-info">
 						
-						<div class="user-image">
-							<a href="extra-profile.html">
-								<img src="{U_avatar}" class="img-responsive img-circle" /><!--assets/images/user-2.png-->
-							</a>
-						</div>
-						
 						<div class="user-details">
 							
 							<h3>
-								<a href="extra-profile.html">{U_username}</a>
-								
-								<!-- Available statuses: is-online, is-idle, is-busy and is-offline -->
+								<a href="#">{U_username}</a>
 								<span class="user-status is-online"></span>
 							</h3>
-							
-							<p class="user-title"><img src="{C_default_http_host}images/group/group_{U_level}.gif" /></p>
-							
-							<div class="user-links">
-								<a href="extra-profile.html" class="btn btn-primary">Edit Profile</a>
-								<a href="extra-profile.html" class="btn btn-success">Upgrade</a>
-							</div>
 							
 						</div>
 						
@@ -343,21 +328,8 @@
 				<!-- Right links for user info navbar -->
 				<ul class="user-info-menu right-links list-inline list-unstyled">
 					
-					<li class="search-form"><!-- You can add "always-visible" to show make the search input visible -->
-						
-						<form method="get" action="">
-							<input type="hidden" name="pages" value="Search" />
-							<input type="text" name="q" class="form-control search-field" placeholder="Type to search..." />
-							<button type="submit" class="btn btn-link">
-								<i class="linecons-search"></i>
-							</button>
-						</form>
-						
-					</li>
-					
 					<li class="dropdown user-profile">
 						<a href="#" data-toggle="dropdown">
-							<img src="{U_avatar}" alt="user-image" class="img-circle img-inline userpic-32" width="28" /><!--assets/images/user-4.png-->
 							<span>
 								{U_username}
 								<i class="fa-angle-down"></i>
@@ -377,18 +349,6 @@
 									Settings
 								</a>
 							</li>
-							<li>
-								<a href="#profile">
-									<i class="fa-user"></i>
-									Profile
-								</a>
-							</li>
-							<li>
-								<a href="#help">
-									<i class="fa-info"></i>
-									Help
-								</a>
-							</li>
 							<li class="last">
 								<a href="{C_default_http_host}admincp.php/?pages=Login&out">
 									<i class="fa-lock"></i>
@@ -403,21 +363,7 @@
 			</nav>
 			<div class="page-title">
 				<div class="title-env">
-					<h1 class="title">New Mail</h1>
-					<p class="description">Mailbox sidebar and composing new message</p>
-				</div>
-				<div class="breadcrumb-env">
-					<ol class="breadcrumb bc-1">
-						<li>
-							<a href="dashboard-1.html"><i class="fa-home"></i>Home</a>
-						</li>
-						<li>
-							<a href="mailbox-main.html">Mailbox</a>
-						</li>
-						<li class="active">
-							<strong>Compose Message</strong>
-						</li>
-					</ol>
+					<h1 class="title">{title_admin}</h1>
 				</div>
 			</div>
 			<span class="content_admin">{main_admin}</span>
@@ -527,6 +473,7 @@
 	
 	<!-- Imported styles on this page -->
 	<link rel="stylesheet" href="assets/js/toastr/toastr.min.css?1">
+	<link rel="stylesheet" href="assets/js/dropzone/css/dropzone.css">
 
 	<!-- Bottom Scripts -->
 	<script src="assets/js/bootstrap.min.js?1"></script>
@@ -540,5 +487,6 @@
 	<!-- JavaScripts initializations and stuff -->
 	<script src="assets/js/xenon-custom.js?1"></script>
 	<script src="assets/js/toastr/toastr.min.js?1"></script>
+	<script src="assets/js/dropzone/dropzone.min.js"></script>
 </body>
 </html>

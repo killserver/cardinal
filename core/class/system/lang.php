@@ -6,9 +6,10 @@
 *
 * 2.2
 * add checker connection to db and fix core
-*
 * 2.3
 * add support lang without set variable for select lang pack
+* 2.4
+* add config lang creating in installer
 *
 */
 if(!defined("IS_CORE")) {
@@ -63,6 +64,9 @@ class lang {
 		if(file_exists(ROOT_PATH."core/lang/".self::$lang."/main.php")) {
 			include(ROOT_PATH."core/lang/".self::$lang."/main.php");
 			$db_lang = self::lang_db();
+			if(file_exists(ROOT_PATH."core/media/config.lang.php")) {
+				include(ROOT_PATH."core/media/config.lang.php");
+			}
 			if(is_array($db_lang)) {
 				return array_merge($lang, $db_lang);
 			} else {

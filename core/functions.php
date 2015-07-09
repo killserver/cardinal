@@ -16,17 +16,21 @@ echo "403 ERROR";
 die();
 }
 
+$config = array();
 if(file_exists(ROOT_PATH."core/media/config.".ROOT_EX) && file_exists(ROOT_PATH."core/media/db.".ROOT_EX)) {
+	require_once(ROOT_PATH."core/media/config.global.".ROOT_EX);
+	require_once(ROOT_PATH."core/media/config.".ROOT_EX);
 	if(file_exists(ROOT_PATH."core/media/config.install.".ROOT_EX)) {
 		require_once(ROOT_PATH."core/media/config.install.".ROOT_EX);
 	}
-	require_once(ROOT_PATH."core/media/config.".ROOT_EX);
-	require_once(ROOT_PATH."core/media/config.global.".ROOT_EX);
 	require_once(ROOT_PATH."core/media/db.".ROOT_EX);
 } else {
 	define("INSTALLER", true);
 	$config = array("charset" => "utf-8");
 	require_once(ROOT_PATH."core/media/config.global.".ROOT_EX);
+	if(!defined("IS_INSTALLER")) {
+		header("Location: install.php");
+	}
 }
 
 spl_autoload_register(function($class) {
@@ -39,6 +43,7 @@ spl_autoload_register(function($class) {
 	}
 });
 
+//ToDo: delete this function?
 function FriendlyErrorType($type) {
 	if($type==E_ERROR) { // 1 // 
 		return 'E_ERROR'; 

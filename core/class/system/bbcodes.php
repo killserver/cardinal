@@ -6,10 +6,10 @@ die;
 
 class bbcodes {
 
-	static private $bbcodes = array();
-	static private $clear_codes = array();
+	private static $bbcodes = array();
+	private static $clear_codes = array();
 
-	static function add_code($array, $type) {
+	public static function add_code($array, $type) {
 		if(isset(self::$bbcodes[$type])) {
 			self::$bbcodes[$type] = array_merge(self::$bbcodes[$type], $array);
 		} else {
@@ -17,7 +17,7 @@ class bbcodes {
 		}
 	}
 
-	static function add_delcode($array, $type) {
+	public static function add_delcode($array, $type) {
 		if(isset(self::$clear_codes[$type])) {
 			self::$clear_codes[$type] = array_merge(self::$clear_codes[$type], $array);
 		} else {
@@ -25,7 +25,7 @@ class bbcodes {
 		}
 	}
 
-	static function colorit($text) {
+	public static function colorit($text) {
 	global $manifest;
 		$bbcodes = array(
 			'\[(color|font)=(.+)\]' => "<font color=\"$2\">",
@@ -65,7 +65,7 @@ class bbcodes {
 	return nl2br($text);
 	}
 
-	static function clear_bbcode($text) {
+	public static function clear_bbcode($text) {
 		$bbcodes = array(
 			//"\[(color|font)=(.+)\](.+)\[/(color|font)\]" => "$3",
 			//"\[url=(\"|)(.+)(\"|)\](.*)\[/url\]" => "$4",
@@ -95,7 +95,7 @@ class bbcodes {
 	return nl2br($text);
 	}
 
-	static function html2bbcode($text, $activ = array("year"=>true,"genre"=>true,"descr"=>true)) {
+	public static function html2bbcode($text, $activ = array("year"=>true,"genre"=>true,"descr"=>true)) {
 	global $lang;
 		$text=preg_replace("#<h([0-9]+)>(.+?)</h([0-9]+)>#is", "$2", $text);
 		$text=preg_replace("#<u>(.+?)</u>#", "[u]$1[/u]", $text);
@@ -105,43 +105,43 @@ class bbcodes {
 		$text=preg_Replace("#<span(.*?)style=('|\")color:(.+?)('|\")(.*?)>(.+?)</span>#", "[color=$3]$6[/color]", $text);
 		$text=str_replace(array("<br>", "<br />"), "", $text);
 
-	if($activ['year']) {
-	//Год выхода
-		$text = strtr($text, array("<b>".$lang['year_view']."</b>" => "[b]".$lang['year']."[/b]"));
-		$text = strtr($text, array($lang['year_view'] => "[b]".$lang['year']."[/b]"));
-	//Год выпуска
-		$text = strtr($text, array("<b>".$lang['year_start']."</b>" => "[b]".$lang['year']."[/b]"));
-		$text = strtr($text, array($lang['year_start'] => "[b]".$lang['year']."[/b]"));
-	//Год
-		$text = strtr($text, array("<b>".$lang['year']."</b>" => "[b]".$lang['year']."[/b]"));
-		$text = strtr($text, array($lang['year'] => "[b]".$lang['year']."[/b]"));
-		$text = strtr($text, array("[b][b]".$lang['year']."[/b][/b]" => "[b]".$lang['year']."[/b]"));
-	//Годы в единую систему
-		$text = strtr($text, array("[b][b]".$lang['year']."[/b][/b]" => "[b]".$lang['year']."[/b]"));
-		$text = strtr($text, array($lang['year_start'] => $lang['year'], $lang['year_view'] => $lang['year']));
-	}
+		if($activ['year']) {
+		//Год выхода
+			$text = strtr($text, array("<b>".$lang['year_view']."</b>" => "[b]".$lang['year']."[/b]"));
+			$text = strtr($text, array($lang['year_view'] => "[b]".$lang['year']."[/b]"));
+		//Год выпуска
+			$text = strtr($text, array("<b>".$lang['year_start']."</b>" => "[b]".$lang['year']."[/b]"));
+			$text = strtr($text, array($lang['year_start'] => "[b]".$lang['year']."[/b]"));
+		//Год
+			$text = strtr($text, array("<b>".$lang['year']."</b>" => "[b]".$lang['year']."[/b]"));
+			$text = strtr($text, array($lang['year'] => "[b]".$lang['year']."[/b]"));
+			$text = strtr($text, array("[b][b]".$lang['year']."[/b][/b]" => "[b]".$lang['year']."[/b]"));
+		//Годы в единую систему
+			$text = strtr($text, array("[b][b]".$lang['year']."[/b][/b]" => "[b]".$lang['year']."[/b]"));
+			$text = strtr($text, array($lang['year_start'] => $lang['year'], $lang['year_view'] => $lang['year']));
+		}
 
-	if($activ['genre']) {
-	//Жанр
-		$text = strtr($text, array("<b>".$lang['genre']."</b>" => "[b]".$lang['genre']."[/b]"));
-		$text = strtr($text, array($lang['genre'] => "[b]".$lang['genre']."[/b]"));
-		$text = strtr($text, array("[b][b]".$lang['genre']."[/b][/b]" => "[b]".$lang['genre']."[/b]"));
-	}
+		if($activ['genre']) {
+		//Жанр
+			$text = strtr($text, array("<b>".$lang['genre']."</b>" => "[b]".$lang['genre']."[/b]"));
+			$text = strtr($text, array($lang['genre'] => "[b]".$lang['genre']."[/b]"));
+			$text = strtr($text, array("[b][b]".$lang['genre']."[/b][/b]" => "[b]".$lang['genre']."[/b]"));
+		}
 
-	if($activ['descr']) {
-	//Описание
-		$text = strtr($text, array("<b>".$lang['descr']."</b>" => "[b]".$lang['descr']."[/b]"));
-		$text = strtr($text, array($lang['descr'] => "[b]".$lang['descr']."[/b]"));
-		$text = strtr($text, array("[b][b]".$lang['descr']."[/b][/b]" => "[b]".$lang['descr']."[/b]"));
-		$text = strtr($text, array("[/b]:[/b]" => "[/b]", "[b][b]" => "[b]"));
-	}
-	
-	$text = preg_replace("#<div class=\"title_spoiler\"><a href=\"javascript:ShowOrHide\('(.+?)'\)\"><!--spoiler_title-->(.+?)<!--spoiler_title_end--></a></div>#", "\n\n[spoiler=$2]", $text);
-	$text = preg_replace('#<!--spoiler_text_end--></div>#', "[/spoiler]", $text);
-	$text = preg_replace('#<a(.*?)href=(\'|")(.+?)(\'|")(.*?)>(.+?)</a>#', "[url=$3]$6[/url]", $text);
-//http://www.animespirit.ru/anime/rs/series-rus/10238-the-testament-of-sister-new-devil-po-veleniyu.html
-	$text=trim(strip_tags($text));
-	return $text;
+		if($activ['descr']) {
+		//Описание
+			$text = strtr($text, array("<b>".$lang['descr']."</b>" => "[b]".$lang['descr']."[/b]"));
+			$text = strtr($text, array($lang['descr'] => "[b]".$lang['descr']."[/b]"));
+			$text = strtr($text, array("[b][b]".$lang['descr']."[/b][/b]" => "[b]".$lang['descr']."[/b]"));
+			$text = strtr($text, array("[/b]:[/b]" => "[/b]", "[b][b]" => "[b]"));
+		}
+		
+		$text = preg_replace("#<div class=\"title_spoiler\"><a href=\"javascript:ShowOrHide\('(.+?)'\)\"><!--spoiler_title-->(.+?)<!--spoiler_title_end--></a></div>#", "\n\n[spoiler=$2]", $text);
+		$text = preg_replace('#<!--spoiler_text_end--></div>#', "[/spoiler]", $text);
+		$text = preg_replace('#<a(.*?)href=(\'|")(.+?)(\'|")(.*?)>(.+?)</a>#', "[url=$3]$6[/url]", $text);
+	//http://www.animespirit.ru/anime/rs/series-rus/10238-the-testament-of-sister-new-devil-po-veleniyu.html
+		$text = trim(strip_tags($text));
+		return $text;
 	}
 
 }

@@ -55,7 +55,8 @@ class base {
 			return;
 		}
 		if(!modules::init_cache()->exists("menu")) {
-			$rows = modules::init_db()->select_query("SELECT id, name, data, menu FROM menu WHERE activ = \"yes\" ORDER BY position ASC");
+			$db = modules::init_db();
+			$rows = $db->select_query("SELECT id, name, data, menu FROM menu WHERE activ = \"yes\" ORDER BY position ASC");
 			modules::init_cache()->set("menu", $rows);
 		} else {
 			$rows = modules::init_cache()->get("menu");
@@ -65,16 +66,19 @@ class base {
 		if(!file_exists(ROOT_PATH."skins/".$skins."/block_left.tpl") && !file_exists(ROOT_PATH."skins/".$skins."/block_right.tpl")) {
 			$file_left = $file_center = $file_right = file_get_contents(ROOT_PATH."skins/".$skins."/blocks.tpl");
 		}
-
-		foreach($rows as $row) {
-			if($row['menu']=="left") {
-				$left .= str_replace(array("{title}", "{content}"), array($row['name'], (urldecode($row['data']))), $file_left)."\n";
-			} elseif($row['menu']=="center") {
-				$center .= str_replace(array("{title}", "{content}"), array($row['name'], (urldecode($row['data']))), $file_center)."\n";
-			} elseif($row['menu']=="right") {
-				$right = str_replace(array("{title}", "{content}"), array($row['name'], (urldecode($row['data']))), $file_right)."\n";
-				self::set_menu("right_block", $right, self::ToTranslit($row['name']));
+		if(sizeof($rows)>0) {
+			foreach($rows as $row) {
+				if($row['menu']=="left") {
+					$left .= str_replace(array("{title}", "{content}"), array($row['name'], (urldecode($row['data']))), $file_left)."\n";
+				} elseif($row['menu']=="center") {
+					$center .= str_replace(array("{title}", "{content}"), array($row['name'], (urldecode($row['data']))), $file_center)."\n";
+				} elseif($row['menu']=="right") {
+					$right = str_replace(array("{title}", "{content}"), array($row['name'], (urldecode($row['data']))), $file_right)."\n";
+					self::set_menu("right_block", $right, self::ToTranslit($row['name']));
+				}
 			}
+		} else {
+			self::set_menu("right_block", $right);
 		}
 		self::set_menu("left_block", $left);
 		self::set_menu("center_block", $center);

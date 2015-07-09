@@ -12,6 +12,8 @@
 * fix userlevel data
 * 3.2
 * fix error in minify for position in page
+* 3.3
+* add and fix header list for pages
 *
 */
 if(!defined("IS_CORE")) {
@@ -828,7 +830,19 @@ if($test) {
 	global $manifest, $user;
 		$time = self::time();
 		if(!is_array($header)) {
-			self::$header = array("title" => $header);
+			self::$header = array(
+				"title" => $header,
+				"meta" => array(
+					"og" => array(
+						"description" => "{L_s_description}",
+					),
+					"ogpr" => array(
+						"og:description" => "{L_s_description}",
+					),
+					"description" => "{L_s_description}",
+					"keywords" => "{L_s_keywords}",
+				),
+			);
 		} else {
 			self::$header = $header;
 		}

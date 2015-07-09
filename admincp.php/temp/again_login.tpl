@@ -8,7 +8,7 @@
 	<meta name="description" content="Xenon Boostrap Admin Panel" />
 	<meta name="author" content="" />
 	
-	<title>Xenon - Login</title>
+	<title>Xenon - Homepage</title>
 
 	<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Arimo:400,700,400italic">
 	<link rel="stylesheet" href="assets/css/fonts/linecons/css/linecons.css?1">
@@ -30,15 +30,14 @@
 	
 	
 </head>
-<body class="page-body login-page">
+<body class="page-body lockscreen-page">
 
-	
 	<div class="login-container">
 	
 		<div class="row">
 		
-			<div class="col-sm-6">
-			
+			<div class="col-sm-7">
+				
 				<script type="text/javascript">
 					jQuery(document).ready(function($)
 					{
@@ -46,57 +45,57 @@
 						setTimeout(function(){ $(".fade-in-effect").addClass('in'); }, 1);
 						
 						
-						// Validation and Ajax action
-						$("form#login").validate({
+						// Clicking on thumbnail will focus on password field
+						$(".user-thumb a").on('click', function(ev)
+						{
+							ev.preventDefault();
+							$("#passwd").focus();
+						});
+						
+						
+						// Form validation and AJAX request
+						$(".lockcreen-form").validate({
 							rules: {
-								username: {
-									required: true
-								},
-								
 								passwd: {
 									required: true
 								}
 							},
 							
 							messages: {
-								username: {
-									required: 'Please enter your username.'
-								},
-								
 								passwd: {
 									required: 'Please enter your password.'
 								}
 							},
 							
-							// Form Processing via AJAX
 							submitHandler: function(form)
 							{
 								show_loading_bar(70); // Fill progress bar to 70% (just a given value)
 								
-								var opts = {
-									"closeButton": true,
-									"debug": false,
-									"positionClass": "toast-top-full-width",
-									"onclick": null,
-									"showDuration": "300",
-									"hideDuration": "1000",
-									"timeOut": "5000",
-									"extendedTimeOut": "1000",
-									"showEasing": "swing",
-									"hideEasing": "linear",
-									"showMethod": "fadeIn",
-									"hideMethod": "fadeOut"
-								};
-									
+								var $passwd = $(form).find('#passwd'),
+								 	opts = {
+										"closeButton": true,
+										"debug": false,
+										"positionClass": "toast-top-full-width",
+										"onclick": null,
+										"showDuration": "300",
+										"hideDuration": "1000",
+										"timeOut": "5000",
+										"extendedTimeOut": "1000",
+										"showEasing": "swing",
+										"hideEasing": "linear",
+										"showMethod": "fadeIn",
+										"hideMethod": "fadeOut"
+									};
+								
 								$.ajax({
 									url: "{C_default_http_host}admincp.php/?pages=login",
 									method: 'POST',
 									dataType: 'json',
 									data: {
 										do_login: true,
-										page: 'login',
-										username: $(form).find('#username').val(),
-										passwd: $(form).find('#passwd').val(),
+										page: 'alogin',
+										username: '{U_username}', // user is known in this case
+										passwd: $passwd.val(),
 									},
 									success: function(resp)
 									{
@@ -105,77 +104,58 @@
 											pct: 100,
 											finish: function(){
 												
-												// Redirect after successful login page (when progress bar reaches 100%)
 												if(resp.accessGranted)
 												{
+													// Redirect after successful login page (when progress bar reaches 100%)
 													window.location.href = '{C_default_http_host}admincp.php/?pages=main';
 												}
-																							else
+												else
 												{
 													toastr.error(resp.errors, "Invalid Login!", opts);
 													$passwd.select();
 												}
-																						}
+											}
 										});
-										
-																		}
+									}
 								});
-								
 							}
 						});
 						
 						// Set Form focus
-						$("form#login .form-group:has(.form-control):first .form-control").focus();
+						$("form#lockscreen .form-group:has(.form-control):first .form-control").focus();
 					});
 				</script>
 				
-				<!-- Errors container -->
-				<div class="errors-container">
-				
-									
-				</div>
-				
-				<!-- Add class "fade-in-effect" for login form effect -->
-				<form method="post" role="form" id="login" class="login-form fade-in-effect">
+				<form role="form" id="lockscreen" class="lockcreen-form fade-in-effect">
 					
-					<div class="login-header">
-						<a href="dashboard-1.html" class="logo">
-							<img src="assets/images/logo@2x.png" alt="" width="80" />
-							<span>log in</span>
+					<div class="user-thumb">
+						<a href="#">
+							<img src="http://img2.wikia.nocookie.net/__cb20130512094126/sword-art-online/pl/images/thumb/a/a4/Akihiko_Kayaba.png/500px-Akihiko_Kayaba.png" class="img-responsive img-circle" />
 						</a>
+					</div>
+					
+					<div class="form-group">
+						<h3>Welcome back, {U_username}!</h3>
+						<p>Enter your password to access the admin.</p>
 						
-						<p>Dear user, log in to access the admin area!</p>
+						<div class="input-group">
+							<input type="password" class="form-control input-dark" name="passwd" id="passwd" placeholder="Password" />
+							<span class="input-group-btn">
+								<button type="submit" class="btn btn-primary">Log In</button>
+							</span>
+						</div>
 					</div>
-	
-					
-					<div class="form-group">
-						<label class="control-label" for="username">Username</label>
-						<input type="text" class="form-control input-dark" name="username" id="username" autocomplete="off" />
-					</div>
-					
-					<div class="form-group">
-						<label class="control-label" for="passwd">Password</label>
-						<input type="password" class="form-control input-dark" name="passwd" id="passwd" autocomplete="off" />
-					</div>
-					
-					<div class="form-group">
-						<button type="submit" class="btn btn-dark  btn-block text-left">
-							<i class="fa-lock"></i>
-							Log In
-						</button>
-					</div>
-					
 				</form>
-				
 			</div>
-			
 		</div>
-		
 	</div>
 
-
-
-
+	<script type="text/javascript">
+			jQuery(document).ready(function($) {
+				jQuery('body').attr('class', jQuery('body').attr('class').replace(/skin-[a-z]+/i, '')).addClass(Cookies.get('current-skin') ? (' skin-'+Cookies.get('current-skin')) : '');
+				console.log(Cookies.get('current-skin'));
+			});
+	</script>
 	<!-- Bottom Scripts -->
 	<script src="assets/js/bootstrap.min.js?1"></script>
 	<script src="assets/js/TweenMax.min.js?1"></script>

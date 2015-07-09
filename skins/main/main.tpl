@@ -7,13 +7,13 @@
 <body>
 <table width="100%">
 	<tr>
-		<td>
+		<td width="33%">
 			{left_block}
 		</td>
-		<td>
-			{main}<br />{center_block}
+		<td width="33%">
+			{content}<br />{center_block}
 		</td>
-		<td>
+		<td width="33%">
 			{right_block}
 		</td>
 	</tr>
