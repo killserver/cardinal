@@ -35,10 +35,21 @@ class Core {
 	}
 	
 	public function Prints($echo, $print=false) {
-	global $user, $in_page;
+	global $lang, $user, $in_page;
 		if(!isset($_COOKIE['admin_username']) || !isset($_COOKIE['admin_password'])) {
 			location("{C_default_http_host}admincp.php/?pages=Login");
 			return;
+		}
+		$dir = ROOT_PATH."admincp.php/pages/Lang/".lang::get_lg()."/";
+		if(is_dir($dir)) {
+			if($dh = dir($dir)) {
+				while(($file = $dh->read()) !== false) {
+					if($file != "index.".ROOT_EX && $file != "." && $file != ".." && strpos($file, ".".ROOT_EX) !== false) {
+						require_once($dir.$file);
+					}
+				}
+			$dh->close();
+			}
 		}
 		if(!$print) {
 			$echo = (templates::complited_assing_vars($echo, null));

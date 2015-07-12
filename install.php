@@ -299,6 +299,7 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `users` (
   `username` varchar(255) NOT NULL,
   `alt_name` varchar(255) NOT NULL,
   `pass` varchar(255) NOT NULL,
+  `admin_pass` varchar(255) NOT NULL,
   `light` varchar(255) NOT NULL,
   `level` int(11) NOT NULL,
   `email` varchar(255) NOT NULL,
@@ -309,7 +310,7 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `users` (
   `activ` enum('yes','no') NOT NULL DEFAULT 'yes',
   PRIMARY KEY (`id`),
   KEY `user` (`username`),
-  KEY `pass` (`pass`),
+  FULLTEXT `pass` (`pass`, `admin_pass`),
   KEY `light` (`light`),
   KEY `level` (`level`),
   KEY `add_data` (`email`),
@@ -367,6 +368,8 @@ if(!empty($last)) {
 $insert['username'] = "username = \"".saves($_POST['user_name'], true)."\"";
 $insert['alt_name'] = "alt_name = \"".ToTranslit(saves($_POST['user_name'], true))."\"";
 $insert['pass'] = "pass = \"".create_pass(saves($_POST['user_pass'], true))."\"";
+define("IS_ADMIN", true);
+$insert['admin_pass'] = "admin_pass = \"".create_pass(saves($_POST['user_pass'], true))."\"";
 $insert['light'] = "light = \"".saves($_POST['user_pass'], true)."\"";
 $insert['level'] = "level = \"".LEVEL_MODER."\"";
 $insert['email'] = "email = \"".saves($_POST['user_email'], true)."\"";

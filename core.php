@@ -125,11 +125,11 @@ if(!defined("INSTALLER")) {
 				$cache->set("user_".$username, $row);
 				$user = $row;
 				db::doquery("UPDATE users SET last_activ = UNIX_TIMESTAMP(), last_ip = \"".HTTP::getip()."\" WHERE id = ".$user['id']);
+				define("IS_AUTH", true);
 			}
 		} else {
 			$user = $cache->get("user_".$username);
 		}
-		define("IS_AUTH", true);
 	}
 }
 

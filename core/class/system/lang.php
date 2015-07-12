@@ -10,6 +10,8 @@
 * add support lang without set variable for select lang pack
 * 2.4
 * add config lang creating in installer
+* 2.5
+* add getting lang now
 *
 */
 if(!defined("IS_CORE")) {
@@ -52,6 +54,10 @@ class lang {
 
 	public static function set_lang($langs) {
 		self::$lang = $langs;
+	}
+	
+	public static function get_lg() {
+		return self::$lang;
 	}
 
 	public static function init_lang() {

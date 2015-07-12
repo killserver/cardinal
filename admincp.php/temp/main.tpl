@@ -262,7 +262,7 @@
 								<span class="title">{menu.value}</span>
 							</a>
 							<ul>[/foreachif {menu.type_st}=="start"]
-								<li[foreachif {menu.is_now}==1] class="active"[/foreachif]>
+								<li[foreachif {menu.is_now}==1] class="active"[/foreachif][foreachif {menu.type_st}=="start"] style="display:none;"[/foreachif {menu.type_st}=="start"]>
 									<a href="{menu.link}">
 										<span class="title">{menu.value}</span>
 									</a>

