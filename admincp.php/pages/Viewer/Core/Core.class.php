@@ -1,5 +1,13 @@
 <?php
-
+/*
+*
+* Version Engine: 1.25.5b1
+* Version File: 3
+*
+* 3.1
+* fix admin templates
+*
+*/
 class Core {
 	
 	private $count_unmoder = 0;
@@ -27,7 +35,7 @@ class Core {
 	}
 	
 	public function title($titles=null) {
-		if(!empty($tick)) {
+		if(!empty($titles)) {
 			$this->title = $titles;
 		} else {
 			return $this->title;

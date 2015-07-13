@@ -1,7 +1,7 @@
 <?php
 /*
 *
-* Version Engine: 1.25.3
+* Version Engine: 1.25.5b1
 * Version File: 12
 *
 * 12.1
@@ -10,6 +10,8 @@
 * add support correct utf-8 text
 * 12.3
 * add support before install default timezone
+* 12.4
+* add support installer cookie
 *
 */
 if(!defined("IS_CORE")) {
@@ -109,17 +111,17 @@ if(!defined("INSTALLER")) {
 	die();
 	}
 
-
 	$user = array();
-	if(!isset($_COOKIE['username']) or empty($_COOKIE['username'])) {
+	if((!isset($_COOKIE[COOK_USER]) or empty($_COOKIE[COOK_USER])) && (!isset($_COOKIE[COOK_PASS]) or empty($_COOKIE[COOK_PASS]))) {
 		$user['level'] = 0;
 	} else {
-		$username = saves($_COOKIE['username']);
+		$username = saves($_COOKIE[COOK_USER]);
 		$cache->delete("user_".$username);
 		if(!$cache->exists("user_".$username)) {
-			$row = db::doquery("SELECT * FROM users WHERE username = \"".$username."\" AND pass = \"".saves($_COOKIE['pass'])."\"", true);
+			$row = db::doquery("SELECT * FROM users WHERE username = \"".$username."\" AND pass = \"".saves($_COOKIE[COOK_PASS])."\"", true);
 			if(db::num_rows()==0) {
-				ToCookie("username", null, 0, "delete");
+				ToCookie(COOK_USER, null, 0, "delete");
+				ToCookie(COOK_PASS, null, 0, "delete");
 			} else {
 				$row = db::fetch_array();
 				$cache->set("user_".$username, $row);
@@ -134,10 +136,8 @@ if(!defined("INSTALLER")) {
 }
 
 $templates = new templates();
-
 header('Content-Type: text/html; charset='.$config['charset']);
 header('X-UA-Compatible: IE=edge,chrome=1');
 header('Cache-Control: max-age');
 header_remove('x-powered-by');
-
 ?>

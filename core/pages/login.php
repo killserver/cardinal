@@ -1,5 +1,13 @@
 <?php
-
+/*
+*
+* Version Engine: 1.25.5b1
+* Version File: 7
+*
+* 7.1
+* add support installer cookie
+*
+*/
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
 die();
@@ -20,8 +28,8 @@ class page {
 				location($referer);
 				exit();
 			}
-			setcookie("username", "", time()-(60*24*60*60), "/", ".".config::Select('default_http_hostname'), 1);
-			setcookie("pass", "", time()-(60*24*60*60), "/", ".".config::Select('default_http_hostname'), 1);
+			setcookie(COOK_USER, "", time()-(60*24*60*60), "/", ".".config::Select('default_http_hostname'), 1);
+			setcookie(COOK_PASS, "", time()-(60*24*60*60), "/", ".".config::Select('default_http_hostname'), 1);
 			location($referer);
 		} else {
 			if(isset($user['username'])) {
@@ -42,8 +50,8 @@ class page {
 				return;
 			} else {
 				setcookie("id", $row['id'], time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
-				setcookie("username", $name, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
-				setcookie("pass", $row['pass'], time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+				setcookie(COOK_USER, $name, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+				setcookie(COOK_PASS, $row['pass'], time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
 			}
 			location($referer);
 		}

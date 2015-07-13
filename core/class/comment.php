@@ -1,4 +1,13 @@
 <?php
+/*
+*
+* Version Engine: 1.25.5b1
+* Version File: 6
+*
+* 6.1
+* rebuild logic for comment
+*
+*/
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
 exit();
@@ -6,13 +15,13 @@ exit();
 
 final class comment {
 
-	private static $param = array("name_id" => null, "type" => "movie", "user_row" => array());
+	private static $param = array("u_id" => null, "type" => "news", "user_row" => array());
 
-	public function comment($name_id, $type="movie", $user_row=array()) {
+	public function comment($u_id, $type="news", $user_row=array()) {
 		if(!userlevel::get("view_comments")) {
 			return;
 		}
-		self::$param['name_id'] = $name_id;
+		self::$param['u_id'] = $u_id;
 		self::$param['type'] = $type;
 		self::$param['user_row'] = $user_row;
 		if(sizeof($_POST)>3) {
@@ -21,8 +30,8 @@ final class comment {
 	//return $this;
 	}
 
-	public static function set_default($name_id, $type="movie", $user_row=array()) {
-		self::$param['name_id'] = $name_id;
+	public static function set_default($u_id, $type="news", $user_row=array()) {
+		self::$param['u_id'] = $u_id;
 		self::$param['type'] = $type;
 		self::$param['user_row'] = $user_row;
 		if(sizeof($_POST)>3) {
@@ -62,11 +71,17 @@ final class comment {
 		} else {
 			$guest = "false";
 		}
+		if(modules::get_user('id') && (modules::get_user('level')>LEVEL_USER && modules::get_user('level')!=LEVEL_GUEST)) {
+			$mod = "yes";
+		} else {
+			$mod = "no";
+		}
 		$spam = new StopSpam();
 		if(!$spam->is_spammer(array('email' => $mail, 'ip' => $ip, 'username' => $username))) {
-			db::doquery("INSERT INTO comments SET `added`=\"".$user['username']."\", `email`=\"".$mail."\", `type`=\"".self::$param['type']."\", `ip`=\"".$ip."\", `user_agent`=\"".$client."\", `comment`=\"".$comment."\", name_id=\"".self::$param['name_id']."\", `parent_id`=\"".$parent_id."\", `time` = UNIX_TIMESTAMP(), `guest`=\"".$guest."\"");
+			db::doquery("INSERT INTO comments SET `added`=\"".$user['username']."\", `email`=\"".$mail."\", `type`=\"".self::$param['type']."\", `ip`=\"".$ip."\", `user_agent`=\"".$client."\", `comment`=\"".$comment."\", u_id=\"".self::$param['u_id']."\", `parent_id`=\"".$parent_id."\", `time` = UNIX_TIMESTAMP(), `guest`=\"".$guest."\", `mod` = \"".$mod."\"");
 		}
 		unset($_POST);
+		location(getenv("REQUEST_URI"));
 	}
 
 	/*delete(
@@ -86,11 +101,11 @@ final class comment {
 		// выводим комменты
 		$msg = array();
 		if(self::$param['type']=="user") {
-			$where = "type=\"user\" AND name_id = \"".self::$param['user_row']['alt_name']."\"";
+			$where = "type=\"user\" AND u_id = \"".self::$param['user_row']['alt_name']."\" AND `mod` = \"yes\"";
 		} else {
-			$where = "type=\"movie\" AND name_id = \"".self::$param['name_id']."\"";
+			$where = "type=\"".self::$param['type']."\" AND u_id = \"".self::$param['u_id']."\" AND `mod` = \"yes\"";
 		}
-		$result = db::doquery("SELECT id, name_id, (SELECT last_activ FROM users WHERE username=added) as last_activ, (SELECT username FROM users WHERE username=added) as alt_name, (SELECT avatar FROM users WHERE username=added) as avatar, added, ip, time, comment, parent_id, level FROM comments WHERE ".$where, true);//." ORDER BY `comments`.`id` ASC"
+		$result = db::doquery("SELECT id, u_id, (SELECT last_activ FROM users WHERE username=added) as last_activ, (SELECT username FROM users WHERE username=added) as alt_name, (SELECT avatar FROM users WHERE username=added) as avatar, added, ip, time, comment, parent_id, level FROM comments WHERE ".$where, true);//." ORDER BY `comments`.`id` ASC"
 
 		while($row = db::fetch_assoc($result)){
 			$msg[] = $row;
@@ -135,7 +150,7 @@ final class comment {
 			$add_com=preg_replace('#\[not-logged\]#is', '', $add_com);
 			$add_com=preg_replace('#\[/not-logged\]#is', '', $add_com);
 		}
-		$add_com = str_replace(array("{name_id}", "{parent}"), array(self::$param['name_id'], $parent), $add_com);
+		$add_com = str_replace(array("{u_id}", "{parent}"), array(self::$param['u_id'], $parent), $add_com);
 	return $add_com.$comments;
 	}
 

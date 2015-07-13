@@ -1,5 +1,13 @@
 <?php
-//[20-02-2015 23:17:09] 2048: Accessing+static+property+templates%3A%3A%24gzip+as+non+static in %2Fhome%2FKiller%2Fweb%2Fonline-killer.pp.ua%2Fpublic_html%2Fcore%2Fmodules%2Frating.class.php on line 53 (193.109.129.144)
+/*
+*
+* Version Engine: 1.25.5b1
+* Version File: 3
+*
+* 3.1
+* fix admin templates
+*
+*/
 class Logs extends Core {
 	
 	function Delete() {
@@ -48,7 +56,7 @@ class Logs extends Core {
 				), "logs", $log['filename'].$log['line']);
 			}
 		}
-		$tmp = templates::complited_assing_vars("errors", "admin");
+		$tmp = templates::complited_assing_vars("errors", null);
 		templates::clean();
 		$this->Prints($tmp, true);
 	}

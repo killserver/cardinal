@@ -8,6 +8,8 @@
 * add support initialize config before include page
 * 12.2
 * fix errors
+* 12.3
+* add pages red and login pages in core
 *
 */
 if(!defined("IS_CORE")) {
@@ -43,6 +45,12 @@ global $manifest;
 		return;
 	}
 	switch($page) {
+		case "reg":
+			include_once(ROOT_PATH."core/pages/reg.".ROOT_EX);
+		break;
+		case "login":
+			include_once(ROOT_PATH."core/pages/login.".ROOT_EX);
+		break;
 		case "news":
 			include_once(ROOT_PATH."core/pages/view.".ROOT_EX);
 		break;
