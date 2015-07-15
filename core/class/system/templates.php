@@ -321,6 +321,7 @@ final class templates {
 		$tmp = preg_replace_callback("#\\[if (.+?)\\](.*?)\\[else\\](.*?)\\[/if\\]#i", ("templates::is"), $tmp);
 		$tmp = preg_replace_callback('~\[if (.+?)\]([^[]*)\[/if\]~iU', ("templates::is"), $tmp);
 		$tmp = preg_replace_callback("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tmp);
+		$tmp = preg_replace_callback("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])\}#", "langdate", $tmp);
 		$tmp = preg_replace_callback("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tmp);
 		return $tmp;
 	}
@@ -744,16 +745,7 @@ if(!$test) {
 		
 		$tpl = preg_replace_callback("#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $tpl);
 		$tpl = preg_replace_callback("#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $tpl);
-/*
-ToDo: WTF?!
-if($test) {
-		$tpl = preg_replace_callback("#\{foreach\}([0-9]+)\{/foreach\}#i", ("templates::foreach_set"), $tpl);
-		$tpl = preg_replace_callback("#\\[foreach block=(.+?)\\](.+?)\\[/foreach $1\\]#is", ("templates::foreachs"), $tpl);
-		$tpl = preg_replace_callback("#\\[foreach block=(.+?)\\](.+?)\\[/foreach\\]#is", ("templates::foreachs"), $tpl);
-		$tpl = preg_replace("#\{foreach\}([0-9]+)\{/foreach\}#i", "", $tpl);
-		$tpl = preg_replace_callback("#\{count\[(.*?)\]\}#is", ("templates::countforeach"), $tpl);
-}
-*/
+
 		$tpl = preg_replace_callback("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tpl);
 		$tpl = preg_replace_callback("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tpl);
 		$tpl = preg_replace_callback("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);

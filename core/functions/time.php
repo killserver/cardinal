@@ -20,6 +20,33 @@ function get_date($date,$array) {
 		return $second;
 	}
 }
+
+function langdate($date) {
+	if(is_array($date) && isset($date[3]) && !empty($date[3])) {
+		$temp = $date[3];
+	} else {
+		$temp = ", H:i";
+	}
+	if(is_array($date) && isset($date[1])) {
+		$date = $date[1];
+	}
+	if(date('Ymd', $date) == date('Ymd', time())) {
+		$local = new DateTime('@'.$date);
+		$local->setTimeZone(new DateTimeZone(config::Select("date_timezone")));
+		$date = strtr($local->format($temp), lang::get_lang("langdate"));
+		return lang::get_lang("time_heute").$date;
+	} elseif(date('Ymd', $date) == date('Ymd', (time()-86400))) {
+		$local = new DateTime('@'.$date);
+		$local->setTimeZone(new DateTimeZone(config::Select("date_timezone")));
+		$date = strtr($local->format($temp), lang::get_lang("langdate"));
+		return lang::get_lang("time_gestern").$date;
+	} else {
+		$local = new DateTime('@'.$date);
+		$local->setTimeZone(new DateTimeZone(config::Select("date_timezone")));
+		return strtr($local->format($temp), lang::get_lang("langdate"));
+	}
+}
+
 function timespan($seconds = 1, $time = null) {
 global $lang;
 	if(!is_numeric($seconds)) {
