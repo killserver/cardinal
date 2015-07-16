@@ -6,13 +6,15 @@
 *
 * 3.1
 * fix admin templates
+* 3.2
+* add admin cookie
 *
 */
 class Core {
 	
 	private $count_unmoder = 0;
 	private $title = "{L_adminpanel}";
-	
+		
 	private function vsort(&$array) {
 		$arrs = array();
 		foreach($array as $key => $val) {
@@ -44,7 +46,7 @@ class Core {
 	
 	public function Prints($echo, $print=false) {
 	global $lang, $user, $in_page;
-		if(!isset($_COOKIE['admin_username']) || !isset($_COOKIE['admin_password'])) {
+		if(!isset($_COOKIE[COOK_ADMIN_USER]) || !isset($_COOKIE[COOK_ADMIN_PASS])) {
 			location("{C_default_http_host}admincp.php/?pages=Login");
 			return;
 		}

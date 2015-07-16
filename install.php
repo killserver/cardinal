@@ -302,7 +302,7 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `users` (
   `admin_pass` varchar(255) NOT NULL,
   `light` varchar(255) NOT NULL,
   `level` int(11) NOT NULL,
-  `avatar` varchar(255) not null,
+  `avatar` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `reg_ip` varchar(255) NOT NULL,
   `last_ip` varchar(255) NOT NULL,
@@ -416,6 +416,8 @@ die();
 
 define("COOK_USER", "username_'.rand(-500, 500).'");
 define("COOK_PASS", "password_'.rand(-500, 500).'");
+define("COOK_ADMIN_USER", "admin_username_'.rand(-500, 500).'");
+define("COOK_ADMIN_PASS", "admin_password_'.rand(-500, 500).'");
 
 if(isset($_SERVER[\'HTTPS\']) && $_SERVER[\'HTTPS\']!=\'off\') {
 	$protocol = "https";

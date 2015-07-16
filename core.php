@@ -12,6 +12,8 @@
 * add support before install default timezone
 * 12.4
 * add support installer cookie
+* 12.5
+* add admin cookie
 *
 */
 if(!defined("IS_CORE")) {
@@ -112,13 +114,24 @@ if(!defined("INSTALLER")) {
 	}
 
 	$user = array();
-	if((!isset($_COOKIE[COOK_USER]) or empty($_COOKIE[COOK_USER])) && (!isset($_COOKIE[COOK_PASS]) or empty($_COOKIE[COOK_PASS]))) {
+	if((!isset($_COOKIE[COOK_USER]) or empty($_COOKIE[COOK_USER])) && ((!isset($_COOKIE[COOK_PASS]) or empty($_COOKIE[COOK_PASS])) || (!isset($_COOKIE[COOK_ADMIN_PASS]) or empty($_COOKIE[COOK_ADMIN_PASS])))) {
 		$user['level'] = 0;
 	} else {
-		$username = saves($_COOKIE[COOK_USER]);
+		if(isset($_COOKIE[COOK_ADMIN_USER]) && defined("IS_ADMIN")) {
+			$username = saves($_COOKIE[COOK_ADMIN_USER]);
+		} else {
+			$username = saves($_COOKIE[COOK_USER]);
+		}
+		if(isset($_COOKIE[COOK_ADMIN_PASS]) && defined("IS_ADMIN")) {
+			$where = "`admin_pass`";
+			$password = saves($_COOKIE[COOK_ADMIN_PASS]);
+		} else {
+			$where = "`pass`";
+			$password = saves($_COOKIE[COOK_PASS]);
+		}
 		$cache->delete("user_".$username);
 		if(!$cache->exists("user_".$username)) {
-			$row = db::doquery("SELECT * FROM users WHERE username = \"".$username."\" AND pass = \"".saves($_COOKIE[COOK_PASS])."\"", true);
+			$row = db::doquery("SELECT * FROM users WHERE `username` = \"".$username."\" AND ".$where." = \"".$password."\"", true);
 			if(db::num_rows()==0) {
 				ToCookie(COOK_USER, null, 0, "delete");
 				ToCookie(COOK_PASS, null, 0, "delete");
@@ -126,7 +139,7 @@ if(!defined("INSTALLER")) {
 				$row = db::fetch_array();
 				$cache->set("user_".$username, $row);
 				$user = $row;
-				db::doquery("UPDATE users SET last_activ = UNIX_TIMESTAMP(), last_ip = \"".HTTP::getip()."\" WHERE id = ".$user['id']);
+				db::doquery("UPDATE `users` SET `last_activ` = UNIX_TIMESTAMP(), `last_ip` = \"".HTTP::getip()."\" WHERE `id` = ".$user['id']);
 				define("IS_AUTH", true);
 			}
 		} else {

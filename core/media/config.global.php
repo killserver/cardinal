@@ -21,6 +21,7 @@ define("S_TIME_VIEW", "d-m-Y H:i:s");
 
 $config = array_merge($config, array(
 	"git_install" => true,
+	"git_beta" => true,
 ));
 
 ?>
