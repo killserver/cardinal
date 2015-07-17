@@ -19,8 +19,8 @@
 				<label class="col-sm-2 control-label" for="field-4">Права доступа</label>
 				<div class="col-sm-10">
 					<select name="level">
-						<option value="1"[if {level}==1] selected="selected"[/if]>Пользователь</option>
-						<option value="2"[if {level}==2] selected="selected"[/if]>Администратор</option>
+						<option value="1"[if {level}=={D_LEVEL_USER}] selected="selected"[/if]>Пользователь</option>
+						<option value="2"[if {level}=={D_LEVEL_MODER}] selected="selected"[/if]>Администратор</option>
 					</select>
 				</div>
 			</div>
