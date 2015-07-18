@@ -482,6 +482,8 @@
 	<script src="assets/js/joinable.js?1"></script>
 	<script src="assets/js/xenon-api.js?1"></script>
 	<script src="assets/js/xenon-toggles.js?1"></script>
+	<script src="assets/js/ckeditor/ckeditor.js"></script>
+	<script src="assets/js/ckeditor/adapters/jquery.js"></script>
 
 
 	<!-- JavaScripts initializations and stuff -->
