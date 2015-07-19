@@ -17,7 +17,7 @@ define("IS_CRON", true);
 
 final class cardinal {
 
-	private $config;
+	private static $ch_login = array("class" => "cardinal", "method" => "or_create_pass");
 	public function cardinal() {
 		if(defined("INSTALLER")) {
 			return;
@@ -65,6 +65,30 @@ final class cardinal {
 		} else {
 			setcookie("plus18", "", (time()-(120*24*60*60)), "/", ".".config::Select("default_http_hostname"), false, true);
 		}
+	}
+	
+	private static function or_create_pass($pass) {
+		$pass = md5(md5($pass).$pass);
+		$pass = strrev($pass);
+		$pass = sha1($pass);
+		$pass = bin2hex($pass);
+		return md5(md5($pass).$pass);
+	}
+	
+	public static function change_pass($class = null, $method = null) {
+		if(!empty($method) && !empty($class) && class_exists($class)) {
+			self::$ch_login['class'] = $class;
+			self::$ch_login['method'] = $method;
+		} else if(!empty($class)) {
+			self::$ch_login['class'] = $class;
+			self::$ch_login['method'] = "login";
+		}
+	}
+	
+	public static function create_pass($pass) {
+		$class = (self::$ch_login['class']);
+		$method = (self::$ch_login['method']);
+		return $class::$method($pass);
 	}
 	
 	public static function get_eighteen() {

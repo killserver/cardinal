@@ -95,6 +95,7 @@
 									data: {
 										do_login: true,
 										page: 'login',
+										method: $(form).find('#method').val(),
 										username: $(form).find('#username').val(),
 										passwd: $(form).find('#passwd').val(),
 									},
@@ -137,9 +138,9 @@
 				
 				<!-- Add class "fade-in-effect" for login form effect -->
 				<form method="post" role="form" id="login" class="login-form fade-in-effect">
-					
+					<input type="hidden" name="method" id="method" value="login" />
 					<div class="login-header">
-						<a href="dashboard-1.html" class="logo">
+						<a href="#" class="logo">
 							<img src="assets/images/logo@2x.png" alt="" width="80" />
 							<span>log in</span>
 						</a>

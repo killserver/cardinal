@@ -92,6 +92,7 @@ final class modules {
 			return array();
 		}
 		if(!self::init_cache()->exists("modules")) {
+//INSERT INTO `modules` SET activ = "yes", page = "reg", module = "reg_email"
 			self::init_db()->doquery("SELECT page, module, method, param, tpl FROM modules WHERE activ = \"yes\"", true);
 			$modules = array();
 			while($row = self::init_db()->fetch_assoc()) {
@@ -178,7 +179,17 @@ final class modules {
 
 	public static function manifest_log($select, $set) {
 	global $manifest;
-		$manifest[$select][] = $set;
+		$manifest['load_modules'][$select][] = $set;
+	return $manifest;
+	}
+
+	public static function manifest_getlog($select) {
+	global $manifest;
+		if(in_array($select, $manifest['load_modules'])) {
+			return $manifest['load_modules'][$select];
+		} else {
+			return false;
+		}
 	return $manifest;
 	}
 

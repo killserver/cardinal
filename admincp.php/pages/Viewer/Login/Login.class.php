@@ -8,8 +8,8 @@ class Login extends Core {
 	function Login() {
 	global $user;
 		if(isset($_GET['out'])) {
-			setcookie("admin_username", "", time()-(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
-			setcookie("admin_password", "", time()-(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+			setcookie(COOK_ADMIN_USER, "", time()-(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+			setcookie(COOK_ADMIN_PASS, "", time()-(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
 		}
 		$resp = array('accessGranted' => false, 'errors' => '');
 		if(isset($_POST['do_login'])) {
@@ -20,7 +20,9 @@ class Login extends Core {
 				if($given_username=="cardinal" && $given_password=="cardinal") {
 					$check = true;
 				} else {
-					db::doquery("SELECT id FROM users WHERE username LIKE \"".saves($given_username)."\" AND admin_pass LIKE \"".create_pass($given_password)."\"", true);
+					$given_username = saves($given_username);
+					$given_password = cardinal::create_pass($given_password);
+					db::doquery("SELECT id FROM users WHERE username LIKE \"".($given_username)."\" AND admin_pass LIKE \"".($given_password)."\"", true);
 					$check = (db::num_rows()!=0);
 				}
 			}
@@ -28,13 +30,13 @@ class Login extends Core {
 				$resp['accessGranted'] = true;
 				setcookie('is_admin_login', 1, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
 				setcookie('failed-attempts', 0, time()+(5*60));
-				setcookie("admin_username", saves($given_username), time()+(24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
-				setcookie("admin_password", create_pass($given_password), time()+(24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
-				if(!isset($_COOKIE['username'])) {
-					setcookie("username", saves($given_username), time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+				setcookie(COOK_ADMIN_USER, $given_username, time()+(24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+				setcookie(COOK_ADMIN_PASS, $given_password, time()+(24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+				if(!isset($_COOKIE[COOK_USER])) {
+					setcookie(COOK_USER, $given_username, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
 				}
-				if(!isset($_COOKIE['pass'])) {
-					setcookie("pass", create_pass($given_password), time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+				if(!isset($_COOKIE[COOK_PASS])) {
+					setcookie(COOK_PASS, $given_password, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
 				}
 			} else {
 				// Failed Attempts
@@ -59,5 +61,6 @@ class Login extends Core {
 	}
 
 }
+ReadPlugins(dirname(__FILE__)."/Plugins/", "Login");
 
 ?>

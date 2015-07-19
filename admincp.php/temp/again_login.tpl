@@ -94,6 +94,7 @@
 									data: {
 										do_login: true,
 										page: 'alogin',
+										method: $(form).find('#method').val(),
 										username: '{U_username}', // user is known in this case
 										passwd: $passwd.val(),
 									},
@@ -127,7 +128,7 @@
 				</script>
 				
 				<form role="form" id="lockscreen" class="lockcreen-form fade-in-effect">
-					
+					<input type="hidden" name="method" value="login" />
 					<div class="user-thumb">
 						<a href="#">
 							<img src="http://img2.wikia.nocookie.net/__cb20130512094126/sword-art-online/pl/images/thumb/a/a4/Akihiko_Kayaba.png/500px-Akihiko_Kayaba.png" class="img-responsive img-circle" />

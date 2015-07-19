@@ -8,7 +8,7 @@ include_once(dirname(__FILE__)."/../core.php");
 $defined = array("Cardinal" => "Cardin");
 
 function ReadPlugins($dir, $page, $include=true) {
-	$dirs = read_dir($dir);
+	$dirs = read_dir($dir, ".php");
 	for($i=0;$i<sizeof($dirs);$i++) {
 		include_once($dir.$dirs[$i]);
 		if($include) {
@@ -42,6 +42,10 @@ if(in_array($view, array_keys($defined))) {
 }
 $in_page = $view;
 if(class_exists($view)) {
+	if(method_exists(''.$view, 'start')) {
+		$view::start();
+		defines::init();
+	}
 	new $view();
 }
 

@@ -7,13 +7,8 @@ die();
 function function_call($func_name, $func_arg = array()) {
 global $manifest;
 	if(isset($manifest['functions'][$func_name]) && is_array($manifest['functions'][$func_name]) && !is_callable($manifest['functions'][$func_name])) {
-		/*foreach($manifest['functions'][$func_name] as $func_chain_name) {
-			if(is_callable($func_chain_name)) {
-				$result = call_user_func_array($func_chain_name, $func_arg);
-			}
-		}*/
 		for($is=0;$is<sizeof($manifest['functions'][$func_name]);$is++) {
-			if(is_callable($func_chain_name)) {
+			if(is_callable($manifest['functions'][$func_name][$is])) {
 				$result = call_user_func_array($manifest['functions'][$func_name][$is], $func_arg);
 			}
 		}
@@ -65,12 +60,12 @@ function or_search_file($file, $dir = null) {
 	}
 }
 
-function read_dir($dir) {
+function read_dir($dir, $type = "all") {
 	$files = array();
 	if(is_dir($dir)) {
 		if($dh = dir($dir)) {
 			while(($file = $dh->read()) !== false) {
-				if(is_file($dir.$file)) {
+				if(is_file($dir.$file) && ($type=="all" || strpos($file, $type)!==false)) {
 					$files[] = $file;
 				}
 			}
