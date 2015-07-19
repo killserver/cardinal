@@ -93,6 +93,16 @@ class html {
 	return $this;
 	}
 
+	function label($label) {
+		$this->html .= " label=".$this->sc.$label.$this->sc;
+	return $this;
+	}
+
+	function selected($selected = "selected") {
+		$this->html .= " selected=".$this->sc.$selected.$this->sc;
+	return $this;
+	}
+
 	function onclick($onclick) {
 		$this->html .= " onclick=".$this->sc.$onclick.$this->sc;
 	return $this;
