@@ -795,16 +795,26 @@ if(!$test) {
 	public static function complited_assing_vars($file, $dir = "null", $test = false) {
 		$time = self::time();
 		if($dir == "null") {
-			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".self::$skins."/".$file.".tpl");
+			try {
+				$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".self::$skins."/".$file.".tpl");
+			} catch(Exception $ex) {
+				echo "File \"".ROOT_PATH."".self::$dir_skins."/".$file.".tpl\" is not exists";
+				die();
+			}
 		} elseif(empty($dir)) {
 			try {
 				$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".$file.".tpl");
 			} catch(Exception $ex) {
-				echo ROOT_PATH."".self::$dir_skins."/".$file.".tpl";
+				echo "File \"".ROOT_PATH."".self::$dir_skins."/".$file.".tpl\" is not exists";
 				die();
 			}
 		} else {
-			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".$dir."/".$file.".tpl");
+			try {
+				$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".$dir."/".$file.".tpl");
+			} catch(Exception $ex) {
+				echo "File \"".ROOT_PATH."".self::$dir_skins."/".$dir."/".$file.".tpl\" is not exists";
+				die();
+			}
 		}
 		$tpl = self::comp_datas($tpl, $file, $test);
 		if($dir == "null") {
