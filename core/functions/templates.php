@@ -37,18 +37,21 @@ global $user, $config;
 	if(!$config["js_min"]) {
 		if(!$clear) {
 			$js = array();
-			if(isset($user) && $user['id']==1) {
+			if(isset($user) && isset($user['id']) && $user['id']==1) {
 				$js[] = 'http://ie.microsoft.com/testdrive/HTML5/CompatInspector/inspector.js';
 			}
-			$js[] = 'http://code.jquery.com/jquery-2.1.0.min.js';
+			/*$js[] = 'http://code.jquery.com/jquery-2.1.0.min.js';
 			$js[] = 'http://code.jquery.com/jquery-migrate-1.2.1.min.js';
 			$js[] = 'http://malsup.github.io/jquery.form.js';
 			$js[] = 'http://code.jquery.com/ui/1.10.4/jquery-ui.min.js';
 			$js[] = '{THEME}/js/jquery.jmpopups-0.5.1.js';
 			$js[] = '/js/init.js';
-			$js[] = '{C_default_http_host}js/ajax_core.js';
+			$js[] = '{C_default_http_host}js/ajax_core.js';*/
 		}
-		$js[] = '/flash-js-tagcloud-swfobject.js';
+		$dirs = read_dir(ROOT_PATH."core/modules/js/", ".php");
+		for($i=0;$i<sizeof($dirs);$i++) {
+			include_once(ROOT_PATH."core/modules/js/".$dirs[$i]);
+		}
 		$sRet = "";
 		for($i=0;$i<sizeof($js);$i++) {
 			$sRet .= "<script type=\"text/javascript\" src=\"".$js[$i]."\"></script>\n";
@@ -57,11 +60,6 @@ global $user, $config;
 		$js = modules::manifest_get(array("create_js", "mini"));
 		if($js) {
 			$js = implode(",", $js);
-		}
-		if(isset($user['id']) && $user['id']==1) {
-			//$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}min/index.php?charset=".$config['charset']."&amp;f=/js/inspector.js".($js ? ",".$js : "")."&g=general&13\"></script>\n";
-		} else {
-			//$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}min/index.php?charset=".$config['charset'].($js ? "&amp;f=".$js : "")."&amp;g=general&13\"></script>\n";
 		}
 		$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}js/require.js?".time()."\"></script>\n<script type=\"text/javascript\" src=\"{C_default_http_host}js/config.js?".time()."\"></script>";
 	}
@@ -77,9 +75,7 @@ global $user, $config;
 			$sRet .= "<script type=\"text/javascript\" src=\"".$all[$i]."\"></script>\n";
 		}
 	}
-	$lang = $config['lang'];
-	$sRet .= "<script type=\"text/javascript\" src=\"{C_default_http_host}js/lang/".$lang.".js\"></script>\n";
-	unset($config, $lang, $all, $js, $user);
+	unset($all, $js, $user);
 return $sRet;
 }
 
