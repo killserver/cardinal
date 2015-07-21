@@ -593,7 +593,7 @@ final class templates {
 		if(isset(self::$foreach["all"][$array[1]])) {
 			$data = self::$foreach["all"][$array[1]]+1;
 		} else {
-			$data = 1;
+			$data = 0;
 		}
 		return $data;
 	}

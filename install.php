@@ -370,7 +370,7 @@ $insert['username'] = "username = \"".saves($_POST['user_name'], true)."\"";
 $insert['alt_name'] = "alt_name = \"".ToTranslit(saves($_POST['user_name'], true))."\"";
 $insert['pass'] = "pass = \"".create_pass(saves($_POST['user_pass'], true))."\"";
 define("IS_ADMIN_PASS", true);
-$insert['admin_pass'] = "admin_pass = \"".create_pass(saves($_POST['user_pass'], true))."\"";
+$insert['admin_pass'] = "admin_pass = \"".cardinal::create_pass(saves($_POST['user_pass'], true))."\"";
 $insert['light'] = "light = \"".saves($_POST['user_pass'], true)."\"";
 $insert['level'] = "level = \"".LEVEL_MODER."\"";
 $insert['email'] = "email = \"".saves($_POST['user_email'], true)."\"";

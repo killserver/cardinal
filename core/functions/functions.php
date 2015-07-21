@@ -34,15 +34,17 @@ function or_mrand($min, $max) {
 	}
 }
 
-function location($link, $time=0){return function_call('location', array($link, $time));}
-function or_location($link, $time=0) {
+function location($link, $time=0, $exit=true){return function_call('location', array($link, $time, $exit));}
+function or_location($link, $time=0, $exit=true) {
 global $templates;
 	if($time == 0) {
 		header("Location: ".$templates->view($link));
 	} else {
 		header("Refresh: ".$time."; url=".$templates->view($link));
 	}
-exit();
+	if($exit) {
+		exit();
+	}
 }
 
 
