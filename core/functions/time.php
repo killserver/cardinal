@@ -28,7 +28,7 @@ function langdate($date) {
 	} else {
 		$temp = ", H:i";
 	}
-	if(is_array($date[4]) && isset($date[4])) {
+	if(is_array($date[4]) && isset($date[4]) && !empty($date[4])) {
 		$only_date = true;
 	}
 	if(is_array($date) && isset($date[1])) {
