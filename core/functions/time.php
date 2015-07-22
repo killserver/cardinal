@@ -28,11 +28,20 @@ function langdate($date) {
 	} else {
 		$temp = ", H:i";
 	}
-	if(is_array($date[4]) && isset($date[4]) && !empty($date[4])) {
+	if(is_array($date) && isset($date[4]) && !empty($date[4])) {
 		$only_date = true;
 	}
 	if(is_array($date) && isset($date[1])) {
 		$date = $date[1];
+	}
+	if(empty($date) || $date==0 || !is_numeric($date)) {
+		if($only_date) {
+			$local = new DateTime('@'.time());
+			$local->setTimeZone(new DateTimeZone(config::Select("date_timezone")));
+			$date = strtr($local->format($temp), lang::get_lang("langdate"));
+			return $date;
+		}
+		return;
 	}
 	if(date('Ymd', $date) == date('Ymd', time())) {
 		$local = new DateTime('@'.$date);
