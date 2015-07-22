@@ -321,7 +321,7 @@ final class templates {
 		$tmp = preg_replace_callback("#\\[if (.+?)\\](.*?)\\[else\\](.*?)\\[/if\\]#i", ("templates::is"), $tmp);
 		$tmp = preg_replace_callback('~\[if (.+?)\]([^[]*)\[/if\]~iU', ("templates::is"), $tmp);
 		$tmp = preg_replace_callback("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tmp);
-		$tmp = preg_replace_callback("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])\}#", "langdate", $tmp);
+		$tmp = preg_replace_callback("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,['\"](.*?)['\"])\}#", "langdate", $tmp);
 		$tmp = preg_replace_callback("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tmp);
 		return $tmp;
 	}
