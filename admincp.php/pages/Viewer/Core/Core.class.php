@@ -14,7 +14,7 @@ class Core {
 	
 	private $count_unmoder = 0;
 	private $title = "{L_adminpanel}";
-		
+	
 	private function vsort(&$array) {
 		$arrs = array();
 		foreach($array as $key => $val) {

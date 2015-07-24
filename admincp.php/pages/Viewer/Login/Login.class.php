@@ -22,21 +22,22 @@ class Login extends Core {
 				} else {
 					$given_username = saves($given_username);
 					$given_password = cardinal::create_pass($given_password);
-					db::doquery("SELECT id FROM users WHERE username LIKE \"".($given_username)."\" AND admin_pass LIKE \"".($given_password)."\"", true);
+					db::doquery("SELECT id, pass FROM users WHERE username LIKE \"".($given_username)."\" AND admin_pass LIKE \"".($given_password)."\"", true);
 					$check = (db::num_rows()!=0);
 				}
 			}
 			if($check) {
+				$row = db::fetch_assoc();
 				$resp['accessGranted'] = true;
 				setcookie('is_admin_login', 1, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
 				setcookie('failed-attempts', 0, time()+(5*60));
 				setcookie(COOK_ADMIN_USER, $given_username, time()+(24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
 				setcookie(COOK_ADMIN_PASS, $given_password, time()+(24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
-				if(!isset($_COOKIE[COOK_USER])) {
+				if(!isset($_COOKIE[COOK_USER]) || empty($_COOKIE[COOK_USER])) {
 					setcookie(COOK_USER, $given_username, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
 				}
-				if(!isset($_COOKIE[COOK_PASS])) {
-					setcookie(COOK_PASS, $given_password, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+				if(!isset($_COOKIE[COOK_PASS]) || empty($_COOKIE[COOK_PASS])) {
+					setcookie(COOK_PASS, $row['pass'], time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
 				}
 			} else {
 				// Failed Attempts
