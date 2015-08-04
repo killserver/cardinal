@@ -10,6 +10,11 @@ if(isset($_GET['done'])) {
 	echo templates::view(templates::complited_assing_vars("install", null, ""));
 	die();
 }
+if(!isset($_SERVER['SERVER_NAME']) || (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST']=="localhost") || empty($_SERVER['SERVER_NAME'])) {
+	templates::assign_vars(array("page" => "error_server"));
+	echo templates::view(templates::complited_assing_vars("install", null, ""));
+	die();
+}
 
 if(sizeof($_POST)==0||sizeof($_POST)==1) {
 	if(sizeof($_POST)==0) {
@@ -26,6 +31,7 @@ class DB_install {
 	private static $mysql;
 	private static $qid;
 	private static $type = "mysql";
+	private static $type_error = 1;
 	public static $time = 0;
 	public static $num = 0;
 	public static $querys = array();
@@ -178,17 +184,48 @@ class DB_install {
 	return $return;
 	}
 
-}
+	private static function error($query) {
+		if(self::$type == "mysqli") {
+			$mysql_error = self::$mysql->error;
+			$mysql_error_num = self::$mysql->errno;
+		} else {
+			$mysql_error = mysql_error(self::$mysql);
+			$mysql_error_num = mysql_errno(self::$mysql);
+		}
 
-/*function saves($text) {
-	$text = str_replace("\\", "\\\\", $text);
-	$text = str_replace('"', '\\"', $text);
-	$text = preg_replace('#<script[^>]*>.*?</script>#is', "", $text);
-	$text = strip_tags($text);
-	$text = htmlspecialchars($text);
-	$text = str_replace("&quot;", '"', $text);
-return $text;
-}*/
+		if($query) {
+			// Safify query
+			$query = preg_replace("/([0-9a-f]){32}/", "********************************", $query); // Hides all hashes
+		}
+
+		$query = htmlspecialchars($query, ENT_QUOTES, 'ISO-8859-1');
+		$mysql_error = htmlspecialchars($mysql_error, ENT_QUOTES, 'ISO-8859-1');
+
+		$trace = debug_backtrace();
+		$level = 0;
+		if (isset($trace[1]['function']) && $trace[1]['function'] == "query" ) $level = 1;
+		if (isset($trace[2]['function']) && $trace[2]['function'] == "doquery" ) $level = 2;
+
+		$trace[$level]['file'] = str_replace(ROOT_PATH, "", $trace[$level]['file']);
+
+		if(self::$type_error === 1) {
+			modules::init_templates()->dir_skins("skins/");
+			modules::init_templates()->assign_vars(array(
+				"query" => $query,
+				"error" => $mysql_error,
+				"error_num" => $mysql_error_num,
+				"file" => $trace[$level]['file'],
+				"line" => $trace[$level]['line'],
+			));
+			echo modules::init_templates()->complited_assing_vars("mysql_error", null);
+		} else {
+			echo "<center><br />".$trace[$level]['file'].":".$trace[$level]['line']."<hr />Query:<br /><textarea cols=\"40\" rows=\"5\">".$query."</textarea><hr />[".$mysql_error_num."] ".$mysql_error."<br />";
+		}
+		modules::init_templates()->__destruct();
+		exit();
+	}
+
+}
 
 modules::manifest_set(array('functions', "create_pass"), "create_pass_install");
 function create_pass_install($pass) {
@@ -359,12 +396,11 @@ $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `acc
 $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (3, 'Администратор', 'ADMIN', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
 
 
-
 DB_install::connect($db_host, $db_user, $db_pass, $db_db);
 $insert = array();
 $last = DB_install::last_id("users");
 if(!empty($last)) {
-	$insert['new_id'] = $last;
+	$insert['new_id'] = "id = ".$last;
 }
 $insert['username'] = "username = \"".saves($_POST['user_name'], true)."\"";
 $insert['alt_name'] = "alt_name = \"".ToTranslit(saves($_POST['user_name'], true))."\"";
@@ -405,6 +441,9 @@ $config = array_merge(array(
 ), $config);
 
 ?>';
+if(file_exists(ROOT_PATH."core/media/db.php")) {
+	unlink(ROOT_PATH."core/media/db.php");
+}
 file_put_contents(ROOT_PATH."core/media/db.php", $db_config);
 
 $path = str_replace("http://", "", $_POST['PATH']);
@@ -446,6 +485,9 @@ $config = array_merge($config, array(
 ));
 
 ?>';
+if(file_exists(ROOT_PATH."core/media/config.install.php")) {
+	unlink(ROOT_PATH."core/media/config.install.php");
+}
 file_put_contents(ROOT_PATH."core/media/config.install.php", $config);
 
 $lang = '<?php
@@ -462,7 +504,12 @@ $lang = array_merge($lang, array(
 
 ?>';
 $lang = charcode($lang);
+if(file_exists(ROOT_PATH."core/media/config.lang.php")) {
+	unlink(ROOT_PATH."core/media/config.lang.php");
+}
 file_put_contents(ROOT_PATH."core/media/config.lang.php", $lang);
-rename(ROOT_PATH."core/media/config.default.php", ROOT_PATH."core/media/config.php");
+if(file_exists(ROOT_PATH."core/media/config.default.php")) {
+	rename(ROOT_PATH."core/media/config.default.php", ROOT_PATH."core/media/config.php");
+}
 header("Location: install.php?done");
 ?>

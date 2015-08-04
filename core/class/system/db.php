@@ -390,8 +390,8 @@ final class db {
 		$trace = debug_backtrace();
 
 		$level = 0;
-		if ($trace[1]['function'] == "query" ) $level = 1;
-		if ($trace[2]['function'] == "doquery" ) $level = 2;
+		if (isset($trace[1]['function']) && $trace[1]['function'] == "query" ) $level = 1;
+		if (isset($trace[2]['function']) && $trace[2]['function'] == "doquery" ) $level = 2;
 
 		$trace[$level]['file'] = str_replace(ROOT_PATH, "", $trace[$level]['file']);
 

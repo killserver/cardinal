@@ -16,9 +16,11 @@ die();
 final class pager {
 	
 	private $pages = array();
+	private $limits = array();
 
 	function __construct($rpp, $count_all, $on_page, $url_page, $p_page = "/page/") {
-		$c_link = 0;
+		$this->limits = array(ceil($rpp*$on_page), $on_page);
+		$c_link = 1;
 		if($count_all>$on_page) {
 			$rpp = $rpp*$on_page;
 			$enpages_count = @ceil($count_all/$on_page);
@@ -35,7 +37,7 @@ final class pager {
 							} else {
 								$this->pages[$c_link]['is_link'] = 1;
 								$this->pages[$c_link]['now'] = 0;
-								$this->pages[$c_link]['link'] = $url_page.$p_page;
+								$this->pages[$c_link]['link'] = $url_page.$p_page.$j;
 								$this->pages[$c_link]['title'] = "".$j;
 								$c_link++;
 							}
@@ -112,6 +114,10 @@ final class pager {
 				}
 			}
 		}
+	}
+	
+	function limit() {
+		return "LIMIT ".$this->limits[0].",".$this->limits[1];
 	}
 	
 	function get() {

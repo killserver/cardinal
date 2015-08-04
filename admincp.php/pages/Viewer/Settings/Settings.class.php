@@ -72,7 +72,6 @@ class Settings extends Core {
 			$this->Save();
 			return;
 		}
-		$row = db::doquery("SELECT `descr` FROM `email_template` WHERE `name` LIKE \"reg\"");
 		$name = lang::get_lang("sitename");
 		$key = lang::get_lang("s_keywords");
 		$descr = lang::get_lang("s_description");
@@ -89,11 +88,11 @@ class Settings extends Core {
 			"sitename" => $name,
 			"keywords" => $key,
 			"description" => $descr,
-			"email_template" => htmlspecialchars($row['descr']),
 		));
 		$this->Prints("Settings");
 	}
 	
 }
+ReadPlugins(dirname(__FILE__)."/Plugins/", "Settings");
 
 ?>

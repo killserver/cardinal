@@ -1,4 +1,7 @@
 ﻿<center>Установка Cardinal Engine v{D_VERSION}</center>
+[if {page}=="error_server"]
+	<div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;padding:18px;background:rgb(255,230,196);color:#4C289E;">Установка скрипта заблокированна, так-как была попытка запустить сервер на localhost домене. Пожалуйста, перенесите скрипт на хостинг.</b></div>
+[/if]
 [if {page}==1]
 <form method="post">
 <div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;padding:18px;background:rgb(255,230,196);color:#4C289E;">

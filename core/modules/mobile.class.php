@@ -10,7 +10,7 @@ class mobile {
 		if(!isset($_COOKIE['moby'])) {
 			$detect = new Mobile_Detect();
 			if($detect->isMobile() || $detect->isTablet()) {
-				setcookie("moby", "true", time()+(120*24*60*60), "/", ".".$config['default_http_hostname'], false, true);
+				setcookie("moby", "true", time()+(120*24*60*60), "/", ".".modules::get_config('default_http_hostname'), false, true);
 				define("MOBILE", true);
 			}
 		}
