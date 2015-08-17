@@ -289,6 +289,9 @@ final class templates {
 	}
 
 	private static function ecomp($tmp) {
+		if(strpos($tmp, "///***")!==false&&strpos($tmp, "***///")!==false) {
+			$tmp = nsubstr($tmp, 0, nstrpos($tmp, "///***")).nsubstr($tmp, nstrpos($tmp, "***///")+6, nstrlen($tmp));
+		}
 		$tmp = preg_replace_callback("#\{include templates=['\"](.*?)['\"]\}#", ("templates::include_tpl"), $tmp);
 		$tmp = preg_replace_callback("#\{include module=['\"](.*?)['\"]\}#", ("templates::include_module"), $tmp);
 		$tmp = preg_replace("~\{\#is_last\[(\"|)(.*?)(\"|)\]\}~", "\\1", $tmp);
@@ -321,7 +324,9 @@ final class templates {
 		$tmp = preg_replace_callback("#\\[if (.+?)\\](.*?)\\[else\\](.*?)\\[/if\\]#i", ("templates::is"), $tmp);
 		$tmp = preg_replace_callback('~\[if (.+?)\]([^[]*)\[/if\]~iU', ("templates::is"), $tmp);
 		$tmp = preg_replace_callback("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tmp);
-		$tmp = preg_replace_callback("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true)\}#", "langdate", $tmp);
+		if(preg_match("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true)\}#", $tmp)) {
+			$tmp = preg_replace_callback("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true)\}#", "langdate", $tmp);
+		}
 		$tmp = preg_replace_callback("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tmp);
 		return $tmp;
 	}

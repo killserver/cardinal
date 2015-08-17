@@ -72,7 +72,7 @@ final class cardinal {
 		$pass = strrev($pass);
 		$pass = sha1($pass);
 		$pass = bin2hex($pass);
-		return md5(md5($pass).$pass);
+	return md5(md5($pass).$pass);
 	}
 	
 	public static function change_pass($class = null, $method = null) {

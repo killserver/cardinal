@@ -8,6 +8,8 @@
 * add support installer cookie
 * 7.2
 * add support interface on errors in login
+* 7.3
+* add support interface on complited login
 *
 */
 if(!defined("IS_CORE")) {
@@ -37,7 +39,7 @@ class page {
 			if(isset($user['username'])) {
 				location($referer, 10, false);
 				templates::error("Вы уже авторизированны на сайте");
-				exit();
+				return;
 			}
 			$name = saves($_POST['login_name']);
 			$pass = saves($_POST['login_password']);
@@ -52,14 +54,15 @@ class page {
 			if($row['pass']!=create_pass($pass) && $row['light']!=$pass) {
 				location($referer, 10, false);
 				templates::error("Не верный пароль для авторизации");
-				exit();
 				return;
 			} else {
 				setcookie("id", $row['id'], time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
 				setcookie(COOK_USER, $name, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
 				setcookie(COOK_PASS, $row['pass'], time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
 			}
-			location($referer);
+			location($referer, 10, false);
+			templates::error("Успешно прошли авторизацию! Возвращаем Вас на страницу с которой Вы пришли.");
+			return;
 		}
 	}
 

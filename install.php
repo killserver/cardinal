@@ -255,6 +255,34 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `config` (
   FULLTEXT KEY `config_value` (`config_value`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 
+$SQL[] = "DROP TABLE IF EXISTS `comments`;";
+$SQL[] = "CREATE TABLE IF NOT EXISTS `comments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `u_id` varchar(255) NOT NULL,
+  `added` varchar(255) NOT NULL,
+  `ip` varchar(255) NOT NULL,
+  `type` enum('catalog','salons') NOT NULL DEFAULT 'catalog',
+  `time` int(11) NOT NULL,
+  `comment` text NOT NULL,
+  `parent_id` varchar(255) NOT NULL,
+  `level` int(11) NOT NULL,
+  `user_agent` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `guest` varchar(255) NOT NULL,
+  `mod` enum('yes','no') NOT NULL DEFAULT 'no',
+  `spam` enum('yes','no') NOT NULL DEFAULT 'no',
+  PRIMARY KEY (`id`),
+  FULLTEXT `added` (`added`),
+  KEY `ip` (`ip`),
+  KEY `data` (`u_id`),
+  KEY `others` (`type`,`time`,`parent_id`,`level`),
+  KEY `agent` (`user_agent`),
+  KEY `spam` (`spam`),
+  FULLTEXT KEY `email` (`email`),
+  FULLTEXT KEY `guest` (`guest`),
+  FULLTEXT KEY `comment` (`comment`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
+
 $SQL[] = "DROP TABLE IF EXISTS `error_log`;";
 $SQL[] = "CREATE TABLE IF NOT EXISTS `error_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -347,16 +375,16 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `users` (
   `last_activ` int(11) NOT NULL,
   `activ` enum('yes','no') NOT NULL DEFAULT 'yes',
   PRIMARY KEY (`id`),
-  KEY `user` (`username`),
+  FULLTEXT `user` (`username`),
   FULLTEXT `pass` (`pass`, `admin_pass`),
-  KEY `light` (`light`),
+  FULLTEXT `light` (`light`),
   KEY `level` (`level`),
-  KEY `add_data` (`email`),
+  FULLTEXT `add_data` (`email`),
   KEY `activ` (`activ`),
   KEY `time` (`time_reg`,`last_activ`),
-  KEY `alt_name` (`alt_name`),
-  KEY `reg_ip` (`reg_ip`),
-  KEY `last_ip` (`last_ip`)
+  FULLTEXT `alt_name` (`alt_name`),
+  FULLTEXT `reg_ip` (`reg_ip`),
+  FULLTEXT `last_ip` (`last_ip`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 
 $SQL[] = "DROP TABLE IF EXISTS `userlevels`;";
@@ -394,6 +422,7 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `userlevels` (
 $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (1, 'Гость', 'GUEST', 'no', 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'no', 'no', 'no', 'no', 'yes', 'yes', 'no', 'no', 'no', 'yes', 'no', 'no', 'no');";
 $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (2, 'Пользователь', 'USER', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
 $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (3, 'Администратор', 'ADMIN', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
+
 
 
 DB_install::connect($db_host, $db_user, $db_pass, $db_db);
