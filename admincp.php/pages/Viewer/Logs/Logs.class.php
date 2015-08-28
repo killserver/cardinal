@@ -6,6 +6,8 @@
 *
 * 3.1
 * fix admin templates
+* 3.2
+* fix view errors
 *
 */
 class Logs extends Core {
@@ -29,7 +31,7 @@ class Logs extends Core {
 		if(config::Select('logs')=="file" && file_exists(ROOT_PATH."core/cache/system/php_log.txt")) {
 			$logs = file(ROOT_PATH."core/cache/system/php_log.txt");
 			$log_el = array();
-			for($i=0;$i<sizeof($logs);$i++) {
+			for($i=(sizeof($logs)-1);$i>=0;$i--) {
 				$log = json_decode(trim($logs[$i]));
 				$at = unserialize(str_replace('\\"', "\"", htmlspecialchars_decode($log->request_state)));
 				templates::assign_vars(array(
