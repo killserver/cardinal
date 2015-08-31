@@ -99,6 +99,14 @@ function or_saves($text, $db=false, $ddb=false) {
 return $text;
 }
 
+function strtouppers($text) {
+	if(function_exists("mb_strtoupper")) {
+		return mb_strtoupper($text, config::Select('charset'));
+	} else {
+		return strtoupper($text);
+	}
+}
+
 function strtolowers($text) {
 	if(function_exists("mb_strtolower")) {
 		return mb_strtolower($text, config::Select('charset'));

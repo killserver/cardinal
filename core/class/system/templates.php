@@ -803,7 +803,7 @@ if(!$test) {
 			try {
 				$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".self::$skins."/".$file.".tpl");
 			} catch(Exception $ex) {
-				echo "File \"".ROOT_PATH."".self::$dir_skins."/".$file.".tpl\" is not exists";
+				echo "File \"".ROOT_PATH."".self::$dir_skins."/".self::$skins."/".$file.".tpl\" is not exists";
 				die();
 			}
 		} elseif(empty($dir)) {

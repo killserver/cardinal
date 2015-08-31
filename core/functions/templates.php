@@ -49,6 +49,7 @@ global $user, $config;
 			$js[] = '{C_default_http_host}js/ajax_core.js';*/
 		}
 		$dirs = read_dir(ROOT_PATH."core/modules/js/", ".php");
+		sort($dirs);
 		for($i=0;$i<sizeof($dirs);$i++) {
 			include_once(ROOT_PATH."core/modules/js/".$dirs[$i]);
 		}
