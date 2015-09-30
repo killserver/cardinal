@@ -6,6 +6,8 @@
 *
 * 21.1
 * add var for js detected system time in unix format
+* 22.1
+* add css and rebuild js data to template
 *
 */
 if(!defined("IS_CORE")) {
@@ -33,10 +35,11 @@ return $te;
 }
 
 function create_js($clear = false) {
-global $user, $config;
-	if(!$config["js_min"]) {
+global $user;
+	$css = $js = array();
+	$sRet = "";
+	if(!config::Select("js_min")) {
 		if(!$clear) {
-			$js = array();
 			if(isset($user) && isset($user['id']) && $user['id']==1) {
 				$js[] = 'http://ie.microsoft.com/testdrive/HTML5/CompatInspector/inspector.js';
 			}
@@ -53,9 +56,16 @@ global $user, $config;
 		for($i=0;$i<sizeof($dirs);$i++) {
 			include_once(ROOT_PATH."core/modules/js/".$dirs[$i]);
 		}
-		$sRet = "";
 		for($i=0;$i<sizeof($js);$i++) {
 			$sRet .= "<script type=\"text/javascript\" src=\"".$js[$i]."\"></script>\n";
+		}
+		$dirs = read_dir(ROOT_PATH."core/modules/css/", ".php");
+		sort($dirs);
+		for($i=0;$i<sizeof($dirs);$i++) {
+			include_once(ROOT_PATH."core/modules/css/".$dirs[$i]);
+		}
+		for($i=0;$i<sizeof($css);$i++) {
+			$sRet .= "<link href=\"".$css[$i]."\" rel=\"stylesheet\" />\n";
 		}
 	} else {
 		$js = modules::manifest_get(array("create_js", "mini"));
@@ -64,16 +74,40 @@ global $user, $config;
 		}
 		$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}js/require.js?".time()."\"></script>\n<script type=\"text/javascript\" src=\"{C_default_http_host}js/config.js?".time()."\"></script>";
 	}
-	$all = modules::manifest_get(array("create_js", "js"));
-	if($all) {
-		for($i=0;$i<sizeof($all);$i++) {
-			$sRet .= "<script type=\"text/javascript\">".$all[$i]."</script>\n";
+	$all = modules::manifest_get(array("create_js", "full"));
+	if(is_array($all)) {
+		$all = array_values($all);
+		if($all) {
+			for($i=0;$i<sizeof($all);$i++) {
+				$sRet .= "<script type=\"text/javascript\" src=\"".$all[$i]."\"></script>\n";
+			}
 		}
 	}
-	$all = modules::manifest_get(array("create_js", "full"));
-	if($all) {
-		for($i=0;$i<sizeof($all);$i++) {
-			$sRet .= "<script type=\"text/javascript\" src=\"".$all[$i]."\"></script>\n";
+	$all = modules::manifest_get(array("create_js", "js"));
+	if(is_array($all)) {
+		$all = array_values($all);
+		if($all) {
+			for($i=0;$i<sizeof($all);$i++) {
+				$sRet .= "<script type=\"text/javascript\">".$all[$i]."</script>\n";
+			}
+		}
+	}
+	$all = modules::manifest_get(array("create_css", "full"));
+	if(is_array($all)) {
+		$all = array_values($all);
+		if($all) {
+			for($i=0;$i<sizeof($all);$i++) {
+				$sRet .= "<link href=\"".$all[$i]."\" rel=\"stylesheet\" />\n";
+			}
+		}
+	}
+	$all = modules::manifest_get(array("create_css", "css"));
+	if(is_array($all)) {
+		$all = array_values($all);
+		if($all) {
+			for($i=0;$i<sizeof($all);$i++) {
+				$sRet .= "<style type=\"text/css\">".$all[$i]."</style>\n";
+			}
 		}
 	}
 	unset($all, $js, $user);
@@ -147,6 +181,11 @@ if(!$clear) {
 	if(isset($array['meta']['ogpr']) && is_array($array['meta']['ogpr'])) {
 		foreach($array['meta']['ogpr'] as $name => $val) {
 			$header .= "<meta property=\"".$name."\" content=\"".$val."\" />\n";
+		}
+	}
+	if(isset($array['meta']['link']) && is_array($array['meta']['link'])) {
+		foreach($array['meta']['link'] as $name => $val) {
+			$header .= "<link rel=\"".$name."\" href=\"".$val."\" />\n";
 		}
 	}
 	if(isset($array['meta'])) {

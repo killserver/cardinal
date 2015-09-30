@@ -60,16 +60,22 @@ class lang {
 		return self::$lang;
 	}
 
-	public static function init_lang() {
+	public static function init_lang($db = true) {
 	global $manifest;
 		$lang=array();
-		if(isset($manifest['lang']['main']) && file_Exists(ROOT_PATH."core/lang/".self::$lang."/".$manifest['lang']['main'].".php")) {
-			include(ROOT_PATH."core/lang/".self::$lang."/".$manifest['lang']['main'].".php");
-			return array_merge($lang, self::lang_db());
+		if($db) {
+			if(isset($manifest['lang']['main']) && file_Exists(ROOT_PATH."core/lang/".self::$lang."/".$manifest['lang']['main'].".php")) {
+				include(ROOT_PATH."core/lang/".self::$lang."/".$manifest['lang']['main'].".php");
+				return array_merge($lang, self::lang_db());
+			}
 		}
 		if(file_exists(ROOT_PATH."core/lang/".self::$lang."/main.php")) {
 			include(ROOT_PATH."core/lang/".self::$lang."/main.php");
-			$db_lang = self::lang_db();
+			if($db) {
+				$db_lang = self::lang_db();
+			} else {
+				$db_lang = array();
+			}
 			if(file_exists(ROOT_PATH."core/media/config.lang.php")) {
 				include(ROOT_PATH."core/media/config.lang.php");
 			}

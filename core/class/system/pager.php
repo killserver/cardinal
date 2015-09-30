@@ -18,14 +18,14 @@ final class pager {
 	private $pages = array();
 	private $limits = array();
 
-	function __construct($rpp, $count_all, $on_page, $url_page, $p_page = "/page/") {
+	function __construct($rpp, $count_all, $on_page, $url_page, $p_page = "/page/", $max_view = 10) {
 		$this->limits = array(ceil($rpp*$on_page), $on_page);
 		$c_link = 1;
 		if($count_all>$on_page) {
 			$rpp = $rpp*$on_page;
 			$enpages_count = @ceil($count_all/$on_page);
 			$rpp = ($rpp/$on_page) + 1;
-			if($enpages_count<=10) {
+			if($enpages_count<=$max_view) {
 				for($j=1;$j<=$enpages_count;$j++) {
 					if($j!=$rpp) {
 							if($j == 1) {
@@ -50,7 +50,7 @@ final class pager {
 				}
 			} else {
 				$start = 1;
-				$end = 10;
+				$end = $max_view;
 				$nav_prefix = "...";
 				if($rpp>0) {
 					if($rpp>6) {
