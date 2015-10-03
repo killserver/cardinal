@@ -1,5 +1,7 @@
 # Cardinal Engine(Core) [B]
 
+[![Join the chat at https://gitter.im/killserver/cardinal](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/killserver/cardinal?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Что нужно для запуска сайта на этом движке?
 
 По-этапно:
