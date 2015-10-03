@@ -15,6 +15,7 @@ echo "403 ERROR";
 die();
 }
 
+//ToDo: Р° РЅР°С„РёРі РјРЅРµ С‚РѕРіРґР° СЌС‚Р° С„СѓРЅРєС†РёСЏ, РµСЃР»Рё РµСЃС‚СЊ РєР»Р°СЃСЃ Parser?!
 function parser_url($url, $referer = null, $header=false, $coo=false, $coopath=null, $proxy=null, $error=false, $gzip=false, $uagent=null, $timeout=3) {
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_URL, $url);
@@ -23,9 +24,9 @@ function parser_url($url, $referer = null, $header=false, $coo=false, $coopath=n
 	} else {
 		curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 6.1; rv:14.0) Gecko/20100101 Firefox/14.0.1");
 	}
-//Установите эту опцию в ненулевое значение, если вы хотите, чтобы PHP завершал работу скрыто, если возвращаемый HTTP-код имеет значение выше 300. По умолчанию страница возвращается нормально с игнорированием кода.
+//РЈСЃС‚Р°РЅРѕРІРёС‚Рµ СЌС‚Сѓ РѕРїС†РёСЋ РІ РЅРµРЅСѓР»РµРІРѕРµ Р·РЅР°С‡РµРЅРёРµ, РµСЃР»Рё РІС‹ С…РѕС‚РёС‚Рµ, С‡С‚РѕР±С‹ PHP Р·Р°РІРµСЂС€Р°Р» СЂР°Р±РѕС‚Сѓ СЃРєСЂС‹С‚Рѕ, РµСЃР»Рё РІРѕР·РІСЂР°С‰Р°РµРјС‹Р№ HTTP-РєРѕРґ РёРјРµРµС‚ Р·РЅР°С‡РµРЅРёРµ РІС‹С€Рµ 300. РџРѕ СѓРјРѕР»С‡Р°РЅРёСЋ СЃС‚СЂР°РЅРёС†Р° РІРѕР·РІСЂР°С‰Р°РµС‚СЃСЏ РЅРѕСЂРјР°Р»СЊРЅРѕ СЃ РёРіРЅРѕСЂРёСЂРѕРІР°РЅРёРµРј РєРѕРґР°.
 	//curl_setopt($ch, CURLOPT_FAILONERROR, 1);
-	//Устанавливаем значение referer - адрес последней активной страницы
+	//РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р·РЅР°С‡РµРЅРёРµ referer - Р°РґСЂРµСЃ РїРѕСЃР»РµРґРЅРµР№ Р°РєС‚РёРІРЅРѕР№ СЃС‚СЂР°РЅРёС†С‹
 	if(is_bool($coo) && $coo) {
 		curl_setopt($ch, CURLOPT_COOKIEJAR, ROOT_PATH."core/cache/parser_video/".$coopath.".txt");
 		curl_setopt($ch, CURLOPT_COOKIEFILE, ROOT_PATH."core/cache/parser_video/".$coopath.".txt");

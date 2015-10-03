@@ -39,6 +39,7 @@ class Users extends Core {
 	}
 	
 	function __construct() {
+	global $user;
 		if(isset($_GET['mod']) && $_GET['mod']=="Add") {
 			if(sizeof($_POST)>0) {
 				$this->Add();
@@ -56,6 +57,10 @@ class Users extends Core {
 			return;
 		}
 		if(isset($_GET['mod']) && $_GET['mod']=="Delete" && isset($_GET['id']) && is_numeric($_GET['id']) && $_GET['id']>0) {
+			if($_GET['id']==$user['id']) {
+				templates::error("Не возможно удалить аккаунт из которого Вы работаете!");
+				return;
+			}
 			db::doquery("DELETE FROM `users` WHERE `id` = ".intval($_GET['id']));
 			location("./?pages=Users");
 			return;

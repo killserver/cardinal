@@ -6,7 +6,7 @@ define("IS_CORE", true);
 define("IS_INSTALLER", true);
 require_once("core.php");
 if(isset($_GET['done'])) {
-	templates::assign_vars(array("page" => "3"));
+	templates::assign_vars(array("page" => "4"));
 	echo templates::view(templates::complited_assing_vars("install", null, ""));
 	die();
 }
@@ -16,11 +16,20 @@ if(!isset($_SERVER['SERVER_NAME']) || (isset($_SERVER['HTTP_HOST']) && $_SERVER[
 	die();
 }
 
-if(sizeof($_POST)==0||sizeof($_POST)==1) {
+if(sizeof($_POST)==0||sizeof($_POST)==1||sizeof($_POST)==2) {
 	if(sizeof($_POST)==0) {
 		templates::assign_vars(array("page" => "1"));
+	} else if(sizeof($_POST)==1) {
+		$cache = (get_chmod(ROOT_PATH."core/cache/")=="0777" ? "green":"red");
+		$system_cache = (get_chmod(ROOT_PATH."core/cache/system/")=="0777" ? "green":"red");
+		if($cache=="red"||$system_cache=="red") {
+			templates::assign_var("is_stop", "1");
+		} else {
+			templates::assign_var("is_stop", "0");
+		}
+		templates::assign_vars(array("page" => "2", "cache" => $cache, "system_cache" => $system_cache));
 	} else {
-		templates::assign_vars(array("page" => "2", "SERNAME" => getenv('SERVER_NAME')));
+		templates::assign_vars(array("page" => "3", "SERNAME" => getenv('SERVER_NAME')));
 	}
 	echo templates::view(templates::complited_assing_vars("install", null, ""));
 	die();

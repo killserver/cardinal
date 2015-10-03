@@ -1,5 +1,15 @@
 
 			<div class="row">
+				
+				[if {is_new}==1]<div class="col-sm-3">
+					<div class="xe-widget xe-counter xe-counter-red">
+					<div class="xe-icon"><i class="linecons-params"></i></div>
+					<div class="xe-label">
+						<strong class="num">{new_version}</strong>
+						<span>Новая версия</span>
+					</div>
+					</div>
+				</div>[/if]
 			
 				<div class="col-sm-3">
 					

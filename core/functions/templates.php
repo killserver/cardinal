@@ -1,14 +1,19 @@
 <?php
 /*
-*
-* Version Engine: 1.25.3
-* Version File: 21
-*
-* 21.1
-* add var for js detected system time in unix format
-* 22.1
-* add css and rebuild js data to template
-*
+ *
+ * @version 2015-09-30 13:30:44 1.25.6-rc1
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc1
+ * Version File: 21
+ *
+ * 21.1
+ * add var for js detected system time in unix format
+ * 22.1
+ * add css and rebuild js data to template
+ * 22.2
+ * rebuild local data
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
@@ -16,21 +21,19 @@ die;
 }
 
 function meta($array=array()) {
-global $templates, $user;
-	$templates->assign_vars(array(
+	templates::assign_vars(array(
 		"url" => "{C_default_http_host}",
 		"title" => "{L_site_name}",
 	), "meta", "1");
 	if(sizeof($array)>0) {
 		for($i=0;$i<sizeof($array);$i++) {
-			$templates->assign_vars(array(
+			templates::assign_vars(array(
 				"url" => $array[$i]['url'],
 				"title" => $array[$i]['title'],
 			), "meta", ($i+3));
 		}
 	}
-	$te = $templates->lcud($templates->complited_assing_vars("meta", null));
-	unset($templates);
+	$te = templates::lcud(templates::complited_assing_vars("meta", null));
 return $te;
 }
 
@@ -97,7 +100,7 @@ global $user;
 		$all = array_values($all);
 		if($all) {
 			for($i=0;$i<sizeof($all);$i++) {
-				$sRet .= "<link href=\"".$all[$i]."\" rel=\"stylesheet\" />\n";
+				$sRet .= "<link href=\"".$all[$i]."\" rel=\"stylesheet\" type=\"text/css\" />\n";
 			}
 		}
 	}
@@ -115,7 +118,7 @@ return $sRet;
 }
 
 function headers($array = array(), $clear = false) {
-global $user, $templates;
+global $user;
 	$header = "";
 	if(isset($array['title'])) {
 		$header .= "\t<title>".$array['title']."</title>\n";
@@ -143,9 +146,9 @@ if(!$clear) {
 
 	$header .= '<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=1" />'."\n";
 	$header .= "<script type=\"text/javascript\">\n".
-		"	var username = \"".(isset($user['username']) ? $user['username'] : "")."\";\n".
+		"	var username = \"{U_username}\";\n".
 		"	var default_link = \"{C_default_http_host}\";\n".
-		"	var tskins = \"".$templates->get_skins()."\";\n".
+		"	var tskins = \"".templates::get_skins()."\";\n".
 		"	var SystemTime = \"".time()."\";\n".
 		"</script>\n";
 }
@@ -197,28 +200,7 @@ if(!$clear) {
 	if($is_use) {
 		$header .= "</span>";
 	}
-	unset($array, $templates);
-/*
-<script type="text/javascript">
-    var reformalOptions = {
-        project_id: 91518,
-        project_host: "idea.online-killer.com",
-        tab_orientation: "left",
-        tab_indent: "50%",
-        tab_bg_color: "#d9ae03",
-        tab_border_color: "#4646e3",
-        tab_image_url: "http://tab.reformal.ru/T9GC0LfRi9Cy0Ysg0Lgg0L%252FRgNC10LTQu9C%252B0LbQtdC90LjRjw==/4646e3/401bacf84347cd4a664b570651db5d86/left/0/tab.png",
-        tab_border_width: 1
-    };
-    
-    (function() {
-        var script = document.createElement('script');
-        script.type = 'text/javascript'; script.async = true;
-        script.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'media.reformal.ru/widgets/v3/reformal.js';
-        document.getElementsByTagName('head')[0].appendChild(script);
-    })();
-</script><noscript><a href="http://reformal.ru"><img src="http://media.reformal.ru/reformal.png" /></a><a href="http://idea.online-killer.com">Oтзывы и предложения для Онлайн видео</a></noscript>
-*/
+	unset($array);
 //	$header = str_replace("\n", "", $header);
 return $header;
 }

@@ -1,15 +1,15 @@
 <?php
 /*
-*
-* @version 2015-09-30 13:30:44 1.25.6-rc1
-* @copyright 2014-2015 KilleR for Cardinal Engine
-*
-* Version Engine: 1.25.6-rc1
-* Version File: 1
-*
-* 1.1
-* add seo optimization
-*
+ *
+ * @version 2015-09-30 13:30:44 1.25.6-rc1
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc1
+ * Version File: 1
+ *
+ * 1.1
+ * add seo optimization
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";

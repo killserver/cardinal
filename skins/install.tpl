@@ -28,6 +28,34 @@ input:hover {
 [/if]
 [if {page}==2]
 <form method="post">
+<div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;padding:18px;background:rgb(255,230,196);color:#4C289E;">
+	[if {is_stop}==0]<div style="text-align:center;font-weight:bold;">Все необходимые права доступа установленны, можно продолжать установку!</div>[/if {is_stop}==0]
+	[if {is_stop}==1]<div style="text-align:center;font-weight:bold;">Установите требуемые права доступа к папкам для продолжения установки!</div>[/if {is_stop}==1]
+	<div><div style="display:inline-block;width:200px;">core/cache/</div><div style="display:inline-block;color:{cache};font-weight:bold;">0777</div></div>
+	<div><div style="display:inline-block;width:200px;">core/cache/system/</div><div style="display:inline-block;color:{system_cache};font-weight:bold;">0777</div></div>
+</div>
+<style type="text/css">
+input {
+    float: right;
+    margin: 15px;
+    border: 1px solid #000;
+    padding: 8px;
+    background: #00FF2B;
+    color: #1C00F5;
+    border-radius: 10px;
+    font-size: 14pt;
+}
+input:hover {
+    box-shadow: 1px 1px 1px #000;
+    cursor: pointer;
+}
+</style>
+<input type="hidden" name="cache" />
+[if {is_stop}==0]<input type="submit" name="submit" value="Принять" />[/if {is_stop}==0]
+</form>
+[/if]
+[if {page}==3]
+<form method="post">
 <span style="float:left;">
 	<span style="width:400px;border:1px solid #000;display:block;padding:10px;">
 		<center>База данных</center>
@@ -75,7 +103,7 @@ input:hover {
 [if {page}=="error"]
 <div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;padding:18px;background:rgb(255,230,196);color:#4C289E;">Нет соединения с Базой Данных.<br />Пожалуйста, вернитесь назад и проверьте введённые данные, либо обратитесь в службу тех.поддержки.<br /><a href="javascript:history.go(-1)">Назад</a></div>
 [/if]
-[if {page}==3]
+[if {page}==4]
 <div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;padding:18px;background:rgb(255,230,196);color:#4C289E;">Благодарим за выбор нашей продукции.<br />Теперь Вы можете перейти в админ-панель, либо перейти к работе с сайтом!<br /><b><font color="red">Не забудьте удалить файл install.php с корня Вашего сайта</font></b></div>
 <style type="text/css">
 a, input {

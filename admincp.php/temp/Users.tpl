@@ -58,7 +58,7 @@
 					<div class="col-sm-4"><a href="mailto:{users.email}" target="_blank"><i class="entypo-mail"></i>{users.email}</a></div>
 					<div class="col-sm-4">
 						<a href="./?pages=Users&mod=Edit&id={users.id}" class="btn btn-success btn-icon"><i class="fa-pencil"></i><span>Редактировать</span></a><br />
-						<a href="./?pages=Users&mod=Delete&id={users.id}" class="btn btn-red btn-icon"><i class="fa-remove"></i><span>Удалить</span></a>
+						[foreachif {users.id}!={U_id}]<a href="./?pages=Users&mod=Delete&id={users.id}" class="btn btn-red btn-icon"><i class="fa-remove"></i><span>Удалить</span></a>[/foreachif {users.id}!={U_id}]
 					</div>
 				</div>
 			</div>

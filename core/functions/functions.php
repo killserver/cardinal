@@ -1,4 +1,16 @@
 <?php
+/*
+ *
+ * @version 2015-09-30 13:30:44 1.25.6-rc1
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc1
+ * Version File: 1
+ *
+ * 1.1
+ * rebuild rand and location functions
+ *
+*/
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
 die();
@@ -25,8 +37,15 @@ global $manifest;
 	return $result;
 }
 
-function mrand($min, $max){return function_call('mrand', array($min, $max));}
-function or_mrand($min, $max) {
+function mrand($min = 0, $max = 0){return function_call('mrand', array($min, $max));}
+function or_mrand($min = 0, $max = 0) {
+	if($min==0 && $max==0) {
+		if(function_exists("mt_rand")) {
+			$max = mt_getrandmax();
+		} else {
+			$max = getrandmax();
+		}
+	}
 	if(function_exists("mt_rand")) {
 		return mt_rand($min, $max);
 	} else {
@@ -36,11 +55,10 @@ function or_mrand($min, $max) {
 
 function location($link, $time=0, $exit=true){return function_call('location', array($link, $time, $exit));}
 function or_location($link, $time=0, $exit=true) {
-global $templates;
 	if($time == 0) {
-		header("Location: ".$templates->view($link));
+		header("Location: ".templates::view($link));
 	} else {
-		header("Refresh: ".$time."; url=".$templates->view($link));
+		header("Refresh: ".$time."; url=".templates::view($link));
 	}
 	if($exit) {
 		exit();
