@@ -1,15 +1,19 @@
 <?php
 /*
-*
-* Version Engine: 1.25.5a6
-* Version File: 3
-*
-* 3.2
-* add checker install system
-*
-* 3.3
-* add support include config file after installing
-*
+ *
+ * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc3
+ * Version File: 3
+ *
+ * 3.2
+ * add checker install system
+ * 3.3
+ * add support include config file after installing
+ * 3.4
+ * add support drivers for databases
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
@@ -40,6 +44,8 @@ spl_autoload_register(function($class) {
 		include_once(ROOT_PATH."core/class/system/".$class.".".ROOT_EX);
 	} elseif(file_exists(ROOT_PATH."core/modules/autoload/".$class.".".ROOT_EX)) {
 		include_once(ROOT_PATH."core/modules/autoload/".$class.".".ROOT_EX);
+	} elseif(file_exists(ROOT_PATH."core/class/system/drivers/".$class.".".ROOT_EX)) {
+		include_once(ROOT_PATH."core/class/system/drivers/".$class.".".ROOT_EX);
 	}
 });
 

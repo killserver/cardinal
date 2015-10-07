@@ -33,6 +33,7 @@ input:hover {
 	[if {is_stop}==1]<div style="text-align:center;font-weight:bold;">Установите требуемые права доступа к папкам для продолжения установки!</div>[/if {is_stop}==1]
 	<div><div style="display:inline-block;width:200px;">core/cache/</div><div style="display:inline-block;color:{cache};font-weight:bold;">0777</div></div>
 	<div><div style="display:inline-block;width:200px;">core/cache/system/</div><div style="display:inline-block;color:{system_cache};font-weight:bold;">0777</div></div>
+	<div><div style="display:inline-block;width:200px;">MbString</div><div style="display:inline-block;color:{mb};font-weight:bold;">[if {mb}==red]Не установлен[else {mb}==red]Установлен[/if {mb}==red]</div></div>
 </div>
 <style type="text/css">
 input {
@@ -56,6 +57,7 @@ input:hover {
 [/if]
 [if {page}==3]
 <form method="post">
+<div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;background:rgb(255,230,196);text-align:center;font-weight:bold;padding:7px;margin:0px auto 10px;width:50%;color:#f00;font-size:18px;">Убедитесь, что все необходимые драйверы баз данных установленны!</div>
 <span style="float:left;">
 	<span style="width:400px;border:1px solid #000;display:block;padding:10px;">
 		<center>База данных</center>
@@ -65,6 +67,7 @@ input:hover {
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Имя пользователя</div><input type="text" name="db_user" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Пароль</div><input type="password" name="db_pass" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Имя базы данных</div><input type="text" name="db_db" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
+		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Драйвер базы данных</div><select name="db_driver" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;">[foreach block=drivers]<option value="{drivers.name}">{drivers.value}</option>[/foreach]</select><br />
 	</span>
 	<br />
 	<span style="width:400px;border:1px solid #000;display:block;padding:10px;">

@@ -1,5 +1,16 @@
 <?php
-
+/*
+ *
+ * @version 2015-09-30 13:30:44 1.25.6-rc3
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc3
+ * Version File: 1
+ *
+ * 1.1
+ * create class parsing for more settings in proccess
+ *
+*/
 class Parser {
 	
 	private $url = null;

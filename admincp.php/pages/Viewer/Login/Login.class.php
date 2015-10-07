@@ -1,4 +1,16 @@
 <?php
+/*
+ *
+ * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc3
+ * Version File: 2
+ *
+ * 2.1
+ * add support setcookie in php7
+ *
+*/
 if(!defined("IS_ADMIN")) {
 die();
 }
@@ -17,8 +29,10 @@ class Login extends Core {
 			if((isset($_POST['username']) && !empty($_POST['username'])) && (isset($_POST['passwd']) && !empty($_POST['passwd']))) {
 				$given_username = $_POST['username'];
 				$given_password = $_POST['passwd'];
+				$is_admin = false;
 				if($given_username=="cardinal" && $given_password=="cardinal") {
 					$check = true;
+					$is_admin = true;
 				} else {
 					$given_username = saves($given_username);
 					$given_password = cardinal::create_pass($given_password);
@@ -27,17 +41,41 @@ class Login extends Core {
 				}
 			}
 			if($check) {
-				$row = db::fetch_assoc();
+				if(!$is_admin) {
+					$row = db::fetch_assoc();
+				} else {
+					$row = array("pass" => "cardinal");
+				}
 				$resp['accessGranted'] = true;
-				setcookie('is_admin_login', 1, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+				if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
+					setcookie('is_admin_login', 1, time()+(120*24*60*60), "/");
+				} else {
+					setcookie('is_admin_login', 1, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+				}
 				setcookie('failed-attempts', 0, time()+(5*60));
-				setcookie(COOK_ADMIN_USER, $given_username, time()+(24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
-				setcookie(COOK_ADMIN_PASS, $given_password, time()+(24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+				if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
+					setcookie(COOK_ADMIN_USER, $given_username, time()+(24*60*60), "/");
+				} else {
+					setcookie(COOK_ADMIN_USER, $given_username, time()+(24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+				}
+				if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
+					setcookie(COOK_ADMIN_PASS, $given_password, time()+(24*60*60), "/");
+				} else {
+					setcookie(COOK_ADMIN_PASS, $given_password, time()+(24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+				}
 				if(!isset($_COOKIE[COOK_USER]) || empty($_COOKIE[COOK_USER])) {
-					setcookie(COOK_USER, $given_username, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+					if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
+						setcookie(COOK_USER, $given_username, time()+(120*24*60*60), "/");
+					} else {
+						setcookie(COOK_USER, $given_username, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+					}
 				}
 				if(!isset($_COOKIE[COOK_PASS]) || empty($_COOKIE[COOK_PASS])) {
-					setcookie(COOK_PASS, $row['pass'], time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+					if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
+						setcookie(COOK_PASS, $row['pass'], time()+(120*24*60*60), "/");
+					} else {
+						setcookie(COOK_PASS, $row['pass'], time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+					}
 				}
 			} else {
 				// Failed Attempts

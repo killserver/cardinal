@@ -1,16 +1,21 @@
 <?php
 /*
-*
-* Version Engine: 1.25.5b1
-* Version File: 7
-*
-* 7.1
-* add support installer cookie
-* 7.2
-* add support interface on errors in login
-* 7.3
-* add support interface on complited login
-*
+ *
+ * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc3
+ * Version File: 7
+ *
+ * 7.1
+ * add support installer cookie
+ * 7.2
+ * add support interface on errors in login
+ * 7.3
+ * add support interface on complited login
+ * 7.4
+ * add support setcookie in php7
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
@@ -32,8 +37,16 @@ class page {
 				location($referer);
 				exit();
 			}
-			setcookie(COOK_USER, "", time()-(60*24*60*60), "/", ".".config::Select('default_http_hostname'), 1);
-			setcookie(COOK_PASS, "", time()-(60*24*60*60), "/", ".".config::Select('default_http_hostname'), 1);
+			if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
+				setcookie(COOK_USER, "", time()-(60*24*60*60), "/");
+			} else {
+				setcookie(COOK_USER, "", time()-(60*24*60*60), "/", ".".config::Select('default_http_hostname'), 1);
+			}
+			if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
+				setcookie(COOK_PASS, "", time()-(60*24*60*60), "/");
+			} else {
+				setcookie(COOK_PASS, "", time()-(60*24*60*60), "/", ".".config::Select('default_http_hostname'), 1);
+			}
 			location($referer);
 		} else {
 			if(isset($user['username'])) {
@@ -56,9 +69,21 @@ class page {
 				templates::error("Не верный пароль для авторизации");
 				return;
 			} else {
-				setcookie("id", $row['id'], time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
-				setcookie(COOK_USER, $name, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
-				setcookie(COOK_PASS, $row['pass'], time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+				if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
+					setcookie("id", $row['id'], time()+(120*24*60*60), "/");
+				} else {
+					setcookie("id", $row['id'], time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+				}
+				if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
+					setcookie(COOK_USER, $name, time()+(120*24*60*60), "/");
+				} else {
+					setcookie(COOK_USER, $name, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+				}
+				if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
+					setcookie(COOK_PASS, $row['pass'], time()+(120*24*60*60), "/");
+				} else {
+					setcookie(COOK_PASS, $row['pass'], time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+				}
 			}
 			location($referer, 10, false);
 			templates::error("Успешно прошли авторизацию! Возвращаем Вас на страницу с которой Вы пришли.");

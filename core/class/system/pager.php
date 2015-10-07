@@ -1,12 +1,17 @@
 <?php
 /*
-*
-* Version Engine: 1.25.5b1
-* Version File: 1
-*
-* 1.1
-* add paginator in core
-*
+ *
+ * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc3
+ * Version File: 1
+ *
+ * 1.1
+ * add paginator in core
+ * 1.2
+ * fix error in name pages
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
@@ -80,13 +85,13 @@ final class pager {
 							if($j==1) {
 								$this->pages[$c_link]['is_link'] = 1;
 								$this->pages[$c_link]['now'] = 0;
-								$this->pages[$c_link]['page'] = $url_page;
+								$this->pages[$c_link]['link'] = $url_page;
 								$this->pages[$c_link]['title'] = $j;
 								$c_link++;
 							} else {
 								$this->pages[$c_link]['is_link'] = 1;
 								$this->pages[$c_link]['now'] = 0;
-								$this->pages[$c_link]['page'] = $url_page.$p_page.$j;
+								$this->pages[$c_link]['link'] = $url_page.$p_page.$j;
 								$this->pages[$c_link]['title'] = $j;
 								$c_link++;
 							}

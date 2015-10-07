@@ -1,13 +1,16 @@
 <?php
 /*
-*
-* Version Engine: 1.25.3
-* Version File: 2
-*
-* 2.0
-* fix function die for php 5.4
-* add check exists data in cache, return false if data is not exists in cache
-*
+ *
+ * @version 2015-09-30 13:30:44 1.25.6-rc3
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc3
+ * Version File: 2
+ *
+ * 2.0
+ * fix function die for php 5.4
+ * add check exists data in cache, return false if data is not exists in cache
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";

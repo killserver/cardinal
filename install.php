@@ -1,7 +1,20 @@
 <?php
-ini_set('display_errors',1);
-error_reporting(E_ALL);
-
+/*
+ *
+ * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc3
+ * Version File: 2
+ *
+ * 2.1
+ * add sql query for support updater
+ * 2.2
+ * add support stop installing without need modules in php
+ * 2.3
+ * add support "drivers" - submodules for database
+ *
+*/
 define("IS_CORE", true);
 define("IS_INSTALLER", true);
 require_once("core.php");
@@ -22,218 +35,34 @@ if(sizeof($_POST)==0||sizeof($_POST)==1||sizeof($_POST)==2) {
 	} else if(sizeof($_POST)==1) {
 		$cache = (get_chmod(ROOT_PATH."core/cache/")=="0777" ? "green":"red");
 		$system_cache = (get_chmod(ROOT_PATH."core/cache/system/")=="0777" ? "green":"red");
-		if($cache=="red"||$system_cache=="red") {
+		$mb = (function_exists('mb_detect_encoding') ? "green" : "red");
+		if($cache=="red"||$system_cache=="red"||$mb=="red") {
 			templates::assign_var("is_stop", "1");
 		} else {
 			templates::assign_var("is_stop", "0");
 		}
-		templates::assign_vars(array("page" => "2", "cache" => $cache, "system_cache" => $system_cache));
+		templates::assign_vars(array("page" => "2", "cache" => $cache, "system_cache" => $system_cache, "mb" => $mb));
 	} else {
 		templates::assign_vars(array("page" => "3", "SERNAME" => getenv('SERVER_NAME')));
+
+	}
+	$driver = ROOT_PATH."core/class/system/drivers/";
+	$dirs = read_dir($driver, ".php");
+	sort($dirs);
+	for($i=0;$i<sizeof($dirs);$i++) {
+		if($dirs[$i]=="index.php"||$dirs[$i]=="DriverParam.php"||$dirs[$i]=="drivers.php") {
+			continue;
+		}
+		include_once($driver.$dirs[$i]);
+		$dr_subname = str_replace(".php", "", $dirs[$i]);
+		if(!class_exists($dr_subname)) {
+			continue;
+		}
+		$dr_name = $dr_subname::$subname;
+		templates::assign_vars(array("name" => $dr_subname, "value" => $dr_name), "drivers", "driver".$i);
 	}
 	echo templates::view(templates::complited_assing_vars("install", null, ""));
 	die();
-}
-
-class DB_install {
-
-	private static $mysql;
-	private static $qid;
-	private static $type = "mysql";
-	private static $type_error = 1;
-	public static $time = 0;
-	public static $num = 0;
-	public static $querys = array();
-
-	public static function check_connect($host, $user, $pass) {
-		if(function_exists("mysqli_connect")) {
-			$mysqli = @new mysqli($host, $user, $pass);
-			$ret = empty($mysqli->connect_error);
-			if($ret) {
-				$mysqli->close();
-			}
-			return $ret;
-		} else {
-			$mysqli = mysql_connect($host, $user, $pass);
-			$ret = $mysqli!==false;
-			if($ret) {
-				mysql_close($mysqli);
-			}
-			return $ret;
-		}
-	}
-	
-	public static function exists_db($host, $user, $pass, $db) {
-		if(static::check_connect()) {
-			if(function_exists("mysqli_connect")) {
-				$mysqli = @new mysqli($host, $user, $pass, $db);
-				$ret = empty($mysqli->connect_error);
-				if($ret) {
-					$mysqli->close();
-				}
-				return $ret;
-			} else {
-				$mysqli = mysql_connect($host, $user, $pass);
-				$ret = mysql_select_db($db, $mysqli);
-				if($ret) {
-					mysql_close($mysqli);
-				}
-				return $ret;
-			}
-		}
-	}
-	
-	public static function connect($host, $user, $pass, $db) {
-		if (!class_exists('mysqli') && !function_exists('mysql_connect')) {
-			HTTP::echos();
-			echo ('Server database MySQL not support PHP');
-			die();
-		}
-		if(function_exists("mysqli_connect")) {
-			self::$type = "mysqli";
-
-			if(!@self::$mysql = mysqli_init()) {
-				HTTP::echos();
-				echo "[error]";
-				die();
-			}
-			self::$mysql->options(MYSQLI_INIT_COMMAND, "SET NAMES 'utf8'");
-			self::$mysql->options(MYSQLI_INIT_COMMAND, "SET CHARACTER SET 'utf8'");
-			if(!self::$mysql->real_connect($host, $user, $pass, $db, 3306, false, MYSQLI_CLIENT_COMPRESS)) {
-				HTTP::echos();
-				switch(self::$mysql->connect_errno) {
-					case 1044:
-					case 1045:
-						echo ("Connect to database not exists, incorrect login-password");
-						break;
-					case 1049:
-						echo ("Select database not exists");
-						break;
-					case 2003:
-						echo ("Connect to database not exists, error in port database");
-						break;
-					case 2005:
-						echo ("Connect to database is not exists, addres database or server database not exists");
-						break;
-					case 2006:
-						echo ("Connect to database in not exists, server database is not exists");
-						break;
-					default:
-						echo ("[".self::$mysql->connect_errno."]: ".self::$mysql->connect_errno);
-						break;
-				}
-				die();
-			}
-			self::$mysql->autocommit(false);
-		} else {
-			if(!@self::$mysql = mysql_connect($host, $user, $pass, $db)) {
-				HTTP::echos();
-				switch(mysql_errno(self::$mysql)) {
-					case 1045:
-						echo ("Connect to database not exists, incorrect login-password");
-						break;
-					case 2003:
-						echo ("Connect to database not exists, error in port database");
-						break;
-					case 2005:
-						echo ("Connect to database is not exists, addres database or server database not exists");
-						break;
-					case 2006:
-						echo ("Connect to database in not exists, server database is not exists");
-						break;
-					default:
-						echo "[".mysql_errno(self::$mysql)."]: ".mysql_error(self::$mysql);
-						break;
-				}
-				die();
-			}
-			mysql_select_db(config::Select('db', 'db'), self::$mysql);
-			self::doquery("SET NAMES 'utf8'", true);
-			self::doquery("SET CHARACTER SET 'utf8'", true);
-		}
-	}
-
-	private static function time() {
-		return microtime();
-	}
-
-	public static function last_id($table) {
-		$tables = self::query("SHOW TABLE STATUS LIKE '".$table."'");
-		if(self::$type == "mysqli") {
-			$table = $tables->fetch_assoc();
-		} else {
-			$table = mysql_fetch_assoc($tables);
-		}
-		return $table['Auto_increment'];
-	}
-
-	public static function query($query) {
-		$stime = self::time();
-		if(self::$type == "mysqli") {
-			if(method_exists(self::$mysql, "begin_transaction")) {
-				self::$mysql->begin_transaction();
-			}
-			if(!(self::$qid = $return = self::$mysql->query($query))) {
-				self::error($query);
-			}
-			if(method_exists(self::$mysql, "commit")) {
-				self::$mysql->commit();
-			}
-		} else {
-			mysql_query("START TRANSACTION;", self::$mysql);
-			if(!(self::$qid = $return = mysql_query($query, self::$mysql))) {
-				self::error($query);
-			}
-			mysql_query("COMMIT;", self::$mysql);
-		}
-		$etime = self::time()-$stime;
-		self::$time += $etime;
-		self::$num += 1;
-		self::$querys[] = array("time" => $etime, "query" => htmlspecialchars($query));
-	return $return;
-	}
-
-	private static function error($query) {
-		if(self::$type == "mysqli") {
-			$mysql_error = self::$mysql->error;
-			$mysql_error_num = self::$mysql->errno;
-		} else {
-			$mysql_error = mysql_error(self::$mysql);
-			$mysql_error_num = mysql_errno(self::$mysql);
-		}
-
-		if($query) {
-			// Safify query
-			$query = preg_replace("/([0-9a-f]){32}/", "********************************", $query); // Hides all hashes
-		}
-
-		$query = htmlspecialchars($query, ENT_QUOTES, 'ISO-8859-1');
-		$mysql_error = htmlspecialchars($mysql_error, ENT_QUOTES, 'ISO-8859-1');
-
-		$trace = debug_backtrace();
-		$level = 0;
-		if (isset($trace[1]['function']) && $trace[1]['function'] == "query" ) $level = 1;
-		if (isset($trace[2]['function']) && $trace[2]['function'] == "doquery" ) $level = 2;
-
-		$trace[$level]['file'] = str_replace(ROOT_PATH, "", $trace[$level]['file']);
-
-		if(self::$type_error === 1) {
-			modules::init_templates()->dir_skins("skins/");
-			modules::init_templates()->assign_vars(array(
-				"query" => $query,
-				"error" => $mysql_error,
-				"error_num" => $mysql_error_num,
-				"file" => $trace[$level]['file'],
-				"line" => $trace[$level]['line'],
-			));
-			echo modules::init_templates()->complited_assing_vars("mysql_error", null);
-		} else {
-			echo "<center><br />".$trace[$level]['file'].":".$trace[$level]['line']."<hr />Query:<br /><textarea cols=\"40\" rows=\"5\">".$query."</textarea><hr />[".$mysql_error_num."] ".$mysql_error."<br />";
-		}
-		modules::init_templates()->__destruct();
-		exit();
-	}
-
 }
 
 modules::manifest_set(array('functions', "create_pass"), "create_pass_install");
@@ -246,8 +75,11 @@ $db_port = saves($_POST['db_port'], true);
 $db_user = saves($_POST['db_user'], true);
 $db_pass = saves($_POST['db_pass'], true);
 $db_db = saves($_POST['db_db'], true);
+$db_driver = saves($_POST['db_driver'], true);
 
-if(!DB_install::check_connect($db_host, $db_user, $db_pass)) {
+db::changeDriver($db_driver);
+db::OpenDriver();
+if(!db::check_connect($db_host, $db_user, $db_pass)) {
 	templates::assign_vars(array("page" => "error"));
 	echo templates::view(templates::complited_assing_vars("install", null, ""));
 	die();
@@ -263,6 +95,7 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `config` (
   KEY `config_name` (`config_name`),
   FULLTEXT KEY `config_value` (`config_value`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
+$SQL[] = "INSERT INTO `config` SET `config_name` = \"db_version\", `config_value` = \"".VERSION."\"";
 
 $SQL[] = "DROP TABLE IF EXISTS `comments`;";
 $SQL[] = "CREATE TABLE IF NOT EXISTS `comments` (
@@ -434,9 +267,9 @@ $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `acc
 
 
 
-DB_install::connect($db_host, $db_user, $db_pass, $db_db);
+db::connect($db_host, $db_user, $db_pass, $db_db, "utf8", 3306);
 $insert = array();
-$last = DB_install::last_id("users");
+$last = db::last_id("users");
 if(!empty($last)) {
 	$insert['new_id'] = "id = ".$last;
 }
@@ -457,7 +290,7 @@ $insert = modules::change_db('reg', $insert);
 $SQL[] = "INSERT INTO users SET ".implode(", ", $insert);
 
 for($i=0;$i<sizeof($SQL);$i++) {
-	DB_install::query($SQL[$i]);
+	db::query($SQL[$i]);
 }
 
 
@@ -474,6 +307,7 @@ $config = array_merge(array(
 		"user" => "'.$db_user.'",
 		"pass" => "'.$db_pass.'",
 		"db" => "'.$db_db.'",
+		"driver" => "'.$db_driver.'",
 		"charset" => "utf8",
 	),
 ), $config);
@@ -491,10 +325,10 @@ echo "403 ERROR";
 die();
 }
 
-define("COOK_USER", "username_'.rand(-500, 500).'");
-define("COOK_PASS", "password_'.rand(-500, 500).'");
-define("COOK_ADMIN_USER", "admin_username_'.rand(-500, 500).'");
-define("COOK_ADMIN_PASS", "admin_password_'.rand(-500, 500).'");
+define("COOK_USER", "username_'.rand(0, 1000).'");
+define("COOK_PASS", "password_'.rand(0, 1000).'");
+define("COOK_ADMIN_USER", "admin_username_'.rand(0, 1000).'");
+define("COOK_ADMIN_PASS", "admin_password_'.rand(0, 1000).'");
 
 if(isset($_SERVER[\'HTTPS\']) && $_SERVER[\'HTTPS\']!=\'off\') {
 	$protocol = "https";

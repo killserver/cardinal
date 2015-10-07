@@ -1,4 +1,16 @@
 <?php
+/*
+ *
+ * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc3
+ * Version File: 2
+ *
+ * 2.1
+ * add support working without connect to database
+ *
+*/
 if(!defined("IS_CORE")) {
 die();
 }
@@ -57,7 +69,9 @@ class base {
 		if(!modules::init_cache()->exists("menu")) {
 			$db = modules::init_db();
 			$rows = $db->select_query("SELECT id, name, data, menu FROM menu WHERE activ = \"yes\" ORDER BY position ASC");
-			modules::init_cache()->set("menu", $rows);
+			if(!is_bool($rows)) {
+				modules::init_cache()->set("menu", $rows);
+			}
 		} else {
 			$rows = modules::init_cache()->get("menu");
 		}
@@ -66,7 +80,7 @@ class base {
 		if(!file_exists(ROOT_PATH."skins/".$skins."/block_left.tpl") && !file_exists(ROOT_PATH."skins/".$skins."/block_right.tpl")) {
 			$file_left = $file_center = $file_right = file_get_contents(ROOT_PATH."skins/".$skins."/blocks.tpl");
 		}
-		if(sizeof($rows)>0) {
+		if(!is_bool($rows) && sizeof($rows)>0) {
 			foreach($rows as $row) {
 				if($row['menu']=="left") {
 					$left .= str_replace(array("{title}", "{content}"), array($row['name'], (urldecode($row['data']))), $file_left)."\n";

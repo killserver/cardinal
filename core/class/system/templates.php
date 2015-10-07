@@ -1,20 +1,25 @@
 <?php
 /*
-*
-* Version Engine: 1.25.3
-* Version File: 3
-*
-* 3.0
-* add fix foreach block. before - if given string in foreaching data - viewing error in page
-* 3.0.5
-* add fix lost password in templates and fix old call config
-* 3.1
-* fix userlevel data
-* 3.2
-* fix error in minify for position in page
-* 3.3
-* add and fix header list for pages
-*
+ *
+ * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc3
+ * Version File: 3
+ *
+ * 3.0
+ * add fix foreach block. before - if given string in foreaching data - viewing error in page
+ * 3.0.5
+ * add fix lost password in templates and fix old call config
+ * 3.1
+ * fix userlevel data
+ * 3.2
+ * fix error in minify for position in page
+ * 3.3
+ * add and fix header list for pages
+ * 3.4
+ * add support preg_replace_callback_array function in php 7
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
@@ -135,6 +140,14 @@ final class templates {
 			}
 		}
 	}
+	
+	private static function callback_array($pattern, $func, $data) {
+		if(function_exists("preg_replace_callback_array")) {
+			return preg_replace_callback_array(array($pattern => $func), $data);
+		} else {
+			return preg_replace_callback($pattern, $func, $data);
+		}
+	}
 
 	private static function foreachs($array) {
 		if(!isset(self::$blocks[$array[1]])) {
@@ -166,12 +179,12 @@ final class templates {
 				$dd = str_replace('{'.$array[1].'.'.$nams[$is].'}', $vals[$is], $new);
 			}
 			$dd = str_replace('{$size_for}', $all+1, $dd);
-			$dd = preg_replace_callback("#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $dd);
-			$dd = preg_replace_callback("#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $dd);
-			$dd = preg_replace_callback('#\[foreachif (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/foreachif \\1\]#i', ("templates::is"), $dd);
-			$dd = preg_replace_callback('#\[foreachif (.*?)\]([\s\S]*?)\[/foreachif \\1\]#i', ("templates::is"), $dd);
-			$dd = preg_replace_callback("#\\[foreachif (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/foreachif\\]#i", ("templates::is"), $dd);
-			$dd = preg_replace_callback("#\\[foreachif (.*?)\\]([\s\S]*?)\\[/foreachif\\]#i", ("templates::is"), $dd);
+			$dd = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $dd);
+			$dd = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $dd);
+			$dd = self::callback_array('#\[foreachif (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/foreachif \\1\]#i', ("templates::is"), $dd);
+			$dd = self::callback_array('#\[foreachif (.*?)\]([\s\S]*?)\[/foreachif \\1\]#i', ("templates::is"), $dd);
+			$dd = self::callback_array("#\\[foreachif (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/foreachif\\]#i", ("templates::is"), $dd);
+			$dd = self::callback_array("#\\[foreachif (.*?)\\]([\s\S]*?)\\[/foreachif\\]#i", ("templates::is"), $dd);
 			$num++;
 			$rnum--;
 			$tt .= str_replace('\n', "\n", $dd);
@@ -292,20 +305,20 @@ final class templates {
 		if(strpos($tmp, "///***")!==false&&strpos($tmp, "***///")!==false) {
 			$tmp = nsubstr($tmp, 0, nstrpos($tmp, "///***")).nsubstr($tmp, nstrpos($tmp, "***///")+6, nstrlen($tmp));
 		}
-		$tmp = preg_replace_callback("#\{include templates=['\"](.*?)['\"]\}#", ("templates::include_tpl"), $tmp);
-		$tmp = preg_replace_callback("#\{include module=['\"](.*?)['\"]\}#", ("templates::include_module"), $tmp);
+		$tmp = self::callback_array("#\{include templates=['\"](.*?)['\"]\}#", ("templates::include_tpl"), $tmp);
+		$tmp = self::callback_array("#\{include module=['\"](.*?)['\"]\}#", ("templates::include_module"), $tmp);
 		$tmp = preg_replace("~\{\#is_last\[(\"|)(.*?)(\"|)\]\}~", "\\1", $tmp);
-		$tmp = preg_replace_callback("#\\[(not-group)=(.+?)\\](.+?)\\[/not-group\\]#is", ("templates::group"), $tmp);
-		$tmp = preg_replace_callback("#\\[(group)=(.+?)\\](.+?)\\[/group\\]#is", ("templates::group"), $tmp);
-		$tmp = preg_replace_callback("#\{L_sprintf\(([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = preg_replace_callback("#\{L_sprintf\(([a-zA-Z0-9\-_]+),(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = preg_replace_callback("#\{L_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
-		$tmp = preg_replace_callback("#\{L_([a-zA-Z0-9\-_]+)\}#", ("templates::lang"), $tmp);
-		$tmp = preg_replace_callback("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tmp);
-		$tmp = preg_replace_callback("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tmp);
-		$tmp = preg_replace_callback("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tmp);
-		$tmp = preg_replace_callback("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tmp);
-		$tmp = preg_replace_callback("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tmp);
+		$tmp = self::callback_array("#\\[(not-group)=(.+?)\\](.+?)\\[/not-group\\]#is", ("templates::group"), $tmp);
+		$tmp = self::callback_array("#\\[(group)=(.+?)\\](.+?)\\[/group\\]#is", ("templates::group"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\(([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\(([a-zA-Z0-9\-_]+),(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{L_([a-zA-Z0-9\-_]+)\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tmp);
+		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tmp);
+		$tmp = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tmp);
+		$tmp = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tmp);
+		$tmp = self::callback_array("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tmp);
 		$tmp = str_replace("{reg_link}", config::Select('link', 'reg'), $tmp);
 		$tmp = str_replace("{login_link}", config::Select('link', 'login'), $tmp);
 		$tmp = str_replace("{logout-link}", config::Select('link', 'logout'), $tmp);
@@ -313,21 +326,21 @@ final class templates {
 		$tmp = str_replace("{login}", modules::get_user('username'), $tmp);
 		$tmp = str_replace("{addnews-link}", config::Select('link', 'add'), $tmp);
 		$tmp = str_replace("{lostpassword-link}", config::Select('link', 'recover'), $tmp);
-		$tmp = preg_replace_callback("#\{UL_(.*?)\[(.*?)\]\}#", ("templates::level"), $tmp);
+		$tmp = self::callback_array("#\{UL_(.*?)\[(.*?)\]\}#", ("templates::level"), $tmp);
 		
-		$tmp = preg_replace_callback('#\[page=(.*?)\]([^[]*)\[/page\]#i', ("templates::nowpage"), $tmp);
-		$tmp = preg_replace_callback('#\[not-page=(.*?)\]([^[]*)\[/not-page\]#i', ("templates::npage"), $tmp);
+		$tmp = self::callback_array('#\[page=(.*?)\]([^[]*)\[/page\]#i', ("templates::nowpage"), $tmp);
+		$tmp = self::callback_array('#\[not-page=(.*?)\]([^[]*)\[/not-page\]#i', ("templates::npage"), $tmp);
 		
-		$tmp = preg_replace_callback('#\[if (.+?)\](.*?)\[else \\1\](.*?)\[/if \\1\]#i', ("templates::is"), $tmp);
-		$tmp = preg_replace_callback('~\[if (.+?)\]([^[]*)\[/if \\1\]~iU', ("templates::is"), $tmp);
+		$tmp = self::callback_array('#\[if (.+?)\](.*?)\[else \\1\](.*?)\[/if \\1\]#i', ("templates::is"), $tmp);
+		$tmp = self::callback_array('~\[if (.+?)\]([^[]*)\[/if \\1\]~iU', ("templates::is"), $tmp);
 		
-		$tmp = preg_replace_callback("#\\[if (.+?)\\](.*?)\\[else\\](.*?)\\[/if\\]#i", ("templates::is"), $tmp);
-		$tmp = preg_replace_callback('~\[if (.+?)\]([^[]*)\[/if\]~iU', ("templates::is"), $tmp);
-		$tmp = preg_replace_callback("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tmp);
+		$tmp = self::callback_array("#\\[if (.+?)\\](.*?)\\[else\\](.*?)\\[/if\\]#i", ("templates::is"), $tmp);
+		$tmp = self::callback_array('~\[if (.+?)\]([^[]*)\[/if\]~iU', ("templates::is"), $tmp);
+		$tmp = self::callback_array("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tmp);
 		if(preg_match("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true)\}#", $tmp)) {
-			$tmp = preg_replace_callback("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true)\}#", "langdate", $tmp);
+			$tmp = self::callback_array("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true)\}#", "langdate", $tmp);
 		}
-		$tmp = preg_replace_callback("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tmp);
+		$tmp = self::callback_array("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tmp);
 		return $tmp;
 	}
 
@@ -694,18 +707,18 @@ final class templates {
 	}
 
 	private static function comp_datas($tpl, $file="null", $test = false) {
-		$tpl = preg_replace_callback("#\{include templates=['\"](.*?)['\"]\}#", ("templates::include_tpl"), $tpl);
-		$tpl = preg_replace_callback("#\{include module=['\"](.*?)['\"]\}#", ("templates::include_module"), $tpl);
+		$tpl = self::callback_array("#\{include templates=['\"](.*?)['\"]\}#", ("templates::include_tpl"), $tpl);
+		$tpl = self::callback_array("#\{include module=['\"](.*?)['\"]\}#", ("templates::include_module"), $tpl);
 		$tpl = preg_replace(array('~\{\#\#(.+?)}~', '~\{\#(.+?)}~', '~\{\_(.+?)}~'), "{\\1}", $tpl);
-		$tpl = preg_replace_callback("~\{is_last\[(\"|)(.+?)(\"|)\]\}~", ("templates::count_blocks"), $tpl);
-		$tpl = preg_replace_callback("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tpl);
-		$tpl = preg_replace_callback("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tpl);
-		$tpl = preg_replace_callback("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tpl);
-		$tpl = preg_replace_callback("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tpl);
-		$tpl = preg_replace_callback("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tpl);
-		$tpl = preg_replace_callback("#\{UL_(.*?)\[(.*?)\]\}#", ("templates::level"), $tpl);
-		$tpl = preg_replace_callback('#\[page=(.*?)\](.*)\[/page\]#i', ("templates::nowpage"), $tpl);
-		$tpl = preg_replace_callback('#\[not-page=(.*?)\](.*)\[/not-page\]#i', ("templates::npage"), $tpl);
+		$tpl = self::callback_array("~\{is_last\[(\"|)(.+?)(\"|)\]\}~", ("templates::count_blocks"), $tpl);
+		$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tpl);
+		$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tpl);
+		$tpl = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tpl);
+		$tpl = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tpl);
+		$tpl = self::callback_array("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tpl);
+		$tpl = self::callback_array("#\{UL_(.*?)\[(.*?)\]\}#", ("templates::level"), $tpl);
+		$tpl = self::callback_array('#\[page=(.*?)\](.*)\[/page\]#i', ("templates::nowpage"), $tpl);
+		$tpl = self::callback_array('#\[not-page=(.*?)\](.*)\[/not-page\]#i', ("templates::npage"), $tpl);
 		if(modules::manifest_get(array("temp", "block"))!==false) {
 			self::$blocks = array_merge(self::$blocks, modules::manifest_get(array("temp", "block")));
 		}
@@ -717,15 +730,15 @@ final class templates {
 			if(!is_array($val) && strpos($tpl, "{".$name."}") !== false) {
 				$tpls = str_replace("{".$name."}", $val, $tpls);
 			} else {
-				$tpls = preg_replace_callback("/{(.+?)\[(.+?)\]}/", ("templates::replace_tmp"), $tpls);
+				$tpls = self::callback_array("/{(.+?)\[(.+?)\]}/", ("templates::replace_tmp"), $tpls);
 			}
 		}
 if(!$test) {
-		$tpl = preg_replace_callback("#\{foreach\}([0-9]+)\{/foreach\}#i", ("templates::foreach_set"), $tpl);
-		$tpl = preg_replace_callback("#\\[foreach block=(.+?)\\](.+?)\\[/foreach $1\\]#is", ("templates::foreachs"), $tpls);
-		$tpl = preg_replace_callback("#\\[foreach block=(.+?)\\](.+?)\\[/foreach\\]#is", ("templates::foreachs"), $tpls);
+		$tpl = self::callback_array("#\{foreach\}([0-9]+)\{/foreach\}#i", ("templates::foreach_set"), $tpl);
+		$tpl = self::callback_array("#\\[foreach block=(.+?)\\](.+?)\\[/foreach $1\\]#is", ("templates::foreachs"), $tpls);
+		$tpl = self::callback_array("#\\[foreach block=(.+?)\\](.+?)\\[/foreach\\]#is", ("templates::foreachs"), $tpls);
 		$tpl = preg_replace("#\{foreach\}([0-9]+)\{/foreach\}#i", "", $tpl);
-		$tpl = preg_replace_callback("#\{count\[(.*?)\]\}#is", ("templates::countforeach"), $tpl);
+		$tpl = self::callback_array("#\{count\[(.*?)\]\}#is", ("templates::countforeach"), $tpl);
 }
 		$array_use = array();
 		foreach(self::$blocks as $name => $val) {
@@ -736,25 +749,25 @@ if(!$test) {
 				$tpl = str_replace("{".$name."}", $val, $tpl);
 				$array_use[$name] = $val;
 			} else {
-				$tpl = preg_replace_callback("/{(.+?)\[(.+?)\]}/", ("templates::replace_tmp"), $tpl);
+				$tpl = self::callback_array("/{(.+?)\[(.+?)\]}/", ("templates::replace_tmp"), $tpl);
 			}
 		}
-		$tpl = preg_replace_callback("#\\[ajax\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/ajax\\]#i", ("templates::ajax"), $tpl);
-		$tpl = preg_replace_callback("#\\[ajax\\]([\s\S]*?)\\[/ajax\\]#i", ("templates::ajax"), $tpl);
-		$tpl = preg_replace_callback("#\\[ajax_click\\]([\s\S]*?)\\[/ajax_click\\]#i", ("templates::ajax_click"), $tpl);
-		$tpl = preg_replace_callback("#\\[!ajax_click\\]([\s\S]*?)\\[/!ajax_click\\]#i", ("templates::ajax_click"), $tpl);
-		$tpl = preg_replace_callback("#\\[!ajax\\]([\s\S]*?)\\[/!ajax\\]#i", ("templates::ajax"), $tpl);
+		$tpl = self::callback_array("#\\[ajax\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/ajax\\]#i", ("templates::ajax"), $tpl);
+		$tpl = self::callback_array("#\\[ajax\\]([\s\S]*?)\\[/ajax\\]#i", ("templates::ajax"), $tpl);
+		$tpl = self::callback_array("#\\[ajax_click\\]([\s\S]*?)\\[/ajax_click\\]#i", ("templates::ajax_click"), $tpl);
+		$tpl = self::callback_array("#\\[!ajax_click\\]([\s\S]*?)\\[/!ajax_click\\]#i", ("templates::ajax_click"), $tpl);
+		$tpl = self::callback_array("#\\[!ajax\\]([\s\S]*?)\\[/!ajax\\]#i", ("templates::ajax"), $tpl);
 
-		$tpl = preg_replace_callback('#\[if (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/if \\1\]#i', ("templates::is"), $tpl);
-		$tpl = preg_replace_callback('#\[if (.*?)\]([\s\S]*?)\[/if \\1\]#i', ("templates::is"), $tpl);
+		$tpl = self::callback_array('#\[if (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/if \\1\]#i', ("templates::is"), $tpl);
+		$tpl = self::callback_array('#\[if (.*?)\]([\s\S]*?)\[/if \\1\]#i', ("templates::is"), $tpl);
 		
-		$tpl = preg_replace_callback("#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $tpl);
-		$tpl = preg_replace_callback("#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $tpl);
+		$tpl = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $tpl);
+		$tpl = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $tpl);
 
-		$tpl = preg_replace_callback("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tpl);
-		$tpl = preg_replace_callback("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tpl);
-		$tpl = preg_replace_callback("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
-		$tpl = preg_replace_callback("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
+		$tpl = self::callback_array("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tpl);
+		$tpl = self::callback_array("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tpl);
+		$tpl = self::callback_array("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
+		$tpl = self::callback_array("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
 		$tpl = str_replace("{THEME}", "/".self::$dir_skins."/".self::$skins, $tpl);
 		if(strpos($tpl, "[clear]") !== false) {
 			foreach($array_use as $name => $val) {
@@ -870,17 +883,17 @@ if(!$test) {
 	}
 
 	public static function lcud($tmp) {
-		$tmp = preg_replace_callback("#\{L_sprintf\(([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = preg_replace_callback("#\{L_sprintf\(([a-zA-Z0-9\-_]+),(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = preg_replace_callback("#\{L_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
-		$tmp = preg_replace_callback("#\{L_([a-zA-Z0-9\-_]+)\}#", ("templates::lang"), $tmp);
-		$tmp = preg_replace_callback("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tmp);
-		$tmp = preg_replace_callback("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tmp);
-		$tmp = preg_replace_callback("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tmp);
-		$tmp = preg_replace_callback("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tmp);
-		$tmp = preg_replace_callback("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tmp);
-		$tmp = preg_replace_callback("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tmp);
-		$tmp = preg_replace_callback("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\(([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\(([a-zA-Z0-9\-_]+),(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{L_([a-zA-Z0-9\-_]+)\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tmp);
+		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tmp);
+		$tmp = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tmp);
+		$tmp = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tmp);
+		$tmp = self::callback_array("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tmp);
+		$tmp = self::callback_array("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tmp);
+		$tmp = self::callback_array("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tmp);
 	return $tmp;
 	}
 

@@ -1,4 +1,16 @@
 <?php
+/*
+ *
+ * @version 2015-09-30 13:30:44 1.25.6-rc3
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc3
+ * Version File: 1
+ *
+ * 1.1
+ * add revision
+ *
+*/
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
 die();
@@ -13,7 +25,7 @@ define("CACHE_NONE", 0);
 define("ERROR_FILE", 0);
 define("ERROR_DB", 1);
 
-define("VERSION", "1.25.6-rc2");
+define("VERSION", "1.25.6-rc3");
 define("LEVEL_MODER", 2);
 define("LEVEL_USER", 1);
 define("LEVEL_GUEST", 0);

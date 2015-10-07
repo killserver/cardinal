@@ -1,12 +1,17 @@
 <?php
 /*
-*
-* Version Engine: 1.25.3
-* Version File: 2
-*
-* 2.4
-* add support XXX category
-*
+ *
+ * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc3
+ * Version File: 2
+ *
+ * 2.4
+ * add support XXX category
+ * 2.5
+ * delete old test constant
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
@@ -31,9 +36,6 @@ final class cardinal {
 			define("IS_XXX", "true");
 		}
 		$otime = config::Select("cardinal_time");
-		if(isset($_GET['d'])) {
-			var_dump(CRON_TIME, $otime);die();
-		}
 		if($otime <= time()-12*60*60) {
 			include_dir(ROOT_PATH."core/modules/cron/", ".".ROOT_EX);
 			config::Update("cardinal_time", time());

@@ -1,15 +1,19 @@
 <?php
 /*
-*
-* Version Engine: 1.25.5a6
-* Version File: 16
-*
-* 16.1
-* fix errors
-*
-* 16.2
-* add checker connection to db
-*
+ *
+ * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc3
+ * Version File: 17
+ *
+ * 16.1
+ * fix errors
+ * 16.2
+ * add checker connection to db
+ * 17.1
+ * add support "drivers" - submodules for database
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
@@ -18,109 +22,88 @@ die();
 
 final class db {
 
-	private static $mc;
 	private static $qid;
-	private static $connecten = false;
-	private static $type = "mysql";
-	private static $type_error = 1;
+	private static $driver;
 	private static $param = array("sql" => "", "param" => array());
 	public static $time = 0;
 	public static $num = 0;
 	public static $querys = array();
-	
+	private static $driver_name = null;
+
 	public static function connected() {
-		return self::$connecten;
+		if(is_bool(self::$driver) || empty(self::$driver)) {
+			return false;
+		}
+		return self::$driver->connected();
 	}
 
-	private static function connect() {
-		if (!class_exists('mysqli') && !function_exists('mysql_connect')) {
-			HTTP::echos();
-			echo ('Server database MySQL not support PHP');
-			die();
+	public static function check_connect($host, $user, $pass) {
+		if(is_bool(self::$driver) || empty(self::$driver)) {
+			return false;
 		}
-		if(function_exists("mysqli_connect")) {
-			self::$type = "mysqli";
+		return self::$driver->check_connect($host, $user, $pass);
+	}
 
-			if(!@self::$mc = mysqli_init()) {
-				HTTP::echos();
-				echo "[error]";
-				die();
+	public static function exists_db($host, $user, $pass, $db) {
+		if(is_bool(self::$driver) || empty(self::$driver)) {
+			return false;
+		}
+		return self::$driver->exists_db($host, $user, $pass, $db);
+	}
+
+	public static function changeDriver($driver) {
+		self::$driver_name = $driver;
+	}
+
+	public static function OpenDriver() {
+		$driv = self::$driver_name;
+		if(!class_exists($driv)) {
+			$driv = self::DriverList();
+			$driv = $driv[array_rand($driv)];
+		}
+		self::$driver = new $driv();
+	}
+
+	public static function DriverList() {
+		$dir = ROOT_PATH."core/class/system/drivers/";
+		$dirs = array();
+		if(is_dir($dir)) {
+			if($dh = dir($dir)) {
+				while(($file = $dh->read()) !== false) {
+					if(is_file($dir.$file) && strpos($file, ".php")!==false) {
+						$dirs[] = $file;
+					}
+				}
+			$dh->close();
 			}
-			self::$mc->options(MYSQLI_INIT_COMMAND, "SET NAMES '".config::Select('db', 'charset')."'");
-			self::$mc->options(MYSQLI_INIT_COMMAND, "SET CHARACTER SET '".config::Select('db', 'charset')."'");
+		}
+		sort($dirs);
+		$drivers = array();
+		for($i=0;$i<sizeof($dirs);$i++) {
+			if($dirs[$i]=="index.php"||$dirs[$i]=="DriverParam.php"||$dirs[$i]=="drivers.php") {
+				continue;
+			}
+			$dr_subname = str_replace(".php", "", $dirs[$i]);
+			$drivers[] = $dr_subname;
+		}
+		return $drivers;
+	}
+
+	public static function connect($host, $user, $pass, $db, $charset, $port) {
 //mysql_query ("set character_set_client='utf8'"); 
 //mysql_query ("set character_set_results='utf8'"); 
 //mysql_query ("set collation_connection='utf8_general_ci'");
-			try {
-				if(!self::$mc->real_connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'), config::Select('db','db'), 3306, false, MYSQLI_CLIENT_COMPRESS)) {
-					HTTP::echos();
-					switch(self::$mc->connect_errno) {
-						case 1044:
-						case 1045:
-							echo ("Connect to database not exists, incorrect login-password");
-							break;
-						case 1049:
-							echo ("Select database not exists");
-							break;
-						case 2003:
-							echo ("Connect to database not exists, error in port database");
-							break;
-						case 2005:
-							echo ("Connect to database is not exists, addres database or server database not exists");
-							break;
-						case 2006:
-							echo ("Connect to database in not exists, server database is not exists");
-							break;
-						default:
-							echo ("[".self::$mc->connect_errno."]: ".self::$mc->connect_errno);
-							break;
-					}
-					die();
-				}
-				self::$connecten = true;
-				self::$mc->autocommit(false);
-			} catch(Exception $e) {
-				Error::handlePhpError($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
-				exit();
-			}
-		} else {
-			try {
-				if(!@self::$mc = mysql_connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'))) {
-					HTTP::echos();
-					switch(mysql_errno(self::$mc)) {
-						case 1045:
-							echo ("Connect to database not exists, incorrect login-password");
-							break;
-						case 2003:
-							echo ("Connect to database not exists, error in port database");
-							break;
-						case 2005:
-							echo ("Connect to database is not exists, addres database or server database not exists");
-							break;
-						case 2006:
-							echo ("Connect to database in not exists, server database is not exists");
-							break;
-						default:
-							echo "[".mysql_errno(self::$mc)."]: ".mysql_error(self::$mc);
-							break;
-					}
-					die();
-				}
-				mysql_select_db(config::Select('db', 'db'), self::$mc);
-				self::doquery("SET NAMES '".config::Select('db','charset')."'", true);
-				self::doquery("SET CHARACTER SET '".config::Select('db','charset')."'", true);
-				self::$connecten = true;
-			} catch(Exception $e) {
-				Error::handlePhpError($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
-				exit();
-			}
+		$open = self::OpenDriver();
+		if($open) {
+			self::$driver->connect($host, $user, $pass, $db, $charset, $port);
 		}
 	}
 
-	function db() {
+	function __construct() {
 		if(!defined("INSTALLER")) {
 			config::StandAlone();
-			self::connect();
+			self::$driver_name = config::Select('db','driver');
+			self::connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'), config::Select('db','db'), config::Select('db', 'charset'), 3306);
 		}
 	}
 
@@ -129,33 +112,7 @@ final class db {
 	}
 
 	function set_type($int = 2) {
-		self::$type_error = intval($int);
-	}
-
-	public static function query($query) {
-		$stime = self::time();
-		if(self::$type == "mysqli") {
-			if(PHP_VERSION_ID>=55000) {
-				self::$mc->begin_transaction();
-			} else {
-				self::$mc->autocommit(FALSE);
-			}
-			if(!(self::$qid = $return = self::$mc->query($query))) {
-				self::error($query);
-			}
-			self::$mc->commit();
-		} else {
-			mysql_query("START TRANSACTION;", self::$mc);
-			if(!(self::$qid = $return = mysql_query($query, self::$mc))) {
-				self::error($query);
-			}
-			mysql_query("COMMIT;", self::$mc);
-		}
-		$etime = self::time()-$stime;
-		self::$time += $etime;
-		self::$num += 1;
-		self::$querys[] = array("time" => $etime, "query" => htmlspecialchars($query));
-	return $return;
+		self::$driver->set_type($int);
 	}
 
 	public static function prepare($sql) {
@@ -173,12 +130,15 @@ final class db {
 	}
 
 	public static function execute() {
+		if(is_bool(self::$driver) || empty(self::$driver)) {
+			return false;
+		}
 		$sql = self::$param['sql'];
 		foreach(self::$param['param'] as $n => $v) {
 			$sql = str_replace(array("::".$n, ":".$n, "$".$n), $v, $sql);
 		}
 		unset(self::$param);
-	return self::$query($sql);
+		return self::$query($sql);
 	}
 
 	public static function doquery($query, $only = null, $check = false) {
@@ -248,36 +208,15 @@ final class db {
 		}
 	}
 
-	public static function affected_rows() {
-		if(self::$type == "mysqli") {
-			return self::$mc->affected_rows;
-		} else {
-			return mysql_affected_rows(self::$mc);
-		}
-	}
-
-	public static function insert_id() {
-		if(self::$type == "mysqli") {
-			return self::$mc->insert_id;
-		} else {
-			return mysql_insert_id(self::$mc);
-		}
-	}
-
 	public static function last_id($table) {
 		$table = self::doquery("SHOW TABLE STATUS LIKE '".$table."'");
 		return $table['Auto_increment'];
 	}
 
-	public static function num_fields() {
-		if(self::$type == "mysqli") {
-			return self::$mc->field_count;
-		} else {
-			return mysql_num_fields(self::$mc);
-		}
-	}
-
 	public static function select_query($query) {
+		if(is_bool(self::$driver) || empty(self::$driver)) {
+			return false;
+		}
 		if(strpos($query, "SELECT") !== false || strpos($query, "SHOW TABLE") !== false) {
 			$qid = self::query($query);
 			$array = array();
@@ -290,94 +229,114 @@ final class db {
 		}
 	}
 
+	public static function query($query) {
+		if(is_bool(self::$driver) || empty(self::$driver)) {
+			return false;
+		}
+		$stime = self::time();
+		self::$qid = $return = self::$driver->query($query);
+		$etime = self::time()-$stime;
+		self::$time += $etime;
+		self::$num += 1;
+		self::$querys[] = array("time" => $etime, "query" => htmlspecialchars($query));
+	return $return;
+	}
+
+	public static function affected_rows() {
+		if(is_bool(self::$driver) || empty(self::$driver)) {
+			return false;
+		}
+		return self::$driver->affected_rows();
+	}
+
+	public static function insert_id() {
+		if(is_bool(self::$driver) || empty(self::$driver)) {
+			return false;
+		}
+		return self::$driver->insert_id();
+	}
+
+	public static function num_fields() {
+		if(is_bool(self::$driver) || empty(self::$driver)) {
+			return false;
+		}
+		return self::$driver->field_count();
+	}
+
 	public static function fetch_row($query = null) {
+		if(is_bool(self::$driver) || empty(self::$driver)) {
+			return false;
+		}
 		if(empty($query)) {
 			$query = self::$qid;
 		}
-		if(self::$type == "mysqli") {
-			return $query->fetch_row();
-		} else {
-			return mysql_fetch_row($query);
-		}
+		return self::$driver->fetch_row($query);
 	}
 
 	public static function fetch_array($query = null) {
+		if(is_bool(self::$driver) || empty(self::$driver)) {
+			return false;
+		}
 		if(empty($query)) {
 			$query = self::$qid;
 		}
-		if(self::$type == "mysqli") {
-			return $query->fetch_array(MYSQLI_BOTH);
-		} else {
-			return mysql_fetch_array($query);
-		}
+		return self::$driver->fetch_array($query);
 	}
 
 	public static function fetch_assoc($query = null) {
+		if(is_bool(self::$driver) || empty(self::$driver)) {
+			return false;
+		}
 		if(empty($query)) {
 			$query = self::$qid;
 		}
-		if(self::$type == "mysqli") {
-			return $query->fetch_assoc();
-		} else {
-			return mysql_fetch_assoc($query);
-		}
+		return self::$driver->fetch_assoc($query);
 	}
 
 	public static function fetch_object($query = null, $class_name = null, $params = array()) {
+		if(is_bool(self::$driver) || empty(self::$driver)) {
+			return false;
+		}
 		if(empty($query)) {
 			$query = self::$qid;
 		}
-		if(self::$type == "mysqli") {
-			return $query->fetch_object($class_name, $params);
-		} else {
-			return mysql_fetch_object($query, $class_name, $params);
-		}
+		return self::$driver->fetch_assoc($query, $class_name, $params);
 	}
 
 	public static function num_rows($query = null) {
+		if(is_bool(self::$driver) || empty(self::$driver)) {
+			return false;
+		}
 		if(empty($query)) {
 			$query = self::$qid;
 		}
-		if(self::$type == "mysqli") {
-			return $query->num_rows;
-		} else {
-			return mysql_num_rows($query);
-		}
+		return self::$driver->num_rows($query);
 	}
 
-	public static function free($query = null){
+	public static function free($query = null) {
+		if(is_bool(self::$driver) || empty(self::$driver)) {
+			return false;
+		}
 		if(empty($query)) {
 			$query = self::$qid;
 		}
 		if(is_bool($query)) {
 			return false;
 		}
-		if(self::$type == "mysqli") {
-			return mysqli_free_result($query);
-		} else {
-			return mysql_free_result($query);
-		}
+		return self::$driver->free($query);
 	}
 
 	function close() {
-		if(!self::$mc) {
-			return;
+		if(is_bool(self::$driver) || empty(self::$driver)) {
+			return false;
 		}
-		if(self::$type == "mysqli") {
-			self::$mc->close();
-		} else {
-			mysql_close(self::$mc);
-		}
+		return self::$driver->close();
 	}
 
-	private static function error($query) {
-		if(self::$type == "mysqli") {
-			$mysql_error = self::$mc->error;
-			$mysql_error_num = self::$mc->errno;
-		} else {
-			$mysql_error = mysql_error(self::$mc);
-			$mysql_error_num = mysql_errno(self::$mc);
-		}
+	private static function error($arr) {
+		$mysql_error = $arr['mysql_error'];
+		$mysql_error_num = $arr['mysql_error_num'];
+		$query = $arr['query'];
 
 		if($query) {
 			// Safify query
@@ -395,7 +354,7 @@ final class db {
 
 		$trace[$level]['file'] = str_replace(ROOT_PATH, "", $trace[$level]['file']);
 
-		if(self::$type_error === 1) {
+		if(self::$driver->get_type() === 1) {
 			modules::init_templates()->dir_skins("skins/");
 			modules::init_templates()->assign_vars(array(
 				"query" => $query,

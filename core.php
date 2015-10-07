@@ -1,26 +1,33 @@
 <?php
 /*
-*
-* Version Engine: 1.25.5b1
-* Version File: 12
-*
-* 12.1
-* add support initialize config before include page
-* 12.2
-* add support correct utf-8 text
-* 12.3
-* add support before install default timezone
-* 12.4
-* add support installer cookie
-* 12.5
-* add admin cookie
-*
+ *
+ * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc3
+ * Version File: 12
+ *
+ * 12.1
+ * add support initialize config before include page
+ * 12.2
+ * add support correct utf-8 text
+ * 12.3
+ * add support before install default timezone
+ * 12.4
+ * add support installer cookie
+ * 12.5
+ * add admin cookie
+ * 12.6
+ * add re-include core
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
 die();
 }
-define("CLOSE_FUNCTION", ini_get("disable_functions"));
+if(!defined("CLOSE_FUNCTION")) {
+	define("CLOSE_FUNCTION", ini_get("disable_functions"));
+}
 
 ini_set("max_execution_time", 0);
 if(strpos(CLOSE_FUNCTION, "set_time_limit")===false) {
@@ -70,13 +77,16 @@ if(defined("DEBUG") || isset($_GET['debug'])) {
 }
 
 
-define("MEMORY_GET", memory_get_usage(true));
+if(!defined("MEMORY_GET")) {
+	define("MEMORY_GET", memory_get_usage(true));
+}
 if(!defined("ROOT_PATH")) {
 	define("ROOT_PATH", dirname(__FILE__)."/");
 }
 $phpEx = substr(strrchr(__FILE__, '.'), 1);
-if(strpos($phpEx, '/') === false)
-define("ROOT_EX", $phpEx);
+if(!defined("ROOT_EX") && strpos($phpEx, '/') === false) {
+	define("ROOT_EX", $phpEx);
+}
 $Timer = microtime();
 
 require_once(ROOT_PATH."core/functions.".ROOT_EX);
@@ -129,21 +139,21 @@ if(!defined("INSTALLER")) {
 			$where = "`pass`";
 			$password = saves($_COOKIE[COOK_PASS]);
 		}
-		$cache->delete("user_".$username);
-		if(!$cache->exists("user_".$username)) {
+		cache::Delete("user_".$username);
+		if(!cache::Exists("user_".$username)) {
 			$row = db::doquery("SELECT * FROM users WHERE `username` = \"".$username."\" AND ".$where." = \"".$password."\"", true);
 			if(db::num_rows()==0) {
 				ToCookie(COOK_USER, null, 0, "delete");
 				ToCookie(COOK_PASS, null, 0, "delete");
 			} else {
 				$row = db::fetch_array();
-				$cache->set("user_".$username, $row);
+				cache::Set("user_".$username, $row);
 				$user = $row;
 				db::doquery("UPDATE `users` SET `last_activ` = UNIX_TIMESTAMP(), `last_ip` = \"".HTTP::getip()."\" WHERE `id` = ".$user['id']);
 				define("IS_AUTH", true);
 			}
 		} else {
-			$user = $cache->get("user_".$username);
+			$user = cache::Get("user_".$username);
 		}
 	}
 }
