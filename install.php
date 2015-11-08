@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @version 1.25.6-rc4
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc3
+ * Version Engine: 1.25.6-rc4
  * Version File: 2
  *
  * 2.1
@@ -13,6 +13,8 @@
  * add support stop installing without need modules in php
  * 2.3
  * add support "drivers" - submodules for database
+ * 2.4
+ * add support for localhost?
  *
 */
 define("IS_CORE", true);
@@ -20,11 +22,6 @@ define("IS_INSTALLER", true);
 require_once("core.php");
 if(isset($_GET['done'])) {
 	templates::assign_vars(array("page" => "4"));
-	echo templates::view(templates::complited_assing_vars("install", null, ""));
-	die();
-}
-if(!isset($_SERVER['SERVER_NAME']) || (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST']=="localhost") || empty($_SERVER['SERVER_NAME'])) {
-	templates::assign_vars(array("page" => "error_server"));
 	echo templates::view(templates::complited_assing_vars("install", null, ""));
 	die();
 }

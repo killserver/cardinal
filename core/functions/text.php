@@ -1,5 +1,16 @@
 <?php
-
+/*
+ *
+ * @version 1.25.6-rc4
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc4
+ * Version File: 4
+ *
+ * 4.1
+ * add support mb_detect_encoding without library mb_* on server
+ *
+*/
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
 die();
@@ -21,7 +32,59 @@ function or_cut($text, $start, $end = null, $add = null) {
 
 function iconv_charset($string){return function_call('iconv_charset', array($string));}
 function or_iconv_charset($string) {
-	return mb_detect_encoding($string, array('UTF-8', 'Windows-1251', 'KOI8-R', 'ISO-8859-5'));
+	if(function_exists("mb_detect_encoding")) {
+		return mb_detect_encoding($string, array('UTF-8', 'Windows-1251', 'KOI8-R', 'ISO-8859-5'));
+	} else {
+		$first2 = substr($string, 0, 2);
+	    $first3 = substr($string, 0, 3);
+	    $first4 = substr($string, 0, 3);
+	    
+	    $UTF32_BIG_ENDIAN_BOM = chr(0x00).chr(0x00).chr(0xFE).chr(0xFF);
+		$UTF32_LITTLE_ENDIAN_BOM = chr(0xFF).chr(0xFE).chr(0x00).chr(0x00);
+		$UTF16_BIG_ENDIAN_BOM = chr(0xFE).chr(0xFF);
+		$UTF16_LITTLE_ENDIAN_BOM = chr(0xFF).chr(0xFE);
+		$UTF8_BOM = chr(0xEF).chr(0xBB).chr(0xBF);
+	    
+	    if($first3 == $UTF8_BOM) {
+			return 'UTF-8';
+	    } elseif($first4==$UTF32_BIG_ENDIAN_BOM) {
+			return 'UTF-32';
+		} elseif($first4==$UTF32_LITTLE_ENDIAN_BOM) {
+			return 'UTF-32';
+		} elseif($first2==$UTF16_BIG_ENDIAN_BOM) {
+			return 'UTF-16';
+		} elseif($first2==$UTF16_LITTLE_ENDIAN_BOM) {
+			return 'UTF-16';
+		}
+	    
+	    $list = array('CP1251', 'UTF-8', 'ASCII', '855', 'KOI8R', 'ISO-IR-111', 'CP866', 'KOI8U');
+	    $c = strlen($string);
+	    if($c>$pattern_size) {
+	        $string = substr($string, floor(($c-$pattern_size)/2), $pattern_size);
+	        $c = $pattern_size;
+	    }
+	
+	    $reg1 = '/(\xE0|\xE5|\xE8|\xEE|\xF3|\xFB|\xFD|\xFE|\xFF)/i';
+	    $reg2 = '/(\xE1|\xE2|\xE3|\xE4|\xE6|\xE7|\xE9|\xEA|\xEB|\xEC|\xED|\xEF|\xF0|\xF1|\xF2|\xF4|\xF5|\xF6|\xF7|\xF8|\xF9|\xFA|\xFC)/i';
+	
+	    $mk = 10000;
+	    $enc = 'UTF-8';
+	    foreach($list as $item) {
+	        $sample1 = @iconv($item, 'cp1251', $string);
+	        $gl = @preg_match_all($reg1, $sample1, $arr);
+	        $sl = @preg_match_all($reg2, $sample1, $arr);
+	        if(!$gl || !$sl) {
+				continue;
+			}
+	        $k = abs(3-($sl/$gl));
+	        $k += $c-$gl-$sl;
+	        if($k<$mk) {
+	            $enc = $item;
+	            $mk = $k;
+	        }
+	    }
+	    return $enc;
+	}
 }
 
 function get_chmod($path) {

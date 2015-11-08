@@ -1,14 +1,19 @@
 <?php
 /*
-*
-* Version Engine: 1.25.5b1
-* Version File: 3
-*
-* 3.1
-* fix admin templates
-* 3.2
-* add admin cookie
-*
+ *
+ * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc3
+ * Version File: 3
+ *
+ * 3.1
+ * fix admin templates
+ * 3.2
+ * add admin cookie
+ * 3.3
+ * add support referer. Good idea for save?
+ *
 */
 class Core {
 	
@@ -47,7 +52,8 @@ class Core {
 	public function Prints($echo, $print=false) {
 	global $lang, $user, $in_page;
 		if(!isset($_COOKIE[COOK_ADMIN_USER]) || !isset($_COOKIE[COOK_ADMIN_PASS])) {
-			location("{C_default_http_host}admincp.php/?pages=Login");
+			$ref = urlencode(str_replace(array(ROOT_PATH, "/admincp.php/"), "", getenv("REQUEST_URI")));
+			location("{C_default_http_host}admincp.php/?pages=Login".(!empty($ref) ? "&ref=".$ref : ""));
 			return;
 		}
 		$dir = ROOT_PATH."admincp.php/pages/Lang/".lang::get_lg()."/";

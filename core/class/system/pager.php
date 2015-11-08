@@ -1,16 +1,18 @@
 <?php
 /*
  *
- * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @version 1.25.6-rc4
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc3
+ * Version Engine: 1.25.6-rc4
  * Version File: 1
  *
  * 1.1
  * add paginator in core
  * 1.2
  * fix error in name pages
+ * 1.3
+ * add support prev/next marker
  *
 */
 if(!defined("IS_CORE")) {
@@ -33,6 +35,16 @@ final class pager {
 			if($enpages_count<=$max_view) {
 				for($j=1;$j<=$enpages_count;$j++) {
 					if($j!=$rpp) {
+							if($j==($rpp+1)) {
+								$this->pages[$c_link]['prev'] = 0;
+								$this->pages[$c_link]['next'] = 1;
+							} else if($j==($rpp-1)) {
+								$this->pages[$c_link]['prev'] = 1;
+								$this->pages[$c_link]['next'] = 0;
+							} else {
+								$this->pages[$c_link]['prev'] = 0;
+								$this->pages[$c_link]['next'] = 0;
+							}
 							if($j == 1) {
 								$this->pages[$c_link]['is_link'] = 1;
 								$this->pages[$c_link]['now'] = 0;
@@ -82,19 +94,29 @@ final class pager {
 				}
 				for($j=$start;$j<=$end;$j++) {
 					if($j!=$rpp) {
-							if($j==1) {
-								$this->pages[$c_link]['is_link'] = 1;
-								$this->pages[$c_link]['now'] = 0;
-								$this->pages[$c_link]['link'] = $url_page;
-								$this->pages[$c_link]['title'] = $j;
-								$c_link++;
-							} else {
-								$this->pages[$c_link]['is_link'] = 1;
-								$this->pages[$c_link]['now'] = 0;
-								$this->pages[$c_link]['link'] = $url_page.$p_page.$j;
-								$this->pages[$c_link]['title'] = $j;
-								$c_link++;
-							}
+						if($j==($rpp+1)) {
+							$this->pages[$c_link]['prev'] = 0;
+							$this->pages[$c_link]['next'] = 1;
+						} else if($j==($rpp-1)) {
+							$this->pages[$c_link]['prev'] = 1;
+							$this->pages[$c_link]['next'] = 0;
+						} else {
+							$this->pages[$c_link]['prev'] = 0;
+							$this->pages[$c_link]['next'] = 0;
+						}
+						if($j==1) {
+							$this->pages[$c_link]['is_link'] = 1;
+							$this->pages[$c_link]['now'] = 0;
+							$this->pages[$c_link]['link'] = $url_page;
+							$this->pages[$c_link]['title'] = $j;
+							$c_link++;
+						} else {
+							$this->pages[$c_link]['is_link'] = 1;
+							$this->pages[$c_link]['now'] = 0;
+							$this->pages[$c_link]['link'] = $url_page.$p_page.$j;
+							$this->pages[$c_link]['title'] = $j;
+							$c_link++;
+						}
 					} else {
 						$this->pages[$c_link]['is_link'] = 0;
 						$this->pages[$c_link]['now'] = 1;

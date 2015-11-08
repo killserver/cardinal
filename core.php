@@ -19,6 +19,8 @@
  * add admin cookie
  * 12.6
  * add re-include core
+ * 12.7
+ * rebuild logic cookie
  *
 */
 if(!defined("IS_CORE")) {
@@ -143,8 +145,8 @@ if(!defined("INSTALLER")) {
 		if(!cache::Exists("user_".$username)) {
 			$row = db::doquery("SELECT * FROM users WHERE `username` = \"".$username."\" AND ".$where." = \"".$password."\"", true);
 			if(db::num_rows()==0) {
-				ToCookie(COOK_USER, null, 0, "delete");
-				ToCookie(COOK_PASS, null, 0, "delete");
+				HTTP::set_cookie(COOK_USER, null, true);
+				HTTP::set_cookie(COOK_PASS, null, true);
 			} else {
 				$row = db::fetch_array();
 				cache::Set("user_".$username, $row);

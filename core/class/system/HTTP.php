@@ -1,12 +1,17 @@
 <?PHP
 /*
-*
-* Version Engine: 1.25.3
-* Version File: 0.4
-*
-* 0.4
-* add return header last modified in page for client
-*
+ *
+ * @version 1.25.6-rc4
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc4
+ * Version File: 0
+ *
+ * 0.4
+ * add return header last modified in page for client
+ * 0.5
+ * add support one method cookie for engine
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
@@ -33,6 +38,28 @@ final class HTTP {
 			unset($ips);
 		}
 	return $ip;
+	}
+	
+	public static function set_cookie($name, $value, $detele = false, $save = true) {
+		$domain = config::Select('default_http_hostname');
+		if(is_bool($delete)) {
+			if(!$detele) {
+				$time = time()+(120*24*60*60);
+			} else {
+				$time = time()-(120*24*60*60);
+			}
+		} else {
+			$time = $delete;
+		}
+		if($save) {
+			if((version_compare(PHP_VERSION_ID, '70000', '>=')) || strpos("localhost", $domain)!==false) {
+				setcookie($name, $value, $time, "/");
+			} else {
+				setcookie($name, $value, $time, "/", ".".config::Select('default_http_hostname'), false, true);
+			}
+		} else {
+			setcookie($name, $value, $time);
+		}
 	}
 	
 	public static function lastmod($LastModified_unix) {

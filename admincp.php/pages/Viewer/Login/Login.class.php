@@ -1,14 +1,18 @@
 <?php
 /*
  *
- * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @version 1.25.6-rc4
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc3
+ * Version Engine: 1.25.6-rc4
  * Version File: 2
  *
  * 2.1
  * add support setcookie in php7
+ * 2.2
+ * add support login for localhost and rebuild system cookie in everything
+ * 2.3
+ * add support link on page after login
  *
 */
 if(!defined("IS_ADMIN")) {
@@ -20,8 +24,8 @@ class Login extends Core {
 	function Login() {
 	global $user;
 		if(isset($_GET['out'])) {
-			setcookie(COOK_ADMIN_USER, "", time()-(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
-			setcookie(COOK_ADMIN_PASS, "", time()-(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
+			HTTP::set_cookie(COOK_ADMIN_USER, "", true);
+			HTTP::set_cookie(COOK_ADMIN_PASS, "", true);
 		}
 		$resp = array('accessGranted' => false, 'errors' => '');
 		if(isset($_POST['do_login'])) {
@@ -47,41 +51,21 @@ class Login extends Core {
 					$row = array("pass" => "cardinal");
 				}
 				$resp['accessGranted'] = true;
-				if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
-					setcookie('is_admin_login', 1, time()+(120*24*60*60), "/");
-				} else {
-					setcookie('is_admin_login', 1, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
-				}
-				setcookie('failed-attempts', 0, time()+(5*60));
-				if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
-					setcookie(COOK_ADMIN_USER, $given_username, time()+(24*60*60), "/");
-				} else {
-					setcookie(COOK_ADMIN_USER, $given_username, time()+(24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
-				}
-				if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
-					setcookie(COOK_ADMIN_PASS, $given_password, time()+(24*60*60), "/");
-				} else {
-					setcookie(COOK_ADMIN_PASS, $given_password, time()+(24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
-				}
+				HTTP::set_cookie('is_admin_login', 1, false, false);
+				HTTP::set_cookie('failed-attempts', 0, time()+(5*60), false);
+				HTTP::set_cookie(COOK_ADMIN_USER, $given_username);
+				HTTP::set_cookie(COOK_ADMIN_PASS, $given_password);
 				if(!isset($_COOKIE[COOK_USER]) || empty($_COOKIE[COOK_USER])) {
-					if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
-						setcookie(COOK_USER, $given_username, time()+(120*24*60*60), "/");
-					} else {
-						setcookie(COOK_USER, $given_username, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
-					}
+					HTTP::set_cookie(COOK_USER, $given_username);
 				}
 				if(!isset($_COOKIE[COOK_PASS]) || empty($_COOKIE[COOK_PASS])) {
-					if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
-						setcookie(COOK_PASS, $row['pass'], time()+(120*24*60*60), "/");
-					} else {
-						setcookie(COOK_PASS, $row['pass'], time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
-					}
+					HTTP::set_cookie(COOK_PASS, $row['pass']);
 				}
 			} else {
 				// Failed Attempts
 				$fa = isset($_COOKIE['failed-attempts']) ? $_COOKIE['failed-attempts'] : 0;
 				$fa++;
-				setcookie('failed-attempts', $fa, time()+(5*60));
+				HTTP::set_cookie('failed-attempts', $fa, time()+(5*60), false);
 				// Error message
 				if(isset($_POST['page']) && $_POST['page']=="alogin")
 					$resp['errors'] = 'You have entered wrong password, please try again.<br />Failed attempts: ' . $fa;
@@ -92,6 +76,7 @@ class Login extends Core {
 			HTTP::echos(json_encode($resp));
 			return;
 		}
+		templates::assign_var("ref", (isset($_GET['ref']) && !empty($_GET['ref']) && strpos($_GET['ref'], "http")===false ? urldecode($_GET['ref']) : "?pages=main"));
 		if(isset($_COOKIE['is_admin_login']) && !empty($user['username'])) {
 			echo templates::view(templates::complited_assing_vars("again_login", null));
 		} else {

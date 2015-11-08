@@ -108,7 +108,7 @@
 												if(resp.accessGranted)
 												{
 													// Redirect after successful login page (when progress bar reaches 100%)
-													window.location.href = '{C_default_http_host}admincp.php/?pages=main';
+													window.location.href = '{C_default_http_host}admincp.php/{ref}';
 												}
 												else
 												{

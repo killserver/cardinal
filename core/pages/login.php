@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @version 1.25.6-rc4
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc3
+ * Version Engine: 1.25.6-rc4
  * Version File: 7
  *
  * 7.1
@@ -15,6 +15,8 @@
  * add support interface on complited login
  * 7.4
  * add support setcookie in php7
+ * 7.5
+ * rebuild logic for cookie system
  *
 */
 if(!defined("IS_CORE")) {
@@ -37,16 +39,8 @@ class page {
 				location($referer);
 				exit();
 			}
-			if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
-				setcookie(COOK_USER, "", time()-(60*24*60*60), "/");
-			} else {
-				setcookie(COOK_USER, "", time()-(60*24*60*60), "/", ".".config::Select('default_http_hostname'), 1);
-			}
-			if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
-				setcookie(COOK_PASS, "", time()-(60*24*60*60), "/");
-			} else {
-				setcookie(COOK_PASS, "", time()-(60*24*60*60), "/", ".".config::Select('default_http_hostname'), 1);
-			}
+			HTTP::set_cookie(COOK_USER, "", true);
+			HTTP::set_cookie(COOK_PASS, "", true);
 			location($referer);
 		} else {
 			if(isset($user['username'])) {
@@ -69,21 +63,9 @@ class page {
 				templates::error("Не верный пароль для авторизации");
 				return;
 			} else {
-				if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
-					setcookie("id", $row['id'], time()+(120*24*60*60), "/");
-				} else {
-					setcookie("id", $row['id'], time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
-				}
-				if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
-					setcookie(COOK_USER, $name, time()+(120*24*60*60), "/");
-				} else {
-					setcookie(COOK_USER, $name, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
-				}
-				if((version_compare(PHP_VERSION_ID, '70000', '>='))) {
-					setcookie(COOK_PASS, $row['pass'], time()+(120*24*60*60), "/");
-				} else {
-					setcookie(COOK_PASS, $row['pass'], time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
-				}
+				HTTP::set_cookie("id", $row['id']);
+				HTTP::set_cookie(COOK_USER, $name);
+				HTTP::set_cookie(COOK_PASS, $row['pass']);
 			}
 			location($referer, 10, false);
 			templates::error("Успешно прошли авторизацию! Возвращаем Вас на страницу с которой Вы пришли.");

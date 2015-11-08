@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @version 1.25.6-rc4
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc3
+ * Version Engine: 1.25.6-rc4
  * Version File: 17
  *
  * 16.1
@@ -13,6 +13,8 @@
  * add checker connection to db
  * 17.1
  * add support "drivers" - submodules for database
+ * 17.2
+ * fix method db for drivers
  *
 */
 if(!defined("IS_CORE")) {
@@ -62,6 +64,7 @@ final class db {
 			$driv = $driv[array_rand($driv)];
 		}
 		self::$driver = new $driv();
+		return true;
 	}
 
 	public static function DriverList() {
@@ -326,14 +329,14 @@ final class db {
 		return self::$driver->free($query);
 	}
 
-	function close() {
+	public static function close() {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
 		return self::$driver->close();
 	}
 
-	private static function error($arr) {
+	public static function error($arr) {
 		$mysql_error = $arr['mysql_error'];
 		$mysql_error_num = $arr['mysql_error_num'];
 		$query = $arr['query'];

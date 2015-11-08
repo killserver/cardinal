@@ -1,14 +1,16 @@
 <?php
 /*
  *
- * @version 2015-09-30 13:30:44 1.25.6-rc3
+ * @version 1.25.6-rc4
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc3
+ * Version Engine: 1.25.6-rc4
  * Version File: 3
  *
  * 3.1
  * add support install system modules
+ * 3.2
+ * fix errors in installer
  *
 */
 if(!defined("IS_CORE")) {
@@ -91,7 +93,7 @@ final class modules {
 	}
 
 	private static function init_modules() {
-		if(!db::connected()) {
+		if(defined("IS_INSTALLER") || !db::connected()) {
 			return array();
 		}
 		if(!self::init_cache()->exists("modules")) {
