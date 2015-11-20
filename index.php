@@ -1,4 +1,16 @@
 <?php
+/*
+ *
+ * @version 1.25.6-rc5
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc5
+ * Version File: 1
+ *
+ * 1.1
+ * add logic routification
+ *
+*/
 define("IS_CORE", true);
 include_once("core.php");
 
@@ -24,6 +36,7 @@ if(!empty($server)) {
 } else {
 	$page = "main";
 }
+$page = Route::Get($page);
 
 
 $manifest['now_page'] = $page;

@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @version 1.25.6-rc5
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc3
+ * Version Engine: 1.25.6-rc5
  * Version File: 12
  *
  * 12.1
@@ -21,6 +21,8 @@
  * add re-include core
  * 12.7
  * rebuild logic cookie
+ * 12.8
+ * add route to manifest
  *
 */
 if(!defined("IS_CORE")) {
@@ -46,6 +48,7 @@ $manifest = array(
 	"functions" => array(), //in functions
 	"pages" => array(), //in page view
 	"class_pages" => array(), //in page view
+	"route" => array(), //routification
 	"define" => array(), //in class defines
 	"lang" => array(), //in class lang
 	"bbcodes" => array(), //in colorit

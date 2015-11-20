@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 1.25.6-rc4
+ * @version 1.25.6-rc5
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc4
+ * Version Engine: 1.25.6-rc5
  * Version File: 21
  *
  * 21.1
@@ -13,11 +13,13 @@
  * add css and rebuild js data to template
  * 22.2
  * rebuild local data
+ * 22.3
+ * fix and clear include modules js and css files
  *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
-die;
+die();
 }
 
 function meta($array=array()) {
@@ -33,6 +35,7 @@ function meta($array=array()) {
 			), "meta", ($i+3));
 		}
 	}
+	unset($array);
 	$te = templates::lcud(templates::complited_assing_vars("meta", null));
 return $te;
 }
@@ -57,19 +60,29 @@ global $user;
 		$dirs = read_dir(ROOT_PATH."core/modules/js/", ".php");
 		sort($dirs);
 		for($i=0;$i<sizeof($dirs);$i++) {
-			include_once(ROOT_PATH."core/modules/js/".$dirs[$i]);
+			if(file_exists(ROOT_PATH."core/modules/js/".$dirs[$i])) {
+				include_once(ROOT_PATH."core/modules/js/".$dirs[$i]);
+			}
 		}
-		for($i=0;$i<sizeof($js);$i++) {
-			$sRet .= "<script type=\"text/javascript\" src=\"".$js[$i]."\"></script>\n";
+		if(is_array($js)) {
+			for($i=0;$i<sizeof($js);$i++) {
+				$sRet .= "<script type=\"text/javascript\" src=\"".$js[$i]."\"></script>\n";
+			}
 		}
+		unset($dirs, $js);
 		$dirs = read_dir(ROOT_PATH."core/modules/css/", ".php");
 		sort($dirs);
 		for($i=0;$i<sizeof($dirs);$i++) {
-			include_once(ROOT_PATH."core/modules/css/".$dirs[$i]);
+			if(file_exists(ROOT_PATH."core/modules/css/".$dirs[$i])) {
+				include_once(ROOT_PATH."core/modules/css/".$dirs[$i]);
+			}
 		}
-		for($i=0;$i<sizeof($css);$i++) {
-			$sRet .= "<link href=\"".$css[$i]."\" rel=\"stylesheet\" />\n";
+		if(is_array($css)) {
+			for($i=0;$i<sizeof($css);$i++) {
+				$sRet .= "<link href=\"".$css[$i]."\" rel=\"stylesheet\" />\n";
+			}
 		}
+		unset($dirs, $css);
 	} else {
 		$js = modules::manifest_get(array("create_js", "mini"));
 		if($js) {
