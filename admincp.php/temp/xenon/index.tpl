@@ -41,9 +41,12 @@
 				
 				[if {is_new}==1]
 				<div class="col-sm-12">
-					<div class="panel-body">
-						<div class="scrollable" data-max-height="400">
-							{changelog}
+					<div class="panel panel-default">
+						<div class="panel-title">Список изменений в новой версии</div>
+						<div class="panel-body">
+							<div class="scrollable" data-max-height="200">
+								{changelog}
+							</div>
 						</div>
 					</div>
 				</div>
