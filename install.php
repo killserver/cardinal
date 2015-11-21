@@ -336,6 +336,7 @@ if(isset($_SERVER[\'HTTPS\']) && $_SERVER[\'HTTPS\']!=\'off\') {
 }
 
 $config = array_merge($config, array(
+	"api_key" => "'.rand(1000000000, 9999999999).'",
 	"logs" => '.saves($_POST['error_type'], true).',
 	"hosting" => true,
 	"default_http_hostname" => "'.saves($_POST['SERVER'], true).'",

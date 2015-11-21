@@ -20,7 +20,8 @@
 				<div class="col-sm-10">
 					<select name="level">
 						<option value="1"[if {level}=={D_LEVEL_USER}] selected="selected"[/if]>Пользователь</option>
-						<option value="2"[if {level}=={D_LEVEL_MODER}] selected="selected"[/if]>Администратор</option>
+						<option value="2"[if {level}=={D_LEVEL_MODER}] selected="selected"[/if]>Модератор</option>
+						<option value="3"[if {level}=={D_LEVEL_ADMIN}] selected="selected"[/if]>Администратор</option>
 					</select>
 				</div>
 			</div>

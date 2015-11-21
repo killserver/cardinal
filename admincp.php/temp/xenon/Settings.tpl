@@ -1,4 +1,22 @@
 <form role="form" class="form-horizontal" method="post">
+<div class="col-md-12">
+<center>API-ключ: <input type="text" value="{API}" readonly="readonly" disabled="disabled" /></center>
+<ul class="nav nav-tabs right-aligned"> 
+<li class="active">
+	<a href="#home" data-toggle="tab">
+		<span class="hidden-xs">Основные настройка</span>
+	</a>
+</li>
+[foreach block=sub_nav]
+<li>
+	<a href="#{sub_nav.subname}" data-toggle="tab">
+		<span class="hidden-xs">{sub_nav.name}</span>
+	</a>
+</li>
+[/foreach]
+</ul>
+<div class="tab-content">
+<div class="tab-pane active" id="home">
 	<span style="width:95%;border:1px solid #000;display:inline-block;padding:10px;margin:10px auto;">
 		<center>Система Кеша<span alt="Создание копии данных базы данных для ускорения работы сайта" title="Создание копии данных базы данных для ускорения работы сайта">(?)</span></center>
 		<hr />
@@ -19,8 +37,17 @@
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Путь к Вашему сайту</div><input type="text" name="PATH" value="{SERPATH}" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Система записи ошибок</div><select name="error_type" style="width:50%;padding:5px;margin:1px;"><option value="ERROR_FILE">Ошибки будут записываться в файл</option><option value="ERROR_DB">Ошибки будут записываться в базу данных</option></select><br />
 	</span>
+</div>
+[foreach block=sub_nav_options]
+<div class="tab-pane" id="{sub_nav_options.subname}">
+{sub_nav_options.options}
+</div>
+[/foreach]
 	<button type="submit" class="btn btn-purple btn-icon">
 		<i class="fa-check"></i>
 		<span>{L_save}</span>
 	</button>
+</div>
+<br/>
+</div>
 </form>

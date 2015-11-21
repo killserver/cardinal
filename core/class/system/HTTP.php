@@ -40,10 +40,10 @@ final class HTTP {
 	return $ip;
 	}
 	
-	public static function set_cookie($name, $value, $detele = false, $save = true) {
+	public static function set_cookie($name, $value, $delete = false, $save = true) {
 		$domain = config::Select('default_http_hostname');
 		if(is_bool($delete)) {
-			if(!$detele) {
+			if(!$delete) {
 				$time = time()+(120*24*60*60);
 			} else {
 				$time = time()-(120*24*60*60);

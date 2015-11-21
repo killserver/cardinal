@@ -49,6 +49,37 @@ class Core {
 		}
 	}
 	
+	private function ParseDirSkins($dir, $parse = 1) {
+		$skins = array();
+		if(is_dir($dir)) {
+			if($dh = dir($dir)) {
+				while(($file = $dh->read()) !== false) {
+					if(is_dir($dir.$file) && $parse == 1) {
+						$arrs = $this->ParseDirSkins($dir.$file, 2);
+						if(in_array("main.tpl", $arrs) && in_array("login.tpl", $arrs)) {
+							$skins[] = $file;
+						}
+					} else if($parse == 2) {
+						$skins[] = $file;
+					}
+				}
+			$dh->close();
+			}
+		}
+		return $skins;
+	}
+	
+	public function ParseSkins($dir = null, $name = null) {
+		if(empty($dir)) {
+			$dir = ROOT_PATH."skins/";
+		}
+		$skins = $this->ParseDirSkins($dir);
+		$selected = config::Select("skins", "skins");
+		for($i=0;$i<sizeof($skins);$i++) {
+			templates::assign_vars(array("skin" => $skins[$i], "selected" => ($selected==$skins[$i] ? "1" : "0")), "skin_list".$name, "skin".$i);
+		}
+	}
+	
 	public function Prints($echo, $print=false) {
 	global $lang, $user, $in_page;
 		if(!isset($_COOKIE[COOK_ADMIN_USER]) || !isset($_COOKIE[COOK_ADMIN_PASS])) {

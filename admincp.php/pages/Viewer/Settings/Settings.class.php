@@ -2,6 +2,9 @@
 
 class Settings extends Core {
 	
+	protected static $sub_nav = array();
+	protected static $func = array();
+	
 	private function Save() {
 		if(file_exists(ROOT_PATH."core/media/config.install.php")) {
 			unlink(ROOT_PATH."core/media/config.install.php");
@@ -26,6 +29,7 @@ class Settings extends Core {
 		}
 
 		$config = array_merge($config, array(
+			"api_key" => "'.config::Select("api_key").'",
 			"logs" => '.saves($_POST['error_type'], true).',
 			"hosting" => true,
 			"default_http_hostname" => "'.saves($_POST['SERVER'], true).'",
@@ -38,7 +42,7 @@ class Settings extends Core {
 				"login" => "'.saves($_POST['cache_user'], true).'",
 				"pass" => "'.saves($_POST['cache_pass'], true).'",
 				"path" => "'.saves($_POST['cache_path'], true).'",
-			),
+			),'.$this->Saves($_POST).'
 			"lang" => "ru",
 			"charset" => "utf-8",
 		));
@@ -67,6 +71,22 @@ class Settings extends Core {
 		location("./?pages=Settings");
 	}
 	
+	private function Saves($post) {
+		$return = "";
+		foreach(self::$func as $name => $func) {
+			$return .= call_user_func_array($func, array($post));
+		}
+		return $return;
+	}
+	
+	public static function AddFunc($func) {
+		self::$func[$func['name']] = $func['func'];
+	}
+	
+	public static function AddNav($data) {
+		self::$sub_nav = array_merge(self::$sub_nav, $data);
+	}
+	
 	function __construct() {
 		if(sizeof($_POST)>0) {
 			$this->Save();
@@ -76,6 +96,7 @@ class Settings extends Core {
 		$key = lang::get_lang("s_keywords");
 		$descr = lang::get_lang("s_description");
 		templates::assign_vars(array(
+			"API" => config::Select("api_key"),
 			"SERPATH" => config::Select("default_http_host"),
 			"SERNAME" => config::Select("default_http_hostname"),
 			"mail_from" => config::Select("mail_from"),
@@ -89,6 +110,12 @@ class Settings extends Core {
 			"keywords" => $key,
 			"description" => $descr,
 		));
+		if(sizeof(self::$sub_nav)>0) {
+			for($i=0;$i<sizeof(self::$sub_nav);$i++) {
+				templates::assign_vars(array("subname" => self::$sub_nav[$i]['subname'], "name" => self::$sub_nav[$i]['name']), "sub_nav", "sub_nav".$i);
+				templates::assign_vars(array("subname" => self::$sub_nav[$i]['subname'], "options" => self::$sub_nav[$i]['options']), "sub_nav_options", "sub_nav".$i);
+			}
+		}
 		$this->Prints("Settings");
 	}
 	

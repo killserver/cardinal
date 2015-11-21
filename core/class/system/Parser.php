@@ -28,12 +28,19 @@ class Parser {
 	private $error = false;
 	private $display_errors = true;
 	private $timeout = 3;
+	private $post = array();
 	private $headers = array();
 	private $errors = array();
 	
 	function Parser($url=null) {
 		if(!empty($url)) {
 			$this->url = $url;
+		}
+	}
+	
+	function post($post = array()) {
+		if(is_array($post) && sizeof($post)>0) {
+			$this->post = array_merge($this->post, $post);
 		}
 	}
 	
@@ -138,6 +145,18 @@ class Parser {
 			curl_setopt($ch, CURLOPT_HEADER, 0);
 		} else {
 			curl_setopt($ch, CURLOPT_HEADER, 1);
+		}
+		if(is_array($this->post) && sizeof($this->post)>0) {
+			$post = array();
+			foreach($this->post as $k => $v) {
+				if(!empty($k) && !empty($v)) {
+					$post[] = $k."=".$v;
+				} else if(!empty($k) {
+					$post[] = $k."=";
+				}
+			}
+			curl_setopt($ch, CURLOPT_POST, 1);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
 		}
 		if (strtolower(substr($url,0,5))=='https'){
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);

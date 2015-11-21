@@ -1,14 +1,16 @@
 <?php
 /*
  *
- * @version 1.25.6-rc4
+ * @version 1.25.6-rc6
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc4
+ * Version Engine: 1.25.6-rc6
  * Version File: 1
  *
  * 1.1
  * add revision
+ * 1.2
+ * add support moder and admin
  *
 */
 if(!defined("IS_CORE")) {
@@ -25,7 +27,8 @@ define("CACHE_NONE", 0);
 define("ERROR_FILE", 0);
 define("ERROR_DB", 1);
 
-define("VERSION", "1.25.6-rc4");
+define("VERSION", "1.25.6-rc6");
+define("LEVEL_ADMIN", 3);
 define("LEVEL_MODER", 2);
 define("LEVEL_USER", 1);
 define("LEVEL_GUEST", 0);

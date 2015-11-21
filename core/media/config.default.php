@@ -1,12 +1,17 @@
 ﻿<?php
 /*
-*
-* Version Engine: 1.25.3
-* Version File: 8
-*
-* 8.1
-* add support XXX category
-*
+ *
+ * @version 1.25.6-rc6
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6
+ * Version File: 8
+ *
+ * 8.1
+ * add support XXX category
+ * 8.2
+ * add support skins for admincp
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
@@ -42,6 +47,7 @@ $config = array(
 	),
 	"skins" => array(
 		"skins" => "main",
+		"admincp" => "xenon",
 		"test_shab" => "",
 		"mobile" => "",
 	),

@@ -38,4 +38,14 @@
 					</div>
 				
 				</div>
+				
+				[if {is_new}==1]
+				<div class="col-sm-12">
+					<div class="panel-body">
+						<div class="scrollable" data-max-height="400">
+							{changelog}
+						</div>
+					</div>
+				</div>
+				[/if]
 			</div>
