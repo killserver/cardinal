@@ -1,4 +1,9 @@
 <?php
+if(!defined("IS_ADMIN")) {
+echo "403 ERROR";
+die();
+}
+
 
 class Main_Updater extends Main {
 	
@@ -18,13 +23,13 @@ class Main_Updater extends Main {
 	}
 
 	public function Main_Updater() {
-		$vid = parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/version.txt?'.date("d-m-Y"));
+		$vid = parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/version.txt?'.date("d-m-Y-H"));
 		if(intval(str_replace(".", "", $vid))>intval(str_replace(".", "", VERSION))) {
 			templates::assign_var("new_version", $vid);
 			templates::assign_var("is_new", "1");
 			$file = ROOT_PATH."core/cache/system/version_".str_replace("-", "_", $vid).".txt";
 			if(!file_exists($file)) {
-				$vid = parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/changelog/list.txt');
+				$vid = parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/changelog/list.txt?'.date("d-m-Y-H"));
 				$changelog = "";
 				$list = explode("\n", $vid);
 				for($i=sizeof($list)-1;$i>0;$i--) {
