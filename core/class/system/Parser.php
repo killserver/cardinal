@@ -151,7 +151,7 @@ class Parser {
 			foreach($this->post as $k => $v) {
 				if(!empty($k) && !empty($v)) {
 					$post[] = $k."=".$v;
-				} else if(!empty($k) {
+				} else if(!empty($k)) {
 					$post[] = $k."=";
 				}
 			}
