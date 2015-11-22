@@ -27,7 +27,7 @@ define("CACHE_NONE", 0);
 define("ERROR_FILE", 0);
 define("ERROR_DB", 1);
 
-define("VERSION", "1.25.7-a1");
+define("VERSION", "1.25.7-a2");
 define("LEVEL_ADMIN", 3);
 define("LEVEL_MODER", 2);
 define("LEVEL_USER", 1);
