@@ -36,6 +36,7 @@ class Settings extends Core {
 		$config = array_merge($config, array(
 			"api_key" => "'.config::Select("api_key").'",
 			"logs" => '.saves($_POST['error_type'], true).',
+			"speed_update" => '.(isset($_POST['speed_update']) && $_POST['speed_update']=="1" ? "true" : "false").',
 			"hosting" => true,
 			"default_http_hostname" => "'.saves($_POST['SERVER'], true).'",
 			"default_http_host" => $protocol."://'.saves(str_replace(array("http", "https", "://"), "", $_POST['PATH']), true).'",
@@ -106,6 +107,7 @@ class Settings extends Core {
 			"SERNAME" => config::Select("default_http_hostname"),
 			"mail_from" => config::Select("mail_from"),
 			"max_news" => config::Select("max_news"),
+			"speed_update" => config::Select("speed_update"),
 			"cache_host" => config::Select("cache", "server"),
 			"cache_port" => config::Select("cache", "port"),
 			"cache_user" => config::Select("cache", "login"),

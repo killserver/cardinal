@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 1.25.7-a2
+ * @version 1.25.7-a3
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.7-a2
+ * Version Engine: 1.25.7-a3
  * Version File: 2
  *
  * 2.1
@@ -17,6 +17,8 @@
  * add support for localhost?
  * 2.5
  * fix time cron
+ * 2.6
+ * add support speed updates
  *
 */
 define("IS_CORE", true);
@@ -340,6 +342,7 @@ if(isset($_SERVER[\'HTTPS\']) && $_SERVER[\'HTTPS\']!=\'off\') {
 
 $config = array_merge($config, array(
 	"api_key" => "'.rand(1000000000, 9999999999).'",
+	"speed_update" => false,
 	"logs" => '.saves($_POST['error_type'], true).',
 	"hosting" => true,
 	"default_http_hostname" => "'.saves($_POST['SERVER'], true).'",

@@ -1,14 +1,16 @@
 <?php
 /*
  *
- * @version 2015-09-30 13:30:44 1.25.6-rc3
+ * @version 1.25.7-a3
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc3
+ * Version Engine: 1.25.7-a3
  * Version File: 1
  *
  * 1.1
  * create class parsing for more settings in proccess
+ * 1.2
+ * fix error in post data
  *
 */
 class Parser {
@@ -156,7 +158,7 @@ class Parser {
 				}
 			}
 			curl_setopt($ch, CURLOPT_POST, 1);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, implode("&", $post));
 		}
 		if (strtolower(substr($url,0,5))=='https'){
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
