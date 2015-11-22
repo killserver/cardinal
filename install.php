@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 1.25.6-rc4
+ * @version 1.25.7-a2
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc4
+ * Version Engine: 1.25.7-a2
  * Version File: 2
  *
  * 2.1
@@ -15,6 +15,8 @@
  * add support "drivers" - submodules for database
  * 2.4
  * add support for localhost?
+ * 2.5
+ * fix time cron
  *
 */
 define("IS_CORE", true);
@@ -93,6 +95,7 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `config` (
   FULLTEXT KEY `config_value` (`config_value`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 $SQL[] = "INSERT INTO `config` SET `config_name` = \"db_version\", `config_value` = \"".VERSION."\"";
+$SQL[] = "INSERT INTO `config` SET `config_name` = \"cardinal_time\", `config_value` = \"\"";
 
 $SQL[] = "DROP TABLE IF EXISTS `comments`;";
 $SQL[] = "CREATE TABLE IF NOT EXISTS `comments` (

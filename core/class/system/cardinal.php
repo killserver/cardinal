@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @version 1.25.7-a2
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc3
+ * Version Engine: 1.25.7-a2
  * Version File: 2
  *
  * 2.4

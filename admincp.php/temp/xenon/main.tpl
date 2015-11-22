@@ -324,6 +324,7 @@
 					
 				</ul>
 				
+				<center style="display:inline-block;margin:10px auto;text-align:center;width:50%;font-size:30px;">Version: {D_VERSION}</center>
 				
 				<!-- Right links for user info navbar -->
 				<ul class="user-info-menu right-links list-inline list-unstyled">

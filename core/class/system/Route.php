@@ -1,16 +1,18 @@
 <?php
 /*
  *
- * @version 1.25.6-rc5
+ * @version 1.25.7-a2
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc5
+ * Version Engine: 1.25.7-a2
  * Version File: 1
  *
  * 1.1
  * create routification for engine
  * 1.2
  * add error for routification
+ * 1.3
+ * fix data on links
  *
 */
 if(!defined("IS_CORE")) {
@@ -32,6 +34,7 @@ final class Route {
 				"\-" => "-",
 				"\+" => "+",
 				"\|" => "|",
+				"/\\" => "/?",
 			);
 			$uri_list = modules::manifest_get('route');
 			$pattern = array_keys($uri_list);
