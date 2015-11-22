@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 1.25.7-a3
+ * @version 1.25.7-a1
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.7-a3
+ * Version Engine: 1.25.7-a1
  * Version File: 1
  *
  * 1.1
@@ -63,7 +63,7 @@ class Updaters extends Core {
 		}
 		$vid = parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/version.txt?'.date("d-m-Y-H"));
 		if(config::Select("speed_update")) {
-			$if = md5($vid)!=md5(VERSION);
+			$if = ($vid)>(VERSION);
 		} else {
 			$if = intval(str_replace(".", "", $vid))>intval(str_replace(".", "", VERSION));
 		}
@@ -76,7 +76,12 @@ class Updaters extends Core {
 				$changelog = "";
 				$list = explode("\n", $vid);
 				for($i=sizeof($list)-1;$i>0;$i--) {
-					if(intval(str_replace(".", "", $list[$i]))>intval(str_replace(".", "", VERSION))) {
+					if(config::Select("speed_update")) {
+						$if = ($list[$i])>(VERSION);
+					} else {
+						$if = intval(str_replace(".", "", $list[$i]))>intval(str_replace(".", "", VERSION));
+					}
+					if($if) {
 						$changelog .= parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/changelog/'.$list[$i].'.txt')."\n\n\n\n";
 					}
 				}

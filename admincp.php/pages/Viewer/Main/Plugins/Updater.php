@@ -25,7 +25,7 @@ class Main_Updater extends Main {
 	public function Main_Updater() {
 		$vid = parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/version.txt?'.date("d-m-Y-H"));
 		if(config::Select("speed_update")) {
-			$if = md5($vid)!=md5(VERSION);
+			$if = ($vid)>(VERSION);
 		} else {
 			$if = intval(str_replace(".", "", $vid))>intval(str_replace(".", "", VERSION));
 		}
@@ -38,7 +38,12 @@ class Main_Updater extends Main {
 				$changelog = "";
 				$list = explode("\n", $vid);
 				for($i=sizeof($list)-1;$i>0;$i--) {
-					if(intval(str_replace(".", "", $list[$i]))>intval(str_replace(".", "", VERSION))) {
+					if(config::Select("speed_update")) {
+						$if = ($list[$i])>(VERSION);
+					} else {
+						$if = intval(str_replace(".", "", $list[$i]))>intval(str_replace(".", "", VERSION));
+					}
+					if($if) {
 						$changelog .= parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/changelog/'.$list[$i].'.txt')."\n\n\n\n";
 					}
 				}
