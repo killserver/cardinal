@@ -1,15 +1,19 @@
 <?php
 /*
-*
-* Version Engine: 1.25.3
-* Version File: 10
-*
-* 10
-* add video light(really?!five version in cp1251 and five version after - in utf-8....finally!)
-*
-* 10.1
-* add alert and error for ajax, add repeat(really?! I do this?!)
-*
+ *
+ * @version 1.25.7-a1
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.7-a1
+ * Version File: 10
+ *
+ * 10.0
+ * add video light(really?!five version in cp1251 and five version after - in utf-8....finally!)
+ * 10.1
+ * add alert and error for ajax, add repeat(really?! I do this?!)
+ * 10.2
+ * add error for routification
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
@@ -25,6 +29,7 @@ $lang = array_merge($lang, array(
 	"alert_parser" => "<b><font color=\"red\">!!!ВНИМАНИЕ!!!</font></b><br />Данным парсером поддерживаются только разрешенные сервисы, список которых Вы можете найти нажав на кнопку \"Поддерживаемые сервисы\"",
 //errors
 	"error" => "Ошибка!!!",
+	"error_page" => "Ошибка! Страница, которую Вы запрашивали - не найдена! Если Вы считаете, что это ошибка - пожалуйста, свяжитесь с администрацией!",
 	"error_video_exists" => "Ошибка!!!<br />Видео с таким названием уже есть в системе!!!",
 	"error_level_full" => "!!!Ошибка доступа!!!<br />У вас нет права находиться в данном разделе сайта!",
 	"error_level" => "Ошибка доступа",
@@ -259,7 +264,8 @@ $lang = array_merge($lang, array(
 	),
 
 	"level" => array(
-		LEVEL_MODER => "Администрация",
+		LEVEL_ADMIN => "Администрация",
+		LEVEL_MODER => "Модератор",
 		LEVEL_USER => "Пользователь",
 		LEVEL_GUEST => "Гость",
 	),

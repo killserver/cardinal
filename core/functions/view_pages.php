@@ -1,16 +1,21 @@
 <?php
 /*
-*
-* Version Engine: 1.25.3
-* Version File: 12
-*
-* 12.1
-* add support initialize config before include page
-* 12.2
-* fix errors
-* 12.3
-* add pages red and login pages in core
-*
+ *
+ * @version 1.25.7-a1
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.7-a1
+ * Version File: 12
+ *
+ * 12.1
+ * add support initialize config before include page
+ * 12.2
+ * fix errors
+ * 12.3
+ * add pages red and login pages in core
+ * 12.4
+ * add page error
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
@@ -45,6 +50,9 @@ global $manifest;
 		return;
 	}
 	switch($page) {
+		case "error":
+			include_once(ROOT_PATH."core/pages/error.".ROOT_EX);
+		break;
 		case "reg":
 			include_once(ROOT_PATH."core/pages/reg.".ROOT_EX);
 		break;

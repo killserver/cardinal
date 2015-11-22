@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @version 1.25.7-a1
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc3
+ * Version Engine: 1.25.7-a1
  * Version File: 3
  *
  * 3.0
@@ -19,6 +19,8 @@
  * add and fix header list for pages
  * 3.4
  * add support preg_replace_callback_array function in php 7
+ * 3.5
+ * fix title in error
  *
 */
 if(!defined("IS_CORE")) {
@@ -912,8 +914,8 @@ if(!$test) {
 		} else {
 			self::$header = $header;
 		}
-		if(is_array($header) && !isset($header['title'])) {
-			$header['title'] = "";
+		if(is_array(self::$header) && !isset(self::$header['title'])) {
+			self::$header['title'] = "";
 		}
 		if(isset(self::$header['code']) && self::$header['code']=="404") {
 			$sapi_name = php_sapi_name();
@@ -922,7 +924,7 @@ if(!$test) {
 			}
 			header('HTTP/1.1 404 Not Found');
 		}
-		self::$blocks = array_merge(self::$blocks, array("error" => $data, "title" => (isset($header['title']) ? $header['title'] : "")));
+		self::$blocks = array_merge(self::$blocks, array("error" => $data, "title" => (isset(self::$header['title']) ? self::$header['title'] : "")));
 		self::$tmp = self::complited_assing_vars("info");
 		self::display();
 		exit();

@@ -1,4 +1,18 @@
 <?php
+/*
+ *
+ * @version 1.25.7-a1
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.7-a1
+ * Version File: 1
+ *
+ * 1.1
+ * create autoupdater
+ * 1.2
+ * fix cache information of new version on server
+ *
+*/
 if(!defined("IS_ADMIN")) {
 echo "403 ERROR";
 die();
@@ -27,7 +41,7 @@ class Updaters extends Core {
 			if(file_exists(ROOT_PATH."core/cache/system/lastest.tar.gz")) {
 				unlink(ROOT_PATH."core/cache/system/lastest.tar.gz");
 			}
-			file_put_contents(ROOT_PATH."core/cache/system/lastest.tar.gz", file_get_contents("https://github.com/killserver/cardinal/archive/trunk.tar.gz"));
+			file_put_contents(ROOT_PATH."core/cache/system/lastest.tar.gz", file_get_contents("https://github.com/killserver/cardinal/archive/trunk.tar.gz?".time()));
 			echo "1";
 			return;
 		}

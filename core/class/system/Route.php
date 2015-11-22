@@ -9,6 +9,8 @@
  *
  * 1.1
  * create routification for engine
+ * 1.2
+ * add error for routification
  *
 */
 if(!defined("IS_CORE")) {
@@ -21,6 +23,7 @@ final class Route {
 	public static function Get($return) {
 		$uri = getenv("PATH_INFO");
 		if(!empty($uri) && strlen($uri)>1) {
+			$return = "error";
 			$replace = array(
 				"\(" => "(",
 				"\)" => ")",
