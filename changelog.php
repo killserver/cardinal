@@ -11,19 +11,20 @@
  * add changelog for files, start autoupdater and view changelog new version on admin-panel
  *
 */
-header("Content-Type: text/plain");
+header("Content-Type: text/plain; charset=utf-8");
 $dir = dirname(__FILE__)."/changelog/";
 $files = array();
 if(is_dir($dir)) {
 	if($dh = dir($dir)) {
 		while(($file = $dh->read()) !== false) {
-			if(is_file($dir.$file) && (strpos($file, ".txt")!==false)) {
+			if(is_file($dir.$file) && (strpos($file, ".txt")!==false) && (strpos($file, "list.txt")===false)) {
 				$files[] = $file;
 			}
 		}
 	$dh->close();
 	}
 }
+sort($files);
 $echo = file_get_contents(dirname(__FILE__)."/changelog.txt")."\n\n\n\n";
 for($i=0;$i<sizeof($files);$i++) {
 	$echo .= file_get_contents($dir.$files[$i])."\n\n\n\n";
