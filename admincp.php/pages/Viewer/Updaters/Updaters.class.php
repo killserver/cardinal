@@ -1,16 +1,18 @@
 <?php
 /*
  *
- * @version 1.25.7-a1
+ * @version 1.25.7-a3
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.7-a1
+ * Version Engine: 1.25.7-a3
  * Version File: 1
  *
  * 1.1
  * create autoupdater
  * 1.2
  * fix cache information of new version on server
+ * 1.3
+ * add support "speed update"
  *
 */
 if(!defined("IS_ADMIN")) {
@@ -60,7 +62,12 @@ class Updaters extends Core {
 			templates::assign_var("is_download", "0");
 		}
 		$vid = parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/version.txt?'.date("d-m-Y-H"));
-		if(intval(str_replace(".", "", $vid))>intval(str_replace(".", "", VERSION))) {
+		if(config::Select("speed_update")) {
+			$if = md5($vid)!=md5(VERSION);
+		} else {
+			$if = intval(str_replace(".", "", $vid))>intval(str_replace(".", "", VERSION));
+		}
+		if($if) {
 			templates::assign_var("new_version", $vid);
 			templates::assign_var("is_new", "1");
 			$file = ROOT_PATH."core/cache/system/version_".str_replace("-", "_", $vid).".txt";

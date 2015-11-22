@@ -24,7 +24,12 @@ class Main_Updater extends Main {
 
 	public function Main_Updater() {
 		$vid = parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/version.txt?'.date("d-m-Y-H"));
-		if(intval(str_replace(".", "", $vid))>intval(str_replace(".", "", VERSION))) {
+		if(config::Select("speed_update")) {
+			$if = md5($vid)!=md5(VERSION);
+		} else {
+			$if = intval(str_replace(".", "", $vid))>intval(str_replace(".", "", VERSION));
+		}
+		if($if) {
 			templates::assign_var("new_version", $vid);
 			templates::assign_var("is_new", "1");
 			$file = ROOT_PATH."core/cache/system/version_".str_replace("-", "_", $vid).".txt";
