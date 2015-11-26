@@ -11,14 +11,14 @@
 					</div>
 				</a>[/if]
 			
-				<div class="col-sm-3">
+				<div class="col-sm-3"[if {uptime_visible}==false] style="display:none;"[/if {uptime_visible}==false]>
 					
-					<div class="xe-widget xe-counter" data-count=".num" data-from="0" data-to="99.9" data-suffix="%" data-duration="2">
+					<div class="xe-widget xe-counter" data-count=".num" data-from="0" data-to="{uptime_value}" data-suffix="%" data-duration="2">
 						<div class="xe-icon">
 							<i class="linecons-cloud"></i>
 						</div>
 						<div class="xe-label">
-							<strong class="num">0.0%</strong>
+							<strong class="num">{uptime_value}%</strong>
 							<span>Server uptime</span>
 						</div>
 					</div>

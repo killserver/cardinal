@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 1.25.7-a1
+ * @version 1.25.7-a4
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.7-a1
+ * Version Engine: 1.25.7-a4
  * Version File: 12
  *
  * 12.1
@@ -15,6 +15,8 @@
  * add pages red and login pages in core
  * 12.4
  * add page error
+ * 12.5
+ * add page add post
  *
 */
 if(!defined("IS_CORE")) {
@@ -55,6 +57,9 @@ global $manifest;
 		break;
 		case "reg":
 			include_once(ROOT_PATH."core/pages/reg.".ROOT_EX);
+		break;
+		case "add":
+			include_once(ROOT_PATH."core/pages/add.".ROOT_EX);
 		break;
 		case "login":
 			include_once(ROOT_PATH."core/pages/login.".ROOT_EX);

@@ -6,6 +6,9 @@
  * 
  * @package Minify
  */
+if(isset($_GET['f'])) {
+	$_GET['f'] = str_replace(chr(0), '', (string)$_GET['f']);
+}
 
 if( !defined( 'E_DEPRECATED' ) ) {
 

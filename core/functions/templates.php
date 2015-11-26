@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 1.25.6-rc5
+ * @version 1.25.7-a4
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc5
+ * Version Engine: 1.25.7-a4
  * Version File: 21
  *
  * 21.1
@@ -15,6 +15,8 @@
  * rebuild local data
  * 22.3
  * fix and clear include modules js and css files
+ * 22.3
+ * add meta tags author and copyright
  *
 */
 if(!defined("IS_CORE")) {
@@ -139,6 +141,9 @@ global $user;
 		$header .= "\t<title>{L_sitename}</title>\n";
 	}
 	$header .= "<meta name=\"generator\" content=\"Cardinal ".VERSION."\" />\n";
+	$header .= "<meta name=\"author\" content=\"".(isset($array['author']) ? $array['author'] : "Cardinal ".VERSION)."\" />\n";
+	$header .= "<meta name=\"copyright\" content=\"{L_sitename}\" />\n";
+	$header .= "<meta name=\"robots\" content=\"all\" />\n";
 	//$header .= "<meta name=\"robots\" content=\"noindex, nofollow\"/>\n";
 	$header .= "<link href=\"{C_default_http_host}favicon.ico\" rel=\"shortcut icon\" type=\"image/x-icon\" />\n";
 	$header .= "<link rel=\"icon shortcut\" type=\"image/vnd.microsoft.icon\" href=\"{C_default_http_host}favicon.ico\" sizes=\"16x16\" />\n";

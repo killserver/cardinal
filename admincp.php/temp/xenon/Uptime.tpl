@@ -1,0 +1,8 @@
+<center>uptimerobot.com</center>
+<div style="display:inline-block;width:50%;">API:</div><div style="display:inline-block;"><input type="text" name="uptimerobot_api"[if {C_uptime[uptimerobot_api]}!="{C_uptime[uptimerobot_api]}"] value="{C_uptime[uptimerobot_api]}"[/if {C_uptime[uptimerobot_api]}!="{C_uptime[uptimerobot_api]}"] /></div>
+<div style="display:inline-block;width:50%;">ID:</div><div style="display:inline-block;"><input type="text" name="uptimerobot_id"[if {C_uptime[uptimerobot_id]}!="{C_uptime[uptimerobot_id]}"] value="{C_uptime[uptimerobot_id]}"[/if {C_uptime[uptimerobot_id]}!="{C_uptime[uptimerobot_id]}"] /></div>
+<center>ping-admin.ru</center>
+<div style="display:inline-block;width:50%;">API:</div><div style="display:inline-block;"><input type="text" name="ping_admin_api"[if {C_uptime[ping_admin_api]}!="{C_uptime[ping_admin_api]}"] value="{C_uptime[ping_admin_api]}"[/if {C_uptime[ping_admin_api]}!="{C_uptime[ping_admin_api]}"] /></div>
+<center>syslab.ru</center>
+<div style="display:inline-block;width:50%;">API:</div><div style="display:inline-block;"><input type="text" name="syslab_api"[if {C_uptime[syslab_api]}!="{C_uptime[syslab_api]}"] value="{C_uptime[syslab_api]}"[/if {C_uptime[syslab_api]}!="{C_uptime[syslab_api]}"] /></div>
+<div style="display:inline-block;width:50%;">ID:</div><div style="display:inline-block;"><input type="text" name="syslab_id"[if {C_uptime[syslab_id]}!="{C_uptime[syslab_id]}"] value="{C_uptime[syslab_id]}"[/if {C_uptime[syslab_id]}!="{C_uptime[syslab_id]}"] /></div>
