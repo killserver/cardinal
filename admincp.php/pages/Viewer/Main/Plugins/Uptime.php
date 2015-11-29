@@ -5,9 +5,14 @@ class Main_Uptime extends Main {
 	public function Main_Uptime() {
 		$count = 0;
 		$value = 0;
-		if(!empty(config::Select("uptime", "uptimerobot_id")) && !empty(config::Select("uptime", "uptimerobot_api"))) {
+		$uptimerobot_id = config::Select("uptime", "uptimerobot_id");
+		$uptimerobot_api = config::Select("uptime", "uptimerobot_api");
+		$ping_admin_api = config::Select("uptime", "ping_admin_api");
+		$syslab_api = config::Select("uptime", "syslab_api");
+		$syslab_id = config::Select("uptime", "syslab_id");
+		if(!empty($uptimerobot_id) && !empty($uptimerobot_api)) {
 			$count += 1;
-			$prs = new Parser("https://api.uptimerobot.com/getMonitors?apiKey=".config::Select("uptime", "uptimerobot_api")."&monitors=".config::Select("uptime", "uptimerobot_id")."&format=json&noJsonCallback=1");
+			$prs = new Parser("https://api.uptimerobot.com/getMonitors?apiKey=".config::Select("uptime", "uptimerobot_api")."&monitors=".$uptimerobot_id."&format=json&noJsonCallback=1");
 			$json = $prs->get();
 			$json = json_decode($json, true);
 			if(is_array($json) && isset($json['monitors']['monitor'])) {
@@ -20,9 +25,9 @@ class Main_Uptime extends Main {
 				$value += intval($val);
 			}
 		}
-		if(!empty(config::Select("uptime", "ping_admin_api"))) {
+		if(!empty($ping_admin_api)) {
 			$count += 1;
-			$prs = new Parser("https://ping-admin.ru/?a=api&sa=tasks&api_key=".config::Select("uptime", "ping_admin_api"));
+			$prs = new Parser("https://ping-admin.ru/?a=api&sa=tasks&api_key=".$ping_admin_api);
 			$json = $prs->get();
 			$json = json_decode($json, true);
 			if(is_array($json)) {
@@ -35,9 +40,9 @@ class Main_Uptime extends Main {
 				$value += intval($val);
 			}
 		}
-		if(!empty(config::Select("uptime", "syslab_id")) && !empty(config::Select("uptime", "syslab_api"))) {
+		if(!empty($syslab_id) && !empty($syslab_api)) {
 			$count += 1;
-			$prs = new Parser("http://api.syslab.ru/?apiKey=".config::Select("uptime", "syslab_api")."&monitorID=".config::Select("uptime", "syslab_id")."&monitorType=1&format=json");
+			$prs = new Parser("http://api.syslab.ru/?apiKey=".$syslab_api."&monitorID=".$syslab_id."&monitorType=1&format=json");
 			$json = $prs->get();
 			$json = json_decode($json, true);
 			if(is_array($json) && isset($json['Resourses'])) {
@@ -54,7 +59,7 @@ class Main_Uptime extends Main {
 		}
 		templates::assign_vars(array(
 			"uptime_visible" => ($count>0 ? "true" : "false"),
-			"uptime_value" => number_format($value/$count, 1),
+			"uptime_value" => ($count>0 ? number_format($value/$count, 1) : ""),
 		));
 	}
 

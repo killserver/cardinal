@@ -1,14 +1,16 @@
 <?php
 /*
  *
- * @version 1.25.6-rc4
+ * @version 1.25.7-a5
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc4
+ * Version Engine: 1.25.7-a5
  * Version File: 4
  *
  * 4.1
  * add support mb_detect_encoding without library mb_* on server
+ * 4.2
+ * add support cut before start match on text
  *
 */
 if(!defined("IS_CORE")) {
@@ -18,13 +20,19 @@ die();
 
 function cut($text, $start, $end = null, $add = null){return function_call('cut', array($text, $start, $end, $add));}
 function or_cut($text, $start, $end = null, $add = null) {
-	if(empty($add)) {
-		$add = $end;
-		$end = $start;
-		$start = 0;
-	}
-	if(nstrlen($text)<=$end) {
+	if(empty($end) && is_string($start)) {
 		$add = "";
+		$start = nstrpos($text, $start)+nstrlen($start);
+		$end = nstrlen($text);
+	} else {
+		if(empty($add)) {
+			$add = $end;
+			$end = $start;
+			$start = 0;
+		}
+		if(nstrlen($text)<=$end) {
+			$add = "";
+		}
 	}
 	return nsubstr($text, $start, $end).$add;
 }

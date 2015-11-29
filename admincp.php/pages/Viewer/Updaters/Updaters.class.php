@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 1.25.7-a1
+ * @version 1.25.7-a5
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.7-a1
+ * Version Engine: 1.25.7-a5
  * Version File: 1
  *
  * 1.1
@@ -13,6 +13,8 @@
  * fix cache information of new version on server
  * 1.3
  * add support "speed update"
+ * 1.4
+ * add block update on localhost(read changelog)
  *
 */
 if(!defined("IS_ADMIN")) {
@@ -39,15 +41,22 @@ class Updaters extends Core {
 	}
 	
 	function __construct() {
+		$this->ParseLang();
 		if(isset($_GET['download'])) {
 			if(file_exists(ROOT_PATH."core/cache/system/lastest.tar.gz")) {
 				unlink(ROOT_PATH."core/cache/system/lastest.tar.gz");
 			}
-			file_put_contents(ROOT_PATH."core/cache/system/lastest.tar.gz", file_get_contents("https://github.com/killserver/cardinal/archive/trunk.tar.gz?".time()));
-			echo "1";
+			$prs = new Parser("https://github.com/killserver/cardinal/archive/trunk.tar.gz?".time());
+			file_put_contents(ROOT_PATH."core/cache/system/lastest.tar.gz", $prs->get());
+			HTTP::echos("1");
 			return;
 		}
 		if(isset($_GET['install'])) {
+			if(strpos(getenv("HTTP_HOST"), "localhost")!==false) {
+				header("HTTP/1.0 404 Not Found");
+				HTTP::echos(lang::get_lang("install_update_fail_localhost"));
+				die();
+			}
 			$tar_object = new Archive_Tar(ROOT_PATH."core/cache/system/lastest.tar.gz", "gz");
 			$list = $tar_object->listContent();
 			if(is_array($list) && sizeof($list)>0) {

@@ -20,6 +20,21 @@ class Core {
 	private $count_unmoder = 0;
 	private $title = "{L_adminpanel}";
 	
+	public function ParseLang() {
+	global $lang;
+		$dir = ROOT_PATH."admincp.php/pages/Lang/".lang::get_lg()."/";
+		if(is_dir($dir)) {
+			if($dh = dir($dir)) {
+				while(($file = $dh->read()) !== false) {
+					if($file != "index.".ROOT_EX && $file != "." && $file != ".." && strpos($file, ".".ROOT_EX) !== false) {
+						require_once($dir.$file);
+					}
+				}
+			$dh->close();
+			}
+		}
+	}
+	
 	private function vsort(&$array) {
 		$arrs = array();
 		foreach($array as $key => $val) {
@@ -83,21 +98,11 @@ class Core {
 	public function Prints($echo, $print=false) {
 	global $lang, $user, $in_page;
 		if(!isset($_COOKIE[COOK_ADMIN_USER]) || !isset($_COOKIE[COOK_ADMIN_PASS])) {
-			$ref = urlencode(str_replace(array(ROOT_PATH, "/admincp.php/"), "", getenv("REQUEST_URI")));
+			$ref = urlencode(str_replace(ROOT_PATH, "", cut(getenv("REQUEST_URI"), "/admincp.php/")));
 			location("{C_default_http_host}admincp.php/?pages=Login".(!empty($ref) ? "&ref=".$ref : ""));
 			return;
 		}
-		$dir = ROOT_PATH."admincp.php/pages/Lang/".lang::get_lg()."/";
-		if(is_dir($dir)) {
-			if($dh = dir($dir)) {
-				while(($file = $dh->read()) !== false) {
-					if($file != "index.".ROOT_EX && $file != "." && $file != ".." && strpos($file, ".".ROOT_EX) !== false) {
-						require_once($dir.$file);
-					}
-				}
-			$dh->close();
-			}
-		}
+		$this->ParseLang();
 		if(!$print) {
 			$echo = (templates::complited_assing_vars($echo, null));
 		}
