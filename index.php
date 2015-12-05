@@ -1,14 +1,16 @@
 <?php
 /*
  *
- * @version 1.25.6-rc5
+ * @version 2.0
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc5
+ * Version Engine: 2.0
  * Version File: 1
  *
  * 1.1
  * add logic routification
+ * 1.2
+ * rebuild logic routification
  *
 */
 define("IS_CORE", true);
@@ -36,14 +38,27 @@ if(!empty($server)) {
 } else {
 	$page = "main";
 }
-$page = Route::Get($page);
-
-
+$class = Route::Load($page);
+$method = Route::param('method');
+if(!(!$method)) {
+	$method = Route::param('method');
+} else {
+	$method = '';
+}
+$class = Route::param('page');
+if(!(!$class)) {
+	$page = $class;
+} else {
+	$class = "page";
+}
 $manifest['now_page'] = $page;
 $manifest['mod_page'][HTTP::getip()]['page'] = $page;
 view_pages($page);
-if(class_exists("page")) {
-	$page = new page();
+if(class_exists($class)) {
+	$page = new $class();
+	if(!empty($method) && method_exists($page, $method)) {
+		$page->$method();
+	}
 	unset($page);
 }
 if(defined("DEBUG")) {

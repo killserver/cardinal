@@ -6,8 +6,11 @@ if(!defined("IS_CORE")) {
 class changelog {
 	
 	function __construct() {
-		modules::manifest_log('load_modules', 'changelog');
-		Route::set('changelog.php', "changelog");
+		modules::manifest_log('load_modules', array('changelog', __FILE__));
+		Route::Set('changelog', "changelog.php")->defaults(array(
+			'page' => 'changelog',
+			'method'     => 'change',
+		));
 		modules::manifest_set(array('class_pages', 'changelog'), array("object" => &$this, "func" => "change"));
 	}
 	

@@ -1,16 +1,18 @@
 <?php
 /*
  *
- * @version 1.25.6-rc4
+ * @version 2.0
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc4
+ * Version Engine: 2.0
  * Version File: 3
  *
  * 3.1
  * add support install system modules
  * 3.2
  * fix errors in installer
+ * 3.3
+ * change log data
  *
 */
 if(!defined("IS_CORE")) {
@@ -184,14 +186,14 @@ final class modules {
 
 	public static function manifest_log($select, $set) {
 	global $manifest;
-		$manifest['load_modules'][$select][] = $set;
+		$manifest['log'][$select][] = $set;
 	return $manifest;
 	}
 
 	public static function manifest_getlog($select) {
 	global $manifest;
-		if(in_array($select, $manifest['load_modules'])) {
-			return $manifest['load_modules'][$select];
+		if(array_key_exists($select, $manifest['log'])) {
+			return $manifest['log'][$select];
 		} else {
 			return false;
 		}
