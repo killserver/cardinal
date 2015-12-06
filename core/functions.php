@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 2015-10-07 17:50:38 1.25.6-rc3
+ * @version 2.1
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc3
+ * Version Engine: 2.1
  * Version File: 3
  *
  * 3.2
@@ -13,6 +13,8 @@
  * add support include config file after installing
  * 3.4
  * add support drivers for databases
+ * 3.5
+ * add support basic and user setting for routification
  *
 */
 if(!defined("IS_CORE")) {
@@ -117,6 +119,12 @@ function include_dir($dir = null, $modules = null) {
 		$dh->close();
 		}
 	}
+}
+if(file_exists(ROOT_PATH."core/media/config.route.global.php")) {
+	require_once(ROOT_PATH."core/media/config.route.global.php");
+}
+if(file_exists(ROOT_PATH."core/media/config.route.php")) {
+	require_once(ROOT_PATH."core/media/config.route.php");
 }
 include_dir(ROOT_PATH."core/modules/", ".class.".ROOT_EX);
 include_dir();

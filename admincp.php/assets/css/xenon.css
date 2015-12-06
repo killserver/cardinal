@@ -22558,3 +22558,6 @@ button.toast-close-button {
 .page-body.user-info-navbar-skin-lemonade .navbar.horizontal-menu .navbar-inner > .nav > li .dropdown-menu.user-profile-menu li.last > a {
   border-bottom: 0;
 }
+.content_admin {
+	display: table;
+}

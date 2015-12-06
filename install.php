@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 1.25.7-a3
+ * @version 2.1
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.7-a3
+ * Version Engine: 2.1
  * Version File: 2
  *
  * 2.1
@@ -19,10 +19,16 @@
  * fix time cron
  * 2.6
  * add support speed updates
+ * 2.7
+ * add support routification on files
  *
 */
-define("IS_CORE", true);
-define("IS_INSTALLER", true);
+if(!defined("IS_CORE")) {
+	define("IS_CORE", true);
+}
+if(!defined("IS_INSTALLER")) {
+	define("IS_INSTALLER", true);
+}
 require_once("core.php");
 if(isset($_GET['done'])) {
 	templates::assign_vars(array("page" => "4"));

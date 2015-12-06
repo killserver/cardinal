@@ -8,10 +8,12 @@ die();
 class Main_Updater extends Main {
 	
 	private function Creator($text) {
-		preg_match_all("#([0-9]+){4}-([0-9]+){2}-([0-9]+){2} ([0-9]+){2}:([0-9]+){2}:([0-9]+){2} (.+?)\n#is", $text, $arr);
+		preg_match_all("#([0-9]{4}+)-([0-9]{2}+)-([0-9]{2}+) ([0-9]{2}+):([0-9]{2}+):([0-9]{2}+) (.+?)\n#is", $text, $arr);
 		if(is_array($arr) && isset($arr[7]) && is_array($arr[7])) {
 			for($i=0;$i<sizeof($arr[7]);$i++) {
-				$text = str_replace($arr[7][$i], "<span class=\"label label-red\">".$arr[7][$i]."</span>", $text);
+				$text = str_replace($arr[1][$i]."-".$arr[2][$i]."-".$arr[3][$i]." ".$arr[4][$i].":".$arr[5][$i].":".$arr[6][$i]." ".$arr[7][$i],
+									$arr[1][$i]."-".$arr[2][$i]."-".$arr[3][$i]." ".$arr[4][$i].":".$arr[5][$i].":".$arr[6][$i]." "."<span class=\"label label-red\">".$arr[7][$i]."</span>",
+						$text);
 			}
 		}
 		$text = str_replace("[!]", "<span class=\"label label-blue\">[!]</span>", $text);

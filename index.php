@@ -1,16 +1,18 @@
 <?php
 /*
  *
- * @version 2.0
+ * @version 2.1
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 2.0
+ * Version Engine: 2.1
  * Version File: 1
  *
  * 1.1
  * add logic routification
  * 1.2
  * rebuild logic routification
+ * 1.3
+ * add support file in routification
  *
 */
 define("IS_CORE", true);
@@ -53,13 +55,19 @@ if(!(!$class)) {
 }
 $manifest['now_page'] = $page;
 $manifest['mod_page'][HTTP::getip()]['page'] = $page;
-view_pages($page);
-if(class_exists($class)) {
-	$page = new $class();
-	if(!empty($method) && method_exists($page, $method)) {
-		$page->$method();
+$is_file = Route::param('is_file');
+$file = Route::param('file');
+if(!$is_file && empty($file)) {
+	view_pages($page);
+	if(class_exists($class)) {
+		$page = new $class();
+		if(!empty($method) && method_exists($page, $method)) {
+			$page->$method();
+		}
+		unset($page);
 	}
-	unset($page);
+} else {
+	require_once($file);
 }
 if(defined("DEBUG")) {
 	ini_set('display_errors',1);
