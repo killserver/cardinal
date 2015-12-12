@@ -48,7 +48,8 @@ class Updaters extends Core {
 			if(file_exists(ROOT_PATH."core/cache/system/lastest.tar.gz")) {
 				unlink(ROOT_PATH."core/cache/system/lastest.tar.gz");
 			}
-			$prs = new Parser("https://github.com/killserver/cardinal/archive/trunk.tar.gz?".time());
+			$prs = new Parser("https://codeload.github.com/killserver/cardinal/tar.gz/trunk?".time());
+			$prs->timeout(30);
 			file_put_contents(ROOT_PATH."core/cache/system/lastest.tar.gz", $prs->get());
 			HTTP::echos("1");
 			return;

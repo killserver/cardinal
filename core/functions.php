@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 2.2
+ * @version 2.3
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 2.2
+ * Version Engine: 2.3
  * Version File: 3
  *
  * 3.2
@@ -15,6 +15,8 @@
  * add support drivers for databases
  * 3.5
  * add support basic and user setting for routification
+ * 3.6
+ * add support PEAR installed on server
  *
 */
 if(!defined("IS_CORE")) {
@@ -40,6 +42,9 @@ if(file_exists(ROOT_PATH."core/media/config.".ROOT_EX) && file_exists(ROOT_PATH.
 }
 
 spl_autoload_register(function($class) {
+	if(stripos(ini_get('include_path'), $class)!==false) {
+		return false;
+	}
 	if(file_exists(ROOT_PATH."core/class/".$class.".".ROOT_EX)) {
 		include_once(ROOT_PATH."core/class/".$class.".".ROOT_EX);
 	} elseif(file_exists(ROOT_PATH."core/class/system/".$class.".".ROOT_EX)) {
