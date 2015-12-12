@@ -3,7 +3,7 @@
 	<div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;padding:18px;background:rgb(255,230,196);color:#4C289E;">Установка скрипта заблокированна, так-как была попытка запустить сервер на localhost домене. Пожалуйста, перенесите скрипт на хостинг.</b></div>
 [/if]
 [if {page}==1]
-<form method="post">
+<form method="post" action="../{R_[install_first][file=install.php;page=install;method=change;is_file=true;line=1]}">
 <div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;padding:18px;background:rgb(255,230,196);color:#4C289E;">
 <center><b>Данный программный продукт распростроняется под лицензей GNU.</b></center><br />Все изменения, которые пользователь будет выполнять используя данное ПО - не должно нарушать права человека и права котеек! Будьте более доброжелательны.<br />Приятного использования!
 </div>
@@ -27,7 +27,7 @@ input:hover {
 </form>
 [/if]
 [if {page}==2]
-<form method="post">
+<form method="post" action="../{R_[install_first][file=install.php;page=install;method=change;is_file=true;line=2]}">
 <div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;padding:18px;background:rgb(255,230,196);color:#4C289E;">
 	[if {is_stop}==0]<div style="text-align:center;font-weight:bold;">Все необходимые права доступа установленны, можно продолжать установку!</div>[/if {is_stop}==0]
 	[if {is_stop}==1]<div style="text-align:center;font-weight:bold;">Установите требуемые права доступа к папкам для продолжения установки!</div>[/if {is_stop}==1]
@@ -56,7 +56,7 @@ input:hover {
 </form>
 [/if]
 [if {page}==3]
-<form method="post">
+<form method="post" action="../{R_[install_first][file=install.php;page=install;method=change;is_file=true;line=4]}">
 <div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;background:rgb(255,230,196);text-align:center;font-weight:bold;padding:7px;margin:0px auto 10px;width:50%;color:#f00;font-size:18px;">Убедитесь, что все необходимые драйверы баз данных установленны!</div>
 <span style="float:left;">
 	<span style="width:400px;border:1px solid #000;display:block;padding:10px;">

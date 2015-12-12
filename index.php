@@ -1,11 +1,11 @@
 <?php
 /*
  *
- * @version 2.1
+ * @version 2.2
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 2.1
- * Version File: 1
+ * Version Engine: 2.2
+ * Version File: 2
  *
  * 1.1
  * add logic routification
@@ -13,6 +13,8 @@
  * rebuild logic routification
  * 1.3
  * add support file in routification
+ * 2.1
+ * rebuild logic routification and pages
  *
 */
 define("IS_CORE", true);
@@ -40,19 +42,26 @@ if(!empty($server)) {
 } else {
 	$page = "main";
 }
-$class = Route::Load($page);
-$method = Route::param('method');
-if(!(!$method)) {
-	$method = Route::param('method');
+Route::Load($page);
+$page = Route::param('page');
+if(!(!$page)) {
+	$page = $page;
 } else {
-	$method = '';
+	$page = "main";
 }
-$class = Route::param('page');
-if(!(!$class)) {
-	$page = $class;
+$classes = Route::param('class');
+if(!(!$classes)) {
+	$class = $classes;
 } else {
 	$class = "page";
 }
+$method = Route::param('method');
+if(!(!$method)) {
+	$method = $method;
+} else {
+	$method = '';
+}
+unset($classes);
 $manifest['now_page'] = $page;
 $manifest['mod_page'][HTTP::getip()]['page'] = $page;
 $is_file = Route::param('is_file');
@@ -64,11 +73,15 @@ if(!$is_file && empty($file)) {
 		if(!empty($method) && method_exists($page, $method)) {
 			$page->$method();
 		}
-		unset($page);
 	}
 } else {
-	require_once($file);
+	if(file_exists($file)) {
+		require_once($file);
+	} else {
+		templates::error("{L_error_page}", "{L_error_routification}");
+	}
 }
+unset($page, $class, $method, $file, $is_file);
 if(defined("DEBUG")) {
 	ini_set('display_errors',1);
 	error_reporting(E_ALL);
@@ -79,6 +92,5 @@ GzipOut(templates::$gzip, templates::$gzip_activ);
 HTTP::echos();
 unset($templates);
 unset($db);
-
 
 ?>

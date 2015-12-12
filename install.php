@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 2.1
+ * @version 2.2
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 2.1
+ * Version Engine: 2.2
  * Version File: 2
  *
  * 2.1
@@ -21,6 +21,8 @@
  * add support speed updates
  * 2.7
  * add support routification on files
+ * 2.8
+ * fix support routification on files and fix error on table-list
  *
 */
 if(!defined("IS_CORE")) {
@@ -36,10 +38,10 @@ if(isset($_GET['done'])) {
 	die();
 }
 
-if(sizeof($_POST)==0||sizeof($_POST)==1||sizeof($_POST)==2) {
+if(sizeof($_POST)==0||(Route::param("line")==1&&sizeof($_POST)==1)||(Route::param("line")==2&&sizeof($_POST)==2)) {
 	if(sizeof($_POST)==0) {
 		templates::assign_vars(array("page" => "1"));
-	} else if(sizeof($_POST)==1) {
+	} else if(Route::param("line")==1&&sizeof($_POST)==1) {
 		$cache = (get_chmod(ROOT_PATH."core/cache/")=="0777" ? "green":"red");
 		$system_cache = (get_chmod(ROOT_PATH."core/cache/system/")=="0777" ? "green":"red");
 		$mb = (function_exists('mb_detect_encoding') ? "green" : "red");
@@ -51,22 +53,21 @@ if(sizeof($_POST)==0||sizeof($_POST)==1||sizeof($_POST)==2) {
 		templates::assign_vars(array("page" => "2", "cache" => $cache, "system_cache" => $system_cache, "mb" => $mb));
 	} else {
 		templates::assign_vars(array("page" => "3", "SERNAME" => getenv('SERVER_NAME')));
-
-	}
-	$driver = ROOT_PATH."core/class/system/drivers/";
-	$dirs = read_dir($driver, ".php");
-	sort($dirs);
-	for($i=0;$i<sizeof($dirs);$i++) {
-		if($dirs[$i]=="index.php"||$dirs[$i]=="DriverParam.php"||$dirs[$i]=="drivers.php") {
-			continue;
+		$driver = ROOT_PATH."core/class/system/drivers/";
+		$dirs = read_dir($driver, ".php");
+		sort($dirs);
+		for($i=0;$i<sizeof($dirs);$i++) {
+			if($dirs[$i]=="index.php"||$dirs[$i]=="DriverParam.php"||$dirs[$i]=="drivers.php") {
+				continue;
+			}
+			include_once($driver.$dirs[$i]);
+			$dr_subname = str_replace(".php", "", $dirs[$i]);
+			if(!class_exists($dr_subname)) {
+				continue;
+			}
+			$dr_name = $dr_subname::$subname;
+			templates::assign_vars(array("name" => $dr_subname, "value" => $dr_name), "drivers", "driver".$i);
 		}
-		include_once($driver.$dirs[$i]);
-		$dr_subname = str_replace(".php", "", $dirs[$i]);
-		if(!class_exists($dr_subname)) {
-			continue;
-		}
-		$dr_name = $dr_subname::$subname;
-		templates::assign_vars(array("name" => $dr_subname, "value" => $dr_name), "drivers", "driver".$i);
 	}
 	echo templates::view(templates::complited_assing_vars("install", null, ""));
 	die();
@@ -196,9 +197,9 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `modules` (
   `page` varchar(255) NOT NULL,
   `module` varchar(255) NOT NULL,
   `method` varchar(255) NOT NULL,
-  `param` longtext,
+  `param` longtext not null,
   `activ` enum('yes','no') NOT NULL DEFAULT 'yes',
-  `tpl` longtext,
+  `tpl` longtext not null,
   PRIMARY KEY (`id`),
   KEY `page` (`page`),
   KEY `modules` (`module`),
@@ -207,6 +208,25 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `modules` (
   FULLTEXT KEY `param` (`param`),
   FULLTEXT KEY `tpl` (`tpl`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 DELAY_KEY_WRITE=1 AUTO_INCREMENT=1;";
+
+$SQL[] = "DROP TABLE IF EXISTS `posts`;";
+$SQL[] = "CREATE TABLE IF NOT EXISTS `posts` (
+   `id` int(11) NOT NULL AUTO_INCREMENT,
+   `title` varchar(255) NOT NULL,
+   `alt_name` varchar(255) NOT NULL,
+   `image` varchar(255) NOT NULL,
+   `descr` LONGTEXT NOT NULL,
+   `cat_id` varchar(255) NOT NULL,
+   `time` int(11) NOT NULL,
+   `added` varchar(255) NOT NULL,
+   `active` enum('yes','no') NOT NULL DEFAULT 'no',
+   PRIMARY KEY `id`(`id`),
+   FULLTEXT `title_name` (`title`, `alt_name`),
+   FULLTEXT `category` (`cat_id`),
+   FULLTEXT `idescr`(`image`, `descr`),
+   FULLTEXT `added`(`added`),
+   KEY `active_time`(`active`, `time`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 
 $SQL[] = "DROP TABLE IF EXISTS `users`;";
 $SQL[] = "CREATE TABLE IF NOT EXISTS `users` (
@@ -393,5 +413,5 @@ file_put_contents(ROOT_PATH."core/media/config.lang.php", $lang);
 if(file_exists(ROOT_PATH."core/media/config.default.php")) {
 	rename(ROOT_PATH."core/media/config.default.php", ROOT_PATH."core/media/config.php");
 }
-header("Location: install.php?done");
+header("Location: ../install/done");
 ?>

@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 2.1
+ * @version 2.2
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 2.1
+ * Version Engine: 2.2
  * Version File: 3
  *
  * 3.2

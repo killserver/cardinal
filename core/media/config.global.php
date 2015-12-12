@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 2.1
+ * @version 2.2
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 2.1
+ * Version Engine: 2.2
  * Version File: 1
  *
  * 1.1
@@ -27,7 +27,7 @@ define("CACHE_NONE", 0);
 define("ERROR_FILE", 0);
 define("ERROR_DB", 1);
 
-define("VERSION", "2.1");
+define("VERSION", "2.2");
 define("LEVEL_ADMIN", 3);
 define("LEVEL_MODER", 2);
 define("LEVEL_USER", 1);

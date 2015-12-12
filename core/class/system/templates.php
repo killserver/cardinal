@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 1.25.7-a1
+ * @version 2.2
  * @copyright 2014-2015 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.7-a1
+ * Version Engine: 2.2
  * Version File: 3
  *
  * 3.0
@@ -21,6 +21,9 @@
  * add support preg_replace_callback_array function in php 7
  * 3.5
  * fix title in error
+ * 3.6
+ * add support routification
+ * clean and boost code
  *
 */
 if(!defined("IS_CORE")) {
@@ -48,6 +51,7 @@ final class templates {
 		}
 		self::$skins = modules::get_config('skins', 'skins');
 		$test_shab = modules::get_config('skins', 'test_shab');
+		unset($test_shab);
 		if(!empty($test_shab) && in_array(HTTP::getip(), modules::get_config('ip_test_shab'))) {
 			self::$skins = $test_shab;
 		}
@@ -210,17 +214,46 @@ final class templates {
 		}
 	}
 	
+	private static function route($array) {
+		if(isset($array[1]) && isset($array[2])) {
+			$route = Route::get($array[1]);
+			if(!is_bool($route)) {
+				$params = array();
+				$array = explode(";", $array[2]);
+				for($i=0;$i<sizeof($array);$i++) {
+					$exp = explode("=", $array[$i]);
+					if(isset($exp[1])) {
+						$val = $exp[1];
+					} else {
+						$val = "";
+					}
+					if(isset($exp[0])) {
+						$params[$exp[0]] = $val;
+					} else {
+						$params[] = $val;
+					}
+				}
+				unset($val, $exp, $array);
+				return $route->uri($params);
+			} else {
+				return $array[0];
+			}
+		} else {
+			return $array[0];
+		}
+	}
+	
 	private static function systems($array) {
 		$return = $array[0];
 		switch($array[1]) {
 			case "rand":
-				$return = mt_rand(1, mt_getrandmax());
+				$return = mrand();
 			break;
 			case "time":
 				$return = time();
 			break;
 			default:
-			$return = $array[0];
+				$return = $array[0];
 			break;
 		}
 		return $return;
@@ -321,6 +354,7 @@ final class templates {
 		$tmp = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tmp);
 		$tmp = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tmp);
 		$tmp = self::callback_array("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tmp);
+		$tmp = self::callback_array("#\{R_\[(.+?)\]\[(.+?)\]\}#", ("templates::route"), $tmp);
 		$tmp = str_replace("{reg_link}", config::Select('link', 'reg'), $tmp);
 		$tmp = str_replace("{login_link}", config::Select('link', 'login'), $tmp);
 		$tmp = str_replace("{logout-link}", config::Select('link', 'logout'), $tmp);
@@ -902,6 +936,7 @@ if(!$test) {
 	public static function view($data, $header = null) {
 		self::complited($data, $header);
 		$h = self::$tmp;
+		self::$tmp = "";
 		$h = str_replace("{THEME}", "/".self::$dir_skins."/".self::$skins, $h);
 		return self::ecomp($h);
 	}
@@ -1025,6 +1060,7 @@ if(!$test) {
 		if(isset(self::$header['meta_body'])) {
 			$mtt = meta(self::$header['meta_body']);
 			$h = str_replace("{meta_tt}", $mtt, $h);
+			unset($mtt);
 		} else {
 			$h = str_replace("{meta_tt}", meta(), $h);
 		}
@@ -1055,6 +1091,7 @@ if(!$test) {
 					$h = str_replace("{".$name."}", self::comp_datas($value), $h);
 				}
 			}
+			self::$module['menu'] = array();
 		}
 		$h = str_replace("{THEME}", "/".self::$dir_skins."/".self::$skins, $h);
 		$h = self::ecomp($h);
@@ -1067,7 +1104,8 @@ if(!$test) {
 			$h = preg_replace($find_preg, $replace_preg, $h);
 		}
 		HTTP::echos(self::minify($h));
-		unset($this);
+		unset($this, $h, $body, $lang);
+		self::clean();
 		if(function_exists("memory_get_usage")) {
 			echo "<!-- ".round((memory_get_usage()/1024/1024), 2)." -->";
 		}
@@ -1080,8 +1118,8 @@ if(!$test) {
 		self::$module = array("head" => array(), "body" => array(), "blocks" => array(), "menu" => array());
 		self::$editor = array();
 		self::$header = null;
-		//self::$tmp = "";
-		//self::$skins = "";
+		self::$tmp = "";
+		self::$skins = "";
 	}
 
 	public function __destruct() { 
