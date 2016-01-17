@@ -21,6 +21,7 @@ exit();
 class page {
 
     function __construct() {
+		Route::RegParam("inPage", "index");
 		db::doquery("SELECT `id`, `alt_name`, `title`, `image`, `descr`, `time`, `added` FROM `posts` WHERE `active` = \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP()" : ""), true);
 		while($row = db::fetch_assoc()) {
 			templates::assign_vars($row, "index", "index".$row['id']);

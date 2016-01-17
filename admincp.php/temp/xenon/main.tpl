@@ -11,16 +11,16 @@
 	<title>Xenon - Compose Message</title>
 
 	<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Arimo:400,700,400italic">
-	<link rel="stylesheet" href="assets/css/fonts/linecons/css/linecons.css?1">
-	<link rel="stylesheet" href="assets/css/fonts/fontawesome/css/font-awesome.min.css?1">
-	<link rel="stylesheet" href="assets/css/bootstrap.css?1">
-	<link rel="stylesheet" href="assets/css/xenon-core.css?1">
-	<link rel="stylesheet" href="assets/css/xenon-forms.css?1">
-	<link rel="stylesheet" href="assets/css/xenon-components.css?10">
-	<link rel="stylesheet" href="assets/css/xenon-skins.css?1">
-	<link rel="stylesheet" href="assets/css/custom.css?1">
+	<link rel="stylesheet" href="assets/xenon/css/fonts/linecons/css/linecons.css?1">
+	<link rel="stylesheet" href="assets/xenon/css/fonts/fontawesome/css/font-awesome.min.css?1">
+	<link rel="stylesheet" href="assets/xenon/css/bootstrap.css?1">
+	<link rel="stylesheet" href="assets/xenon/css/xenon-core.css?1">
+	<link rel="stylesheet" href="assets/xenon/css/xenon-forms.css?1">
+	<link rel="stylesheet" href="assets/xenon/css/xenon-components.css?10">
+	<link rel="stylesheet" href="assets/xenon/css/xenon-skins.css?1">
+	<link rel="stylesheet" href="assets/xenon/css/custom.css?1">
 
-	<script src="assets/js/jquery-1.11.1.min.js?1"></script>
+	<script src="assets/xenon/js/jquery-1.11.1.min.js?1"></script>
 
 	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 </head>
@@ -217,11 +217,11 @@
 					<!-- logo -->
 					<div class="logo">
 						<a href="{C_default_http_host}admincp.php/?pages=main" class="logo-expanded">
-							<img src="assets/images/logo@2x.png" width="80" alt="" />
+							<img src="assets/xenon/images/logo@2x.png" width="80" alt="" />
 						</a>
 						
 						<a href="{C_default_http_host}admincp.php/?pages=main" class="logo-collapsed">
-							<img src="assets/images/logo-collapsed@2x.png" width="40" alt="" />
+							<img src="assets/xenon/images/logo-collapsed@2x.png" width="40" alt="" />
 						</a>
 					</div>
 					
@@ -473,23 +473,28 @@
 	</script>
 	
 	<!-- Imported styles on this page -->
-	<link rel="stylesheet" href="assets/js/toastr/toastr.min.css?1">
-	<link rel="stylesheet" href="assets/js/dropzone/css/dropzone.css">
+	<link rel="stylesheet" href="assets/xenon/js/toastr/toastr.min.css?1">
+	<link rel="stylesheet" href="assets/xenon/js/dropzone/css/dropzone.css">
 
 	<!-- Bottom Scripts -->
-	<script src="assets/js/bootstrap.min.js?1"></script>
-	<script src="assets/js/TweenMax.min.js?1"></script>
-	<script src="assets/js/resizeable.js?1"></script>
-	<script src="assets/js/joinable.js?1"></script>
-	<script src="assets/js/xenon-api.js?1"></script>
-	<script src="assets/js/xenon-toggles.js?1"></script>
-	<script src="assets/js/ckeditor/ckeditor.js"></script>
-	<script src="assets/js/ckeditor/adapters/jquery.js"></script>
+	<script src="assets/xenon/js/bootstrap.min.js?1"></script>
+	<script src="assets/xenon/js/TweenMax.min.js?1"></script>
+	<script src="assets/xenon/js/resizeable.js?1"></script>
+	<script src="assets/xenon/js/joinable.js?1"></script>
+	<script src="assets/xenon/js/xenon-api.js?1"></script>
+	<script src="assets/xenon/js/xenon-toggles.js?1"></script>
+	<script src="assets/xenon/js/ckeditor/ckeditor.js"></script>
+	<script src="assets/xenon/js/ckeditor/adapters/jquery.js"></script>
+	<!-- InputMask -->
+	<script src="assets/xenon/js/input-mask/jquery.inputmask.js"></script>
+	<script src="assets/xenon/js/input-mask/jquery.inputmask.date.extensions.js"></script>
+	<script src="assets/xenon/js/input-mask/jquery.inputmask.extensions.js"></script>
+	<script>$("[data-mask]").inputmask();</script>
 
 
 	<!-- JavaScripts initializations and stuff -->
-	<script src="assets/js/xenon-custom.js?1"></script>
-	<script src="assets/js/toastr/toastr.min.js?1"></script>
-	<script src="assets/js/dropzone/dropzone.min.js"></script>
+	<script src="assets/xenon/js/xenon-custom.js?1"></script>
+	<script src="assets/xenon/js/toastr/toastr.min.js?1"></script>
+	<script src="assets/xenon/js/dropzone/dropzone.min.js"></script>
 </body>
 </html>

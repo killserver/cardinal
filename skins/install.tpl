@@ -3,7 +3,7 @@
 	<div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;padding:18px;background:rgb(255,230,196);color:#4C289E;">Установка скрипта заблокированна, так-как была попытка запустить сервер на localhost домене. Пожалуйста, перенесите скрипт на хостинг.</b></div>
 [/if]
 [if {page}==1]
-<form method="post" action="../{R_[install_first][file=install.php;page=install;method=change;is_file=true;line=1]}">
+<form method="post" action="{R_[install_first][file=install.php;page=install;method=change;is_file=true;line=1]}">
 <div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;padding:18px;background:rgb(255,230,196);color:#4C289E;">
 <center><b>Данный программный продукт распростроняется под лицензей GNU.</b></center><br />Все изменения, которые пользователь будет выполнять используя данное ПО - не должно нарушать права человека и права котеек! Будьте более доброжелательны.<br />Приятного использования!
 </div>
@@ -96,7 +96,7 @@ input:hover {
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Название сайта</div><input type="text" name="sitename" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Ключевые слова сайта</div><input type="text" name="keywords" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Описание сайта</div><input type="text" name="description" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
-		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Доменное имя Вашего сайта</div><input type="text" name="SERVER" value="{SERNAME}" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
+		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Доменное имя Вашего сайта</div><input type="text" name="SERVER" value="{SERVERS}" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Путь к Вашему сайту</div><input type="text" name="PATH" value="http://{SERNAME}/" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Система записи ошибок</div><select name="error_type" style="width:50%;padding:5px;margin:1px;"><option value="ERROR_FILE">Ошибки будут записываться в файл</option><option value="ERROR_DB">Ошибки будут записываться в базу данных</option></select><br />
 	</span>
@@ -124,6 +124,6 @@ a:hover, input:hover {
     cursor: pointer;
 }
 </style>
-<a href="admincp.php/?pages=main">Админ-панель</a>
-<a href="./">Главная</a>
+<a href="{C_default_http_host}admincp.php/?pages=main">Админ-панель</a>
+<a href="{C_default_http_host}">Главная</a>
 [/if]

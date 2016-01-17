@@ -33,7 +33,7 @@ global $config, $Timer, $manifest;
 	}
 
 	if($debug AND function_exists( "memory_get_peak_usage")) {
-		$s .="\n<!-- Затрачено оперативной памяти ".round((memory_get_peak_usage(true)-MEMORY_GET)/(1024*1024),2)." MB -->";
+		$s .="\n<!-- Затрачено оперативной памяти ".round((memory_get_peak_usage()-MEMORY_GET)/(1024*1024),2)." MB -->";
 	}
 
 	//@header("Last-Modified: " . date('r', time()) ." GMT");
@@ -63,7 +63,7 @@ global $config, $Timer, $manifest;
 	} else {
 		ob_end_flush();
 		session_destroy();
-		exit;
+		exit();
 	}
 }
 ?>

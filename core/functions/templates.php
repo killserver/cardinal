@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 1.25.7-a4
- * @copyright 2014-2015 KilleR for Cardinal Engine
+ * @version 3.0
+ * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.7-a4
+ * Version Engine: 3.0
  * Version File: 21
  *
  * 21.1
@@ -17,6 +17,8 @@
  * fix and clear include modules js and css files
  * 22.3
  * add meta tags author and copyright
+ * 22.4
+ * add support minify js
  *
 */
 if(!defined("IS_CORE")) {
@@ -90,7 +92,7 @@ global $user;
 		if($js) {
 			$js = implode(",", $js);
 		}
-		$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}js/require.js?".time()."\"></script>\n<script type=\"text/javascript\" src=\"{C_default_http_host}js/config.js?".time()."\"></script>";
+		$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}core/class/min/?g=general&amp;charset=".config::Select("charset").(sizeof($js)>0 ? "&amp;file=".implode(",", $js) : "")."&amp;".time()."\"></script>\n";
 	}
 	$all = modules::manifest_get(array("create_js", "full"));
 	if(is_array($all)) {

@@ -1,10 +1,11 @@
 <?php
 /*
  *
- * @version 1.25.6-rc5
- * @copyright 2014-2015 KilleR for Cardinal Engine
+ * @version 3.0
+ * @copyright 2014-2016 KilleR for Cardinal Engine
+ * @author KilleR
  *
- * Version Engine: 1.25.6-rc5
+ * Version Engine: 3.0
  * Version File: 12
  *
  * 12.1
@@ -23,6 +24,8 @@
  * rebuild logic cookie
  * 12.8
  * add route to manifest
+ * 12.9
+ * add support config as static class, rebuild get info memory for usage, add support special slash on Windows OS and rebuild logic auth
  *
 */
 if(!defined("IS_CORE")) {
@@ -83,10 +86,13 @@ if(defined("DEBUG") || isset($_GET['debug'])) {
 
 
 if(!defined("MEMORY_GET")) {
-	define("MEMORY_GET", memory_get_usage(true));
+	define("MEMORY_GET", memory_get_usage());
+}
+if(!defined("DS")) {
+	define("DS", DIRECTORY_SEPARATOR);
 }
 if(!defined("ROOT_PATH")) {
-	define("ROOT_PATH", dirname(__FILE__)."/");
+	define("ROOT_PATH", dirname(__FILE__).DS);
 }
 $phpEx = substr(strrchr(__FILE__, '.'), 1);
 if(!defined("ROOT_EX") && strpos($phpEx, '/') === false) {
@@ -94,7 +100,7 @@ if(!defined("ROOT_EX") && strpos($phpEx, '/') === false) {
 }
 $Timer = microtime();
 
-require_once(ROOT_PATH."core/functions.".ROOT_EX);
+require_once(ROOT_PATH."core".DS."functions.".ROOT_EX);
 
 $lang = array();
 $db = new db();
@@ -144,27 +150,31 @@ if(!defined("INSTALLER")) {
 			$where = "`pass`";
 			$password = saves($_COOKIE[COOK_PASS]);
 		}
-		cache::Delete("user_".$username);
 		if(!cache::Exists("user_".$username)) {
-			$row = db::doquery("SELECT * FROM users WHERE `username` = \"".$username."\" AND ".$where." = \"".$password."\"", true);
+			db::doquery("SELECT * FROM users WHERE `username` = \"".$username."\" AND ".$where." = \"".$password."\"", true);
 			if(db::num_rows()==0) {
+				cache::Delete("user_".$username);
 				HTTP::set_cookie(COOK_USER, null, true);
 				HTTP::set_cookie(COOK_PASS, null, true);
 			} else {
-				$row = db::fetch_array();
-				cache::Set("user_".$username, $row);
-				$user = $row;
+				$user = db::fetch_array();
+				cache::Set("user_".$username, $user);
 				db::doquery("UPDATE `users` SET `last_activ` = UNIX_TIMESTAMP(), `last_ip` = \"".HTTP::getip()."\" WHERE `id` = ".$user['id']);
 				define("IS_AUTH", true);
 			}
 		} else {
 			$user = cache::Get("user_".$username);
+			if($user['pass']!=$password) {
+				cache::Delete("user_".$username);
+				HTTP::set_cookie(COOK_USER, null, true);
+				HTTP::set_cookie(COOK_PASS, null, true);
+			}
 		}
 	}
 }
 
 $templates = new templates();
-header('Content-Type: text/html; charset='.$config['charset']);
+header('Content-Type: text/html; charset='.config::Select('charset'));
 header('X-UA-Compatible: IE=edge,chrome=1');
 header('Cache-Control: max-age');
 header_remove('x-powered-by');

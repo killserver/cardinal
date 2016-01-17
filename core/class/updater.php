@@ -33,6 +33,10 @@ final class updater {
 				db::query("insert into `config` set `config_name` = \"cardinal_time\", `config_value` = \"0\"");
 				$update = true;
 			break;
+			case "2.4":
+				db::query("alter table `modules` add `file` varchar(255) NOT NULL, add FULLTEXT KEY `file` (`file`);");
+				$update = true;
+			break;
 		}
 		if($update) {
 			self::UpVersion($version);

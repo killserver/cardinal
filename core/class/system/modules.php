@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 2.0
- * @copyright 2014-2015 KilleR for Cardinal Engine
+ * @version 3.0
+ * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 2.0
+ * Version Engine: 3.0
  * Version File: 3
  *
  * 3.1
@@ -13,6 +13,8 @@
  * fix errors in installer
  * 3.3
  * change log data
+ * 3.4
+ * fix bugs and construct method for installation modules
  *
 */
 if(!defined("IS_CORE")) {
@@ -95,7 +97,7 @@ final class modules {
 	}
 
 	private static function init_modules() {
-		if(defined("IS_INSTALLER") || !db::connected()) {
+		if(defined("IS_INSTALLER") || !self::init_db()->connected()) {
 			return array();
 		}
 		if(!self::init_cache()->exists("modules")) {
@@ -112,6 +114,10 @@ final class modules {
 		}
 	return $modules;
 	}
+	
+	public static function Install($module) {
+		
+	}
 
 	public static function use_modules($page, $params=array()) {
 		$modules = self::init_modules();
@@ -127,7 +133,9 @@ final class modules {
 				}
 				$method = $modules[$page][$i]['method'];
 				$mod = new $class();
-				$html .= $mod->$method($params);
+				if(method_exists($mod, $method)) {
+					$html .= $mod->$method($params);
+				}
 				if(!empty($modules[$page][$i]['tpl'])) {
 					$tpl = json_decode($modules[$page][$i]['tpl'], true);
 					self::init_templates()->assign_vars($tpl);

@@ -188,4 +188,4 @@ jQuery(document).ready(function() {
   100% { transform: rotate(360deg); }
 }
 </style>
-<script type="text/javascript" src="assets/js/nprogress.js"></script>
+<script type="text/javascript" src="assets/xenon/js/nprogress.js"></script>

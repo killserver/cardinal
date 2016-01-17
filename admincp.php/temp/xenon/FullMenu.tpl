@@ -1,0 +1,1 @@
+<div style="display:inline-block;width:50%;">Полное боковое меню:</div><div style="display:inline-block;"><input type="checkbox" name="FullMenu"[if {C_FullMenu}==1] checked="checked"[/if {C_FullMenu}==1] /></div>

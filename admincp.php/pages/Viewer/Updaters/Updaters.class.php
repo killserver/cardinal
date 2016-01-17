@@ -60,6 +60,11 @@ class Updaters extends Core {
 				HTTP::echos(lang::get_lang("install_update_fail_localhost"));
 				die();
 			}
+			if(!file_exists(ROOT_PATH."core/cache/system/lastest.tar.gz")) {
+				header("HTTP/1.0 404 Not Found");
+				HTTP::echos(lang::get_lang("install_update_fail_file"));
+				die();
+			}
 			$tar_object = new Archive_Tar(ROOT_PATH."core/cache/system/lastest.tar.gz", "gz");
 			$list = $tar_object->listContent();
 			if(is_array($list) && sizeof($list)>0) {

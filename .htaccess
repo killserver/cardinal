@@ -6,7 +6,7 @@ RewriteEngine On
 	Deny From All
 </Files>
 RewriteRule ^changelog.txt$ changelog.php [L]
-RewriteRule ^(?:core|skins)\b.* index.php/$0 [L]
+RewriteRule ^(?:skins|uploads)\b.* index.php/$0 [L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule .* index.php/$0 [PT]

@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 2.2
- * @copyright 2014-2015 KilleR for Cardinal Engine
+ * @version 3.0
+ * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 2.2
+ * Version Engine: 3.0
  * Version File: 2
  *
  * 1.1
@@ -15,6 +15,8 @@
  * add support file in routification
  * 2.1
  * rebuild logic routification and pages
+ * 2.2
+ * fix bugs on include files
  *
 */
 define("IS_CORE", true);
@@ -43,11 +45,9 @@ if(!empty($server)) {
 	$page = "main";
 }
 Route::Load($page);
-$page = Route::param('page');
+$pages = Route::param('page');
 if(!(!$page)) {
-	$page = $page;
-} else {
-	$page = "main";
+	$page = $pages;
 }
 $classes = Route::param('class');
 if(!(!$classes)) {
@@ -86,8 +86,10 @@ if(defined("DEBUG")) {
 	ini_set('display_errors',1);
 	error_reporting(E_ALL);
 }
-
 $Timer = microtime()-$Timer;
+if(defined("DEBUG_ACTIVATED")) {
+	Error::Debug(null, true);
+}
 GzipOut(templates::$gzip, templates::$gzip_activ);
 HTTP::echos();
 unset($templates);

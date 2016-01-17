@@ -1,10 +1,10 @@
 <?PHP
 /*
  *
- * @version 1.25.6-rc4
- * @copyright 2014-2015 KilleR for Cardinal Engine
+ * @version 3.0
+ * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc4
+ * Version Engine: 3.0
  * Version File: 0
  *
  * 0.4

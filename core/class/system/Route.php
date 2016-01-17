@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 2.0
- * @copyright 2014-2015 KilleR for Cardinal Engine
+ * @version 3.0
+ * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 2.0
+ * Version Engine: 3.0
  * Version File: 2
  *
  * 1.1
@@ -17,6 +17,8 @@
  * add support return list parameters
  * 2.0
  * rebuild logic routification
+ * 2.1
+ * add support insert data on params
  *
 */
 if(!defined("IS_CORE")) {
@@ -33,7 +35,7 @@ final class Route {
 	protected $_uri = null;
 	protected $_regex = array();
 	private $_route_regex = null;
-	private static $_defaults = array('page' => 'index', 'method' => '', 'host' => false);
+	private $_defaults = array('page' => 'index', 'method' => '', 'host' => false);
 	private static $_params = array();
 
 	public function __construct($uri = null, $regex = array()) {
@@ -143,6 +145,18 @@ final class Route {
 			}
 		}
 		return array('params' => array('page' => $default, 'method' => ''), 'route' => null);
+	}
+	
+	public static function RegParam($key, $value = null) {
+		if(is_array($key)) {
+			$keys = array_keys($key);
+			$values = array_values($key);
+			for($i=0;$i<sizeof($keys);$i++) {
+				self::$_params[$keys[$i]] = $values[$i];
+			}
+		} else {
+			self::$_params[$key] = $value;
+		}
 	}
 
 	public static function param($key = null, $default = false) {

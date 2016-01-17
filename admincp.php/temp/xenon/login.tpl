@@ -11,16 +11,16 @@
 	<title>Xenon - Login</title>
 
 	<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Arimo:400,700,400italic">
-	<link rel="stylesheet" href="assets/css/fonts/linecons/css/linecons.css?1">
-	<link rel="stylesheet" href="assets/css/fonts/fontawesome/css/font-awesome.min.css?1">
-	<link rel="stylesheet" href="assets/css/bootstrap.css?1">
-	<link rel="stylesheet" href="assets/css/xenon-core.css?1">
-	<link rel="stylesheet" href="assets/css/xenon-forms.css?1">
-	<link rel="stylesheet" href="assets/css/xenon-components.css?12">
-	<link rel="stylesheet" href="assets/css/xenon-skins.css?1">
-	<link rel="stylesheet" href="assets/css/custom.css?1">
+	<link rel="stylesheet" href="assets/xenon/css/fonts/linecons/css/linecons.css?1">
+	<link rel="stylesheet" href="assets/xenon/css/fonts/fontawesome/css/font-awesome.min.css?1">
+	<link rel="stylesheet" href="assets/xenon/css/bootstrap.css?1">
+	<link rel="stylesheet" href="assets/xenon/css/xenon-core.css?1">
+	<link rel="stylesheet" href="assets/xenon/css/xenon-forms.css?1">
+	<link rel="stylesheet" href="assets/xenon/css/xenon-components.css?12">
+	<link rel="stylesheet" href="assets/xenon/css/xenon-skins.css?1">
+	<link rel="stylesheet" href="assets/xenon/css/custom.css?1">
 
-	<script src="assets/js/jquery-1.11.1.min.js?1"></script>
+	<script src="assets/xenon/js/jquery-1.11.1.min.js?1"></script>
 
 	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!--[if lt IE 9]>
@@ -178,14 +178,14 @@
 
 
 	<!-- Bottom Scripts -->
-	<script src="assets/js/bootstrap.min.js?1"></script>
-	<script src="assets/js/TweenMax.min.js?1"></script>
-	<script src="assets/js/resizeable.js?1"></script>
-	<script src="assets/js/joinable.js?1"></script>
-	<script src="assets/js/xenon-api.js?1"></script>
-	<script src="assets/js/xenon-toggles.js?1"></script>
-	<script src="assets/js/jquery-validate/jquery.validate.min.js?1"></script>
-	<script src="assets/js/toastr/toastr.min.js?1"></script>
+	<script src="assets/xenon/js/bootstrap.min.js?1"></script>
+	<script src="assets/xenon/js/TweenMax.min.js?1"></script>
+	<script src="assets/xenon/js/resizeable.js?1"></script>
+	<script src="assets/xenon/js/joinable.js?1"></script>
+	<script src="assets/xenon/js/xenon-api.js?1"></script>
+	<script src="assets/xenon/js/xenon-toggles.js?1"></script>
+	<script src="assets/xenon/js/jquery-validate/jquery.validate.min.js?1"></script>
+	<script src="assets/xenon/js/toastr/toastr.min.js?1"></script>
 
 
 	<!-- JavaScripts initializations and stuff -->

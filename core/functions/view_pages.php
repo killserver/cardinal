@@ -59,7 +59,9 @@ global $manifest;
 			include_once(ROOT_PATH."core/pages/reg.".ROOT_EX);
 		break;
 		case "add":
-			include_once(ROOT_PATH."core/pages/add.".ROOT_EX);
+		case "edit":
+		case "post":
+			include_once(ROOT_PATH."core/pages/post.".ROOT_EX);
 		break;
 		case "login":
 			include_once(ROOT_PATH."core/pages/login.".ROOT_EX);

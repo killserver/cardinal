@@ -1,14 +1,20 @@
 <?php
 /*
-*
-* Version Engine: 1.25.5b1
-* Version File: 6
-*
-* 6.1
-* rebuild logic for comment
-* 6.2
-* rebuild logic for comment v.2
-*
+ *
+ * @version 3.0
+ * @copyright 2014-2016 KilleR for Cardinal Engine
+ * @author KilleR
+ *
+ * Version Engine: 3.0
+ * Version File: 6
+ *
+ * 6.1
+ * rebuild logic for comment
+ * 6.2
+ * rebuild logic for comment v.2
+ * 7.1
+ * add support info on level user and rebuild logic parent comment
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
@@ -69,13 +75,19 @@ final class comment {
 		$ip = HTTP::getip();
 		$client = getenv('HTTP_USER_AGENT');
 		//$content_id = intval($_POST['content']);
-		$parent_id = saves($_POST['parent']);
+		if(isset($_POST['parent'])) {
+			$parent_id = saves($_POST['parent']);
+		} else {
+			$parent_id = 0;
+		}
 		if($is_guest) {
 			$guest = "true";
 		} else {
 			$guest = "false";
 		}
 		if(modules::get_user('id') && (modules::get_user('level')>LEVEL_USER && modules::get_user('level')!=LEVEL_GUEST)) {
+			$mod = "yes";
+		} else if(modules::get_user('level')==LEVEL_GUEST)) {
 			$mod = "yes";
 		} else {
 			$mod = "no";

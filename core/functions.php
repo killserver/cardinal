@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 2.3
- * @copyright 2014-2015 KilleR for Cardinal Engine
+ * @version 3.0
+ * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 2.3
+ * Version Engine: 3.0
  * Version File: 3
  *
  * 3.2
@@ -17,6 +17,8 @@
  * add support basic and user setting for routification
  * 3.6
  * add support PEAR installed on server
+ * 3.7
+ * add support special symbol delimer for Windows OS
  *
 */
 if(!defined("IS_CORE")) {
@@ -25,17 +27,17 @@ die();
 }
 
 $config = array();
-if(file_exists(ROOT_PATH."core/media/config.".ROOT_EX) && file_exists(ROOT_PATH."core/media/db.".ROOT_EX)) {
-	require_once(ROOT_PATH."core/media/config.global.".ROOT_EX);
-	require_once(ROOT_PATH."core/media/config.".ROOT_EX);
-	if(file_exists(ROOT_PATH."core/media/config.install.".ROOT_EX)) {
-		require_once(ROOT_PATH."core/media/config.install.".ROOT_EX);
+if(file_exists(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX) && file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX)) {
+	require_once(ROOT_PATH."core".DS."media".DS."config.global.".ROOT_EX);
+	require_once(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX);
+	if(file_exists(ROOT_PATH."core".DS."media".DS."config.install.".ROOT_EX)) {
+		require_once(ROOT_PATH."core".DS."media".DS."config.install.".ROOT_EX);
 	}
-	require_once(ROOT_PATH."core/media/db.".ROOT_EX);
+	require_once(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX);
 } else {
 	define("INSTALLER", true);
 	$config = array("charset" => "utf-8");
-	require_once(ROOT_PATH."core/media/config.global.".ROOT_EX);
+	require_once(ROOT_PATH."core".DS."media".DS."config.global.".ROOT_EX);
 	if(!defined("IS_INSTALLER")) {
 		header("Location: install.php");
 	}
@@ -45,19 +47,19 @@ spl_autoload_register(function($class) {
 	if(stripos(ini_get('include_path'), $class)!==false) {
 		return false;
 	}
-	if(file_exists(ROOT_PATH."core/class/".$class.".".ROOT_EX)) {
-		include_once(ROOT_PATH."core/class/".$class.".".ROOT_EX);
-	} elseif(file_exists(ROOT_PATH."core/class/system/".$class.".".ROOT_EX)) {
-		include_once(ROOT_PATH."core/class/system/".$class.".".ROOT_EX);
-	} elseif(file_exists(ROOT_PATH."core/modules/autoload/".$class.".".ROOT_EX)) {
-		include_once(ROOT_PATH."core/modules/autoload/".$class.".".ROOT_EX);
-	} elseif(file_exists(ROOT_PATH."core/class/system/drivers/".$class.".".ROOT_EX)) {
-		include_once(ROOT_PATH."core/class/system/drivers/".$class.".".ROOT_EX);
+	if(file_exists(ROOT_PATH."core".DS."class".DS.$class.".".ROOT_EX)) {
+		include_once(ROOT_PATH."core".DS."class".DS.$class.".".ROOT_EX);
+	} elseif(file_exists(ROOT_PATH."core".DS."class".DS."system".DS.$class.".".ROOT_EX)) {
+		include_once(ROOT_PATH."core".DS."class".DS."system".DS.$class.".".ROOT_EX);
+	} elseif(file_exists(ROOT_PATH."core".DS."modules".DS."autoload".DS.$class.".".ROOT_EX)) {
+		include_once(ROOT_PATH."core".DS."modules".DS."autoload".DS.$class.".".ROOT_EX);
+	} elseif(file_exists(ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS.$class.".".ROOT_EX)) {
+		include_once(ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS.$class.".".ROOT_EX);
 	}
 });
 
 //ToDo: delete this function?
-function FriendlyErrorType($type) {
+/*function FriendlyErrorType($type) {
 	if($type==E_ERROR) { // 1 // 
 		return 'E_ERROR'; 
 	} else if($type==E_WARNING) { // 2 // 
@@ -91,17 +93,17 @@ function FriendlyErrorType($type) {
 	} else {
 		return "";
 	}
-}
+}*/
 
 set_error_handler(array('Error', 'handlePhpError'));
 set_exception_handler(array('Error', 'handleException'));
 register_shutdown_function(array('Error', 'handleFatalError'));
 
-function require_dir($dir = null, $modules = null) {include_dir($dir, $modules);}
+function require_dir($dir = null, $modules = null, $mod = false) {include_dir($dir, $modules, $mod);}
 
-function include_dir($dir = null, $modules = null) {
+function include_dir($dir = null, $modules = null, $mod = false) {
 	if(empty($dir)) {
-		$dir = ROOT_PATH."core/functions/";
+		$dir = ROOT_PATH."core".DS."functions".DS;
 	}
 	if(empty($modules)) {
 		$modules = ".".ROOT_EX;
@@ -125,13 +127,13 @@ function include_dir($dir = null, $modules = null) {
 		}
 	}
 }
-if(file_exists(ROOT_PATH."core/media/config.route.global.php")) {
-	require_once(ROOT_PATH."core/media/config.route.global.php");
+if(file_exists(ROOT_PATH."core".DS."media".DS."config.route.global.php")) {
+	require_once(ROOT_PATH."core".DS."media".DS."config.route.global.php");
 }
-if(file_exists(ROOT_PATH."core/media/config.route.php")) {
-	require_once(ROOT_PATH."core/media/config.route.php");
+if(file_exists(ROOT_PATH."core".DS."media".DS."config.route.php")) {
+	require_once(ROOT_PATH."core".DS."media".DS."config.route.php");
 }
-include_dir(ROOT_PATH."core/modules/", ".class.".ROOT_EX);
+include_dir(ROOT_PATH."core".DS."modules".DS, ".class.".ROOT_EX, true);
 include_dir();
 
 ?>

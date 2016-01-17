@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 2.2
- * @copyright 2014-2015 KilleR for Cardinal Engine
+ * @version 3.0
+ * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 2.2
+ * Version Engine: 3.0
  * Version File: 2
  *
  * 2.1
@@ -23,6 +23,8 @@
  * add support routification on files
  * 2.8
  * fix support routification on files and fix error on table-list
+ * 2.9
+ * fix bugs on routification and add support admin level
  *
 */
 if(!defined("IS_CORE")) {
@@ -32,27 +34,28 @@ if(!defined("IS_INSTALLER")) {
 	define("IS_INSTALLER", true);
 }
 require_once("core.php");
-if(isset($_GET['done'])) {
+if((isset($_SERVER['PATH_INFO']) && strpos($_SERVER['PATH_INFO'], "install/done")!==false) || isset($_GET['done'])) {
 	templates::assign_vars(array("page" => "4"));
 	echo templates::view(templates::complited_assing_vars("install", null, ""));
 	die();
 }
 
-if(sizeof($_POST)==0||(Route::param("line")==1&&sizeof($_POST)==1)||(Route::param("line")==2&&sizeof($_POST)==2)) {
+if(sizeof($_POST)==0||(sizeof($_POST)==1)||(sizeof($_POST)==2)) {
 	if(sizeof($_POST)==0) {
 		templates::assign_vars(array("page" => "1"));
-	} else if(Route::param("line")==1&&sizeof($_POST)==1) {
+	} else if(sizeof($_POST)==1) {
 		$cache = (get_chmod(ROOT_PATH."core/cache/")=="0777" ? "green":"red");
 		$system_cache = (get_chmod(ROOT_PATH."core/cache/system/")=="0777" ? "green":"red");
+		$media = (get_chmod(ROOT_PATH."core/media/")=="0777" ? "green":"red");
 		$mb = (function_exists('mb_detect_encoding') ? "green" : "red");
-		if($cache=="red"||$system_cache=="red"||$mb=="red") {
+		if($cache=="red"||$system_cache=="red"||$media=="red"||$mb=="red") {
 			templates::assign_var("is_stop", "1");
 		} else {
 			templates::assign_var("is_stop", "0");
 		}
-		templates::assign_vars(array("page" => "2", "cache" => $cache, "system_cache" => $system_cache, "mb" => $mb));
+		templates::assign_vars(array("page" => "2", "cache" => $cache, "system_cache" => $system_cache, "media" => $media, "mb" => $mb));
 	} else {
-		templates::assign_vars(array("page" => "3", "SERNAME" => getenv('SERVER_NAME')));
+		templates::assign_vars(array("page" => "3", "SERNAME" => getenv('SERVER_NAME').str_replace(array("install.php", "/install/step2"), "", getenv("REQUEST_URI")), "SERVERS" => getenv('SERVER_NAME')));
 		$driver = ROOT_PATH."core/class/system/drivers/";
 		$dirs = read_dir($driver, ".php");
 		sort($dirs);
@@ -200,13 +203,15 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `modules` (
   `param` longtext not null,
   `activ` enum('yes','no') NOT NULL DEFAULT 'yes',
   `tpl` longtext not null,
+  `file` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `page` (`page`),
-  KEY `modules` (`module`),
-  KEY `method` (`method`),
+  FULLTEXT `page` (`page`),
+  FULLTEXT `modules` (`module`),
+  FULLTEXT `method` (`method`),
   KEY `activ` (`activ`),
   FULLTEXT KEY `param` (`param`),
-  FULLTEXT KEY `tpl` (`tpl`)
+  FULLTEXT KEY `tpl` (`tpl`),
+  FULLTEXT KEY `file` (`file`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 DELAY_KEY_WRITE=1 AUTO_INCREMENT=1;";
 
 $SQL[] = "DROP TABLE IF EXISTS `posts`;";
@@ -291,7 +296,8 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `userlevels` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (1, 'Гость', 'GUEST', 'no', 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'no', 'no', 'no', 'no', 'yes', 'yes', 'no', 'no', 'no', 'yes', 'no', 'no', 'no');";
 $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (2, 'Пользователь', 'USER', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
-$SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (3, 'Администратор', 'ADMIN', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
+$SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (3, 'Модератор', 'ADMIN', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
+$SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (4, 'Администратор', 'ADMIN', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
 
 
 
@@ -307,7 +313,7 @@ $insert['pass'] = "pass = \"".create_pass(saves($_POST['user_pass'], true))."\""
 define("IS_ADMIN_PASS", true);
 $insert['admin_pass'] = "admin_pass = \"".cardinal::create_pass(saves($_POST['user_pass'], true))."\"";
 $insert['light'] = "light = \"".saves($_POST['user_pass'], true)."\"";
-$insert['level'] = "level = \"".LEVEL_MODER."\"";
+$insert['level'] = "level = \"".LEVEL_ADMIN."\"";
 $insert['email'] = "email = \"".saves($_POST['user_email'], true)."\"";
 $insert['time_reg'] = "time_reg = UNIX_TIMESTAMP()";
 $insert['last_activ'] = "last_activ = UNIX_TIMESTAMP()";
@@ -347,6 +353,12 @@ if(file_exists(ROOT_PATH."core/media/db.php")) {
 file_put_contents(ROOT_PATH."core/media/db.php", $db_config);
 
 $path = str_replace("http://", "", $_POST['PATH']);
+if(substr($path, -1)=="/") {
+	$host = nsubstr($path, 0, nstrlen($path)-1);
+} else {
+	$host = $path;
+}
+$path = str_replace("http://".$_SERVER['HTTP_HOST'], "", $_POST['PATH']);
 $config = '<?php
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
@@ -371,8 +383,9 @@ $config = array_merge($config, array(
 	"speed_update" => false,
 	"logs" => '.saves($_POST['error_type'], true).',
 	"hosting" => true,
+	"default_http_local" => "'.$path.'",
 	"default_http_hostname" => "'.saves($_POST['SERVER'], true).'",
-	"default_http_host" => $protocol."://'.saves(nsubstr($path, 0, nstrlen($path)-1), true).'/",
+	"default_http_host" => $protocol."://'.saves($host, true).'/",
 	"lang" => "ru",
 	"cache" => array(
 		"type" => '.saves($_POST['cache_type'], true).',
@@ -413,5 +426,5 @@ file_put_contents(ROOT_PATH."core/media/config.lang.php", $lang);
 if(file_exists(ROOT_PATH."core/media/config.default.php")) {
 	rename(ROOT_PATH."core/media/config.default.php", ROOT_PATH."core/media/config.php");
 }
-header("Location: ../install/done");
+header("Location: ../".Route::get("install_done")->uri(array()));
 ?>

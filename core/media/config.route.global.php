@@ -12,6 +12,12 @@ Route::Set("install_first", "install(/step<line>)")->defaults(array(
 	'file' => ROOT_PATH."install.php",
 ));
 
-Route::Set("add", "post/add")->defaults(array(
-	'page' => 'add',
+Route::Set("news", "post/<view>")->defaults(array(
+	'page' => 'news',
+	'view' => "",
+));
+
+Route::Set("post", "post/<action>", array("action" => "(add|edit|delete)"))->defaults(array(
+	'page' => 'post',
+	'action' => "",
 ));
