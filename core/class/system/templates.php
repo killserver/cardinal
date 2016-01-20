@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 3.0
+ * @version 3.1
  * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 3.0
+ * Version Engine: 3.1
  * Version File: 4
  *
  * 3.0
@@ -28,6 +28,8 @@
  * first doc-file on engine, comment all method and variable
  * add support include template as php file[BETA-TEST]
  * add support special code for use variable as data for php file
+ * 4.1
+ * add support get params in routification
  *
 */
 if(!defined("IS_CORE")) {
@@ -320,6 +322,15 @@ final class templates {
 			return $array[0];
 		}
 	}
+	
+	private static function routeparam($arr) {
+		$list = Route::param();
+		if(isset($arr[1]) && !empty($arr[1]) && isset($list[$arr[1]])) {
+			return $list[$arr[1]];
+		} else {
+			return $arr[0];
+		}
+	}
 
 	/**
 	 * @param $array
@@ -533,6 +544,7 @@ final class templates {
 		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+) %\}#", 'templates::user(array(null, \'\\1\'))', $tpl);
 		$tpl = preg_replace("#\{% D_([a-zA-Z0-9\-_]+) %\}#", 'templates::define(array(null, \'\\1\'))', $tpl);
 		$tpl = preg_replace("#\{% R_\[(.+?)\]\[(.+?)\] %\}#", 'templates::route(array(null, \'\\1\', \'\\2\'))', $tpl);
+		$tpl = preg_replace("#\{% RP\[(.+?)\] %\}#", 'templates::routeparam(array(null, \'\\1\'))', $tpl);
 		
 		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) %\}#is", '$data[\'\\1\'][\'\\2\']', $tpl);
 		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+) %\}#is", '$data[\'\\1\']', $tpl);
@@ -547,6 +559,7 @@ final class templates {
 		$tpl = preg_replace("#\{U_([a-zA-Z0-9\-_]+)\}#", '<?php echo templates::user(array(null, \'\\1\')); ?>', $tpl);
 		$tpl = preg_replace("#\{D_([a-zA-Z0-9\-_]+)\}#", '<?php echo templates::define(array(null, \'\\1\')); ?>', $tpl);
 		$tpl = preg_replace("#\{R_\[(.+?)\]\[(.+?)\]\}#", '<?php echo templates::route(array(null, \'\\1\', \'\\2\')); ?>', $tpl);
+		$tpl = preg_replace("#\{RP\[(.+?)\]\}#", '<?php echo templates::routeparam(array(null, \'\\1\')); ?>', $tpl);
 		
 		$tpl = preg_replace("#\{\# ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) \#\}#is", '<?php echo (isset($\\1[\'\\2\']) ? $\\1[\'\\2\'] : \'{\\1.\\2}\'); ?>', $tpl);
 		$tpl = preg_replace("#\{\# ([a-zA-Z0-9\-_]+) \#\}#is", '<?php echo (isset($data[\'\\1\']) ? $data[\'\\1\'] : \'{\\1}\'); ?>', $tpl);
@@ -578,6 +591,7 @@ final class templates {
 		$tmp = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tmp);
 		$tmp = self::callback_array("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tmp);
 		$tmp = self::callback_array("#\{R_\[(.+?)\]\[(.+?)\]\}#", ("templates::route"), $tmp);
+		$tmp = self::callback_array("#\{RP\[(.+?)\]\}#", ("templates::routeparam"), $tmp);
 		$tmp = str_replace("{reg_link}", config::Select('link', 'reg'), $tmp);
 		$tmp = str_replace("{login_link}", config::Select('link', 'login'), $tmp);
 		$tmp = str_replace("{logout-link}", config::Select('link', 'logout'), $tmp);

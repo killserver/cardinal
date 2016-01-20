@@ -1,11 +1,11 @@
 <?php
 /*
  *
- * @version 3.0
+ * @version 3.1
  * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 3.0
- * Version File: 2
+ * Version Engine: 3.1
+ * Version File: 3
  *
  * 2.1
  * add sql query for support updater
@@ -25,6 +25,8 @@
  * fix support routification on files and fix error on table-list
  * 2.9
  * fix bugs on routification and add support admin level
+ * 3.0
+ * add support breadcrumbs for view step installing and view version php and apache, remove russian language in template installer
  *
 */
 if(!defined("IS_CORE")) {
@@ -34,6 +36,7 @@ if(!defined("IS_INSTALLER")) {
 	define("IS_INSTALLER", true);
 }
 require_once("core.php");
+lang::include_lang("install");
 if((isset($_SERVER['PATH_INFO']) && strpos($_SERVER['PATH_INFO'], "install/done")!==false) || isset($_GET['done'])) {
 	templates::assign_vars(array("page" => "4"));
 	echo templates::view(templates::complited_assing_vars("install", null, ""));
@@ -44,18 +47,22 @@ if(sizeof($_POST)==0||(sizeof($_POST)==1)||(sizeof($_POST)==2)) {
 	if(sizeof($_POST)==0) {
 		templates::assign_vars(array("page" => "1"));
 	} else if(sizeof($_POST)==1) {
+		$apache = apache_get_version();
+		$apache = substr($apache, strlen("Apache/"));
+		$apache = (intval($apache)>=2 ? "green":"red");
+		$php = (PHP_VERSION_ID>=50302 ? "green":"red");
 		$cache = (get_chmod(ROOT_PATH."core/cache/")=="0777" ? "green":"red");
 		$system_cache = (get_chmod(ROOT_PATH."core/cache/system/")=="0777" ? "green":"red");
 		$media = (get_chmod(ROOT_PATH."core/media/")=="0777" ? "green":"red");
 		$mb = (function_exists('mb_detect_encoding') ? "green" : "red");
-		if($cache=="red"||$system_cache=="red"||$media=="red"||$mb=="red") {
+		if($apache=="red"||$php=="red"||$cache=="red"||$system_cache=="red"||$media=="red"||$mb=="red") {
 			templates::assign_var("is_stop", "1");
 		} else {
 			templates::assign_var("is_stop", "0");
 		}
-		templates::assign_vars(array("page" => "2", "cache" => $cache, "system_cache" => $system_cache, "media" => $media, "mb" => $mb));
+		templates::assign_vars(array("page" => "2", "apache" => $apache, "php" => $php, "cache" => $cache, "system_cache" => $system_cache, "media" => $media, "mb" => $mb));
 	} else {
-		templates::assign_vars(array("page" => "3", "SERNAME" => getenv('SERVER_NAME').str_replace(array("install.php", "/install/step2"), "", getenv("REQUEST_URI")), "SERVERS" => getenv('SERVER_NAME')));
+		templates::assign_vars(array("page" => "3", "SERNAME" => getenv('SERVER_NAME').str_replace(array("install.php", "/install/step2", "/install/step3"), "", getenv("REQUEST_URI")), "SERVERS" => getenv('SERVER_NAME')));
 		$driver = ROOT_PATH."core/class/system/drivers/";
 		$dirs = read_dir($driver, ".php");
 		sort($dirs);

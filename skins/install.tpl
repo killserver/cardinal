@@ -1,58 +1,36 @@
-﻿<center>Установка Cardinal Engine v{D_VERSION}</center>
+﻿<link rel="stylesheet" href="../skins/install.css" />
+<center>{L_install} Cardinal Engine v{D_VERSION}</center>
+<ol id="checkoutBreadcrumb">
+	<li class="basket<!-- IF {% RP[line] %}==1 -->active<!-- ENDIF --><!-- IF {% RP[line] %}==2 --> nextactive<!-- ENDIF -->">1. {L_licence}</li>
+	<li class="login<!-- IF {% RP[line] %}==2 -->active<!-- ENDIF --><!-- IF {% RP[line] %}==3 --> nextactive<!-- ENDIF -->">2. {L_chmod}</li>
+	<li class="delivery<!-- IF {% RP[line] %}==3 -->active<!-- ENDIF --><!-- IF {% RP[line] %}==4 --> nextactive<!-- ENDIF -->">3. {L_settings}</li>
+	<li class="done<!-- IF {% RP[line] %}==4 -->active<!-- ENDIF -->">4. {L_done}</li>
+</ol>
 [if {page}=="error_server"]
 	<div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;padding:18px;background:rgb(255,230,196);color:#4C289E;">Установка скрипта заблокированна, так-как была попытка запустить сервер на localhost домене. Пожалуйста, перенесите скрипт на хостинг.</b></div>
 [/if]
 [if {page}==1]
-<form method="post" action="{R_[install_first][file=install.php;page=install;method=change;is_file=true;line=1]}">
+<form method="post" action="../{R_[install_first][file=install.php;page=install;method=change;is_file=true;line=2]}">
 <div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;padding:18px;background:rgb(255,230,196);color:#4C289E;">
 <center><b>Данный программный продукт распростроняется под лицензей GNU.</b></center><br />Все изменения, которые пользователь будет выполнять используя данное ПО - не должно нарушать права человека и права котеек! Будьте более доброжелательны.<br />Приятного использования!
 </div>
-<style type="text/css">
-input {
-    float: right;
-    margin: 15px;
-    border: 1px solid #000;
-    padding: 8px;
-    background: #00FF2B;
-    color: #1C00F5;
-    border-radius: 10px;
-    font-size: 14pt;
-}
-input:hover {
-    box-shadow: 1px 1px 1px #000;
-    cursor: pointer;
-}
-</style>
-<input type="submit" name="submit" value="Принять" />
+<input type="submit" class="next" name="submit" value="Принять" />
 </form>
 [/if]
 [if {page}==2]
-<form method="post" action="../{R_[install_first][file=install.php;page=install;method=change;is_file=true;line=2]}">
+<form method="post" action="../{R_[install_first][file=install.php;page=install;method=change;is_file=true;line=3]}">
 <div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;padding:18px;background:rgb(255,230,196);color:#4C289E;">
-	[if {is_stop}==0]<div style="text-align:center;font-weight:bold;">Все необходимые права доступа установленны, можно продолжать установку!</div>[/if {is_stop}==0]
-	[if {is_stop}==1]<div style="text-align:center;font-weight:bold;">Установите требуемые права доступа к папкам для продолжения установки!</div>[/if {is_stop}==1]
+	[if {is_stop}==0]<div style="text-align:center;font-weight:bold;">Все необходимые права доступа и требуемое программное обезпечение установлено, можно продолжать установку!</div>[/if {is_stop}==0]
+	[if {is_stop}==1]<div style="text-align:center;font-weight:bold;">Установите требуемые права доступа к папкам или проверьте наличие необходимого программного обезпечения для продолжения установки!</div>[/if {is_stop}==1]
+	<div><div style="display:inline-block;width:200px;">Apache</div><div style="display:inline-block;color:{apache};font-weight:bold;">2.0</div></div>
+	<div><div style="display:inline-block;width:200px;">PHP</div><div style="display:inline-block;color:{php};font-weight:bold;">5.3.2</div></div>
 	<div><div style="display:inline-block;width:200px;">core/cache/</div><div style="display:inline-block;color:{cache};font-weight:bold;">0777</div></div>
 	<div><div style="display:inline-block;width:200px;">core/cache/system/</div><div style="display:inline-block;color:{system_cache};font-weight:bold;">0777</div></div>
+	<div><div style="display:inline-block;width:200px;">core/media/</div><div style="display:inline-block;color:{media};font-weight:bold;">0777</div></div>
 	<div><div style="display:inline-block;width:200px;">MbString</div><div style="display:inline-block;color:{mb};font-weight:bold;">[if {mb}==red]Не установлен[else {mb}==red]Установлен[/if {mb}==red]</div></div>
 </div>
-<style type="text/css">
-input {
-    float: right;
-    margin: 15px;
-    border: 1px solid #000;
-    padding: 8px;
-    background: #00FF2B;
-    color: #1C00F5;
-    border-radius: 10px;
-    font-size: 14pt;
-}
-input:hover {
-    box-shadow: 1px 1px 1px #000;
-    cursor: pointer;
-}
-</style>
 <input type="hidden" name="cache" />
-[if {is_stop}==0]<input type="submit" name="submit" value="Принять" />[/if {is_stop}==0]
+[if {is_stop}==0]<input type="submit" class="next" name="submit" value="Принять" />[/if {is_stop}==0]
 </form>
 [/if]
 [if {page}==3]
@@ -108,22 +86,6 @@ input:hover {
 [/if]
 [if {page}==4]
 <div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;padding:18px;background:rgb(255,230,196);color:#4C289E;">Благодарим за выбор нашей продукции.<br />Теперь Вы можете перейти в админ-панель, либо перейти к работе с сайтом!<br /><b><font color="red">Не забудьте удалить файл install.php с корня Вашего сайта</font></b></div>
-<style type="text/css">
-a, input {
-    float: right;
-    margin: 15px;
-    border: 1px solid #000;
-    padding: 8px;
-    background: #00FF2B;
-    color: #1C00F5;
-    border-radius: 10px;
-    font-size: 14pt;
-}
-a:hover, input:hover {
-    box-shadow: 1px 1px 1px #000;
-    cursor: pointer;
-}
-</style>
-<a href="{C_default_http_host}admincp.php/?pages=main">Админ-панель</a>
-<a href="{C_default_http_host}">Главная</a>
+<a href="{C_default_http_host}admincp.php/?pages=main" class="done">Админ-панель</a>
+<a href="{C_default_http_host}" class="done">Главная</a>
 [/if]

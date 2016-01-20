@@ -4,6 +4,13 @@ if(!defined("IS_CORE")) {
 	die();
 }
 
+Route::Set("install_done", "install/done")->defaults(array(
+	'page' => 'install',
+	'method' => 'change',
+	'is_file' => true,
+	'line' => "4",
+	'file' => ROOT_PATH."install.php",
+));
 Route::Set("install_first", "install(/step<line>)")->defaults(array(
 	'page' => 'install',
 	'method' => 'change',
