@@ -39,6 +39,34 @@
 				
 				</a>
 				
+				<span id="cache" class="col-sm-3">
+					
+					<div class="xe-widget xe-counter xe-counter-purple" data-count=".num" data-from="1" data-to="{Cache}" data-duration="3" data-easing="false">
+						<div class="xe-icon">
+							<i class="linecons-inbox"></i>
+						</div>
+						<div class="xe-label">
+							<strong class="num">{Cache}</strong>
+							<span>Cache Data</span>
+						</div>
+					</div>
+				
+				</span>
+				
+				<span id="cachephp" class="col-sm-3">
+					
+					<div class="xe-widget xe-counter xe-counter-purple" data-count=".num" data-from="1" data-to="{CachePHP}" data-duration="3" data-easing="false">
+						<div class="xe-icon">
+							<i class="linecons-inbox"></i>
+						</div>
+						<div class="xe-label">
+							<strong class="num">{CachePHP}</strong>
+							<span>Cache Templates</span>
+						</div>
+					</div>
+				
+				</span>
+				
 				[if {is_new}==1]
 				<div class="col-sm-12">
 					<div class="panel panel-default">
@@ -52,3 +80,17 @@
 				</div>
 				[/if]
 			</div>
+<script type="text/javascript">
+jQuery(document).ready(function() {
+	jQuery("#cache").click(function() {
+		jQuery.post("./?pages=Main&clear&cache", function(data) {
+			toastr.info(data, "Clear Cache Data");
+		});
+	});
+	jQuery("#cachephp").click(function() {
+		jQuery.post("./?pages=Main&clear&tmp", function(data) {
+			toastr.info(data, "Clear Cache Templates");
+		});
+	});
+});
+</script>

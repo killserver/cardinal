@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 3.1
+ * @version 3.2
  * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 3.1
+ * Version Engine: 3.2
  * Version File: 4
  *
  * 3.0
@@ -30,6 +30,8 @@
  * add support special code for use variable as data for php file
  * 4.1
  * add support get params in routification
+ * 4.2
+ * rebuild get config in templates, rebuild logic parse templates and safe mode in php format
  *
 */
 if(!defined("IS_CORE")) {
@@ -391,9 +393,9 @@ final class templates {
      */
 	private static function config($array) {
 		if(isset($array[2])) {
-			$isset = modules::get_config($array[1], $array[2]);
+			$isset = config::Select($array[1], $array[2]);
 		} else {
-			$isset = modules::get_config($array[1]);
+			$isset = config::Select($array[1]);
 		}
 		if(!empty($isset)) {
 			return $isset;
@@ -516,6 +518,36 @@ final class templates {
 		}
 		return $file_content;
 	}
+	
+	private static function RebuildOffPhp($tpl) {
+		$tpl = preg_replace("#<!-- FOREACH (.+?) -->#", '[foreach block=\\1]', $tpl);
+		$tpl = preg_replace("#<!-- ENDFOREACH (.+?) -->#", '[/foreach]', $tpl);
+		$tpl = preg_replace("#<!-- ENDFOREACH -->#", '[/foreach]', $tpl);
+		$tpl = preg_replace("#<!-- IF (.+?) -->#", "[if \\1]", $tpl);
+		$tpl = preg_replace("#<!-- ELSE -->#", "[else]", $tpl);
+		$tpl = preg_replace("#<!-- ELSEIF (.+?) -->#", "[else \\1]", $tpl);
+		$tpl = preg_replace("#<!-- ENDIF -->#", "[/if]", $tpl);
+		
+		$tpl = preg_replace("#\{% L_sprintf\(([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\],(.*?)\) %\}#", '{L_sprintf(\\1[\\2],\\3)}', $tpl);
+		$tpl = preg_replace("#\{% L_sprintf\(([a-zA-Z0-9\-_]+),(.*?)\) %\}#", '{L_sprintf(\\1,\\2)}', $tpl);
+		$tpl = preg_replace("#\{% L_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", '{L_\\1[\\2]}', $tpl);
+		$tpl = preg_replace("#\{% L_([a-zA-Z0-9\-_]+) %\}#", '{L_\\1}', $tpl);
+		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", '{C_\\1[\\2]}', $tpl);
+		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+) %\}#", '{C_\\1}', $tpl);
+		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", '{U_\\1[\\2]}', $tpl);
+		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+) %\}#", '{U_\\1}', $tpl);
+		$tpl = preg_replace("#\{% D_([a-zA-Z0-9\-_]+) %\}#", '{D_\\1}', $tpl);
+		$tpl = preg_replace("#\{% R_\[(.+?)\]\[(.+?)\] %\}#", '{R_[\\1][\\2]}', $tpl);
+		$tpl = preg_replace("#\{% RP\[(.+?)\] %\}#", '{RP[\\1]}', $tpl);
+		
+		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) %\}#is", '{\\1.\\2}', $tpl);
+		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+) %\}#is", '{\\1}', $tpl);
+		
+		
+		$tpl = preg_replace("#\{\# ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) \#\}#is", '{\\1.\\2}', $tpl);
+		$tpl = preg_replace("#\{\# ([a-zA-Z0-9\-_]+) \#\}#is", '{\\1}', $tpl);
+		return $tpl;
+	}
 
 	/**
 	 * @param $tpl
@@ -523,9 +555,18 @@ final class templates {
 	 * @return mixed
      */
 	private static function ParsePHP($tpl, $file = "") {
+		if(!config::Select("ParsePHP")) {
+			return self::RebuildOffPhp($tpl);
+		}
 		if(empty($file) || !file_exists(ROOT_PATH."core".DS."cache".DS."tmp".DS) || !is_dir(ROOT_PATH."core".DS."cache".DS."tmp".DS) || !is_writable(ROOT_PATH."core".DS."cache".DS."tmp".DS)) {
 			return $tpl;
 		}
+		$safe = array(
+			"<?php" => "&lt;?php",
+			"<?" => "&lt;?",
+			"?" => "?&gt;",
+		);
+		$tpl = str_replace(array_keys($safe), array_values($safe), $tpl);
 		$tpl = preg_replace("#<!-- FOREACH (.+?) -->#", '<?php if(isset($data[\'\\1\']) && is_array($data[\'\\1\']) && sizeof($data[\'\\1\'])>0) { foreach($data[\'\\1\'] as $\\1) { ?>', $tpl);
 		$tpl = preg_replace("#<!-- ENDFOREACH (.+?) -->#", '<?php } } ?>', $tpl);
 		$tpl = preg_replace("#<!-- ENDFOREACH -->#", '<?php } } ?>', $tpl);
@@ -536,10 +577,10 @@ final class templates {
 		
 		$tpl = preg_replace("#\{% L_sprintf\(([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\],(.*?)\) %\}#", 'templates::slangf(array(null, \'\\1\', \'\\2\'))', $tpl);
 		$tpl = preg_replace("#\{% L_sprintf\(([a-zA-Z0-9\-_]+),(.*?)\) %\}#", 'templates::slangf(array(null, \'\\1\'))', $tpl);
-		$tpl = preg_replace("#\{% L_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", 'templates::lang(array(null, \'\\1\', \'\\2\'))>', $tpl);
+		$tpl = preg_replace("#\{% L_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", 'templates::lang(array(null, \'\\1\', \'\\2\'))', $tpl);
 		$tpl = preg_replace("#\{% L_([a-zA-Z0-9\-_]+) %\}#", 'templates::lang(array(null, \'\\1\'))', $tpl);
 		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", 'config::Select(\'\\1\', \'\\2\')', $tpl);
-		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+) %\}#", 'config::Select(\'\\1\'); ?>', $tpl);
+		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+) %\}#", 'config::Select(\'\\1\')', $tpl);
 		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", 'templates::user(array(null, \'\\1\', \'\\2\'))', $tpl);
 		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+) %\}#", 'templates::user(array(null, \'\\1\'))', $tpl);
 		$tpl = preg_replace("#\{% D_([a-zA-Z0-9\-_]+) %\}#", 'templates::define(array(null, \'\\1\'))', $tpl);

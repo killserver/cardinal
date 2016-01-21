@@ -46,7 +46,8 @@ class Settings extends Core {
 				"login" => "'.saves($_POST['cache_user'], true).'",
 				"pass" => "'.saves($_POST['cache_pass'], true).'",
 				"path" => "'.saves($_POST['cache_path'], true).'",
-			),'.$this->Saves($_POST).'
+			),
+			"ParsePHP" => '.(isset($_POST['ParsePHP']) && $_POST['ParsePHP']=="1" ? "true" : "false").','.$this->Saves($_POST).'
 			"lang" => "ru",
 			"charset" => "utf-8",
 		));
@@ -108,12 +109,6 @@ class Settings extends Core {
 			"SERNAME" => config::Select("default_http_hostname"),
 			"mail_from" => config::Select("mail_from"),
 			"max_news" => config::Select("max_news"),
-			"speed_update" => config::Select("speed_update"),
-			"cache_host" => config::Select("cache", "server"),
-			"cache_port" => config::Select("cache", "port"),
-			"cache_user" => config::Select("cache", "login"),
-			"cache_pass" => config::Select("cache", "pass"),
-			"cache_path" => config::Select("cache", "path"),
 			"sitename" => $name,
 			"keywords" => $key,
 			"description" => $descr,

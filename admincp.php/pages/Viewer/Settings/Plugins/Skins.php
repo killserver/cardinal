@@ -4,7 +4,7 @@ class Settings_Skins extends Settings {
 	
 	function __construct() {
 		$this->ParseSkins();
-		$this->ParseSkins(ROOT_PATH."admincp.php/temp/", "_admin");
+		$this->ParseSkins(ROOT_PATH."admincp.php/temp/", "admincp", "_admin");
 		Settings::AddFunc(array("name" => "Skins", "func" => array(&$this, "PluginSave")));
 		Settings::AddNav(array(array(
 			"subname" => "skins",

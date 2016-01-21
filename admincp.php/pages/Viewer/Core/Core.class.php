@@ -84,14 +84,14 @@ class Core {
 		return $skins;
 	}
 	
-	public function ParseSkins($dir = null, $name = null) {
+	public function ParseSkins($dir = "", $name = "skins", $sub_name = "") {
 		if(empty($dir)) {
 			$dir = ROOT_PATH."skins/";
 		}
 		$skins = $this->ParseDirSkins($dir);
-		$selected = config::Select("skins", "skins");
+		$selected = config::Select("skins", $name);
 		for($i=0;$i<sizeof($skins);$i++) {
-			templates::assign_vars(array("skin" => $skins[$i], "selected" => ($selected==$skins[$i] ? "1" : "0")), "skin_list".$name, "skin".$i);
+			templates::assign_vars(array("skin" => $skins[$i], "selected" => ($selected==$skins[$i] ? "1" : "0")), "skin_list".$sub_name, "skin".$i);
 		}
 	}
 	

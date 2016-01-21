@@ -19,6 +19,7 @@ function ReadPlugins($dir, $page, $include=true) {
 }
 $in_page = "Main";
 templates::dir_skins("admincp.php/temp/".config::Select('skins','admincp'));
+templates::set_skins("");
 
 spl_autoload_register(function($class) {
 global $in_page;

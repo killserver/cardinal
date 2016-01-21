@@ -65,11 +65,13 @@ $config = array(
 	"gzip_output" => true,
 	"js_min" => true,
 
+	"default_http_local" => "/",
 	"default_http_hostname" => "online-killer.pp.ua",
 	"default_http_host" => $protocol."://online-killer.pp.ua/",
 	'lang' => "ru",
 	"charset" => "utf-8",
 
+	"ParsePHP" => true,
 	"guest_level" => "0",
 );
 
