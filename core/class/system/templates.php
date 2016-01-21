@@ -564,7 +564,7 @@ final class templates {
 		$safe = array(
 			"<?php" => "&lt;?php",
 			"<?" => "&lt;?",
-			"?" => "?&gt;",
+			"?>" => "?&gt;",
 		);
 		$tpl = str_replace(array_keys($safe), array_values($safe), $tpl);
 		$tpl = preg_replace("#<!-- FOREACH (.+?) -->#", '<?php if(isset($data[\'\\1\']) && is_array($data[\'\\1\']) && sizeof($data[\'\\1\'])>0) { foreach($data[\'\\1\'] as $\\1) { ?>', $tpl);
