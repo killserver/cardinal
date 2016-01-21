@@ -46,7 +46,7 @@ if(!empty($server)) {
 }
 Route::Load($page);
 $pages = Route::param('page');
-if(!(!$page)) {
+if(!(!$pages)) {
 	$page = $pages;
 }
 $classes = Route::param('class');
