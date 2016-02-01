@@ -76,6 +76,8 @@ final class Error {
 			templates::assign_vars(array("key" => $k, "val" => $v), "servers", "server".$i);
 			$i++;
 		}
+		templates::dir_skins("skins");
+		templates::set_skins("");
 		$tpl = templates::complited_assing_vars("debug_panel", null);
 		return templates::view($tpl);
 	}
@@ -115,7 +117,7 @@ final class Error {
 				$num = 0;
 				$incl_files = get_included_files();
 				foreach($incl_files as $f) {
-					if(file_exists($tmp_files[$i]['file'])) {
+					if(file_exists($f)) {
 						$include[$num]['file'] = $f;
 						$include[$num]['lines'] = self::FileLine($f);
 						$size = sprintf("%u", filesize($f));

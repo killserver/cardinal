@@ -115,8 +115,188 @@ final class modules {
 	return $modules;
 	}
 	
+	private static function parsePrimary($files) {
+		$pr = -1;
+		for($i=0;$i<sizeof($files);$i++) {
+			if(isset($files[$i]) && isset($files[$i]->file) && isset($files[$i]->file->attributes()->primary)) {
+				$pr = $i;
+				break;
+			}
+		}
+		return $pr;
+	}
+
+	private static function ReadRoot(&$arr, $dir = "") {
+		if(empty($dir)) {
+			$dir = ROOT_PATH;
+			$view_dir = "";
+		} else {
+			$view_dir = str_replace(ROOT_PATH, "", $dir);
+		}
+		$dis = dir($dir);
+		while(($file = $dis->read()) !== false) {
+			if($file=="." || $file==".." || empty($file)) {
+				continue;
+			}
+			if(is_dir($dir.$file)) {
+				self::ReadRoot($arr, $dir.$file.DS);
+			} else if(is_file($dir.$file)) {
+				$arr[$view_dir . $file] = $view_dir . $file;
+			}
+
+		}
+		return $arr;
+	}
+
+	private static function SearchOnArray($file, $array = array()) {
+		$array = array_values($array);
+		$file = (string) $file;
+		for($i=0;$i<sizeof($array);$i++) {
+			if(strpos($array[$i], $file) !== false) {
+				return $array[$i];
+			}
+		}
+		return "";
+	}
+
 	public static function Install($module) {
-		
+		$files_root = array();
+		self::ReadRoot($files_root);
+		if(file_exists(ROOT_PATH."core".DS."modules".DS."xml".DS.$module.".xml")) {
+			try {
+				$xml = simplexml_load_string(file_get_contents(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $module . ".xml"));
+			} catch(Exception $ex) {
+				return false;
+			}
+			$sql = "";
+			$parsePrimary = -1;
+			if(isset($xml->files)) {
+				$parsePrimary = self::parsePrimary($xml->files);
+			}
+			if(isset($xml->sql) && isset($xml->install) && sizeof($xml->install)>0 && isset($xml->uninstall) && sizeof($xml->uninstall)>0 && isset($xml->files) && $parsePrimary>=0 && isset($xml->files[$parsePrimary]->file) && isset($xml->files[$parsePrimary]->file->attributes()->path)) {
+				$ch = $xml->sql->children();
+				for($num=0;$num<sizeof($ch);$num++) {
+					switch($ch[$num]->getname()) {
+						case "create":
+							if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table) || empty($ch[$num])) {
+								continue;
+							}
+							$sqli = trim($ch[$num]);
+							if(empty($sqli)) {
+								continue;
+							}
+							if(isset($ch[$num]->attributes()->force)) {
+								$sql .= "DROP TABLE IF EXISTS `".$ch[$num]->attributes()->table."`;";
+							}
+							$sql .= "CREATE TABLE IF NOT EXISTS `".$ch[$num]->attributes()->table."` (".$sqli.") ENGINE=";
+							if(isset($ch[$num]->attributes()->engine) && !empty($ch[$num]->attributes()->engine)) {
+								$sql .= $ch[$num]->attributes()->engine;
+							} else {
+								$sql .= "MyISAM";
+							}
+							$sql .= " DEFAULT CHARSET=".self::get_config("db", "charset").";";
+						break;
+						case "alter":
+							if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table)) {
+								continue;
+							}
+							$sqli = trim($ch[$num]);
+							if(empty($sqli)) {
+								continue;
+							}
+							$sql .= "ALTER TABLE `".$ch[$num]->attributes()->table."` ".$sqli.";";
+						break;
+						case "delete":
+							if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table)) {
+								continue;
+							}
+							$mod = "AND";
+							if(isset($ch[$num]->attributes()->mod) && !empty($ch[$num]->attributes()->mod)) {
+								$mod = $ch[$num]->attributes()->mod;
+							}
+							$where = array();
+							if(sizeof($ch[$num]->where)>0) {
+								for ($in = 0; $in < sizeof($ch[$num]->where); $in++) {
+									$where[] = $ch[$num]->where[$in];
+								}
+							}
+							if(sizeof($where)>0) {
+								$sql .= "DELETE FROM `".$ch[$num]->attributes()->table."` WHERE ".(sizeof($where)>0 ? implode(" ".$mod." ", $where) : "1").";";
+							}
+						break;
+						case "drop":
+							if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table)) {
+								continue;
+							}
+							$sql .= "DROP TABLE IF EXISTS `".$ch[$num]->attributes()->table."`;";
+						break;
+						case "insert":
+							if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table) || empty($ch[$num])) {
+								continue;
+							}
+							$sqli = trim($ch[$num]);
+							if(empty($sqli)) {
+								continue;
+							}
+							$mod = "";
+							if(isset($ch[$num]->attributes()->force)) {
+								$mod = " IGNORE";
+							}
+							$sql .= "INSERT".$mod." INTO `".$ch[$num]->attributes()->table."` SET ".$sqli.";";
+						break;
+					}
+				}
+				for($i=0;$i<sizeof($xml->install);$i++) {
+					if(!isset($xml->install[$i]) || !isset($xml->info->attributes()->module)) {
+						continue;
+					}
+					if($parsePrimary<0) {
+						$parsePrimary = 0;
+					}
+					$param = array();
+					$param['activ'] = "yes";
+					$param['file'] = self::SearchOnArray($xml->files[$i]->file->attributes()->path, $files_root);
+					$param['module'] = $xml->info->attributes()->module;
+					if(isset($xml->install[$i]->attributes()->page)) {
+						$param['page'] = $xml->install[$i]->attributes()->page;
+					}
+					if(isset($xml->install[$i]->method)) {
+						$param['method'] = $xml->install[$i]->method;
+					}
+					if(isset($xml->install[$i]->param)) {
+						$param['param'] = $xml->install[$i]->param;
+					}
+					if(isset($xml->install[$i]->tpl)) {
+						$param['tpl'] = $xml->install[$i]->tpl;
+					}
+					$sql .= "INSERT INTO `modules` SET ".implode(", ", array_map(function($k, $v) { return "`".$k."` = \"".$v."\""; }, array_keys($param), array_values($param))).";";
+				}
+				// register all files for module
+				for($i=0;$i<sizeof($xml->files->file);$i++) {
+					$sql .= "INSERT INTO `modules` SET `file` = \"".self::SearchOnArray($xml->files->file[$i]->attributes()->path, $files_root)."\", `module` = \"".$xml->info->attributes()->module."\";";
+				}
+			}
+			if(empty($sql)) {
+				return false;
+			}
+			if(strpos($sql, ";")!==false) {
+				$exp = explode(";", $sql);
+				unset($sql);
+				if(sizeof($exp)>1) {
+					for($i=0;$i<sizeof($exp);$i++) {
+						if(empty($exp[$i])) {
+							continue;
+						}
+						db::query($exp[$i], true);
+					}
+				} else {
+					db::query(implode(";", $exp), true);
+				}
+			} else {
+				db::query($sql, true);
+			}
+			return true;
+		}
 	}
 
 	public static function use_modules($page, $params=array()) {

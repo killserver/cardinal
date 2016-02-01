@@ -324,7 +324,11 @@ final class templates {
 			return $array[0];
 		}
 	}
-	
+
+	/**
+	 * @param $arr
+	 * @return mixed
+     */
 	private static function routeparam($arr) {
 		$list = Route::param();
 		if(isset($arr[1]) && !empty($arr[1]) && isset($list[$arr[1]])) {
@@ -492,7 +496,7 @@ final class templates {
 	/**
 	 * @param $tpl
 	 * @param $file
-	 * @return string|void
+	 * @return bool|string
      */
 	private static function ParseTemp($tpl, $file) {
 		$del = false;
@@ -518,7 +522,11 @@ final class templates {
 		}
 		return $file_content;
 	}
-	
+
+	/**
+	 * @param $tpl
+	 * @return mixed
+     */
 	private static function RebuildOffPhp($tpl) {
 		$tpl = preg_replace("#<!-- FOREACH (.+?) -->#", '[foreach block=\\1]', $tpl);
 		$tpl = preg_replace("#<!-- ENDFOREACH (.+?) -->#", '[/foreach]', $tpl);
@@ -561,12 +569,19 @@ final class templates {
 		if(empty($file) || !file_exists(ROOT_PATH."core".DS."cache".DS."tmp".DS) || !is_dir(ROOT_PATH."core".DS."cache".DS."tmp".DS) || !is_writable(ROOT_PATH."core".DS."cache".DS."tmp".DS)) {
 			return $tpl;
 		}
-		$safe = array(
-			"<?php" => "&lt;?php",
-			"<?" => "&lt;?",
-			"?>" => "?&gt;",
-		);
-		$tpl = str_replace(array_keys($safe), array_values($safe), $tpl);
+		if(strpos($tpl, "<?xml")===false) {
+			$safe = array(
+				"<?php" => "&lt;?php",
+				"<?" => "&lt;?",
+				"?>" => "?&gt;",
+			);
+			$tpl = str_replace(array_keys($safe), array_values($safe), $tpl);
+		} else {
+			$safe = array(
+				"<?xml" => '<?php echo \'<?xml\'; ?>',
+			);
+			$tpl = str_replace(array_keys($safe), array_values($safe), $tpl);
+		}
 		$tpl = preg_replace("#<!-- FOREACH (.+?) -->#", '<?php if(isset($data[\'\\1\']) && is_array($data[\'\\1\']) && sizeof($data[\'\\1\'])>0) { foreach($data[\'\\1\'] as $\\1) { ?>', $tpl);
 		$tpl = preg_replace("#<!-- ENDFOREACH (.+?) -->#", '<?php } } ?>', $tpl);
 		$tpl = preg_replace("#<!-- ENDFOREACH -->#", '<?php } } ?>', $tpl);
@@ -610,13 +625,14 @@ final class templates {
 
 	/**
 	 * @param $tmp
+	 * @param string $file
 	 * @return array|mixed|NUll|string
      */
-	private static function ecomp($tmp) {
+	private static function ecomp($tmp, $file = "") {
 		if(strpos($tmp, "///***")!==false&&strpos($tmp, "***///")!==false) {
 			$tmp = nsubstr($tmp, 0, nstrpos($tmp, "///***")).nsubstr($tmp, nstrpos($tmp, "***///")+6, nstrlen($tmp));
 		}
-		$tmp = self::ParsePHP($tmp);
+		$tmp = self::ParsePHP($tmp, $file);
 		$tmp = self::callback_array("#\{include templates=['\"](.*?)['\"]\}#", ("templates::include_tpl"), $tmp);
 		$tmp = self::callback_array("#\{include module=['\"](.*?)['\"]\}#", ("templates::include_module"), $tmp);
 		$tmp = preg_replace("~\{\#is_last\[(\"|)(.*?)(\"|)\]\}~", "\\1", $tmp);
@@ -1438,7 +1454,7 @@ if(!$test) {
 		if(file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."lang".DS."tpl.php")) {
 			include_once(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."lang".DS."tpl.php");
 		}
-		$h = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."main.tpl");
+		$h = self::complited_assing_vars("main");
 		$l = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."login.tpl");
 		$l = iconv("cp1251", modules::get_config('charset'), $l);
 		$h = str_replace("{login}", $l, $h);
@@ -1497,7 +1513,7 @@ if(!$test) {
 			self::$module['menu'] = array();
 		}
 		$h = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $h);
-		$h = self::ecomp($h);
+		$h = self::ecomp($h);//, self::$dir_skins.DS.self::$skins.DS."main"
 		$find_preg = $replace_preg = array();
 		if(sizeof(self::$editor)) {
 			foreach(self::$editor as $key_find => $key_replace) {

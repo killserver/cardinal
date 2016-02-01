@@ -164,7 +164,7 @@ if(!$clear) {
 	$header .= "<link href='/js/nprogress.css' rel='stylesheet' type='text/css'/>\n";
 	$header .= "<link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,700,400italic' rel='stylesheet' type='text/css'/>\n";
 
-	$header .= '<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=1" />'."\n";
+	$header .= '<meta name="viewport" content="'.config::Select("viewport").'" />'."\n";
 	$header .= "<script type=\"text/javascript\">\n".
 		"	var username = \"{U_username}\";\n".
 		"	var default_link = \"{C_default_http_host}\";\n".

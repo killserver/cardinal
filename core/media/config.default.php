@@ -64,6 +64,8 @@ $config = array(
 	"gzip" => "yes",
 	"gzip_output" => true,
 	"js_min" => true,
+	
+	"viewport" => "width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=1",
 
 	"default_http_local" => "/",
 	"default_http_hostname" => "online-killer.pp.ua",
@@ -73,6 +75,9 @@ $config = array(
 
 	"ParsePHP" => true,
 	"guest_level" => "0",
+	"db" => array(
+		"driver" => "mysql",
+	),
 );
 
 ?>
