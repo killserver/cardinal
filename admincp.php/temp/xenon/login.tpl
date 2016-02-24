@@ -141,7 +141,7 @@
 					<input type="hidden" name="method" id="method" value="login" />
 					<div class="login-header">
 						<a href="#" class="logo">
-							<img src="assets/images/logo@2x.png" alt="" width="80" />
+							<img src="assets/xenon/images/logo@2x.png" alt="" width="80" />
 							<span>log in</span>
 						</a>
 						
@@ -189,7 +189,7 @@
 
 
 	<!-- JavaScripts initializations and stuff -->
-	<script src="assets/js/xenon-custom.js?1"></script>
+	<script src="assets/xenon/js/xenon-custom.js?1"></script>
 
 </body>
 </html>

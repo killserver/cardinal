@@ -21,8 +21,7 @@
 */
 define("IS_CORE", true);
 include_once("core.php");
-
-if(!userlevel::get("site")) {
+if(!defined("INSTALLER") && !userlevel::get("site")) {
 	templates::error("{L_error_level_full}", "{L_error_level}");
 }
 

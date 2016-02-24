@@ -91,6 +91,7 @@ final class templates {
 
 	/**
 	 * templates constructor.
+	 * @access private
      */
 	public function __construct() {
 		if(!modules::get_config('gzip_output')) {
@@ -108,9 +109,20 @@ final class templates {
 	}
 
 	/**
-	 * @param $name
-	 * @param array $params
-	 * @return mixed
+	 * Safe template from clone
+	 * @access private
+	 * @return bool Ban from clone class
+	 */
+	private function __clone() {
+		return false;
+	}
+
+	/**
+	 * Call function as object method
+	 * @access public
+	 * @param string $name Name method for static call
+	 * @param array $params Params for static call
+	 * @return mixed Result work static method
      */
 	public function __call($name, array $params) {
 		$new = __METHOD__;
@@ -118,9 +130,11 @@ final class templates {
 	}
 
 	/**
-	 * @param $name
-	 * @param array $params
-	 * @return mixed
+	 * Call function as static method
+	 * @access public
+	 * @param string $name Name method for static call
+	 * @param array $params Params for static call
+	 * @return mixed Result work static method
      */
 	public static function __callStatic($name, array $params) {
 		$new = __METHOD__;
@@ -128,8 +142,10 @@ final class templates {
 	}
 
 	/**
-	 * @param string $skin
-	 * @return string
+	 * If skin setting - reset default directory skin or return default
+	 * @access public
+	 * @param string $skin Directory skin name
+	 * @return string default or set directory skin
      */
 	public static function dir_skins($skin = "") {
 		if(!empty($skin)) {
@@ -140,13 +156,17 @@ final class templates {
 	}
 
 	/**
-	 * @param $skin
+	 * Set skin
+	 * @access public
+	 * @param string $skin
      */
 	public static function set_skins($skin) {
 		self::$skins = $skin;
 	}
 
 	/**
+	 * Get skin
+	 * @access public
 	 * @return bool|string
      */
 	public static function get_skins() {
@@ -154,6 +174,8 @@ final class templates {
 	}
 
 	/**
+	 * Return UNIX-time with microseconds
+	 * @access private
 	 * @return mixed
      */
 	private static function time() {
@@ -161,9 +183,11 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
-	 * @param string $block
-	 * @param string $view
+	 * Set array datas for template
+	 * @access public
+	 * @param array $array Array data for template
+	 * @param string $block Block data for cycle
+	 * @param string $view Unique id for block data
      */
 	public static function assign_vars($array, $block = "", $view = "") {
 		if(empty($block)) {
@@ -182,9 +206,11 @@ final class templates {
 	}
 
 	/**
-	 * @param $name
-	 * @param $value
-	 * @param string $block
+	 * Set data for template
+	 * @access public
+	 * @param string $name Name data for template
+	 * @param string $value Value data for template
+	 * @param string $block Block data for create array
      */
 	public static function assign_var($name, $value, $block = "") {
 		if(empty($block)) {
@@ -195,9 +221,11 @@ final class templates {
 	}
 
 	/**
-	 * @param $name
-	 * @param string $html
-	 * @param string $block
+	 * Set datas for menu
+	 * @access public
+	 * @param string $name Name menu on template
+	 * @param string $html HTML-code for template
+	 * @param string $block Block menu
      */
 	public static function set_menu($name, $html = "", $block = "") {
 		if(empty($block)) {
@@ -208,9 +236,11 @@ final class templates {
 	}
 
 	/**
-	 * @param $name
-	 * @param $block
-	 * @return bool
+	 * Get menu datas
+	 * @access public
+	 * @param string $name Name menu
+	 * @param string $block Block menu
+	 * @return mixed Return data on menu
      */
 	public static function select_menu($name, $block) {
 		if(isset(self::$module['menu'][$name][$block]) && is_array(self::$module['menu'][$name][$block]) && isset(self::$module['menu'][$name][$block]['value'])) {
@@ -221,8 +251,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $data
-	 * @param $where
+	 * Add insert in before and after head or body
+	 * @access public
+	 * @param string $data Data for insert in template
+	 * @param array $where Conditions for insert
      */
 	public static function add_modules($data, $where) {
 		if(!is_string($where)) {
@@ -245,10 +277,12 @@ final class templates {
 	}
 
 	/**
-	 * @param $pattern
-	 * @param $func
-	 * @param $data
-	 * @return array|mixed|NUll
+	 * Method return result work preg_replace for php 7 and old
+	 * @access private
+	 * @param string $pattern Template for Regular aspect
+	 * @param mixed $func Called function after work
+	 * @param string $data Original data
+	 * @return array|mixed|NUll Return data after replace
      */
 	private static function callback_array($pattern, $func, $data) {
 		if(function_exists("preg_replace_callback_array")) {
@@ -259,8 +293,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
-	 * @return string|void
+	 * Replace data in template
+	 * @access private
+	 * @param array $array Array data
+	 * @return string|void Return result replacing
      */
 	private static function foreachs($array) {
 		if(!isset(self::$blocks[$array[1]])) {
@@ -306,8 +342,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
-	 * @return bool|string
+	 * Get save data about user
+	 * @access private
+	 * @param array $array Array data about user
+	 * @return bool|string Result get information about user
      */
 	private static function user($array) {
 		if(isset($array[2])) {
@@ -326,8 +364,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $arr
-	 * @return mixed
+	 * Return isset parameter in routification
+	 * @access private
+	 * @param array $arr Array gets params
+	 * @return mixed Return data in routification or original line
      */
 	private static function routeparam($arr) {
 		$list = Route::param();
@@ -339,8 +379,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
-	 * @return mixed
+	 * Get routification link
+	 * @access private
+	 * @param array $array Params for routification
+	 * @return mixed Return routification link or original line
      */
 	private static function route($array) {
 		if(isset($array[1]) && isset($array[2])) {
@@ -372,8 +414,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
-	 * @return int|mixed
+	 * Get system data
+	 * @access private
+	 * @param array $array Data for getting
+	 * @return int|mixed Return safe data system function or original line
      */
 	private static function systems($array) {
 		$ret = $array[0];
@@ -392,8 +436,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
-	 * @return bool
+	 * Get config data
+	 * @access private
+	 * @param array $array Params for get config
+	 * @return bool Return data in config or original line
      */
 	private static function config($array) {
 		if(isset($array[2])) {
@@ -409,8 +455,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
-	 * @return bool
+	 * Get language data
+	 * @access private
+	 * @param array $array Params for get language
+	 * @return bool Return data in language or original line
      */
 	private static function lang($array) {
 		if(isset($array[2])) {
@@ -426,9 +474,11 @@ final class templates {
 	}
 
 	/**
-	 * @param $text
-	 * @param array $arr
-	 * @return mixed
+	 * Line replaced on params
+	 * @access private
+	 * @param string $text Original line
+	 * @param array $arr Array data for replacing
+	 * @return string Return replaced string
      */
 	private static function sprintf($text, $arr=array()) {
 		for($i=0;$i<sizeof($arr); $i++) {
@@ -438,8 +488,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
-	 * @return mixed|string
+	 * Review language data
+	 * @access private
+	 * @param array $array Datas language and he's parameters
+	 * @return string Return reviewed language data or original line
      */
 	private static function slangf($array) {
 		if(isset($array[3])) {
@@ -462,8 +514,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
-	 * @return mixed
+	 * Get constant
+	 * @access private
+	 * @param array $array Get constant
+	 * @return string Return data in constant or original line
      */
 	private static function define($array) {
 		if(defined($array[1])) {
@@ -474,8 +528,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $data
-	 * @return bool|string
+	 * Rebuild DateTime with and without start time
+	 * @access private
+	 * @param array $data Array data for rebuild view time
+	 * @return bool|string Return DateTime to template
      */
 	private static function sys_date($data) {
 		if(is_array($data)) {
@@ -494,9 +550,11 @@ final class templates {
 	}
 
 	/**
-	 * @param $tpl
-	 * @param $file
-	 * @return bool|string
+	 * Include created php-file template
+	 * @access private
+	 * @param string $tpl Rebuild template
+	 * @param string $file Execute template file
+	 * @return bool|string Return result including file
      */
 	private static function ParseTemp($tpl, $file) {
 		$del = false;
@@ -524,8 +582,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $tpl
-	 * @return mixed
+	 * Re-Rebuild back in template
+	 * @access private
+	 * @param string $tpl Rebuild line
+	 * @return mixed Return re-rebuilding
      */
 	private static function RebuildOffPhp($tpl) {
 		$tpl = preg_replace("#<!-- FOREACH (.+?) -->#", '[foreach block=\\1]', $tpl);
@@ -558,9 +618,11 @@ final class templates {
 	}
 
 	/**
-	 * @param $tpl
-	 * @param string $file
-	 * @return mixed
+	 * Rebuild template in php-file
+	 * @access private
+	 * @param string $tpl Original template
+	 * @param string $file Execute file template
+	 * @return mixed Result rebuild and including file
      */
 	private static function ParsePHP($tpl, $file = "") {
 		if(!config::Select("ParsePHP")) {
@@ -624,9 +686,11 @@ final class templates {
 	}
 
 	/**
-	 * @param $tmp
-	 * @param string $file
-	 * @return array|mixed|NUll|string
+	 * "Last" compiling template before he view
+	 * @access private
+	 * @param string $tmp Template for last rebuild
+	 * @param string $file Execute file
+	 * @return array|mixed|NUll|string Result rebuild
      */
 	private static function ecomp($tmp, $file = "") {
 		if(strpos($tmp, "///***")!==false&&strpos($tmp, "***///")!==false) {
@@ -675,8 +739,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
-	 * @return string
+	 * View part template if group user more than
+	 * @access private
+	 * @param array $array Group and template
+	 * @return string Result checking
      */
 	private static function group($array) {
 		$level = modules::get_user('level');
@@ -699,8 +765,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
-	 * @return string
+	 * View part template if use ajax
+	 * @access public
+	 * @param array $array Params checking
+	 * @return string Result view
      */
 	public static function ajax($array) {
 		if(strpos($array[0], "!ajax") !== false) {
@@ -719,8 +787,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
-	 * @return string
+	 * View part template if use GET-param "jajax"
+	 * @access private
+	 * @param array $array Array data
+	 * @return string Result review
      */
 	private static function ajax_click($array) {
 		if(strpos($array[0], "!ajax_click") !== false) {
@@ -739,8 +809,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
-	 * @return string
+	 * Get utensils user to group and hath access to part template
+	 * @access private
+	 * @param array $array Array data
+	 * @return string Return "true" or "false"
      */
 	private static function level($array) {
 		$ret = "false";
@@ -750,9 +822,11 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
-	 * @param bool|false $elseif
-	 * @return array|bool|string
+	 * IF
+	 * @access private
+	 * @param array $array Array data
+	 * @param bool|false $elseif Check elseif or not
+	 * @return array|bool|string Return result conditions
      */
 	private static function is($array, $elseif=false) {
 		$else=false;
@@ -956,14 +1030,18 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
+	 * Reset count element in array
+	 * @access private
+	 * @param array $array Count elements in array
      */
 	private static function foreach_set($array) {
 		self::$foreach = array_merge(self::$foreach, array("count" => $array[1]));
 	}
 
 	/**
-	 * @param $array
+	 * Return count elements in array
+	 * @access private
+	 * @param array $array Needed array for count elements in he'm
 	 * @return int
      */
 	private static function countforeach($array) {
@@ -976,8 +1054,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
-	 * @return mixed
+	 * Replace part template
+	 * @access private
+	 * @param array $array Array data for replacing
+	 * @return mixed Return part template or original line
      */
 	private static function replace_tmp($array) {
 		if(isset(self::$blocks[$array[1]][$array[2]])) {
@@ -988,8 +1068,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
-	 * @return array|mixed|NUll|string
+	 * Include other template in main template
+	 * @access private
+	 * @param array $array Array data for including
+	 * @return array|mixed|NUll|string Return part template for insert in main template
      */
 	private static function include_tpl($array) {
 		if(strpos($array[1], ",") !== false) {
@@ -1016,8 +1098,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
-	 * @return mixed
+	 * Include module
+	 * @access private
+	 * @param array $array Array data for initialize module-file
+	 * @return mixed Result work module or original line
      */
 	private static function include_module($array) {
 		if(strpos($array[1], ".php") === false) {
@@ -1042,9 +1126,11 @@ final class templates {
 	}
 
 	/**
-	 * @param $name
-	 * @param string $value
-	 * @param string $func
+	 * Change block-data in memory
+	 * @access public
+	 * @param string $name Name block-data
+	 * @param string $value Value block-data
+	 * @param string $func Method working(add,edit,delete)
      */
 	public function change_blocks($name, $value = "", $func = "add") {
 		if($func=="add" || $func=="edit") {
@@ -1055,16 +1141,20 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
-	 * @return int
+	 * Count block-data in memory
+	 * @access private
+	 * @param array $array Block-data
+	 * @return int Return count block-data
      */
 	private static function count_blocks($array) {
 		return sizeof(self::$blocks[$array[2]]);
 	}
 
 	/**
-	 * @param $array
-	 * @return mixed
+	 * "Not In Page". Check user without this page
+	 * @access private
+	 * @param array $array Array data
+	 * @return mixed Return part template if user without this page
      */
 	private static function npage($array) {
 	global $manifest;
@@ -1079,8 +1169,10 @@ final class templates {
 	}
 
 	/**
-	 * @param $array
-	 * @return mixed
+	 * "In Page". Check user on this page
+	 * @access private
+	 * @param array $array Array data
+	 * @return mixed Return part template if user on this page
      */
 	private static function nowpage($array) {
 	global $manifest;
@@ -1095,6 +1187,7 @@ final class templates {
 	}
 
 	/**
+	 * @access private
 	 * @param $tpl
 	 * @param string $file
 	 * @param bool|false $test
@@ -1188,6 +1281,7 @@ if(!$test) {
 	}
 
 	/**
+	 * @access public
 	 * @param $file
 	 * @param bool|false $no_skin
      */
@@ -1206,6 +1300,7 @@ if(!$test) {
 	}
 
 	/**
+	 * @access public
 	 * @param $file
 	 * @param null $charset
 	 * @param string $dir
@@ -1230,6 +1325,7 @@ if(!$test) {
 	}
 
 	/**
+	 * @access public
 	 * @param $file
 	 * @param string $dir
 	 * @param bool|false $test
@@ -1272,6 +1368,7 @@ if(!$test) {
 	}
 
 	/**
+	 * @access public
 	 * @param $tmp
 	 * @param null $header
      */
@@ -1303,6 +1400,7 @@ if(!$test) {
 	}
 
 	/**
+	 * @access private
 	 * @param $header
      */
 	private static function change_head($header) {
@@ -1314,6 +1412,7 @@ if(!$test) {
 	}
 
 	/**
+	 * @access public
 	 * @param $tmp
 	 * @return array|mixed|NUll
      */
@@ -1333,6 +1432,7 @@ if(!$test) {
 	}
 
 	/**
+	 * @access public
 	 * @param $data
 	 * @param string $header
 	 * @return array|mixed|NUll|string
@@ -1346,12 +1446,14 @@ if(!$test) {
 	}
 
 	/**
+	 * @access public
 	 * @param $tmp
 	 * @param string $header
      */
 	public static function templates($tmp, $header = "") { return self::complited($tmp, $header);}
 
 	/**
+	 * @access public
 	 * @param $data
 	 * @param string $header
      */
@@ -1378,6 +1480,7 @@ if(!$test) {
 	}
 
 	/**
+	 * @access public
 	 * @param $name
 	 * @param $var
      */
@@ -1442,7 +1545,7 @@ if(!$test) {
 	// Gorlum's minifier EOF
 
 	/**
-	 *
+	 * @access public
      */
 	public static function display() {
 	global $lang;
@@ -1532,7 +1635,7 @@ if(!$test) {
 	}
 
 	/**
-	 *
+	 * @access public
      */
 	public static function clean() {
 		self::$blocks = array();
@@ -1545,7 +1648,7 @@ if(!$test) {
 	}
 
 	/**
-	 *
+	 * @access public
      */
 	public function __destruct() {
 		unset($this);

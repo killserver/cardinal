@@ -38,7 +38,7 @@ if(file_exists(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX) && file_exists(
 	define("INSTALLER", true);
 	$config = array("charset" => "utf-8");
 	require_once(ROOT_PATH."core".DS."media".DS."config.global.".ROOT_EX);
-	if(!defined("IS_INSTALLER")) {
+	if(isset($_SERVER["REQUEST_URI"]) && strpos($_SERVER["REQUEST_URI"], "install")===false) {
 		header("Location: install.php");
 	}
 }

@@ -54,13 +54,14 @@ if(sizeof($_POST)==0||(sizeof($_POST)==1)||(sizeof($_POST)==2)) {
 		$cache = (get_chmod(ROOT_PATH."core/cache/")=="0777" ? "green":"red");
 		$system_cache = (get_chmod(ROOT_PATH."core/cache/system/")=="0777" ? "green":"red");
 		$media = (get_chmod(ROOT_PATH."core/media/")=="0777" ? "green":"red");
+		$tmpl = (get_chmod(ROOT_PATH."core/cache/tmp/")=="0777" ? "green":"red");
 		$mb = (function_exists('mb_detect_encoding') ? "green" : "red");
-		if($apache=="red"||$php=="red"||$cache=="red"||$system_cache=="red"||$media=="red"||$mb=="red") {
+		if($apache=="red"||$php=="red"||$cache=="red"||$system_cache=="red"||$media=="red"||$mb=="red"||$tmpl=="red") {
 			templates::assign_var("is_stop", "1");
 		} else {
 			templates::assign_var("is_stop", "0");
 		}
-		templates::assign_vars(array("page" => "2", "apache" => $apache, "php" => $php, "cache" => $cache, "system_cache" => $system_cache, "media" => $media, "mb" => $mb));
+		templates::assign_vars(array("page" => "2", "apache" => $apache, "php" => $php, "cache" => $cache, "template" => $tmpl, "system_cache" => $system_cache, "media" => $media, "mb" => $mb));
 	} else {
 		templates::assign_vars(array("page" => "3", "SERNAME" => getenv('SERVER_NAME').str_replace(array("install.php", "/install/step2", "/install/step3"), "", getenv("REQUEST_URI")), "SERVERS" => getenv('SERVER_NAME')));
 		$driver = ROOT_PATH."core/class/system/drivers/";
@@ -307,7 +308,6 @@ $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `acc
 $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (4, 'Администратор', 'ADMIN', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
 
 
-
 db::connect($db_host, $db_user, $db_pass, $db_db, "utf8", 3306);
 $insert = array();
 $last = db::last_id("users");
@@ -341,7 +341,7 @@ echo "403 ERROR";
 die();
 }
 
-$config = array_merge(array(
+$config = array_merge($config, array(
 	"db" => array(
 		"host" => "'.$db_host.'",
 		"port" => "'.$db_port.'",
@@ -351,7 +351,7 @@ $config = array_merge(array(
 		"driver" => "'.$db_driver.'",
 		"charset" => "utf8",
 	),
-), $config);
+));
 
 ?>';
 if(file_exists(ROOT_PATH."core/media/db.php")) {

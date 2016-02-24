@@ -38,6 +38,10 @@ final class db {
 		}
 		return self::$driver->connected();
 	}
+	
+	private static function check_config() {
+		return file_exists(ROOT_PATH."core".DS."media".DS."db.php");
+	}
 
 	public static function check_connect($host, $user, $pass) {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
@@ -103,7 +107,7 @@ final class db {
 	}
 
 	function __construct() {
-		if(!defined("INSTALLER")) {
+		if(!defined("INSTALLER") && self::check_config()) {
 			config::StandAlone();
 			self::$driver_name = config::Select('db','driver');
 			self::connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'), config::Select('db','db'), config::Select('db', 'charset'), 3306);

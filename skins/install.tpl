@@ -26,6 +26,7 @@
 	<div><div style="display:inline-block;width:200px;">PHP</div><div style="display:inline-block;color:{php};font-weight:bold;">5.3.2</div></div>
 	<div><div style="display:inline-block;width:200px;">core/cache/</div><div style="display:inline-block;color:{cache};font-weight:bold;">0777</div></div>
 	<div><div style="display:inline-block;width:200px;">core/cache/system/</div><div style="display:inline-block;color:{system_cache};font-weight:bold;">0777</div></div>
+	<div><div style="display:inline-block;width:200px;">core/cache/tmp/</div><div style="display:inline-block;color:{template};font-weight:bold;">0777</div></div>
 	<div><div style="display:inline-block;width:200px;">core/media/</div><div style="display:inline-block;color:{media};font-weight:bold;">0777</div></div>
 	<div><div style="display:inline-block;width:200px;">MbString</div><div style="display:inline-block;color:{mb};font-weight:bold;">[if {mb}==red]Не установлен[else {mb}==red]Установлен[/if {mb}==red]</div></div>
 </div>
