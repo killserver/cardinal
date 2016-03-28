@@ -55,6 +55,9 @@ global $manifest;
 		case "error":
 			include_once(ROOT_PATH."core/pages/error.".ROOT_EX);
 		break;
+		case "upload":
+			include_once(ROOT_PATH."core/pages/upload.".ROOT_EX);
+		break;
 		case "reg":
 			include_once(ROOT_PATH."core/pages/reg.".ROOT_EX);
 		break;
@@ -73,6 +76,11 @@ global $manifest;
 		default:
 			include_once(ROOT_PATH."core/pages/main.".ROOT_EX);
 		break;
+	}
+	if(array_key_exists($page, $manifest['after_ini_class'])) {
+		$page = $manifest['after_ini_class'][$page];
+		$page['object']->$page['func']();
+		unset($page);
 	}
 }
 

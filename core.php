@@ -47,7 +47,7 @@ $manifest = array(
 	"mod_page" => array(), //in class templates
 	"load_modules" => array(), //write modules loading in this page
 	"user_pages" => array(), //modules user page
-	"create_js" => array("full" => array(), "mini" => array()), //in functions/templates.php create_js
+	"create_js" => array("full" => array(), "mini" => array(), "min" => array()), //in functions/templates.php create_js
 	"functions" => array(), //in functions
 	"pages" => array(), //in page view
 	"class_pages" => array(), //in page view
@@ -177,5 +177,6 @@ $templates = new templates();
 header('Content-Type: text/html; charset='.config::Select('charset'));
 header('X-UA-Compatible: IE=edge,chrome=1');
 header('Cache-Control: max-age');
+header("Cardinal: ".VERSION);
 header_remove('x-powered-by');
 ?>

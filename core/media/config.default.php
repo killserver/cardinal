@@ -74,6 +74,7 @@ $config = array(
 	"charset" => "utf-8",
 
 	"ParsePHP" => true,
+	"rewrite" => true,
 	"guest_level" => "0",
 	"db" => array(
 		"driver" => "mysql",

@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 3.2
+ * @version 3.3
  * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 3.2
+ * Version Engine: 3.3
  * Version File: 1
  *
  * 1.1
@@ -54,7 +54,7 @@ define("UPLOAD_CM", 12000);
 define("UPLOAD_CMD", 12000);
 define("UPLOAD_ALL", 240000);
 
-define("VERSION", "3.2");
+define("VERSION", "3.3");
 define("LEVEL_ADMIN", 3);
 define("LEVEL_MODER", 2);
 define("LEVEL_USER", 1);

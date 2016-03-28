@@ -29,7 +29,7 @@ die();
 function meta($array=array()) {
 	templates::assign_vars(array(
 		"url" => "{C_default_http_host}",
-		"title" => "{L_site_name}",
+		"title" => "{L_sitename}",
 	), "meta", "1");
 	if(sizeof($array)>0) {
 		for($i=0;$i<sizeof($array);$i++) {
@@ -48,18 +48,12 @@ function create_js($clear = false) {
 global $user;
 	$css = $js = array();
 	$sRet = "";
+	$js_list = modules::manifest_get(array("create_js", "min"));
 	if(!config::Select("js_min")) {
 		if(!$clear) {
 			if(isset($user) && isset($user['id']) && $user['id']==1) {
 				$js[] = 'http://ie.microsoft.com/testdrive/HTML5/CompatInspector/inspector.js';
 			}
-			/*$js[] = 'http://code.jquery.com/jquery-2.1.0.min.js';
-			$js[] = 'http://code.jquery.com/jquery-migrate-1.2.1.min.js';
-			$js[] = 'http://malsup.github.io/jquery.form.js';
-			$js[] = 'http://code.jquery.com/ui/1.10.4/jquery-ui.min.js';
-			$js[] = '{THEME}/js/jquery.jmpopups-0.5.1.js';
-			$js[] = '/js/init.js';
-			$js[] = '{C_default_http_host}js/ajax_core.js';*/
 		}
 		$dirs = read_dir(ROOT_PATH."core/modules/js/", ".php");
 		sort($dirs);
@@ -92,7 +86,7 @@ global $user;
 		if($js) {
 			$js = implode(",", $js);
 		}
-		$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}core/class/min/?g=general&amp;charset=".config::Select("charset").(sizeof($js)>0 ? "&amp;file=".implode(",", $js) : "")."&amp;".time()."\"></script>\n";
+		$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}core/class/min/?g=general&amp;charset=".config::Select("charset").(sizeof($js)>0 ? "&amp;f=".implode(",", $js) : "")."&amp;".time()."\"></script>\n";
 	}
 	$all = modules::manifest_get(array("create_js", "full"));
 	if(is_array($all)) {
@@ -111,6 +105,9 @@ global $user;
 				$sRet .= "<script type=\"text/javascript\">".$all[$i]."</script>\n";
 			}
 		}
+	}
+	if(isset($js_list) && is_array($js_list)) {
+		$sRet .= "<script type=\"text/javascript\" async src=\"{C_default_http_host}core/class/min/?g=general&amp;charset=".config::Select("charset").(sizeof($js_list)>0 ? "&amp;f=".implode(",", $js_list) : "")."&amp;".time()."\"></script>\n";
 	}
 	$all = modules::manifest_get(array("create_css", "full"));
 	if(is_array($all)) {
@@ -134,7 +131,7 @@ global $user;
 return $sRet;
 }
 
-function headers($array = array(), $clear = false) {
+function headers($array = array(), $clear = false, $no_js = false) {
 global $user;
 	$header = "";
 	if(isset($array['title'])) {
@@ -176,7 +173,9 @@ if(!$clear) {
 		$header .= "<link rel=\"canonical\" href=\"".$array['meta']['canonical']."\" />\n";
 		unset($array['meta']['canonical']);
 	}
-	$header .= create_js($clear);
+	if(!$no_js) {
+		$header .= create_js($clear);
+	}
 	$header .= "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"{L_sitename}\" href=\"{C_default_http_host}rss.xml\" />\n";
 /*if(isset($array['title']) && isset($array['meta']['watch']) && $user['id'] == 1) {
 	$header .= "<link rel=\"alternate\" type=\"application/json+oembed\" href=\"{C_default_http_host}oembed?url={C_default_http_host}?watch%26v=".$array['meta']['watch']."&format=json\" title=\"".$array['title']."\" />\n";

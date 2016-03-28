@@ -1,4 +1,4 @@
-﻿<link rel="stylesheet" href="../skins/install.css" />
+﻿<link rel="stylesheet" href="{C_default_http_local}skins/install.css" />
 <center>{L_install} Cardinal Engine v{D_VERSION}</center>
 <ol id="checkoutBreadcrumb">
 	<li class="basket<!-- IF {% RP[line] %}==1 -->active<!-- ENDIF --><!-- IF {% RP[line] %}==2 --> nextactive<!-- ENDIF -->">1. {L_licence}</li>
@@ -10,15 +10,16 @@
 	<div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;padding:18px;background:rgb(255,230,196);color:#4C289E;">Установка скрипта заблокированна, так-как была попытка запустить сервер на localhost домене. Пожалуйста, перенесите скрипт на хостинг.</b></div>
 [/if]
 [if {page}==1]
-<form method="post" action="../{R_[install_first][file=install.php;page=install;method=change;is_file=true;line=2]}">
+<form method="post" action="{C_default_http_local}install.php">
 <div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;padding:18px;background:rgb(255,230,196);color:#4C289E;">
-<center><b>Данный программный продукт распростроняется под лицензей GNU.</b></center><br />Все изменения, которые пользователь будет выполнять используя данное ПО - не должно нарушать права человека и права котеек! Будьте более доброжелательны.<br />Приятного использования!
+<center><b>Данный программный продукт распростроняется под лицензей GNU.</b></center><br />Все изменения, которые пользователь будет выполнять используя данное ПО - не должно нарушать права человека и права котеек! Будьте более доброжелательны.<br />Приятного использования!<br />
+<small>Если Вы испытываете проблемы с установкой - установите флажок: <input type="checkbox" name="rewrite" value="1" /></small>
 </div>
 <input type="submit" class="next" name="submit" value="Принять" />
 </form>
 [/if]
 [if {page}==2]
-<form method="post" action="../{R_[install_first][file=install.php;page=install;method=change;is_file=true;line=3]}">
+<form method="post" action="{C_default_http_local}{R_[install_first][file=install.php;page=install;method=change;is_file=true;line=3]}">
 <div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;padding:18px;background:rgb(255,230,196);color:#4C289E;">
 	[if {is_stop}==0]<div style="text-align:center;font-weight:bold;">Все необходимые права доступа и требуемое программное обезпечение установлено, можно продолжать установку!</div>[/if {is_stop}==0]
 	[if {is_stop}==1]<div style="text-align:center;font-weight:bold;">Установите требуемые права доступа к папкам или проверьте наличие необходимого программного обезпечения для продолжения установки!</div>[/if {is_stop}==1]
@@ -35,7 +36,7 @@
 </form>
 [/if]
 [if {page}==3]
-<form method="post" action="../{R_[install_first][file=install.php;page=install;method=change;is_file=true;line=4]}">
+<form method="post" action="{C_default_http_local}{R_[install_first][file=install.php;page=install;method=change;is_file=true;line=4]}">
 <div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;background:rgb(255,230,196);text-align:center;font-weight:bold;padding:7px;margin:0px auto 10px;width:50%;color:#f00;font-size:18px;">Убедитесь, что все необходимые драйверы баз данных установленны!</div>
 <span style="float:left;">
 	<span style="width:400px;border:1px solid #000;display:block;padding:10px;">
@@ -73,7 +74,6 @@
 		<center>Настройки</center>
 		<hr />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Название сайта</div><input type="text" name="sitename" maxlength="70" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
-		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Ключевые слова сайта</div><input type="text" name="keywords" maxlength="250" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Описание сайта</div><input type="text" name="description" maxlength="160" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Доменное имя Вашего сайта</div><input type="text" name="SERVER" value="{SERVERS}" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Путь к Вашему сайту</div><input type="text" name="PATH" value="http://{SERNAME}/" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />

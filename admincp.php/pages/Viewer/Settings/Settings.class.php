@@ -66,7 +66,6 @@ class Settings extends Core {
 		$lang = array_merge($lang, array(
 			"sitename" => "'.saves($_POST['sitename'], true).'",
 			"s_description" => "'.saves($_POST['description'], true).'",
-			"s_keywords" => "'.saves($_POST['keywords'], true).'",
 		));
 
 		?>';
@@ -101,7 +100,6 @@ class Settings extends Core {
 			return;
 		}
 		$name = lang::get_lang("sitename");
-		$key = lang::get_lang("s_keywords");
 		$descr = lang::get_lang("s_description");
 		templates::assign_vars(array(
 			"API" => config::Select("api_key"),
@@ -110,7 +108,6 @@ class Settings extends Core {
 			"mail_from" => config::Select("mail_from"),
 			"max_news" => config::Select("max_news"),
 			"sitename" => $name,
-			"keywords" => $key,
 			"description" => $descr,
 		));
 		if(sizeof(self::$sub_nav)>0) {

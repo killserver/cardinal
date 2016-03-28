@@ -51,7 +51,7 @@ final class cache {
 				$data = self::$connect->get($data);
 				return $data['time'];
 			} elseif(self::$type == CACHE_FILE) {
-				return filemtime(ROOT_PATH."core/cache/".$data.".txt");
+				return filemtime(ROOT_PATH."core".DS."cache".DS.$data.".txt");
 			} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 				return ftp_mdtm(self::$connect, self::$conn_path.$data.".txt");
 			} else {
@@ -68,8 +68,8 @@ final class cache {
 				$data = self::$connect->get($data);
 				return $data['data'];
 			} elseif(self::$type == CACHE_FILE) {
-				if(file_exists(ROOT_PATH."core/cache/".$data.".txt")) {
-					return unserialize(file_get_contents(ROOT_PATH."core/cache/".$data.".txt"));
+				if(file_exists(ROOT_PATH."core".DS."cache".DS.$data.".txt")) {
+					return unserialize(file_get_contents(ROOT_PATH."core".DS."cache".DS.$data.".txt"));
 				} else {
 					return false;
 				}
@@ -95,7 +95,7 @@ final class cache {
 				return false;
 			}
 		} elseif(self::$type == CACHE_FILE) {
-			return file_exists(ROOT_PATH."core/cache/".$data.".txt");
+			return file_exists(ROOT_PATH."core".DS."cache".DS.$data.".txt");
 		} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 			return (ftp_size(self::$connect, self::$conn_path.$data.".txt")>0);
 		} else {
@@ -107,7 +107,7 @@ final class cache {
 		if(self::$type == CACHE_MEMCACHE || self::$type == CACHE_MEMCACHED) {
 			return self::$connect->set($name, array("time" => time(), "data" => $val), MEMCACHE_COMPRESSED, self::$live_time);
 		} elseif(self::$type == CACHE_FILE) {
-			return file_put_contents(ROOT_PATH."core/cache/".$name.".txt", serialize($val));
+			return file_put_contents(ROOT_PATH."core".DS."cache".DS.$name.".txt", serialize($val));
 		} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 			return file_put_contents(self::$conn_link.$name.".txt", serialize($val), 0, stream_context_create(array('ftp' => array('overwrite' => true))));
 		} else {
@@ -119,8 +119,8 @@ final class cache {
 		if(self::Exists($name)) {
 			if(self::$type == CACHE_MEMCACHE || self::$type == CACHE_MEMCACHED) {
 				return self::$connect->delete($name);
-			} else if(self::$type == CACHE_FILE && file_exists(ROOT_PATH."core/cache/".$name.".txt") && !is_dir(ROOT_PATH.'core/cache/'.$name.".txt")) {
-				return unlink(ROOT_PATH."core/cache/".$name.".txt");
+			} else if(self::$type == CACHE_FILE && file_exists(ROOT_PATH."core".DS."cache".DS.$name.".txt") && !is_dir(ROOT_PATH.'core'.DS.'cache'.DS.$name.".txt")) {
+				return unlink(ROOT_PATH."core".DS."cache".DS.$name.".txt");
 			} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 				return ftp_delete(self::$connect, self::$conn_path.$name.".txt");
 			} else {
@@ -135,22 +135,24 @@ final class cache {
 		if(self::$type == CACHE_MEMCACHE || self::$type == CACHE_MEMCACHED) {
 			self::$connect->flush();
 		}
-
 		if($cache_areas) {
 			if(!is_array($cache_areas)) {
 				$cache_areas = array($cache_areas);
 			}
 		}
-
-		$fdir = opendir(ROOT_PATH.'core/cache');
+		$fdir = opendir(ROOT_PATH.'core'.DS.'cache');
 		while($file = readdir($fdir)) {
-			if($file != '.' && $file != '..' && $file != '.htaccess' && $file != 'index.php' && !is_dir(ROOT_PATH.'core/cache/'.$file)) {
+			if($file != '.' && $file != '..' && $file != '.htaccess' && $file != 'index.php' && !is_dir(ROOT_PATH.'core'.DS.'cache'.DS.$file)) {
 				if($cache_areas) {
-					foreach($cache_areas as $cache_area)
-						if(strpos($file, $cache_area) !== false)
-							@unlink(ROOT_PATH.'core/cache/'.$file);
+					foreach($cache_areas as $cache_area) {
+						if(strpos($file, $cache_area)!==false && file_exists(ROOT_PATH.'core'.DS.'cache'.DS.$file)) {
+							unlink(ROOT_PATH.'core'.DS.'cache'.DS.$file);
+						}
+					}
 				} else {
-					@unlink(ROOT_PATH.'core/cache/'.$file);
+					if(file_exists(ROOT_PATH.'core'.DS.'cache'.DS.$file)) {
+						unlink(ROOT_PATH.'core'.DS.'cache'.DS.$file);
+					}
 				}
 			}
 		}

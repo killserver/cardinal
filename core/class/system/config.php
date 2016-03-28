@@ -67,6 +67,20 @@ final class config {
 		return self::$config;
 	}
 	
+	public static function Set() {
+		if(func_num_args()<2) {
+			return false;
+		}
+		$list = func_get_args();
+		if(sizeof($list)==2) {
+			self::$config[$list[0]] = $list[1];
+		} else if(sizeof($list)==3) {
+			self::$config[$list[0]][$list[1]] = $list[2];
+		} else {
+			return false;
+		}
+	}
+	
 	public static function Exists($data, $sub=null, $subst = null) {
 		if(!empty($sub) && !empty($subst) && isset(self::$config[$data]) && isset(self::$config[$data][$sub]) && isset(self::$config[$data][$subst])) {
 			return true;

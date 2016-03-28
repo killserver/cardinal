@@ -36,6 +36,16 @@ if(!defined("IS_INSTALLER")) {
 	define("IS_INSTALLER", true);
 }
 require_once("core.php");
+if(strpos($_SERVER['REQUEST_URI'], "index.php")!==false) {
+	$exp = explode("index.php", $_SERVER['REQUEST_URI']);
+} else {
+	$exp = explode("install", $_SERVER['REQUEST_URI']);
+}
+config::Set("default_http_local", $exp[0]);
+if(isset($_POST['rewrite'])) {
+	config::Set("rewrite", false);
+	unset($_POST['rewrite']);
+}
 lang::include_lang("install");
 if((isset($_SERVER['PATH_INFO']) && strpos($_SERVER['PATH_INFO'], "install/done")!==false) || isset($_GET['done'])) {
 	templates::assign_vars(array("page" => "4"));
@@ -47,14 +57,18 @@ if(sizeof($_POST)==0||(sizeof($_POST)==1)||(sizeof($_POST)==2)) {
 	if(sizeof($_POST)==0) {
 		templates::assign_vars(array("page" => "1"));
 	} else if(sizeof($_POST)==1) {
-		$apache = apache_get_version();
-		$apache = substr($apache, strlen("Apache/"));
-		$apache = (intval($apache)>=2 ? "green":"red");
+		if(function_exists("apache_get_version")) {
+			$apache = apache_get_version();
+			$apache = substr($apache, strlen("Apache/"));
+			$apache = (intval($apache)>=2 ? "green":"red");
+		} else {
+			$apache = "green";
+		}
 		$php = (PHP_VERSION_ID>=50302 ? "green":"red");
-		$cache = (get_chmod(ROOT_PATH."core/cache/")=="0777" ? "green":"red");
-		$system_cache = (get_chmod(ROOT_PATH."core/cache/system/")=="0777" ? "green":"red");
-		$media = (get_chmod(ROOT_PATH."core/media/")=="0777" ? "green":"red");
-		$tmpl = (get_chmod(ROOT_PATH."core/cache/tmp/")=="0777" ? "green":"red");
+		$cache = (get_chmod(ROOT_PATH."core".DS."cache".DS)=="0777" ? "green":"red");
+		$system_cache = (get_chmod(ROOT_PATH."core".DS."cache".DS."system".DS)=="0777" ? "green":"red");
+		$media = (get_chmod(ROOT_PATH."core".DS."media".DS)=="0777" ? "green":"red");
+		$tmpl = (get_chmod(ROOT_PATH."core".DS."cache".DS."tmp".DS)=="0777" ? "green":"red");
 		$mb = (function_exists('mb_detect_encoding') ? "green" : "red");
 		if($apache=="red"||$php=="red"||$cache=="red"||$system_cache=="red"||$media=="red"||$mb=="red"||$tmpl=="red") {
 			templates::assign_var("is_stop", "1");
@@ -64,7 +78,7 @@ if(sizeof($_POST)==0||(sizeof($_POST)==1)||(sizeof($_POST)==2)) {
 		templates::assign_vars(array("page" => "2", "apache" => $apache, "php" => $php, "cache" => $cache, "template" => $tmpl, "system_cache" => $system_cache, "media" => $media, "mb" => $mb));
 	} else {
 		templates::assign_vars(array("page" => "3", "SERNAME" => getenv('SERVER_NAME').str_replace(array("install.php", "/install/step2", "/install/step3"), "", getenv("REQUEST_URI")), "SERVERS" => getenv('SERVER_NAME')));
-		$driver = ROOT_PATH."core/class/system/drivers/";
+		$driver = ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS;
 		$dirs = read_dir($driver, ".php");
 		sort($dirs);
 		for($i=0;$i<sizeof($dirs);$i++) {
@@ -220,7 +234,10 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `modules` (
   FULLTEXT KEY `param` (`param`),
   FULLTEXT KEY `tpl` (`tpl`),
   FULLTEXT KEY `file` (`file`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 DELAY_KEY_WRITE=1 AUTO_INCREMENT=1;";
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
+$SQL[] = "INSERT INTO `modules` SET `module` = 'base', `activ` = 'yes', `file` = 'core/modules/base.class.php';";
+$SQL[] = "INSERT INTO `modules` SET `module` = 'changelog', `activ` = 'yes', `file` = 'core/modules/changelog.class.php';";
+$SQL[] = "INSERT INTO `modules` SET `module` = 'mobile_detect', `activ` = 'yes', `file` = 'core/modules/mobile.class.php';";
 
 $SQL[] = "DROP TABLE IF EXISTS `posts`;";
 $SQL[] = "CREATE TABLE IF NOT EXISTS `posts` (
@@ -354,10 +371,10 @@ $config = array_merge($config, array(
 ));
 
 ?>';
-if(file_exists(ROOT_PATH."core/media/db.php")) {
-	unlink(ROOT_PATH."core/media/db.php");
+if(file_exists(ROOT_PATH."core".DS."media".DS."db.php")) {
+	unlink(ROOT_PATH."core".DS."media".DS."db.php");
 }
-file_put_contents(ROOT_PATH."core/media/db.php", $db_config);
+file_put_contents(ROOT_PATH."core".DS."media".DS."db.php", $db_config);
 
 $path = str_replace("http://", "", $_POST['PATH']);
 if(substr($path, -1)=="/") {
@@ -407,10 +424,10 @@ $config = array_merge($config, array(
 ));
 
 ?>';
-if(file_exists(ROOT_PATH."core/media/config.install.php")) {
-	unlink(ROOT_PATH."core/media/config.install.php");
+if(file_exists(ROOT_PATH."core".DS."media".DS."config.install.php")) {
+	unlink(ROOT_PATH."core".DS."media".DS."config.install.php");
 }
-file_put_contents(ROOT_PATH."core/media/config.install.php", $config);
+file_put_contents(ROOT_PATH."core".DS."media".DS."config.install.php", $config);
 
 $lang = '<?php
 if(!defined("IS_CORE")) {
@@ -421,17 +438,16 @@ die();
 $lang = array_merge($lang, array(
 	"sitename" => "'.saves($_POST['sitename'], true).'",
 	"s_description" => "'.saves($_POST['description'], true).'",
-	"s_keywords" => "'.saves($_POST['keywords'], true).'",
 ));
 
 ?>';
 $lang = charcode($lang);
-if(file_exists(ROOT_PATH."core/media/config.lang.php")) {
-	unlink(ROOT_PATH."core/media/config.lang.php");
+if(file_exists(ROOT_PATH."core".DS."media".DS."config.lang.php")) {
+	unlink(ROOT_PATH."core".DS."media".DS."config.lang.php");
 }
-file_put_contents(ROOT_PATH."core/media/config.lang.php", $lang);
-if(file_exists(ROOT_PATH."core/media/config.default.php")) {
-	rename(ROOT_PATH."core/media/config.default.php", ROOT_PATH."core/media/config.php");
+file_put_contents(ROOT_PATH."core".DS."media".DS."config.lang.php", $lang);
+if(file_exists(ROOT_PATH."core".DS."media".DS."config.default.php")) {
+	rename(ROOT_PATH."core".DS."media".DS."config.default.php", ROOT_PATH."core".DS."media".DS."config.php");
 }
 header("Location: ../".Route::get("install_done")->uri(array()));
 ?>

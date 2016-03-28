@@ -167,7 +167,8 @@ class Core {
 		templates::assign_vars(array(
 			"main_admin" => $echo,
 		));
-		echo templates::view(templates::complited_assing_vars("main", null));
+		$echos = templates::view(templates::complited_assing_vars("main", null));
+		echo str_replace("{main_admin}", templates::view($echo), $echos);
 	}
 	
 }

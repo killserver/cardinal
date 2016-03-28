@@ -664,6 +664,7 @@ final class templates {
 		$tpl = preg_replace("#\{% R_\[(.+?)\]\[(.+?)\] %\}#", 'templates::route(array(null, \'\\1\', \'\\2\'))', $tpl);
 		$tpl = preg_replace("#\{% RP\[(.+?)\] %\}#", 'templates::routeparam(array(null, \'\\1\'))', $tpl);
 		
+		$tpl = preg_replace("#\{\@ ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) \@\}#is", '(isset($\\1[\'\\2\']) ? $\\1[\'\\2\'] : \'\')', $tpl);
 		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) %\}#is", '$data[\'\\1\'][\'\\2\']', $tpl);
 		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+) %\}#is", '$data[\'\\1\']', $tpl);
 		
@@ -677,6 +678,7 @@ final class templates {
 		$tpl = preg_replace("#\{U_([a-zA-Z0-9\-_]+)\}#", '<?php echo templates::user(array(null, \'\\1\')); ?>', $tpl);
 		$tpl = preg_replace("#\{D_([a-zA-Z0-9\-_]+)\}#", '<?php echo templates::define(array(null, \'\\1\')); ?>', $tpl);
 		$tpl = preg_replace("#\{R_\[(.+?)\]\[(.+?)\]\}#", '<?php echo templates::route(array(null, \'\\1\', \'\\2\')); ?>', $tpl);
+		$tpl = preg_replace("#\{\@ R_\[(.+?)\]\[(.+?)\] \@\}#", '<?php echo templates::route(array(null, \'\\1\', \\2)); ?>', $tpl);
 		$tpl = preg_replace("#\{RP\[(.+?)\]\}#", '<?php echo templates::routeparam(array(null, \'\\1\')); ?>', $tpl);
 		
 		$tpl = preg_replace("#\{\# ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) \#\}#is", '<?php echo (isset($\\1[\'\\2\']) ? $\\1[\'\\2\'] : \'{\\1.\\2}\'); ?>', $tpl);
@@ -1115,7 +1117,7 @@ final class templates {
 			$ret = $array[0];
 		}
 		$class = str_replace(array(".class", ".php"), "", $array[1]);
-		if(!file_exists(ROOT_PATH."core".DS."modules".DS.$array[1]) && !file_exists(ROOT_PATH."core".DS."modules".DS."autoload/".$array[1])) {
+		if(!file_exists(ROOT_PATH."core".DS."modules".DS.$array[1]) && !file_exists(ROOT_PATH."core".DS."modules".DS."autoload".DS.$array[1])) {
 			return $ret;
 		}
 		if(!class_exists($class)) {
@@ -1380,13 +1382,14 @@ if(!$test) {
 				"title" => $header,
 				"meta" => array(
 					"og" => array(
+						"title" => $header,
 						"description" => "{L_s_description}",
 					),
 					"ogpr" => array(
+						"og:title" => $header,
 						"og:description" => "{L_s_description}",
 					),
 					"description" => "{L_s_description}",
-					"keywords" => "{L_s_keywords}",
 				),
 			);
 		} else {
@@ -1565,7 +1568,11 @@ if(!$test) {
 		if(isset(self::$module['head']['before'])) {
 			$head .= self::$module['head']['before'];
 		}
-		$head .= headers(self::$header);
+		if(strpos($h, "{create_js}")!==false) {
+			$head .= headers(self::$header, false, true);
+		} else {
+			$head .= headers(self::$header);
+		}
 		if(isset(self::$module['head']['after'])) {
 			$head .= self::$module['head']['after'];
 		}
@@ -1579,6 +1586,7 @@ if(!$test) {
 		if(isset(self::$module['body']['after'])) {
 			$body .= self::$module['body']['after'];
 		}
+		$h = str_replace("{content}", $body, $h);
 		if(isset(self::$header['meta_body'])) {
 			$mtt = meta(self::$header['meta_body']);
 			$h = str_replace("{meta_tt}", $mtt, $h);
@@ -1586,7 +1594,6 @@ if(!$test) {
 		} else {
 			$h = str_replace("{meta_tt}", meta(), $h);
 		}
-		$h = str_replace("{content}", $body, $h);
 		if(isset($_GET['jajax']) || (getenv('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest' && isset($_GET['jajax']))) {
 			unset($h);
 			$thead = "<script type=\"text/javascript\" src=\"{C_default_http_host}js/gooan.js\"></script><div id=\"pretitle\">{L_sitename}</div>";

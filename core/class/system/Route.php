@@ -198,7 +198,11 @@ final class Route {
 			$uri = str_replace($key, $params[$param], $uri);
 		}
 		$uri = preg_replace('#//+#', '/', rtrim($uri, '/'));
-		return $uri;
+		if(config::Select("rewrite")) {
+			return $uri;
+		} else {
+			return config::Select("default_http_host")."index.php/".$uri;
+		}
 	}
 
 }

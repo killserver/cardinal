@@ -1,6 +1,8 @@
 #i-debug-panel
 {
 	float: right;
+	position: absolute;
+	right: 0px;
 	background: #181818 url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAAAAACMmsGiAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABdJREFUCB1jUlGRkWH6CQRMf//y8oJZAFUaCmUwcfODAAAAAElFTkSuQmCC");
 	font-size: 12px;
 	color: #AAA;

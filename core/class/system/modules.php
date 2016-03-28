@@ -25,6 +25,8 @@ die();
 //namespace modules;
 
 final class modules {
+	
+	private static $load_modules = false;
 
 	public static function get_config($get, $array=null) {
 	global $config;
@@ -95,21 +97,47 @@ final class modules {
 			return $cache;
 		}
 	}
+	
+	public static function load_modules($file) {
+		if(defined("IS_INSTALLER") || !self::init_db()->connected()) {
+			return array();
+		}
+		if(is_bool(self::$load_modules)) {
+			$cache = self::init_cache();
+			if(!$cache->exists("load_modules")) {
+				$db = self::init_db();
+				$db->doquery("SELECT `file` FROM `modules` WHERE `activ` = \"yes\" AND `file` LIKE \"core%\"", true);
+				self::$load_modules = array();
+				while($row = $db->fetch_assoc()) {
+					self::$load_modules[$row['file']] = true;
+				}
+				$cache->set("load_modules", self::$load_modules);
+			} else {
+				self::$load_modules = $cache->get("load_modules");
+			}
+		}
+		if(isset(self::$load_modules[$file])) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 
 	private static function init_modules() {
 		if(defined("IS_INSTALLER") || !self::init_db()->connected()) {
 			return array();
 		}
-		if(!self::init_cache()->exists("modules")) {
+		$cache = self::init_cache();
+		if(!$cache->exists("modules")) {
 //INSERT INTO `modules` SET activ = "yes", page = "reg", module = "reg_email"
 			self::init_db()->doquery("SELECT page, module, method, param, tpl FROM modules WHERE activ = \"yes\"", true);
 			$modules = array();
 			while($row = self::init_db()->fetch_assoc()) {
 				$modules[$row['page']][] = $row;
 			}
-			self::init_cache()->set("modules", json_encode($modules));
+			$cache->set("modules", json_encode($modules));
 		} else {
-			$get = self::init_cache()->get("modules");
+			$get = $cache->get("modules");
 			$modules = json_decode($get, true);
 		}
 	return $modules;
@@ -160,122 +188,262 @@ final class modules {
 	}
 
 	public static function Install($module) {
+		if(!file_exists(ROOT_PATH."core".DS."modules".DS."xml".DS.$module.".xml")) {
+			return false;
+		}
+		$db = self::init_db();
 		$files_root = array();
 		self::ReadRoot($files_root);
-		if(file_exists(ROOT_PATH."core".DS."modules".DS."xml".DS.$module.".xml")) {
-			try {
-				$xml = simplexml_load_string(file_get_contents(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $module . ".xml"));
-			} catch(Exception $ex) {
-				return false;
-			}
-			$sql = "";
-			$parsePrimary = -1;
-			if(isset($xml->files)) {
-				$parsePrimary = self::parsePrimary($xml->files);
-			}
-			if(isset($xml->sql) && isset($xml->install) && sizeof($xml->install)>0 && isset($xml->uninstall) && sizeof($xml->uninstall)>0 && isset($xml->files) && $parsePrimary>=0 && isset($xml->files[$parsePrimary]->file) && isset($xml->files[$parsePrimary]->file->attributes()->path)) {
-				$ch = $xml->sql->children();
-				for($num=0;$num<sizeof($ch);$num++) {
-					switch($ch[$num]->getname()) {
-						case "create":
-							if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table) || empty($ch[$num])) {
-								continue;
-							}
-							$sqli = trim($ch[$num]);
-							if(empty($sqli)) {
-								continue;
-							}
-							if(isset($ch[$num]->attributes()->force)) {
-								$sql .= "DROP TABLE IF EXISTS `".$ch[$num]->attributes()->table."`;";
-							}
-							$sql .= "CREATE TABLE IF NOT EXISTS `".$ch[$num]->attributes()->table."` (".$sqli.") ENGINE=";
-							if(isset($ch[$num]->attributes()->engine) && !empty($ch[$num]->attributes()->engine)) {
-								$sql .= $ch[$num]->attributes()->engine;
-							} else {
-								$sql .= "MyISAM";
-							}
-							$sql .= " DEFAULT CHARSET=".self::get_config("db", "charset").";";
-						break;
-						case "alter":
-							if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table)) {
-								continue;
-							}
-							$sqli = trim($ch[$num]);
-							if(empty($sqli)) {
-								continue;
-							}
-							$sql .= "ALTER TABLE `".$ch[$num]->attributes()->table."` ".$sqli.";";
-						break;
-						case "delete":
-							if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table)) {
-								continue;
-							}
-							$mod = "AND";
-							if(isset($ch[$num]->attributes()->mod) && !empty($ch[$num]->attributes()->mod)) {
-								$mod = $ch[$num]->attributes()->mod;
-							}
-							$where = array();
-							if(sizeof($ch[$num]->where)>0) {
-								for ($in = 0; $in < sizeof($ch[$num]->where); $in++) {
-									$where[] = $ch[$num]->where[$in];
-								}
-							}
-							if(sizeof($where)>0) {
-								$sql .= "DELETE FROM `".$ch[$num]->attributes()->table."` WHERE ".(sizeof($where)>0 ? implode(" ".$mod." ", $where) : "1").";";
-							}
-						break;
-						case "drop":
-							if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table)) {
-								continue;
-							}
+		try {
+			$xml = simplexml_load_string(file_get_contents(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $module . ".xml"));
+		} catch(Exception $ex) {
+			return false;
+		}
+		$sql = "";
+		$parsePrimary = -1;
+		if(isset($xml->files)) {
+			$parsePrimary = self::parsePrimary($xml->files);
+		}
+		if(isset($xml->sql) && isset($xml->install) && sizeof($xml->install)>0 && isset($xml->uninstall) && sizeof($xml->uninstall)>0 && isset($xml->files) && $parsePrimary>=0 && isset($xml->files[$parsePrimary]->file) && isset($xml->files[$parsePrimary]->file->attributes()->path)) {
+			$ch = $xml->sql->children();
+			for($num=0;$num<sizeof($ch);$num++) {
+				switch($ch[$num]->getname()) {
+					case "create":
+						if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table) || empty($ch[$num])) {
+							continue;
+						}
+						$sqli = trim($ch[$num]);
+						if(empty($sqli)) {
+							continue;
+						}
+						if(isset($ch[$num]->attributes()->force)) {
 							$sql .= "DROP TABLE IF EXISTS `".$ch[$num]->attributes()->table."`;";
-						break;
-						case "insert":
-							if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table) || empty($ch[$num])) {
-								continue;
+						}
+						$sql .= "CREATE TABLE IF NOT EXISTS `".$ch[$num]->attributes()->table."` (".$sqli.") ENGINE=";
+						if(isset($ch[$num]->attributes()->engine) && !empty($ch[$num]->attributes()->engine)) {
+							$sql .= $ch[$num]->attributes()->engine;
+						} else {
+							$sql .= "MyISAM";
+						}
+						$sql .= " DEFAULT CHARSET=".self::get_config("db", "charset").";";
+					break;
+					case "alter":
+						if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table)) {
+							continue;
+						}
+						$sqli = trim($ch[$num]);
+						if(empty($sqli)) {
+							continue;
+						}
+						$sql .= "ALTER TABLE `".$ch[$num]->attributes()->table."` ".$sqli.";";
+					break;
+					case "delete":
+						if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table)) {
+							continue;
+						}
+						$mod = "AND";
+						if(isset($ch[$num]->attributes()->mod) && !empty($ch[$num]->attributes()->mod)) {
+							$mod = $ch[$num]->attributes()->mod;
+						}
+						$where = array();
+						if(sizeof($ch[$num]->where)>0) {
+							for ($in = 0; $in < sizeof($ch[$num]->where); $in++) {
+								$where[] = $ch[$num]->where[$in];
 							}
-							$sqli = trim($ch[$num]);
-							if(empty($sqli)) {
-								continue;
-							}
-							$mod = "";
-							if(isset($ch[$num]->attributes()->force)) {
-								$mod = " IGNORE";
-							}
-							$sql .= "INSERT".$mod." INTO `".$ch[$num]->attributes()->table."` SET ".$sqli.";";
-						break;
-					}
+						}
+						if(sizeof($where)>0) {
+							$sql .= "DELETE FROM `".$ch[$num]->attributes()->table."` WHERE ".(sizeof($where)>0 ? implode(" ".$mod." ", $where) : "1").";";
+						}
+					break;
+					case "drop":
+						if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table)) {
+							continue;
+						}
+						$sql .= "DROP TABLE IF EXISTS `".$ch[$num]->attributes()->table."`;";
+					break;
+					case "insert":
+						if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table) || empty($ch[$num])) {
+							continue;
+						}
+						$sqli = trim($ch[$num]);
+						if(empty($sqli)) {
+							continue;
+						}
+						$mod = "";
+						if(isset($ch[$num]->attributes()->force)) {
+							$mod = " IGNORE";
+						}
+						$sql .= "INSERT".$mod." INTO `".$ch[$num]->attributes()->table."` SET ".$sqli.";";
+					break;
 				}
-				for($i=0;$i<sizeof($xml->install);$i++) {
-					if(!isset($xml->install[$i]) || !isset($xml->info->attributes()->module)) {
+			}
+			for($i=0;$i<sizeof($xml->install);$i++) {
+				if(!isset($xml->install[$i]) || !isset($xml->info->attributes()->module)) {
+					continue;
+				}
+				if($parsePrimary<0) {
+					$parsePrimary = 0;
+				}
+				$param = array();
+				$param['activ'] = "yes";
+				$param['file'] = self::SearchOnArray($xml->files[$i]->file->attributes()->path, $files_root);
+				$param['module'] = $xml->info->attributes()->module;
+				if(isset($xml->install[$i]->attributes()->page)) {
+					$param['page'] = $xml->install[$i]->attributes()->page;
+				}
+				if(isset($xml->install[$i]->method)) {
+					$param['method'] = $xml->install[$i]->method;
+				}
+				if(isset($xml->install[$i]->param)) {
+					$param['param'] = $xml->install[$i]->param;
+				}
+				if(isset($xml->install[$i]->tpl)) {
+					$param['tpl'] = $xml->install[$i]->tpl;
+				}
+				$sql .= "INSERT INTO `modules` SET ".implode(", ", array_map(function($k, $v) { return "`".$k."` = \"".$v."\""; }, array_keys($param), array_values($param))).";";
+			}
+			// register all files for module
+			for($i=0;$i<sizeof($xml->files->file);$i++) {
+				$sql .= "INSERT INTO `modules` SET `file` = \"".self::SearchOnArray($xml->files->file[$i]->attributes()->path, $files_root)."\", `module` = \"".$xml->info->attributes()->module."\";";
+			}
+		}
+		if(empty($sql)) {
+			return false;
+		}
+		if(strpos($sql, ";")!==false) {
+			$exp = explode(";", $sql);
+			unset($sql);
+			if(sizeof($exp)>1) {
+				for($i=0;$i<sizeof($exp);$i++) {
+					if(empty($exp[$i])) {
 						continue;
 					}
-					if($parsePrimary<0) {
-						$parsePrimary = 0;
-					}
-					$param = array();
-					$param['activ'] = "yes";
-					$param['file'] = self::SearchOnArray($xml->files[$i]->file->attributes()->path, $files_root);
-					$param['module'] = $xml->info->attributes()->module;
-					if(isset($xml->install[$i]->attributes()->page)) {
-						$param['page'] = $xml->install[$i]->attributes()->page;
-					}
-					if(isset($xml->install[$i]->method)) {
-						$param['method'] = $xml->install[$i]->method;
-					}
-					if(isset($xml->install[$i]->param)) {
-						$param['param'] = $xml->install[$i]->param;
-					}
-					if(isset($xml->install[$i]->tpl)) {
-						$param['tpl'] = $xml->install[$i]->tpl;
-					}
-					$sql .= "INSERT INTO `modules` SET ".implode(", ", array_map(function($k, $v) { return "`".$k."` = \"".$v."\""; }, array_keys($param), array_values($param))).";";
+					$db->query($exp[$i]);
 				}
-				// register all files for module
-				for($i=0;$i<sizeof($xml->files->file);$i++) {
-					$sql .= "INSERT INTO `modules` SET `file` = \"".self::SearchOnArray($xml->files->file[$i]->attributes()->path, $files_root)."\", `module` = \"".$xml->info->attributes()->module."\";";
+			} else {
+				$db->query(implode(";", $exp));
+			}
+		} else {
+			$db->query($sql);
+		}
+		return true;
+	}
+	
+	private static function UnInstallFile($module) {
+		$db = self::init_db();
+		$db->doquery("SELECT `file` FROM `modules` WHERE `module` LIKE \"%".$module."%\"", true);
+		if($db->num_rows()==0) {
+			return false;
+		}
+		while($files = $db->fetch_assoc()) {
+			if(file_exists(ROOT_PATH.$files['file'])) {
+				unlink(ROOT_PATH.$files['file']);
+			}
+		}
+		if(file_exists(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $module . ".xml")) {
+			unlink(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $module . ".xml");
+		}
+		return true;
+	}
+
+	public static function UnInstall($module) {
+		if(!file_exists(ROOT_PATH."core".DS."modules".DS."xml".DS.$module.".xml")) {
+			return self::UnInstallFile($module);
+		}
+		$db = self::init_db();
+		$files_root = array();
+		self::ReadRoot($files_root);
+		try {
+			$xml = simplexml_load_string(file_get_contents(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $module . ".xml"));
+		} catch(Exception $ex) {
+			return self::UnInstallFile($module);
+		}
+		if(isset($xml->uninstall) && sizeof($xml->uninstall)>0 && isset($xml->files) && isset($xml->files)) {
+			$sql = "";
+			$ch = $xml->uninstall->children();
+			for($num=0;$num<sizeof($ch);$num++) {
+				switch($ch[$num]->getname()) {
+					case "create":
+						if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table) || empty($ch[$num])) {
+							continue;
+						}
+						$sqli = trim($ch[$num]);
+						if(empty($sqli)) {
+							continue;
+						}
+						if(isset($ch[$num]->attributes()->force)) {
+							$sql .= "DROP TABLE IF EXISTS `".$ch[$num]->attributes()->table."`;";
+						}
+						$sql .= "CREATE TABLE IF NOT EXISTS `".$ch[$num]->attributes()->table."` (".$sqli.") ENGINE=";
+						if(isset($ch[$num]->attributes()->engine) && !empty($ch[$num]->attributes()->engine)) {
+							$sql .= $ch[$num]->attributes()->engine;
+						} else {
+							$sql .= "MyISAM";
+						}
+						$sql .= " DEFAULT CHARSET=".self::get_config("db", "charset").";";
+					break;
+					case "alter":
+						if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table)) {
+							continue;
+						}
+						$sqli = trim($ch[$num]);
+						if(empty($sqli)) {
+							continue;
+						}
+						$sql .= "ALTER TABLE `".$ch[$num]->attributes()->table."` ".$sqli.";";
+					break;
+					case "delete":
+						if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table)) {
+							continue;
+						}
+						$mod = "AND";
+						if(isset($ch[$num]->attributes()->mod) && !empty($ch[$num]->attributes()->mod)) {
+							$mod = $ch[$num]->attributes()->mod;
+						}
+						$where = array();
+						if(sizeof($ch[$num]->where)>0) {
+							for ($in = 0; $in < sizeof($ch[$num]->where); $in++) {
+								$where[] = $ch[$num]->where[$in];
+							}
+						}
+						if(sizeof($where)>0) {
+							$sql .= "DELETE FROM `".$ch[$num]->attributes()->table."` WHERE ".(sizeof($where)>0 ? implode(" ".$mod." ", $where) : "1").";";
+						}
+					break;
+					case "drop":
+						if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table)) {
+							continue;
+						}
+						$sql .= "DROP TABLE IF EXISTS `".$ch[$num]->attributes()->table."`;";
+					break;
+					case "insert":
+						if(!isset($ch[$num]->attributes()->table) || empty($ch[$num]->attributes()->table) || empty($ch[$num])) {
+							continue;
+						}
+						$sqli = trim($ch[$num]);
+						if(empty($sqli)) {
+							continue;
+						}
+						$mod = "";
+						if(isset($ch[$num]->attributes()->force)) {
+							$mod = " IGNORE";
+						}
+						$sql .= "INSERT".$mod." INTO `".$ch[$num]->attributes()->table."` SET ".$sqli.";";
+					break;
 				}
 			}
+			for($i=0;$i<sizeof($xml->files->file);$i++) {
+				if(file_exists(ROOT_PATH.$xml->files->file[$i]->attributes()->path)) {
+					unlink(ROOT_PATH.$xml->files->file[$i]->attributes()->path);
+				}
+			}
+			$db->doquery("SELECT `file` FROM `modules` WHERE `module` LIKE \"".$xml->info->attributes()->module."\"", true);
+			while($files = $db->fetch_assoc()) {
+				if(file_exists(ROOT_PATH.$files['file'])) {
+					unlink(ROOT_PATH.$files['file']);
+				}
+			}
+			$sql .= "DELETE FROM `modules` WHERE `module` LIKE \"".$xml->info->attributes()->module."\";";
 			if(empty($sql)) {
 				return false;
 			}
@@ -287,18 +455,22 @@ final class modules {
 						if(empty($exp[$i])) {
 							continue;
 						}
-						db::query($exp[$i], true);
+						$db->query($exp[$i]);
 					}
 				} else {
-					db::query(implode(";", $exp), true);
+					$db->query(implode(";", $exp));
 				}
 			} else {
-				db::query($sql, true);
+				$db->query($sql);
+			}
+			if(file_exists(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $module . ".xml")) {
+				unlink(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $module . ".xml");
 			}
 			return true;
+		} else {
+			return self::UnInstallFile($module);
 		}
 	}
-
 	public static function use_modules($page, $params=array()) {
 		$modules = self::init_modules();
 		$html = "";
