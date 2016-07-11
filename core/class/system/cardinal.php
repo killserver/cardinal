@@ -41,6 +41,21 @@ final class cardinal {
 			config::Update("cardinal_time", time());
 		}
 	}
+
+	public static function SaveCardinal($v) {
+		$dv = $nv = "";
+		for($i=0;$i<strlen($v);$i++) {
+			$nv .= ord($v[$i]).";";
+		}
+		$v = $nv;
+		unset($nv);
+		if(function_exists("convert_uuencode")) {
+			$dv .= "uu";
+			$v = urlencode(convert_uuencode($v));
+		}
+		$v = urlencode($dv.$v);
+		return $v;
+	}
 	
 	private function robots($useragent) {
 		if(!isset($useragent) || empty($useragent) || is_bool($useragent)) {

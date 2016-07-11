@@ -54,6 +54,9 @@ final class cache {
 				return filemtime(ROOT_PATH."core".DS."cache".DS.$data.".txt");
 			} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 				return ftp_mdtm(self::$connect, self::$conn_path.$data.".txt");
+			} elseif(self::$type == CACHE_XCACHE) {
+				$arr = xcache_get("cardinal_".$data);
+				return $arr['mktime'];
 			} else {
 				return 0;
 			}
@@ -75,6 +78,9 @@ final class cache {
 				}
 			} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 				return unserialize(file_get_contents(self::$conn_link.$data.".txt"));
+			} elseif(self::$type == CACHE_XCACHE) {
+				$arr = xcache_get("cardinal_".$data);
+				return $arr['data'];
 			} else {
 				return false;
 			}
@@ -98,6 +104,8 @@ final class cache {
 			return file_exists(ROOT_PATH."core".DS."cache".DS.$data.".txt");
 		} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 			return (ftp_size(self::$connect, self::$conn_path.$data.".txt")>0);
+		} elseif(self::$type == CACHE_XCACHE) {
+			return xcache_isset("cardinal_".$data);
 		} else {
 			return false;
 		}
@@ -110,6 +118,8 @@ final class cache {
 			return file_put_contents(ROOT_PATH."core".DS."cache".DS.$name.".txt", serialize($val));
 		} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 			return file_put_contents(self::$conn_link.$name.".txt", serialize($val), 0, stream_context_create(array('ftp' => array('overwrite' => true))));
+		} elseif(self::$type == CACHE_XCACHE) {
+			return xcache_set("cardinal_".$name, array("mktime" => time(), "data" => $val));
 		} else {
 			return false;
 		}
@@ -123,6 +133,8 @@ final class cache {
 				return unlink(ROOT_PATH."core".DS."cache".DS.$name.".txt");
 			} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 				return ftp_delete(self::$connect, self::$conn_path.$name.".txt");
+			} elseif(self::$type == CACHE_XCACHE) {
+				return xcache_unset("cardinal_".$name);
 			} else {
 				return false;
 			}
@@ -134,6 +146,8 @@ final class cache {
 	public static function Clear_cache($cache_areas = false) {
 		if(self::$type == CACHE_MEMCACHE || self::$type == CACHE_MEMCACHED) {
 			self::$connect->flush();
+		} elseif(self::$type == CACHE_XCACHE) {
+			xcache_unset_by_prefix("cardinal_");
 		}
 		if($cache_areas) {
 			if(!is_array($cache_areas)) {

@@ -208,7 +208,7 @@
 		<!-- Add "fixed" class to make the sidebar fixed always to the browser viewport. -->
 		<!-- Adding class "toggle-others" will keep only one menu item open at a time. -->
 		<!-- Adding class "collapsed" collapse sidebar root elements and show only icons. -->
-		<div class="sidebar-menu toggle-others fixed collapsed">
+		<div class="sidebar-menu toggle-others fixed[if {C_FullMenu}!=1] collapsed[/if {C_FullMenu}!=1]">
 			
 			<div class="sidebar-menu-inner">	
 				
@@ -475,7 +475,7 @@
 	<!-- Imported styles on this page -->
 	<link rel="stylesheet" href="assets/xenon/js/toastr/toastr.min.css?1">
 	<link rel="stylesheet" href="assets/xenon/js/dropzone/css/dropzone.css">
-
+	{css_list}
 	<!-- Bottom Scripts -->
 	<script src="assets/xenon/js/bootstrap.min.js?1"></script>
 	<script src="assets/xenon/js/TweenMax.min.js?1"></script>
@@ -485,12 +485,7 @@
 	<script src="assets/xenon/js/xenon-toggles.js?1"></script>
 	<script src="assets/xenon/js/ckeditor/ckeditor.js"></script>
 	<script src="assets/xenon/js/ckeditor/adapters/jquery.js"></script>
-	<!-- InputMask -->
-	<script src="assets/xenon/js/input-mask/jquery.inputmask.js"></script>
-	<script src="assets/xenon/js/input-mask/jquery.inputmask.date.extensions.js"></script>
-	<script src="assets/xenon/js/input-mask/jquery.inputmask.extensions.js"></script>
-	<script>$("[data-mask]").inputmask();</script>
-
+	{js_list}
 
 	<!-- JavaScripts initializations and stuff -->
 	<script src="assets/xenon/js/xenon-custom.js?1"></script>

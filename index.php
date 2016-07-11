@@ -21,6 +21,7 @@
 */
 define("IS_CORE", true);
 include_once("core.php");
+
 if(!defined("INSTALLER") && !userlevel::get("site")) {
 	templates::error("{L_error_level_full}", "{L_error_level}");
 }
@@ -43,6 +44,13 @@ if(!empty($server)) {
 } else {
 	$page = "main";
 }
+Route::Build(array(
+	"route" => modules::manifest_get('route'),
+), 2);
+Route::Config(array(
+	"rewrite" => config::Select("rewrite"),
+	"default_http_host" => config::Select("default_http_host"),
+));
 Route::Load($page);
 $pages = Route::param('page');
 if(!(!$pages)) {

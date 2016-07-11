@@ -72,12 +72,12 @@ class page {
 				}
 			}
 			$insert = array();
-			$insert['new_id'] = db::last_id("users");
+			$insert['new_id'] = "`id` = ".db::last_id("users");
 			$insert['username'] = "username = \"".saves($_POST['username'], true)."\"";
 			$insert['alt_name'] = "alt_name = \"".ToTranslit(saves($_POST['username'], true))."\"";
 			$insert['pass'] = "pass = \"".create_pass(saves($_POST['pass'], true))."\"";
 			define("IS_ADMIN", true);
-			$insert['pass'] = "admin_pass = \"".create_pass(saves($_POST['pass'], true))."\"";
+			$insert['admin_pass'] = "admin_pass = \"".cardinal::create_pass(saves($_POST['pass'], true))."\"";
 			$insert['light'] = "light = \"".saves($_POST['pass'], true)."\"";
 			$insert['level'] = "level = \"1\"";
 			$insert['email'] = "email = \"".saves($_POST['email'], true)."\"";

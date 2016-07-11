@@ -26,7 +26,7 @@ final class ModelDB {
 	
 	function __construct($table, $id = null, $unique = array(), $mode = "select", $search = "=", $cols = "*") {
 		if(sizeof($unique)==0) {
-			$unqiue = array("id");
+			$unique = array("id");
 		}
 		if(!is_array($unique)) {
 			$unique = array($unique);
@@ -110,6 +110,26 @@ final class ModelDB {
 	
 	function __set($name, $val) {
 		$this->data[$name] = $val;
+	}
+	
+	function __getAll($name = "") {
+		$arr = array();
+		if(is_array($this->data) && isset($this->data[0]) && is_object($this->data[0])) {
+			for($i=0;$i<sizeof($this->data);$i++) {
+				$arr[$name.$i] = $this->data[$i]->$name;
+			}
+		} elseif(!empty($name)) {
+			if(isset($this->data[$name])) {
+				$arr[$name] = $this->data[$name];
+			} else {
+				return $arr;
+			}
+		} else {
+			foreach($this->data as $key => $val) {
+				$arr[$key] = $val;
+			}
+		}
+		return $arr;
 	}
 	
 	function Update() {

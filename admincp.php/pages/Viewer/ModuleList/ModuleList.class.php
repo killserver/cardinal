@@ -35,14 +35,22 @@ class ModuleList extends Core {
 			} catch(Exception $ex) {
 				continue;
 			}
+			$first = "";
 			$files = array();
 			if(isset($file->files) && isset($file->files->file)) {
 				for($is=0;$is<sizeof($file->files->file);$is++) {
 					if(!isset($file->files->file[$is]) || !isset($file->files->file[$is]->attributes()->path)) {
 						continue;
 					}
-					$files[] = $this->ToString($file->files->file[$is]->attributes()->path);
+					if(isset($file->files->file[$is]->attributes()->primary)) {
+						$first = $this->ToString($file->files->file[$is]->attributes()->path);
+					} else {
+						$files[] = $this->ToString($file->files->file[$is]->attributes()->path);
+					}
 				}
+			}
+			if(!empty($first)) {
+				$files = array_merge(array($first), $files);
 			}
 			if(isset($file->info->attributes()->module)) {
 				$fmod = $this->ToString($file->info->attributes()->module);
@@ -58,6 +66,13 @@ class ModuleList extends Core {
 			if(isset($file->info->description)) {
 				$description = $this->ToString($file->info->description);
 			}
+			$dependency = array();
+			if(isset($file->info->dependency->module)) {
+				$dpm = $file->info->dependency->module;
+				for($z=0;$z<sizeof($dpm);$z++) {
+					$dependency[] = $this->ToString($dpm[0]);
+				}
+			}
 			if(isset($file->info->dependency->engine)) {
 				$core_ver = $this->ToString($file->info->dependency->engine);
 				$comp = $this->version_compare(VERSION, $core_ver);
@@ -68,11 +83,22 @@ class ModuleList extends Core {
 			$modules[$fmod]['description'] = $description;
 			$modules[$fmod]['core_ver'] = $core_ver;
 			$modules[$fmod]['comp'] = $comp;
+			$modules[$fmod]['dependency'] = $dependency;
 			$modules[$fmod]['files'] = $files;
 			$modules[$fmod]['active'] = "no";
 			$modules[$fmod]['module'] = $fmod;
 		}
 		return $modules;
+	}
+	
+	function sorts(&$arr) {
+		$arrs = array_values($arr);
+		$new = array();
+		for($u=0;$u<sizeof($arrs);$u++) {
+			$new[$arrs[$u]['id']] = $arrs[$u];
+		}
+		sort($new);
+		$arr = $new;
 	}
 	
 	function __construct() {
@@ -107,12 +133,15 @@ class ModuleList extends Core {
 			return;
 		}
 		$modules = $this->ReadModules();
-		db::doquery("SELECT `file`, `module`, `activ` FROM `modules` ORDER BY `id` ASC", true);
+		$sort = 0;
+		db::doquery("SELECT `id`, `file`, `module`, `activ` FROM `modules` ORDER BY `type` ASC, `id` ASC", true);
 		while($row = db::fetch_assoc()) {
+			$modules[$row['module']]['id'] = $sort;
 			$modules[$row['module']]['module'] = $row['module'];
 			$modules[$row['module']]['active'] = $row['activ'];
+			$sort++;
 		}
-		$modules = array_values($modules);
+		$this->sorts($modules);
 		for($i=0;$i<sizeof($modules);$i++) {
 			if(!isset($modules[$i]['name']) || !isset($modules[$i]['image']) || !isset($modules[$i]['files']) || !isset($modules[$i]['active']) || !isset($modules[$i]['module'])) {
 				continue;

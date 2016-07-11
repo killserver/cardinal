@@ -27,14 +27,14 @@ class lang {
 	private static $lang = "ru";
 
 	public static function lang_db() {
+		$langs = array();
 		if(!db::connected()) {
-			return "";
+			return $langs;
 		}
 		if(!cache::Exists("lang_".self::$lang)) {
-			db::doquery("SELECT orig, translate FROM lang WHERE lang = \"".self::$lang."\"", true);
-			$langs = array();
-			while($langs = db::fetch_array()) {
-				$langs[$langs['orig']] = $langs['translate'];
+			db::doquery("SELECT `orig`, `translate` FROM `lang` WHERE lang LIKE \"".self::$lang."\"", true);
+			while($lang = db::fetch_array()) {
+				$langs[$lang['orig']] = $lang['translate'];
 			}
 			cache::Set("lang_".self::$lang, $langs);
 			db::free();
@@ -47,7 +47,7 @@ class lang {
 	public function __construct() {
 	global $user;
 		$clang = config::Select('lang');
-		$ulang = (!empty($user['lang']) ? $user['lang'] : "");
+		$ulang = (isset($user['lang']) && !empty($user['lang']) ? $user['lang'] : "");
 		if(!empty($ulang)) {
 			self::$lang = $ulang;
 		} elseif(!empty($clang)) {
@@ -67,20 +67,20 @@ class lang {
 	global $manifest;
 		$lang=array();
 		if($db) {
-			if(isset($manifest['lang']['main']) && file_Exists(ROOT_PATH."core/lang/".self::$lang."/".$manifest['lang']['main'].".php")) {
-				include(ROOT_PATH."core/lang/".self::$lang."/".$manifest['lang']['main'].".php");
+			if(isset($manifest['lang']['main']) && file_Exists(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$manifest['lang']['main'].".php")) {
+				include(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$manifest['lang']['main'].".php");
 				return array_merge($lang, self::lang_db());
 			}
 		}
-		if(file_exists(ROOT_PATH."core/lang/".self::$lang."/main.php")) {
-			include(ROOT_PATH."core/lang/".self::$lang."/main.php");
+		if(file_exists(ROOT_PATH."core".DS."lang".DS.self::$lang.DS."main.php")) {
+			include(ROOT_PATH."core".DS."lang".DS.self::$lang.DS."main.php");
 			if($db) {
 				$db_lang = self::lang_db();
 			} else {
 				$db_lang = array();
 			}
-			if(file_exists(ROOT_PATH."core/media/config.lang.php")) {
-				include(ROOT_PATH."core/media/config.lang.php");
+			if(file_exists(ROOT_PATH."core".DS."media".DS."config.lang.php")) {
+				include(ROOT_PATH."core".DS."media".DS."config.lang.php");
 			}
 			if(is_array($db_lang)) {
 				return array_merge($lang, $db_lang);
@@ -112,12 +112,12 @@ class lang {
 		} else {
 			self::$lang = $clang;
 		}
-		if(isset($manifest['lang'][$page]) && file_Exists(ROOT_PATH."core/lang/".self::$lang."/".$manifest['lang'][$page].".php")) {
-			include(ROOT_PATH."core/lang/".self::$lang."/".$manifest['lang'][$page].".php");
+		if(isset($manifest['lang'][$page]) && file_Exists(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$manifest['lang'][$page].".php")) {
+			include(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$manifest['lang'][$page].".php");
 			return array_merge($lang, self::lang_db());
 		}
-		if(file_exists(ROOT_PATH."core/lang/".self::$lang."/".$page.".php")) {
-			include(ROOT_PATH."core/lang/".self::$lang."/".$page.".php");
+		if(file_exists(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$page.".php")) {
+			include(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$page.".php");
 			$langs = self::lang_db();
 			if(is_array($langs)) {
 				return array_merge($lang, $langs);

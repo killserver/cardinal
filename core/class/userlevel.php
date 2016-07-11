@@ -19,7 +19,7 @@ class userlevel {
 			modules::init_cache()->set("userlevels", $row);
 		} else {
 			$row = modules::init_cache()->get("userlevels");
-		}//$row = modules::init_db()->select_query("SELECT * FROM userlevels ORDER BY id ASC");
+		}
 	return $row;
 	}
 
@@ -47,7 +47,7 @@ class userlevel {
 	return $def;
 	}
 
-	public static function check($get, $access=null) {
+	public static function check($get, $access = "") {
 		$all = self::all();
 		$all = self::define($all);
 		$level = modules::get_user('level');

@@ -1,3 +1,14 @@
+<style type="text/css">
+td > img {
+	background: #fff;
+    padding: 5px;
+	animation-timing-function: ease;
+	transition: 0.3s;
+}
+td > img:hover {
+	transform: scale(2);
+}
+</style>
 <table width="100%">
 	<tr><td colspan="3"><div style="width:100%;height:18px;background:#ccc;"><div id="proccess" style="background:#00f;height:19px;width:0%;"></div></div></td></tr>
 [foreach block=ListModules]

@@ -21,6 +21,7 @@ class Settings extends Core {
 		define("COOK_PASS", "'.COOK_PASS.'");
 		define("COOK_ADMIN_USER", "'.COOK_ADMIN_USER.'");
 		define("COOK_ADMIN_PASS", "'.COOK_ADMIN_PASS.'");
+		define("START_VERSION", "'.(defined("START_VERSION") ? START_VERSION : "3.1").'");
 
 		if(isset($_SERVER[\'HTTPS\']) && $_SERVER[\'HTTPS\']!=\'off\') {
 			$protocol = "https";

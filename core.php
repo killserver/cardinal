@@ -46,6 +46,7 @@ $manifest = array(
 	"after_ini_class" => array(), //configuration pages and modules after load
 	"mod_page" => array(), //in class templates
 	"load_modules" => array(), //write modules loading in this page
+	"log" => array(), //write modules loading in this page
 	"user_pages" => array(), //modules user page
 	"create_js" => array("full" => array(), "mini" => array(), "min" => array()), //in functions/templates.php create_js
 	"functions" => array(), //in functions
@@ -58,6 +59,7 @@ $manifest = array(
 	"cbbcode" => array(), //in clear_bbcode
 	"const" => array(), //is define for modules
 	"params" => array(), //is use in call module and get/send parameters
+	"dependency_modules" => array(), //dependency logic modules and need update his
 	"gzip" => false,
 );
 
@@ -110,9 +112,9 @@ $cnf->init();
 $config = $cnf->all();
 unset($cnf);
 if(isset($config['db_version'])) {
-	updater::update(VERSION, $config['db_version']);
+	updater::update(DB_VERSION, $config['db_version']);
 } else {
-	updater::update(VERSION, "");
+	updater::update(DB_VERSION, "");
 }
 $langs = new lang();
 $lang = $langs->init_lang();
@@ -126,6 +128,13 @@ if(function_exists("mb_internal_encoding") && mb_internal_encoding($config['char
 if(isset($config['date_timezone'])) {
 	date_default_timezone_set($config['date_timezone']);
 }
+//echo "test";die();
+$config_templates = array(
+	"gzip_output" => modules::get_config('gzip_output'),
+	"skins_skins" => (!modules::get_config('skins', 'skins') ? "main" : modules::get_config('skins', 'skins')),
+	"skins_test_shab" => (HTTP::CheckIp(modules::get_config('ip_test_shab')) ? modules::get_config('skins', 'test_shab') : ""),
+	"skins_mobile" => modules::get_config('skins', 'mobile'),
+);
 
 if(!defined("INSTALLER")) {
 	if(!defined("IS_CRON_FILE") && isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], $config['default_http_hostname'])===false) {
@@ -135,9 +144,7 @@ if(!defined("INSTALLER")) {
 	}
 
 	$user = array();
-	if((!isset($_COOKIE[COOK_USER]) or empty($_COOKIE[COOK_USER])) && ((!isset($_COOKIE[COOK_PASS]) or empty($_COOKIE[COOK_PASS])) || (!isset($_COOKIE[COOK_ADMIN_PASS]) or empty($_COOKIE[COOK_ADMIN_PASS])))) {
-		$user['level'] = 0;
-	} else {
+	if((isset($_COOKIE[COOK_USER]) and !empty($_COOKIE[COOK_USER])) && ((isset($_COOKIE[COOK_PASS]) and !empty($_COOKIE[COOK_PASS])) || (isset($_COOKIE[COOK_ADMIN_PASS]) and !empty($_COOKIE[COOK_ADMIN_PASS])))) {
 		if(isset($_COOKIE[COOK_ADMIN_USER]) && defined("IS_ADMIN")) {
 			$username = saves($_COOKIE[COOK_ADMIN_USER]);
 		} else {
@@ -163,20 +170,30 @@ if(!defined("INSTALLER")) {
 				define("IS_AUTH", true);
 			}
 		} else {
+			$password = $admin_password = "";
+			if(isset($_COOKIE[COOK_PASS])) {
+				$password = saves($_COOKIE[COOK_PASS]);
+			}
+			if(isset($_COOKIE[COOK_ADMIN_PASS])) {
+				$admin_password = saves($_COOKIE[COOK_ADMIN_PASS]);
+			}
 			$user = cache::Get("user_".$username);
-			if($user['pass']!=$password) {
+			if($user['pass']!=$password && $user['admin_pass']!=$admin_password) {
 				cache::Delete("user_".$username);
 				HTTP::set_cookie(COOK_USER, null, true);
 				HTTP::set_cookie(COOK_PASS, null, true);
 			}
 		}
+	} else {
+		$user['level'] = 0;
 	}
 }
 
-$templates = new templates();
+$templates = new templates($config_templates);
+templates::SetConfig($config_templates);
 header('Content-Type: text/html; charset='.config::Select('charset'));
 header('X-UA-Compatible: IE=edge,chrome=1');
 header('Cache-Control: max-age');
-header("Cardinal: ".VERSION);
+header("Cardinal: ".cardinal::SaveCardinal(VERSION));
 header_remove('x-powered-by');
 ?>

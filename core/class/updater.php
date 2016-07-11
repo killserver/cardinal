@@ -4,15 +4,15 @@ echo "403 ERROR";
 exit();
 }
 
-final class updater {
+class updater {
 	
-	private static function UpVersion($version) {
+	final private static function UpVersion($version) {
 		db::query("update `config` set `config_value` = \"".$version."\" WHERE `config_name` = \"db_version\"");
 		cache::Delete("config");
 	}
 	
-	public static function update($version, $db_version) {
-		if($version==$db_version) {
+	final public static function update($version, $db_version) {
+		if($version == $db_version) {
 			return true;
 		}
 		$update = false;
@@ -35,6 +35,10 @@ final class updater {
 			break;
 			case "2.4":
 				db::query("alter table `modules` add `file` varchar(255) NOT NULL, add FULLTEXT KEY `file` (`file`);");
+				$update = true;
+			break;
+			case "3.4":
+				db::query("alter table `modules` add `type` enum('admincp','site') NOT NULL DEFAULT 'site', add KEY `type` (`type`);");
 				$update = true;
 			break;
 		}

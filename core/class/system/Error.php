@@ -8,10 +8,22 @@ final class Error {
 
 	protected static $_handlePhpError = true;
 	protected static $_debug = false;
+	private static $_debugHandler = false;
 	public static $_echo = true;
 
 	function Error() {
 		
+	}
+	
+	public static function DebugHandler($func = null) {
+		
+	}
+	
+	public static function Log($log) {
+		if(!self::$_debugHandler) {
+			return false;
+		}
+		return call_user_func_array(self::$_debugHandler, array($log));
 	}
 	
 	public static function TplDebug($arr) {

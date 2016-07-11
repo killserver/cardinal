@@ -1,22 +1,32 @@
 <?php
+/*
+ *
+ * @version 4.0a
+ * @copyright 2014-2016 KilleR for Cardinal Engine
+ *
+ * Version Engine: 4.0a
+ * Version File: 1
+ *
+ *
+*/
 if(!defined("IS_CORE")) {
 	die();
 }
 
-class changelog {
+class changelog extends modules {
 	
 	function __construct() {
-		modules::manifest_log('load_modules', array('changelog', __FILE__));
+		$this->manifest_log('load_modules', array('changelog', __FILE__));
 		Route::Set('changelog', "changelog.php")->defaults(array(
 			'page' => 'changelog',
 			'method'     => 'change',
 		));
-		modules::manifest_set(array('class_pages', 'changelog'), array("object" => &$this, "func" => "change"));
+		$this->manifest_set(array('class_pages', 'changelog'), array("object" => &$this, "func" => "change"));
 	}
 	
 	function change() {
 		header("Content-Type: text/plain; charset=utf-8");
-		$dir = ROOT_PATH."/changelog/";
+		$dir = ROOT_PATH.DS."changelog".DS;
 		$files = array();
 		if(is_dir($dir)) {
 			if($dh = dir($dir)) {
@@ -33,7 +43,7 @@ class changelog {
 		for($i=0;$i<sizeof($files);$i++) {
 			$echo .= file_get_contents($dir.$files[$i])."\n\n\n\n";
 		}
-		echo trim($echo);
+		HTTP::echos(trim($echo));
 		die();
 	}
 	

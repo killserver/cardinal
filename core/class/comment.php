@@ -26,7 +26,7 @@ final class comment {
 	private static $param = array("u_id" => null, "type" => "news", "user_row" => array(), "levels" => 0);
 	private static $counts = 0;
 
-	public function comment($u_id, $type="news", $user_row=array(), $levels = 0) {
+	public function comment($u_id, $type="news", $user_row = array(), $levels = 0) {
 		if(!userlevel::get("view_comments")) {
 			return;
 		}
@@ -37,7 +37,6 @@ final class comment {
 		if(sizeof($_POST)>3) {
 			self::add();
 		}
-	//return $this;
 	}
 
 	public static function set_default($u_id, $type="news", $user_row=array(), $levels = 0) {
@@ -68,13 +67,12 @@ final class comment {
 		}
 		if(!$is_guest) {
 			$mail = modules::get_user('email');
-		} else {
+		} else if(isset($_POST['email'])) {
 			$mail = saves($_POST['email']);
 		}
 		$comment = saves($_POST['comment']);
 		$ip = HTTP::getip();
 		$client = getenv('HTTP_USER_AGENT');
-		//$content_id = intval($_POST['content']);
 		if(isset($_POST['parent'])) {
 			$parent_id = saves($_POST['parent']);
 		} else {
@@ -87,7 +85,7 @@ final class comment {
 		}
 		if(modules::get_user('id') && (modules::get_user('level')>LEVEL_USER && modules::get_user('level')!=LEVEL_GUEST)) {
 			$mod = "yes";
-		} else if(modules::get_user('level')==LEVEL_GUEST)) {
+		} else if(modules::get_user('level')==LEVEL_GUEST) {
 			$mod = "yes";
 		} else {
 			$mod = "no";
@@ -98,7 +96,7 @@ final class comment {
 		} else {
 			$spam = "yes";
 		}
-		db::doquery("INSERT INTO comments SET `added`=\"".modules::get_user('alt_name')."\", `email`=\"".$mail."\", `type`=\"".self::$param['type']."\", `ip`=\"".$ip."\", `user_agent`=\"".$client."\", `comment`=\"".$comment."\", u_id=\"".self::$param['u_id']."\", `parent_id`=\"".$parent_id."\", `time` = UNIX_TIMESTAMP(), `guest`=\"".$guest."\", `mod` = \"".$mod."\", `spam` = \"".$spam."\"");
+		db::doquery("INSERT INTO comments SET `added`=\"".modules::get_user('alt_name')."\", `email`=\"".$mail."\", `type`=\"".self::$param['type']."\", `ip`=\"".$ip."\", `user_agent`=\"".$client."\", `comment`=\"".$comment."\", `u_id`=\"".self::$param['u_id']."\", `parent_id`=\"".$parent_id."\", `time` = UNIX_TIMESTAMP(), `guest`=\"".$guest."\", `mod` = \"".$mod."\", `spam` = \"".$spam."\"");
 		unset($_POST);
 		location(getenv("REQUEST_URI"));
 	}
@@ -136,20 +134,26 @@ final class comment {
 		return $add_com;
 	}
 
-	public static function get($add = true) {
+	public static function get($add = true, $tpl = "comments") {
 		$comments = "";
-		$file_com = templates::load_templates("comments", "cp1251");
+		$file_com = templates::load_templates($tpl, "cp1251");
 		// выводим комменты
 		$msg = array();
 		if(self::$param['type']=="user") {
-			$where = "type=\"user\" AND u_id = \"".self::$param['user_row']['alt_name']."\" AND `mod` = \"yes\"";
+			$type = "user";
+			$u_id = self::$param['user_row']['alt_name'];
 		} else {
-			$where = "type=\"".self::$param['type']."\" AND u_id = \"".self::$param['u_id']."\" AND `mod` = \"yes\"";
+			$type = self::$param['type'];
+			$u_id = self::$param['u_id'];
 		}
-		$result = db::doquery("SELECT id, u_id, (SELECT last_activ FROM users WHERE username=added) as last_activ, (SELECT username FROM users WHERE username=added) as alt_name, (SELECT avatar FROM users WHERE username=added) as avatar, added, ip, time, comment, parent_id, level FROM comments WHERE ".$where, true);//." ORDER BY `comments`.`id` ASC"
-
-		while($row = db::fetch_assoc($result)) {
-			$msg[] = $row;
+		if(!cache::Exists("comment_".$type."-".$u_id)) {
+			$result = db::doquery("SELECT `id`, `u_id`, (SELECT `last_activ` FROM `users` WHERE `username` = `comments`.`added`) as `last_activ`, (SELECT `username` FROM `users` WHERE `username` = `comments`.`added`) as `alt_name`, (SELECT `avatar` FROM `users` WHERE `username` = `comments`.`added`) as `avatar`, `added`, `ip`, `time`, `comment`, `parent_id`, `level` FROM `comments` WHERE `type` = \"".$type."\" AND `u_id` = \"".$u_id."\" AND `mod` = \"yes\"", true);
+			while($row = db::fetch_assoc($result)) {
+				$msg[] = $row;
+			}
+			cache::Set("comment_".$type."-".$u_id, $msg);
+		} else {
+			$msg = cache::Get("comment_".$type."-".$u_id);
 		}
 
 		$parent = 0;
@@ -170,21 +174,21 @@ final class comment {
 				} else {
 					$parentId = $msg[$i]['parent_id'];
 				}
-				$comm = str_replace(array("{foto}", "{author_link}", "{author_name}", "{date}", "{comment}", "{id}", "{margin}", "{par}"), array($avatar, user_link($msg[$i]['alt_name'], $msg[$i]['added']), $msg[$i]['added'], date(S_TIME_VIEW, $msg[$i]['time']), $msg[$i]['comment'], $msg[$i]['id'], $margin, $parentId), $file_com);
+				$comm = str_replace(array("{foto}", "{author_link}", "{author_name}", "{date}", "{comment}", "{id}", "{margin}", "{par}"), array($avatar, user_link($msg[$i]['alt_name'], $msg[$i]['added']), $msg[$i]['added'], date(S_TIME_VIEW, $msg[$i]['time']), bbcodes::colorit($msg[$i]['comment']), $msg[$i]['id'], $margin, $parentId), $file_com);
 				if(modules::get_user('id') && (modules::get_user('level')>LEVEL_USER && modules::get_user('level')!=LEVEL_GUEST) && self::$param['levels']>$msg[$i]['level']) {
-					$comm=preg_replace('#\[requoted\]#is', '', $comm);
-					$comm=preg_replace('#\[/requoted\]#is', '', $comm);
+					$comm = preg_replace('#\[requoted\]#is', '', $comm);
+					$comm = preg_replace('#\[/requoted\]#is', '', $comm);
 				} else {
-					$comm=preg_replace('#\[requoted\](.+?)\[/requoted\]#is', '', $comm);
+					$comm = preg_replace('#\[requoted\](.+?)\[/requoted\]#is', '', $comm);
 				}
 				if($msg[$i]['last_activ']>time()-300) {
-					$comm=preg_replace('#\[online\]#is', '', $comm);
-					$comm=preg_replace('#\[/online\]#is', '', $comm);
-					$comm=preg_replace('#\[offline\](.+?)\[/offline\]#is', '', $comm);
+					$comm = preg_replace('#\[online\]#is', '', $comm);
+					$comm = preg_replace('#\[/online\]#is', '', $comm);
+					$comm = preg_replace('#\[offline\](.+?)\[/offline\]#is', '', $comm);
 				} else {
-					$comm=preg_replace('#\[offline\]#is', '', $comm);
-					$comm=preg_replace('#\[/offline\]#is', '', $comm);
-					$comm=preg_replace('#\[online\](.+?)\[/online\]#is', '', $comm);
+					$comm = preg_replace('#\[offline\]#is', '', $comm);
+					$comm = preg_replace('#\[/offline\]#is', '', $comm);
+					$comm = preg_replace('#\[online\](.+?)\[/online\]#is', '', $comm);
 				}
 				$comments .= $comm;
 			}  
@@ -200,7 +204,7 @@ final class comment {
 		return self::$counts;
 	}
 
-	private static function crazysort(&$comments, $parentComment = 0, $level = 0, $count = null) {
+	private static function crazysort(&$comments, $parentComment = 0, $level = 0, $count = "") {
 		if(is_array($comments) && sizeof($comments)) {
 			$return = array();
 			if(empty($count)){

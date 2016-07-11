@@ -38,7 +38,7 @@ if(file_exists(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX) && file_exists(
 	define("INSTALLER", true);
 	$config = array("charset" => "utf-8");
 	require_once(ROOT_PATH."core".DS."media".DS."config.global.".ROOT_EX);
-	if(!defined("IS_INSTALLER") && strpos($_SERVER['REQUEST_URI'], "install")===false) {
+	if(!defined("IS_INSTALLER") && (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], "install")===false)) {
 		header("Location: install.php");
 	}
 }
@@ -114,12 +114,14 @@ function include_dir($dir = null, $modules = null, $mod = false) {
 	if(is_dir($dir)) {
 		if($dh = dir($dir)) {
 			while(($file = $dh->read()) !== false) {
-				if($file != "index.".ROOT_EX && $file != "." && $file != ".." && strpos($file, $modules) !== false && ($inc ? modules::load_modules("core".DS."modules".DS.$file) : true)) {
+				if($file != "index.".ROOT_EX && $file != "." && $file != ".." && strpos($file, $modules) !== false && ($inc ? modules::load_modules("core".DS."modules".DS.$file, $modules) : true)) {
 					require_once($dir.$file);
 					if($inc) {
 						$class = str_replace($modules, "", $file);
-						$classes = new $class();
-						unset($classes);
+						if(class_exists($class)) {
+							$classes = new $class();
+							unset($classes);
+						}
 					}
 				}
 			}
@@ -135,5 +137,4 @@ if(file_exists(ROOT_PATH."core".DS."media".DS."config.route.php")) {
 }
 include_dir(ROOT_PATH."core".DS."modules".DS, ".class.".ROOT_EX, true);
 include_dir();
-
 ?>

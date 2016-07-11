@@ -19,9 +19,9 @@
 				<label class="col-sm-2 control-label" for="field-4">Права доступа</label>
 				<div class="col-sm-10">
 					<select name="level">
-						[if {level}>={D_LEVEL_USER}]<option value="1"[if {level}=={D_LEVEL_USER}] selected="selected"[/if {level}=={D_LEVEL_USER}]>Пользователь</option>[/if {level}>={D_LEVEL_USER}]
-						[if {level}>={D_LEVEL_MODER}]<option value="2"[if {level}=={D_LEVEL_MODER}] selected="selected"[/if {level}=={D_LEVEL_MODER}]>Модератор</option>[/if {level}>={D_LEVEL_MODER}]
-						[if {level}>={D_LEVEL_ADMIN}]<option value="3"[if {level}=={D_LEVEL_ADMIN}] selected="selected"[/if {level}=={D_LEVEL_ADMIN}]>Администратор</option>[/if {level}>={D_LEVEL_ADMIN}]
+						[if {U_level}>={D_LEVEL_USER}]<option value="1"[if {level}=={D_LEVEL_USER}] selected="selected"[/if {level}=={D_LEVEL_USER}]>Пользователь</option>[/if {U_level}>={D_LEVEL_USER}]
+						[if {U_level}>={D_LEVEL_MODER}]<option value="2"[if {level}=={D_LEVEL_MODER}] selected="selected"[/if {level}=={D_LEVEL_MODER}]>Модератор</option>[/if {U_level}>={D_LEVEL_MODER}]
+						[if {U_level}>={D_LEVEL_ADMIN}]<option value="3"[if {level}=={D_LEVEL_ADMIN}] selected="selected"[/if {level}=={D_LEVEL_ADMIN}]>Администратор</option>[/if {U_level}>={D_LEVEL_ADMIN}]
 					</select>
 				</div>
 			</div>[/if {U_username}!={name}]

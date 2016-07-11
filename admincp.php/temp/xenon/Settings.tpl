@@ -1,10 +1,10 @@
 <form role="form" class="form-horizontal" method="post">
 <div class="col-md-12">
-<center>API-ключ: <input type="text" value="{API}" readonly="readonly" disabled="disabled" /></center>
+<center>API-{L_key}: <input type="text" value="{API}" readonly="readonly" disabled="disabled"></center>
 <ul class="nav nav-tabs right-aligned"> 
 <li class="active">
 	<a href="#home" data-toggle="tab">
-		<span class="hidden-xs">Основные настройка</span>
+		<span class="hidden-xs">{L_MainSettings}</span>
 	</a>
 </li>
 [foreach block=sub_nav]
@@ -18,25 +18,25 @@
 <div class="tab-content">
 <div class="tab-pane active" id="home">
 	<span style="width:95%;border:1px solid #000;display:inline-block;padding:10px;margin:10px auto;">
-		<center>Система Кеша<span alt="Создание копии данных базы данных для ускорения работы сайта" title="Создание копии данных базы данных для ускорения работы сайта">(?)</span></center>
+		<center>{L_systemCache}<span alt="{L_systemCacheHelp}" title="{L_systemCacheHelp}">(?)</span></center>
 		<hr />
-		<div style="display:inline-block;width:50%;padding:5px;margin:1px;">Система кеширования</div><select name="cache_type" style="width:45%;padding:5px;margin:1px;"><option value="CACHE_NONE"[if {C_cache[type]}=={D_CACHE_NONE}] selected="selected"[/if {C_cache[type]}=={D_CACHE_NONE}]>Без кеширования</option><option value="CACHE_FILE"[if {C_cache[type]}=={D_CACHE_FILE}] selected="selected"[/if {C_cache[type]}=={D_CACHE_FILE}]>Файловый кеш</option><option value="CACHE_MEMCACHE"[if {C_cache[type]}=={D_CACHE_MEMCACHE}] selected="selected"[/if {C_cache[type]}=={D_CACHE_MEMCACHE}]>Memcache</option><option value="CACHE_MEMCACHED"[if {C_cache[type]}=={D_CACHE_MEMCACHED}] selected="selected"[/if {C_cache[type]}=={D_CACHE_MEMCACHED}]>Memcached</option><option value="CACHE_FTP"[if {C_cache[type]}=={D_CACHE_FTP}] selected="selected"[/if {C_cache[type]}=={D_CACHE_FTP}]>FTP</option></select><br />
-		<div style="display:inline-block;width:50%;padding:5px;margin:1px;">Сервер кеширования</div><input type="text" name="cache_host" value="{C_cache[server]}" style="width:45%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
-		<div style="display:inline-block;width:50%;padding:5px;margin:1px;">Порт кеширования</div><input type="text" name="cache_port" value="{C_cache[port]}" style="width:45%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
-		<div style="display:inline-block;width:50%;padding:5px;margin:1px;">Пользователь кеширования</div><input type="text" name="cache_user" value="{C_cache[login]}" style="width:45%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
-		<div style="display:inline-block;width:50%;padding:5px;margin:1px;">Пароль кеширования</div><input type="password" name="cache_pass" value="{C_cache[pass]}" style="width:45%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
-		<div style="display:inline-block;width:50%;padding:5px;margin:1px;">Путь кеширования</div><input type="text" name="cache_path" value="{C_cache[path]}" style="width:45%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
-		<center><b>Если Вы не знаете, что из предложенного выбрать, либо не знаете - поддерживает-ли Ваш сервер ту или иную настройку - установите значение выше в "Файловый кеш" и пропустите этот пункт</b></center>
+		<div style="display:inline-block;width:50%;padding:5px;margin:1px;">{L_systemCacheFull}</div><select name="cache_type" style="width:45%;padding:5px;margin:1px;"><option value="CACHE_NONE"[if {C_cache[type]}=={D_CACHE_NONE}] selected="selected"[/if {C_cache[type]}=={D_CACHE_NONE}]>{L_CacheWithout}</option><option value="CACHE_FILE"[if {C_cache[type]}=={D_CACHE_FILE}] selected="selected"[/if {C_cache[type]}=={D_CACHE_FILE}]>{L_CacheFile}</option><option value="CACHE_MEMCACHE"[if {C_cache[type]}=={D_CACHE_MEMCACHE}] selected="selected"[/if {C_cache[type]}=={D_CACHE_MEMCACHE}]>Memcache</option><option value="CACHE_MEMCACHED"[if {C_cache[type]}=={D_CACHE_MEMCACHED}] selected="selected"[/if {C_cache[type]}=={D_CACHE_MEMCACHED}]>Memcached</option><option value="CACHE_FTP"[if {C_cache[type]}=={D_CACHE_FTP}] selected="selected"[/if {C_cache[type]}=={D_CACHE_FTP}]>FTP</option><option value="CACHE_XCACHE"[if {C_cache[type]}=={D_CACHE_XCACHE}] selected="selected"[/if {C_cache[type]}=={D_CACHE_XCACHE}]>XCache</option></select><br />
+		<div style="display:inline-block;width:50%;padding:5px;margin:1px;">{L_CacheServer}</div><input type="text" name="cache_host" value="{C_cache[server]}" style="width:45%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
+		<div style="display:inline-block;width:50%;padding:5px;margin:1px;">{L_CachePort}</div><input type="text" name="cache_port" value="{C_cache[port]}" style="width:45%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
+		<div style="display:inline-block;width:50%;padding:5px;margin:1px;">{L_CacheUser}</div><input type="text" name="cache_user" value="{C_cache[login]}" style="width:45%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
+		<div style="display:inline-block;width:50%;padding:5px;margin:1px;">{L_CachePass}</div><input type="password" name="cache_pass" value="{C_cache[pass]}" style="width:45%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
+		<div style="display:inline-block;width:50%;padding:5px;margin:1px;">{L_CachePath}</div><input type="text" name="cache_path" value="{C_cache[path]}" style="width:45%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
+		<center><b>{L_CacheHelp}</b></center>
 		<hr />
-		<center>Настройки</center>
+		<center>{L_Settings}</center>
 		<hr />
-		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Название сайта</div><input type="text" name="sitename" maxlength="70" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;" value="{sitename}"><br />
-		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Описание сайта</div><input type="text" name="description" maxlength="160" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;" value="{description}"><br />
-		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Доменное имя Вашего сайта</div><input type="text" name="SERVER" value="{SERNAME}" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
-		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Путь к Вашему сайту</div><input type="text" name="PATH" value="{SERPATH}" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
-		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Система записи ошибок</div><select name="error_type" style="width:50%;padding:5px;margin:1px;"><option value="ERROR_FILE">Ошибки будут записываться в файл</option><option value="ERROR_DB">Ошибки будут записываться в базу данных</option></select><br />
-		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Получать свежие обновления</div><input type="checkbox" name="speed_update" value="1"[if {C_speed_update}==1] checked="checked"[/if {C_speed_update}==1] class="iswitch iswitch-secondary" /><br />
-		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Кешировать шаблон</div><input type="checkbox" name="ParsePHP" value="1"[if {C_ParsePHP}==1] checked="checked"[/if {C_ParsePHP}==1] class="iswitch iswitch-secondary" /><br />
+		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">{L_SiteName}</div><input type="text" name="sitename" maxlength="70" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;" value="{sitename}"><br />
+		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">{L_SiteDescr}</div><input type="text" name="description" maxlength="160" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;" value="{description}"><br />
+		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">{L_SiteDomain}</div><input type="text" name="SERVER" value="{SERNAME}" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
+		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">{L_SitePath}</div><input type="text" name="PATH" value="{SERPATH}" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
+		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">{L_LogErrors}</div><select name="error_type" style="width:50%;padding:5px;margin:1px;"><option value="ERROR_FILE">{L_LogFile}</option><option value="ERROR_DB">{L_LogDB}</option></select><br />
+		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">{L_GetNewUpdates}</div><input type="checkbox" name="speed_update" value="1"[if {C_speed_update}==1] checked="checked"[/if {C_speed_update}==1] class="iswitch iswitch-secondary" /><br />
+		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">{L_CacheTemplates}</div><input type="checkbox" name="ParsePHP" value="1"[if {C_ParsePHP}==1] checked="checked"[/if {C_ParsePHP}==1] class="iswitch iswitch-secondary" /><br />
 	</span>
 </div>
 [foreach block=sub_nav_options]

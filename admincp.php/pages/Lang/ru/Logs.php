@@ -6,6 +6,7 @@ die();
 
 $lang = array_merge($lang, array(
 	"Logs" => "Журнал ошибок",
+	"DeleteAll" => "Удалить всё",
 ));
 
 ?>

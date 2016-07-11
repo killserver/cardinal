@@ -55,11 +55,11 @@ global $user;
 				$js[] = 'http://ie.microsoft.com/testdrive/HTML5/CompatInspector/inspector.js';
 			}
 		}
-		$dirs = read_dir(ROOT_PATH."core/modules/js/", ".php");
+		$dirs = read_dir(ROOT_PATH."core".DS."modules".DS."js".DS, ".php");
 		sort($dirs);
 		for($i=0;$i<sizeof($dirs);$i++) {
-			if(file_exists(ROOT_PATH."core/modules/js/".$dirs[$i])) {
-				include_once(ROOT_PATH."core/modules/js/".$dirs[$i]);
+			if(file_exists(ROOT_PATH."core".DS."modules".DS."js".DS.$dirs[$i])) {
+				include_once(ROOT_PATH."core".DS."modules".DS."js".DS.$dirs[$i]);
 			}
 		}
 		if(is_array($js)) {
@@ -68,11 +68,11 @@ global $user;
 			}
 		}
 		unset($dirs, $js);
-		$dirs = read_dir(ROOT_PATH."core/modules/css/", ".php");
+		$dirs = read_dir(ROOT_PATH."core".DS."modules".DS."css".DS, ".php");
 		sort($dirs);
 		for($i=0;$i<sizeof($dirs);$i++) {
-			if(file_exists(ROOT_PATH."core/modules/css/".$dirs[$i])) {
-				include_once(ROOT_PATH."core/modules/css/".$dirs[$i]);
+			if(file_exists(ROOT_PATH."core".DS."modules".DS."css".DS.$dirs[$i])) {
+				include_once(ROOT_PATH."core".DS."modules".DS."css".DS.$dirs[$i]);
 			}
 		}
 		if(is_array($css)) {
@@ -142,11 +142,14 @@ global $user;
 	$header .= "<meta name=\"generator\" content=\"Cardinal ".VERSION."\" />\n";
 	$header .= "<meta name=\"author\" content=\"".(isset($array['author']) ? $array['author'] : "Cardinal ".VERSION)."\" />\n";
 	$header .= "<meta name=\"copyright\" content=\"{L_sitename}\" />\n";
-	$header .= "<meta name=\"robots\" content=\"all\" />\n";
-	//$header .= "<meta name=\"robots\" content=\"noindex, nofollow\"/>\n";
-	$header .= "<link href=\"{C_default_http_host}favicon.ico\" rel=\"shortcut icon\" type=\"image/x-icon\" />\n";
-	$header .= "<link rel=\"icon shortcut\" type=\"image/vnd.microsoft.icon\" href=\"{C_default_http_host}favicon.ico\" sizes=\"16x16\" />\n";
-	$header .= "<link rel=\"icon\" type=\"image/x-icon\" href=\"{C_default_http_host}favicon.ico\" sizes=\"16x16\" />\n";
+	if(isset($array['meta']) && array_key_exists("robots", $array['meta'])) {
+		$header .= "<meta name=\"robots\" content=\"all\" />\n";
+	}
+	if(file_exists(ROOT_PATH."favicon.ico")) {
+		$header .= "<link href=\"{C_default_http_host}favicon.ico\" rel=\"shortcut icon\" type=\"image/x-icon\" />\n";
+		$header .= "<link rel=\"icon shortcut\" type=\"image/vnd.microsoft.icon\" href=\"{C_default_http_host}favicon.ico\" sizes=\"16x16\" />\n";
+		$header .= "<link rel=\"icon\" type=\"image/x-icon\" href=\"{C_default_http_host}favicon.ico\" sizes=\"16x16\" />\n";
+	}
 if(!$clear) {
 	if(!defined("MOBILE")) {
 		if(isset($array['user_row'])) {
@@ -158,8 +161,8 @@ if(!$clear) {
 /*
 <!--script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.js"></script><script type='text/javascript' src='http://simplemodal.googlecode.com/files/jquery.simplemodal.1.4.4.min.js'></script><script type="text/javascript" src="http://malsup.github.io/jquery.form.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/jqueryui.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/libs.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/jquery.jmpopups-0.5.1.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/spoiler.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/tabs.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/tabcontent.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/md-socwidget.js"></script><script type="text/javascript">setTimeout(function(){ $('.box').fadeOut('fast') },10000);  //30000 = 30 секунд</script><script type="text/javascript">	var username = "";	var default_link = "http://online-killer.com/";	jQuery(function() {		jQuery('#tabs').tabs('#tabsText > li');	});</script><script type="text/javascript" src="http://online-killer.com/js/poll.core.js"></script><script type="text/javascript">jQuery(document).ready(function(){	loadpoll();});</script><script type="text/javascript" src="http://online-killer.com/js/ajax_core.js"></script><script type="text/javascript" src="http://online-killer.com/flash-js-tagcloud-swfobject.js"></script><meta name="application-name" content="" /><meta name="msapplication-TileColor" content="#e0161d" /><meta name="msapplication-notification" content="frequency=30;polling-uri=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=1;polling-uri2=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=2;polling-uri3=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=3;polling-uri4=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=4;polling-uri5=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=5; cycle=1" /-->
 */
-	$header .= "<link href='/js/nprogress.css' rel='stylesheet' type='text/css'/>\n";
-	$header .= "<link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,700,400italic' rel='stylesheet' type='text/css'/>\n";
+	//$header .= "<link href='/js/nprogress.css' rel='stylesheet' type='text/css'/>\n";
+	//$header .= "<link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,700,400italic' rel='stylesheet' type='text/css'/>\n";
 
 	$header .= '<meta name="viewport" content="'.config::Select("viewport").'" />'."\n";
 	$header .= "<script type=\"text/javascript\">\n".
@@ -176,17 +179,30 @@ if(!$clear) {
 	if(!$no_js) {
 		$header .= create_js($clear);
 	}
-	$header .= "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"{L_sitename}\" href=\"{C_default_http_host}rss.xml\" />\n";
+	$link_rss = "rss.xml";
+	if(!file_exists(ROOT_PATH."rss.xml")) {
+		$rss = Route::Name("rss");
+		if($rss) {
+			$link = Route::get("rss");
+			$link_rss = $link->uri(array());
+		}
+	} else {
+		$rss = true;
+	}
+	if($rss && !empty($link_rss)) {
+		$header .= "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"{L_sitename}\" href=\"{C_default_http_host}rss.xml\" />\n";
+	}
 /*if(isset($array['title']) && isset($array['meta']['watch']) && $user['id'] == 1) {
 	$header .= "<link rel=\"alternate\" type=\"application/json+oembed\" href=\"{C_default_http_host}oembed?url={C_default_http_host}?watch%26v=".$array['meta']['watch']."&format=json\" title=\"".$array['title']."\" />\n";
 	$header .= "<link rel=\"alternate\" type=\"text/xml+oembed\" href=\"{C_default_http_host}oembed?url={C_default_http_host}?watch%26v=".$array['meta']['watch']."&type=xml\" title=\"".$array['title']."\" />\n";
 }*/
 	$header .= modules::use_modules("watch", $array);
 
-	$header .= "<meta name=\"application-name\" content=\"{L_sitename}\" />\n".
-		"<meta name=\"msapplication-TileColor\" content=\"#e0161d\"/>\n".
-		"<meta name=\"msapplication-notification\" content=\"frequency=30;polling-uri=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=1;polling-uri2=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=2;polling-uri3=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=3;polling-uri4=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=4;polling-uri5=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=5; cycle=1\"/>\n\n";
-
+	if($rss && !empty($link_rss)) {
+		$header .= "<meta name=\"application-name\" content=\"{L_sitename}\" />\n".
+			"<meta name=\"msapplication-TileColor\" content=\"#e0161d\"/>\n".
+			"<meta name=\"msapplication-notification\" content=\"frequency=30;polling-uri=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=1;polling-uri2=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=2;polling-uri3=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=3;polling-uri4=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=4;polling-uri5=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=5; cycle=1\"/>\n\n";
+	}
 	if(isset($array['meta']['type_meta'])) {
 		$is_use = true;
 		$header .= "<span itemscope itemtype=\"".$array['meta']['type_meta']."\">\n";

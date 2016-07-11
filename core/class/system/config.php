@@ -24,6 +24,28 @@ final class config {
 	global $config;
 		self::$config = $config;
 	}
+	
+	public static function ReadConfig($name, $val) {
+		$configs = array();
+		if(strpos($val, ":-:")!==false) {
+			$vals = array();
+			if(strpos($val, ";-;")!==false) {
+				$exp = explode(";-;", $val);
+				for($i=0;$i<sizeof($exp);$i++) {
+					$ex = explode(":-:", $exp[$i]);
+					$vals[$ex[0]] = $ex[1];
+				}
+				$configs[$name] = $vals;
+			} else {
+				$exp = explode(":-:", $val);
+				$vals[$exp[0]] = $exp[1];
+				$configs[$name] = $vals;
+			}
+		} else {
+			$configs[$name] = $val;
+		}
+		return $configs;
+	}
 
 	public static function init() {
 	global $config;
@@ -36,23 +58,8 @@ final class config {
 			$configs = array();
 			db::doquery("SELECT config_name, config_value FROM config", true);
 			while($conf = db::fetch_array()) {
-				if(strpos($conf['config_value'], ":-:")!==false) {
-					$vals = array();
-					if(strpos($conf['config_value'], ";-;")!==false) {
-						$exp = explode(";-;", $conf['config_value']);
-						for($i=0;$i<sizeof($exp);$i++) {
-							$ex = explode(":-:", $exp[$i]);
-							$vals[$ex[0]] = $ex[1];
-						}
-						$configs[$conf['config_name']] = $vals;
-					} else {
-						$exp = explode(":-:", $conf['config_value']);
-						$vals[$exp[0]] = $exp[1];
-						$configs[$conf['config_name']] = $vals;
-					}
-				} else {
-					$configs[$conf['config_name']] = $conf['config_value'];
-				}
+				$ret = self::ReadConfig($conf['config_name'], $conf['config_value']);
+				$configs = array_merge($configs, $ret);
 			}
 			self::$config = $configs;
 			cache::Set("config", $configs);

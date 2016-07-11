@@ -25,6 +25,7 @@ define("CACHE_MEMCACHE", 1);
 define("CACHE_MEMCACHED", 2);
 define("CACHE_FILE", 3);
 define("CACHE_FTP", 4);
+define("CACHE_XCACHE", 5);
 define("CACHE_NONE", 0);
 
 // Error
@@ -54,17 +55,23 @@ define("UPLOAD_CM", 12000);
 define("UPLOAD_CMD", 12000);
 define("UPLOAD_ALL", 240000);
 
-define("VERSION", "3.3");
+define("VERSION", "4.0");
+define("DB_VERSION", "3.5");
 define("LEVEL_ADMIN", 3);
 define("LEVEL_MODER", 2);
 define("LEVEL_USER", 1);
 define("LEVEL_GUEST", 0);
 define("S_TIME_VIEW", "d-m-Y H:i:s");
 
+// Shop
+define("SERVER_MODULES", "http://shop.killer.pp.ua/");
+
 $config = array_merge($config, array(
 	"lang" => "ru",
 	"git_install" => true,
 	"git_beta" => true,
+	"rewrite" => true,
+	"gzip" => false,
 ));
 
 ?>

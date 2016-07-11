@@ -79,6 +79,7 @@ $config = array(
 	"db" => array(
 		"driver" => "mysql",
 	),
+	"related" => 5,
 );
 
 ?>

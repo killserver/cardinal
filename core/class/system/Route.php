@@ -31,14 +31,85 @@ final class Route {
 	const REGEX_KEY = '<([a-zA-Z0-9_]++)>';
 	const REGEX_SEGMENT = '[^/.,;?\n]++';
 	const REGEX_ESCAPE = '[.\\+*?[^\\]${}=!|]';
-	protected $_callback = null;
-	protected $_uri = null;
+	protected $_callback = "";
+	protected $_uri = "";
 	protected $_regex = array();
-	private $_route_regex = null;
+	private $_route_regex = "";
 	private $_defaults = array('page' => 'index', 'method' => '', 'host' => false);
 	private static $_params = array();
+	private static $_secret = "route";
+	private static $_config = array();
+	
+	public static function Config($get) {
+		if(is_array($get)) {
+			self::$_config = $get;
+			return true;
+		} else {
+			if(isset(self::$_config[$get])) {
+				return self::$_config[$get];
+			}
+		}
+		return false;
+	}
+	
+	public static function Build(array $arr, $mode = 1) {
+		$arrs = array();
+		foreach($arr as $n => $v) {
+			if(!is_numeric($n)) {
+				global $$n;
+				if($mode===2 && is_array($$n)) {
+					$$n = array_merge($$n, $v);
+				} else {
+					$arrs[$n] = $v;
+				}
+			}
+		}
+		extract($arrs);
+	}
+	
+	private static function GetBuild($n = "") {
+		if(is_array($n)) {
+			$b = self::$_secret;
+			global $$b;
+			if(isset($GLOBALS[$b]) && is_array($GLOBALS[$b])) {
+				$b = $GLOBALS[$b];
+			} else if(isset($$b) && is_array($$b)) {
+				$b = $$b;
+			}
+			if($b==self::$_secret) {
+				return false;
+			}
+			foreach($n as $nm => $vl) {
+				if(isset($b[$vl])) {
+					return $b[$vl];
+				} else {
+					return false;
+				}
+			}
+		} else if(!empty($n)) {
+			$b = self::$_secret;
+			global $$b;
+			if(isset($GLOBALS[$b]) && is_array($GLOBALS[$b]) && isset($GLOBALS[$b][$n])) {
+				return $GLOBALS[$b][$n];
+			} else if(isset($$b) && is_array($$b) && isset($$b[$n])) {
+				return $$b[$n];
+			} else {
+				return false;
+			}
+		} else {
+			$b = self::$_secret;
+			global $$b;
+			if(isset($GLOBALS[$b])) {
+				return $GLOBALS[$b];
+			} else if(isset($$b)) {
+				return $$b;
+			} else {
+				return false;
+			}
+		}
+	}
 
-	public function __construct($uri = null, $regex = array()) {
+	public function __construct($uri = "", $regex = array()) {
 		if(empty($uri)) {
 			return;
 		}
@@ -55,15 +126,17 @@ final class Route {
 		$this->_route_regex = self::Compile($uri, $regex);
 	}
 
-	public static function Set($name, $uri_callback = null, $regex = array()) {
+	public static function Set($name, $uri_callback = "", $regex = array()) {
 		$class = __class__;
 		$ret = new $class($uri_callback, $regex);
-		modules::manifest_set(array('route', $name), $ret);
+		self::Build(array(
+			"".self::$_secret."" => array($name => $ret),
+		), 2);
 		return $ret;
 	}
 
 	public static function Get($name) {
-		$list = modules::manifest_get(array('route', $name));
+		$list = self::GetBuild($name);
 		if(!$list) {
 			return false;
 		}
@@ -71,7 +144,7 @@ final class Route {
 	}
 
 	public static function Name($route) {
-		$_routes = modules::manifest_get('route');
+		$_routes = self::GetBuild();
 		return array_search($route, $_routes);
 	}
 
@@ -106,10 +179,10 @@ final class Route {
 		return $this;
 	}
 
-	public function Matches($uri) {
+	public function Matches($uri, $def = "") {
 		if($this->_callback) {
 			$closure = $this->_callback;
-			$params = call_user_func($closure, $uri);
+			$params = call_user_func_array($closure, array($uri, $def));
 			if(!is_array($params)) {
 				return false;
 			}
@@ -133,21 +206,60 @@ final class Route {
 
 		return $params;
 	}
-
-	public static function Load($default = null) {
-		$uri = substr(getenv("PATH_INFO"), 1);
-		$routes = modules::manifest_get('route');
-		$params = null;
-		foreach($routes as $name => $route) {
-			if($params = $route->Matches($uri)) {
-				self::$_params = $params;
-				return array('params' => $params, 'route' => $route);
+	
+	private static function PreDefault($url) {
+		$page = $url;
+		if(!empty($url)) {
+			$page = substr($url, 1);
+			if(strpos($page, "&") !== false) {
+				$pages = explode("&", $page);
+				if(empty($pages[0])) {
+					$page = $pages[1];
+				} else {
+					$page = $pages[0];
+				}
+			}
+			if(strpos($page, "=") !== false) {
+				$pages = explode("=", $page);
+				$page = $pages[0];
 			}
 		}
-		return array('params' => array('page' => $default, 'method' => ''), 'route' => null);
+		return $page;
+	}
+
+	public static function Load($default = "") {
+		$uri = substr(getenv("PATH_INFO"), 1);
+		if(!isset($GLOBALS[self::$_secret])) {
+			return false;
+		}
+		$preload = self::PreDefault($uri);
+		if($preload!=$default) {
+			$routes = $GLOBALS[self::$_secret];
+			$params = "";
+			foreach($routes as $name => $route) {
+				if($params = $route->Matches($uri, $default)) {
+					self::$_params = $params;
+					return array('params' => $params, 'route' => $route);
+				}
+			}
+		}
+		$param = array('page' => $default, 'method' => '');
+		self::$_params = $param;
+		return array('params' => $param, 'route' => "");
 	}
 	
-	public static function RegParam($key, $value = null) {
+	public static function Delete($name) {
+		if(!isset($GLOBALS[self::$_secret])) {
+			return false;
+		}
+		$routes = $GLOBALS[self::$_secret];
+		if(isset($routes[$name])) {
+			unset($routes[$name]);
+			$GLOBALS[self::$_secret] = $routes;
+		}
+	}
+	
+	public static function RegParam($key, $value = "") {
 		if(is_array($key)) {
 			$keys = array_keys($key);
 			$values = array_values($key);
@@ -159,7 +271,7 @@ final class Route {
 		}
 	}
 
-	public static function param($key = null, $default = false) {
+	public static function param($key = "", $default = false) {
 		if(empty($key)) {
 			return self::$_params;
 		}
@@ -198,10 +310,10 @@ final class Route {
 			$uri = str_replace($key, $params[$param], $uri);
 		}
 		$uri = preg_replace('#//+#', '/', rtrim($uri, '/'));
-		if(config::Select("rewrite")) {
+		if(self::Config("rewrite")) {
 			return $uri;
 		} else {
-			return config::Select("default_http_host")."index.php/".$uri;
+			return self::Config("default_http_host")."index.php/".$uri;
 		}
 	}
 

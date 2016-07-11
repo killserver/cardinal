@@ -33,8 +33,9 @@ class Parser {
 	private $post = array();
 	private $headers = array();
 	private $errors = array();
+	private $headerList = array();
 	
-	function Parser($url=null) {
+	function Parser($url = "") {
 		if(!empty($url)) {
 			$this->url = $url;
 		}
@@ -46,7 +47,7 @@ class Parser {
 		}
 	}
 	
-	function cookie($coo = true, $coopath = null) {
+	function cookie($coo = true, $coopath = "") {
 		if(empty($coopath)) {
 			$coopath = rand(0, getrandmax());
 		}
@@ -77,6 +78,10 @@ class Parser {
 	
 	function header($header = true) {
 		$this->header = $header;
+	}
+	
+	function headers($h = array()) {
+		$this->headerList = array_merge($this->headerList, $h);
 	}
 	
 	function header_array($header_array = true) {
@@ -148,6 +153,9 @@ class Parser {
 		} else {
 			curl_setopt($ch, CURLOPT_HEADER, 1);
 		}
+		if(isset($this->headerList) && is_array($this->headerList) && sizeof($this->headerList)) {
+			curl_setopt($ch, CURLOPT_HTTPHEADER, $this->headerList);
+		}
 		if(is_array($this->post) && sizeof($this->post)>0) {
 			$post = array();
 			foreach($this->post as $k => $v) {
@@ -155,6 +163,8 @@ class Parser {
 					$post[] = $k."=".$v;
 				} else if(!empty($k)) {
 					$post[] = $k."=";
+				} else if(!empty($v)) {
+					$post[] = $v;
 				}
 			}
 			curl_setopt($ch, CURLOPT_POST, 1);

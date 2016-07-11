@@ -24,7 +24,7 @@ final class HTTP {
 		
 	}
 	
-	public static function getip() {
+	final public static function getip() {
 		if(getenv('HTTP_X_FORWARDED_FOR')) {
 			$ip = getenv('HTTP_X_FORWARDED_FOR');
 		} elseif(getenv('HTTP_CLIENT_IP')) {
@@ -40,7 +40,17 @@ final class HTTP {
 	return $ip;
 	}
 	
-	public static function set_cookie($name, $value, $delete = false, $save = true) {
+	final public static function CheckIp($ip) {
+		if(is_array($ip)) {
+			return in_array(self::getip(), $ip);
+		} else if(is_string($ip)) {
+			return self::getip()==$ip;
+		} else {
+			return false;
+		}
+	}
+	
+	final public static function set_cookie($name, $value, $delete = false, $save = true) {
 		$domain = config::Select('default_http_hostname');
 		if(is_bool($delete)) {
 			if(!$delete) {
@@ -62,7 +72,7 @@ final class HTTP {
 		}
 	}
 	
-	public static function lastmod($LastModified_unix) {
+	final public static function lastmod($LastModified_unix) {
 		$LastModified = gmdate("D, d M Y H:i:s \G\M\T", $LastModified_unix);
 		$IfModifiedSince = false;
 		if(isset($_SERVER['HTTP_IF_MODIFIED_SINCE']))
@@ -75,7 +85,7 @@ final class HTTP {
 		header('Expires: '.$LastModified);
 	}
 	
-	public static function echos($echo = null) {
+	final public static function echos($echo = null) {
 		if(!empty($echo)) {
 			echo $echo;
 			unset($echo);

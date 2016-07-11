@@ -1,7 +1,7 @@
 									<table class="table table-bordered table-striped" id="example-2">
 										<thead>
 											<tr>
-												<td colspan="6" align="right"><form method="post" action="{C_default_http_host}admincp.php/?pages=Logs&delete"><button class="btn btn-red btn-icon btn-icon-standalone"><i class="fa-remove"></i><span>Delete All</span></button></form></td>
+												<td colspan="6" align="right"><form method="post" action="{C_default_http_host}admincp.php/?pages=Logs&delete"><button class="btn btn-red btn-icon btn-icon-standalone"><i class="fa-remove"></i><span>{L_DeleteAll}</span></button></form></td>
 											</tr>
 											<tr>
 												<th width="90">Date/Time</th>

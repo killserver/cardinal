@@ -47,6 +47,10 @@ if(isset($_POST['rewrite'])) {
 	unset($_POST['rewrite']);
 }
 lang::include_lang("install");
+Route::Config(array(
+	"rewrite" => config::Select("rewrite"),
+	"default_http_host" => config::Select("default_http_host"),
+));
 if((isset($_SERVER['PATH_INFO']) && strpos($_SERVER['PATH_INFO'], "install/done")!==false) || isset($_GET['done'])) {
 	templates::assign_vars(array("page" => "4"));
 	echo templates::view(templates::complited_assing_vars("install", null, ""));
@@ -67,15 +71,15 @@ if(sizeof($_POST)==0||(sizeof($_POST)==1)||(sizeof($_POST)==2)) {
 		$php = (PHP_VERSION_ID>=50302 ? "green":"red");
 		$cache = (get_chmod(ROOT_PATH."core".DS."cache".DS)=="0777" ? "green":"red");
 		$system_cache = (get_chmod(ROOT_PATH."core".DS."cache".DS."system".DS)=="0777" ? "green":"red");
+		$template = (get_chmod(ROOT_PATH."core".DS."cache".DS."tmp".DS)=="0777" ? "green":"red");
 		$media = (get_chmod(ROOT_PATH."core".DS."media".DS)=="0777" ? "green":"red");
-		$tmpl = (get_chmod(ROOT_PATH."core".DS."cache".DS."tmp".DS)=="0777" ? "green":"red");
 		$mb = (function_exists('mb_detect_encoding') ? "green" : "red");
-		if($apache=="red"||$php=="red"||$cache=="red"||$system_cache=="red"||$media=="red"||$mb=="red"||$tmpl=="red") {
+		if($apache=="red"||$php=="red"||$cache=="red"||$system_cache=="red"||$media=="red"||$mb=="red") {
 			templates::assign_var("is_stop", "1");
 		} else {
 			templates::assign_var("is_stop", "0");
 		}
-		templates::assign_vars(array("page" => "2", "apache" => $apache, "php" => $php, "cache" => $cache, "template" => $tmpl, "system_cache" => $system_cache, "media" => $media, "mb" => $mb));
+		templates::assign_vars(array("page" => "2", "apache" => $apache, "php" => $php, "cache" => $cache, "system_cache" => $system_cache, "template" => $template, "media" => $media, "mb" => $mb));
 	} else {
 		templates::assign_vars(array("page" => "3", "SERNAME" => getenv('SERVER_NAME').str_replace(array("install.php", "/install/step2", "/install/step3"), "", getenv("REQUEST_URI")), "SERVERS" => getenv('SERVER_NAME')));
 		$driver = ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS;
@@ -323,6 +327,7 @@ $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `acc
 $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (2, 'Пользователь', 'USER', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
 $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (3, 'Модератор', 'ADMIN', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
 $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (4, 'Администратор', 'ADMIN', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
+
 
 
 db::connect($db_host, $db_user, $db_pass, $db_db, "utf8", 3306);

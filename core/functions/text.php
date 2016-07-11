@@ -132,7 +132,9 @@ function nstr_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT) {
 function del_in_file($file, $row_number) {
 	if(file_exists($file)) {
 		$file_out = file($file);
-		unset($file_out[$row_number]);
+		if(isset($file_out[$row_number])) {
+			unset($file_out[$row_number]);
+		}
 		unlink($file);
 		file_put_contents($file, implode("", $file_out));
 		return true;
@@ -245,6 +247,30 @@ global $lang;
 		$lang['translate'] = array_merge($lang['translate'], array(" " => "_", "\\" => "", "/" => "", "'" => "", "$" => "", "#" => "", "@" => "", "!" => "", "%" => "", "^" => "", "&" => "", "*" => "", "(" => "", ")" => "", "," => "", "." => "", "?" => "", ":" => "", "=" => "", "+" => "", "\"" => "'"));
 	}
 return strtr(strtolowers($var), $lang['translate']);
+}
+
+function plural_form($arr) {
+	if(!is_array($arr) || !isset($arr[1]) || !isset($arr[2]) || !is_numeric($arr[1]) || empty($arr[2])) {
+		return false;
+	}
+	$del = " ";
+	$n = $arr[1];
+	$forms = $arr[2];
+	if(strpos($forms, "|")===false) {
+		$forms = array($forms);
+	} else {
+		$forms = explode("|", $forms);
+	}
+	if(isset($arr[4])) {
+		$del = $arr[4];
+	}
+	if(sizeof($forms)==1) {
+		$forms[1] = $forms[0];
+		$forms[2] = $forms[1];
+	} else if(sizeof($forms)==2) {
+		$forms[2] = $forms[1];
+	}
+	return $n.$del.($n%10==1&&$n%100!=11?$forms[0]:($n%10>=2&&$n%10<=4&&($n%100<10||$n%100>=20)?$forms[1]:$forms[2]));
 }
 
 ?>

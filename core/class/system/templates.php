@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 3.2
+ * @version 4.0a
  * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 3.2
+ * Version Engine: 4.0a
  * Version File: 4
  *
  * 3.0
@@ -71,7 +71,7 @@ final class templates {
 	/**
 	 * @var bool|string
      */
-	private static $skins = "";
+	private static $skins = "main";
 	/**
 	 * @var string
      */
@@ -93,18 +93,33 @@ final class templates {
 	 * templates constructor.
 	 * @access private
      */
-	public function __construct() {
-		if(!modules::get_config('gzip_output')) {
-			self::$gzip = modules::get_config('gzip_output');
+	public function __construct($config = array()) {
+		if(isset($config['gzip_output']) && !$config['gzip_output']) {
+			self::$gzip = $config['gzip_output'];
 		}
-		self::$skins = modules::get_config('skins', 'skins');
-		$test_shab = modules::get_config('skins', 'test_shab');
-		unset($test_shab);
-		if(!empty($test_shab) && in_array(HTTP::getip(), modules::get_config('ip_test_shab'))) {
-			self::$skins = $test_shab;
+		if(isset($config['skins_skins'])) {
+			self::$skins = $config['skins_skins'];
 		}
-		if(defined("MOBILE") && MOBILE && modules::get_config('skins', 'mobile')) {
-			self::$skins = modules::get_config('skins', 'mobile');
+		if(isset($config["skins_test_shab"]) && !empty($test_shab)) {
+			self::$skins = $config["skins_test_shab"];
+		}
+		if(defined("MOBILE") && MOBILE && isset($config['skins_mobile'])) {
+			self::$skins = $config['skins_mobile'];
+		}
+	}
+	
+	public static function SetConfig($config) {
+		if(isset($config['gzip_output']) && !$config['gzip_output']) {
+			self::$gzip = $config['gzip_output'];
+		}
+		if(isset($config['skins_skins'])) {
+			self::$skins = $config['skins_skins'];
+		}
+		if(isset($config["skins_test_shab"]) && !empty($test_shab)) {
+			self::$skins = $config["skins_test_shab"];
+		}
+		if(defined("MOBILE") && MOBILE && isset($config['skins_mobile'])) {
+			self::$skins = $config['skins_mobile'];
 		}
 	}
 
@@ -139,6 +154,17 @@ final class templates {
 	public static function __callStatic($name, array $params) {
 		$new = __METHOD__;
 		return self::$new($name, $params);
+	}
+
+	/**
+	 * Call another function
+	 * @access public
+	 * @param string $func Name function for call
+	 * @param array $args Params for calling
+	 * @return mixed Result work function
+     */
+	public static function __callBack($func, array $args) {
+		return call_user_func_array($func, $args);
 	}
 
 	/**
@@ -423,7 +449,7 @@ final class templates {
 		$ret = $array[0];
 		switch($array[1]) {
 			case "rand":
-				$ret = mrand();
+				$ret = self::mrand();
 			break;
 			case "time":
 				$ret = time();
@@ -433,6 +459,38 @@ final class templates {
 			break;
 		}
 		return $ret;
+	}
+
+	/**
+	 * Get random numeric
+	 * @access private
+	 * @param int $min Minimal integer for random numeric
+	 * @param int $max Maximal integer for random numeric
+	 * @return int Return random numeric
+     */
+	private static function mrand($min = 0, $max = 0) {
+		if($min==0 && $max==0) {
+			if(function_exists("random_int") && defined("PHP_INT_MIN")) {
+				$min = PHP_INT_MIN;
+			}
+			if(function_exists("random_int") && defined("PHP_INT_MAX")) {
+				$max = PHP_INT_MAX;
+			} else {
+				if(function_exists("mt_rand")) {
+					$max = mt_getrandmax();
+				} else {
+					$max = getrandmax();
+				}
+			}
+		}
+		if(function_exists("random_int")) {
+			return random_int($min, $max);
+		}
+		if(function_exists("mt_rand")) {
+			return mt_rand($min, $max);
+		} else {
+			return rand($min, $max);
+		}
 	}
 
 	/**
@@ -606,6 +664,7 @@ final class templates {
 		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+) %\}#", '{U_\\1}', $tpl);
 		$tpl = preg_replace("#\{% D_([a-zA-Z0-9\-_]+) %\}#", '{D_\\1}', $tpl);
 		$tpl = preg_replace("#\{% R_\[(.+?)\]\[(.+?)\] %\}#", '{R_[\\1][\\2]}', $tpl);
+		$tpl = preg_replace("#\{\$ R_\[(.+?)\]\[(.+?)\] \$\}#", '{R_[\\1][\\2]}', $tpl);
 		$tpl = preg_replace("#\{% RP\[(.+?)\] %\}#", '{RP[\\1]}', $tpl);
 		
 		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) %\}#is", '{\\1.\\2}', $tpl);
@@ -661,11 +720,11 @@ final class templates {
 		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", 'templates::user(array(null, \'\\1\', \'\\2\'))', $tpl);
 		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+) %\}#", 'templates::user(array(null, \'\\1\'))', $tpl);
 		$tpl = preg_replace("#\{% D_([a-zA-Z0-9\-_]+) %\}#", 'templates::define(array(null, \'\\1\'))', $tpl);
-		$tpl = preg_replace("#\{% R_\[(.+?)\]\[(.+?)\] %\}#", 'templates::route(array(null, \'\\1\', \'\\2\'))', $tpl);
+		$tpl = preg_replace("#\{% R_\[(.+?)\]\[(.+?)\] %\}#", 'templates::route(array(null, "\\1", "\\2"))', $tpl);
 		$tpl = preg_replace("#\{% RP\[(.+?)\] %\}#", 'templates::routeparam(array(null, \'\\1\'))', $tpl);
 		
 		$tpl = preg_replace("#\{\@ ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) \@\}#is", '(isset($\\1[\'\\2\']) ? $\\1[\'\\2\'] : \'\')', $tpl);
-		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) %\}#is", '$data[\'\\1\'][\'\\2\']', $tpl);
+		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) %\}#is", '$\\1[\'\\2\']', $tpl);
 		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+) %\}#is", '$data[\'\\1\']', $tpl);
 		
 		$tpl = preg_replace("#\{L_sprintf\(([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", '<?php echo templates::slangf(array(null, \'\\1\', \'\\2\')); ?>', $tpl);
@@ -677,7 +736,7 @@ final class templates {
 		$tpl = preg_replace("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", '<?php echo templates::user(array(null, \'\\1\', \'\\2\')); ?>', $tpl);
 		$tpl = preg_replace("#\{U_([a-zA-Z0-9\-_]+)\}#", '<?php echo templates::user(array(null, \'\\1\')); ?>', $tpl);
 		$tpl = preg_replace("#\{D_([a-zA-Z0-9\-_]+)\}#", '<?php echo templates::define(array(null, \'\\1\')); ?>', $tpl);
-		$tpl = preg_replace("#\{R_\[(.+?)\]\[(.+?)\]\}#", '<?php echo templates::route(array(null, \'\\1\', \'\\2\')); ?>', $tpl);
+		$tpl = preg_replace("#\{R_\[(.+?)\]\[(.+?)\]\}#", '<?php echo templates::route(array(null, "\\1", "\\2")); ?>', $tpl);
 		$tpl = preg_replace("#\{\@ R_\[(.+?)\]\[(.+?)\] \@\}#", '<?php echo templates::route(array(null, \'\\1\', \\2)); ?>', $tpl);
 		$tpl = preg_replace("#\{RP\[(.+?)\]\}#", '<?php echo templates::routeparam(array(null, \'\\1\')); ?>', $tpl);
 		
@@ -728,10 +787,15 @@ final class templates {
 		$tmp = self::callback_array('#\[not-page=(.*?)\]([^[]*)\[/not-page\]#i', ("templates::npage"), $tmp);
 		
 		$tmp = self::callback_array('#\[if (.+?)\](.*?)\[else \\1\](.*?)\[/if \\1\]#i', ("templates::is"), $tmp);
-		$tmp = self::callback_array('~\[if (.+?)\]([^[]*)\[/if \\1\]~iU', ("templates::is"), $tmp);
+		while(preg_match('~\[if (.+?)\]([^[]*)\[/if \\1\]~iU', $tmp)) {
+			$tmp = self::callback_array('~\[if (.+?)\]([^[]*)\[/if \\1\]~iU', ("templates::is"), $tmp);
+		}
 		
 		$tmp = self::callback_array("#\\[if (.+?)\\](.*?)\\[else\\](.*?)\\[/if\\]#i", ("templates::is"), $tmp);
 		$tmp = self::callback_array('~\[if (.+?)\]([^[]*)\[/if\]~iU', ("templates::is"), $tmp);
+		while(preg_match('~\[if (.+?)\]([^[]*)\[/if\]~iU', $tmp)) {
+			$tmp = self::callback_array('~\[if (.+?)\]([^[]*)\[/if\]~iU', ("templates::is"), $tmp);
+		}
 		$tmp = self::callback_array("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tmp);
 		if(preg_match("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true)\}#", $tmp)) {
 			$tmp = self::callback_array("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true)\}#", "langdate", $tmp);
@@ -1586,7 +1650,6 @@ if(!$test) {
 		if(isset(self::$module['body']['after'])) {
 			$body .= self::$module['body']['after'];
 		}
-		$h = str_replace("{content}", $body, $h);
 		if(isset(self::$header['meta_body'])) {
 			$mtt = meta(self::$header['meta_body']);
 			$h = str_replace("{meta_tt}", $mtt, $h);
@@ -1594,6 +1657,7 @@ if(!$test) {
 		} else {
 			$h = str_replace("{meta_tt}", meta(), $h);
 		}
+		$h = str_replace("{content}", $body, $h);
 		if(isset($_GET['jajax']) || (getenv('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest' && isset($_GET['jajax']))) {
 			unset($h);
 			$thead = "<script type=\"text/javascript\" src=\"{C_default_http_host}js/gooan.js\"></script><div id=\"pretitle\">{L_sitename}</div>";

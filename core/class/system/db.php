@@ -38,10 +38,6 @@ final class db {
 		}
 		return self::$driver->connected();
 	}
-	
-	private static function check_config() {
-		return file_exists(ROOT_PATH."core".DS."media".DS."db.php");
-	}
 
 	public static function check_connect($host, $user, $pass) {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
@@ -72,7 +68,7 @@ final class db {
 	}
 
 	public static function DriverList() {
-		$dir = ROOT_PATH."core/class/system/drivers/";
+		$dir = ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS;
 		$dirs = array();
 		if(is_dir($dir)) {
 			if($dh = dir($dir)) {
@@ -107,7 +103,7 @@ final class db {
 	}
 
 	function __construct() {
-		if(!defined("INSTALLER") && self::check_config()) {
+		if(!defined("INSTALLER")) {
 			config::StandAlone();
 			self::$driver_name = config::Select('db','driver');
 			self::connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'), config::Select('db','db'), config::Select('db', 'charset'), 3306);
@@ -218,6 +214,14 @@ final class db {
 	public static function last_id($table) {
 		$table = self::doquery("SHOW TABLE STATUS LIKE '".$table."'");
 		return $table['Auto_increment'];
+	}
+	
+	private static function RePair() {
+		$db_name = config::Select('db','db');
+		$sel = self::query("SHOW FULL TABLES");
+		while($row = self::fetch_assoc($sel)) {
+			db::query("REPAIR TABLE `".$row['Tables_in_'.$db_name]."`");
+		}
 	}
 
 	public static function select_query($query) {
@@ -344,6 +348,10 @@ final class db {
 		$mysql_error = $arr['mysql_error'];
 		$mysql_error_num = $arr['mysql_error_num'];
 		$query = $arr['query'];
+		
+		if(in_array($mysql_error_num, array(145, 144, 135, 136, 126, 127))) {
+			self::RePair();
+		}
 
 		if($query) {
 			// Safify query
