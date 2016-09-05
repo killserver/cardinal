@@ -1,14 +1,16 @@
 <?php
 /*
  *
- * @version 2015-10-07 17:50:38 1.25.6-rc3
- * @copyright 2014-2015 KilleR for Cardinal Engine
+ * @version 4.1
+ * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc3
+ * Version Engine: 4.1
  * Version File: 1
  *
  * 1.1
  * add support driver for mysqli
+ * 1.2
+ * fix bug working with object
  *
 */
 if(!defined("IS_CORE")) {
@@ -19,7 +21,6 @@ die();
 class db_mysqli extends DriverParam implements drivers {
 
 	private $mc;
-	private $qid;
 	public $connecten = false;
 	public static $subname = "MySQLi";
 	public $type_driver = "mysqli";
@@ -125,6 +126,9 @@ class db_mysqli extends DriverParam implements drivers {
 	public function insert_id() {
 		return $this->mc->insert_id;
 	}
+	public function escape($str) {
+		return $this->mc->escape_string($str);
+	}
 	public function num_fields() {
 		return $this->mc->field_count;
 	}
@@ -138,7 +142,11 @@ class db_mysqli extends DriverParam implements drivers {
 		return $query->fetch_assoc();
 	}
 	public function fetch_object($query, $class_name, $params) {
-		return $query->fetch_object($class_name, $params);
+		if(is_array($params) && sizeof($params)>0) {
+			return $query->fetch_object($class_name, $params);
+		} else {
+			return $query->fetch_object($class_name);
+		}
 	}
 	public function num_rows($query) {
 		return $query->num_rows;

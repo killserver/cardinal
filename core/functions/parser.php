@@ -15,8 +15,8 @@ echo "403 ERROR";
 die();
 }
 
-//ToDo: а нафиг мне тогда эта функция, если есть класс Parser?!
-function parser_url($url, $referer = null, $header=false, $coo=false, $coopath=null, $proxy=null, $error=false, $gzip=false, $uagent=null, $timeout=3) {
+//FIXME: а нафиг мне тогда эта функция, если есть класс Parser?!
+function parser_url($url, $referer = "", $header=false, $coo=false, $coopath="", $proxy="", $error=false, $gzip=false, $uagent="", $timeout=3) {
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_URL, $url);
 	if(!empty($uagent)) {
@@ -28,8 +28,8 @@ function parser_url($url, $referer = null, $header=false, $coo=false, $coopath=n
 	//curl_setopt($ch, CURLOPT_FAILONERROR, 1);
 	//Устанавливаем значение referer - адрес последней активной страницы
 	if(is_bool($coo) && $coo) {
-		curl_setopt($ch, CURLOPT_COOKIEJAR, ROOT_PATH."core/cache/parser_video/".$coopath.".txt");
-		curl_setopt($ch, CURLOPT_COOKIEFILE, ROOT_PATH."core/cache/parser_video/".$coopath.".txt");
+		curl_setopt($ch, CURLOPT_COOKIEJAR, ROOT_PATH."core".DS."cache".DS."parser_video".DS.$coopath.".txt");
+		curl_setopt($ch, CURLOPT_COOKIEFILE, ROOT_PATH."core".DS."cache".DS."parser_video".DS.$coopath.".txt");
 	}
 	if(!is_bool($coo) && !empty($coo)) {
 		if(is_array($coo)) {

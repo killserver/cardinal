@@ -18,8 +18,26 @@ echo "403 ERROR";
 die();
 }
 
-function cut($text, $start, $end = null, $add = null){return function_call('cut', array($text, $start, $end, $add));}
-function or_cut($text, $start, $end = null, $add = null) {
+
+/**
+ * Replacement cut text between start and end, start 0 to start and add text in end
+ * @param string $text Original text
+ * @param int $start Start or end text
+ * @param int|string $end End text or added after cut
+ * @param string $add Added after cut
+ * @return string Cut text
+ */
+function cut($text, $start, $end = "", $add = ""){return function_call('cut', array($text, $start, $end, $add));}
+
+/**
+ * Cut text between start and end, start 0 to start and add text in end
+ * @param string $text Original text
+ * @param int $start Start or end text
+ * @param int|string $end End text or added after cut
+ * @param string $add Added after cut
+ * @return string Cut text
+ */
+function or_cut($text, $start, $end = "", $add = "") {
 	if(empty($end) && is_string($start)) {
 		$add = "";
 		$start = nstrpos($text, $start)+nstrlen($start);
@@ -38,8 +56,21 @@ function or_cut($text, $start, $end = null, $add = null) {
 }
 
 
-function iconv_charset($string){return function_call('iconv_charset', array($string));}
-function or_iconv_charset($string) {
+/**
+ * Replacement detect charset
+ * @param string $string Text for detected
+ * @param int $pattern_size Part pattern
+ * @return string Result detected charset
+ */
+function iconv_charset($string, $pattern_size = 50){return function_call('iconv_charset', array($string, $pattern_size));}
+
+/**
+ * Detect charset
+ * @param string $string Text for detected
+ * @param int $pattern_size Part pattern
+ * @return string Result detected charset
+ */
+function or_iconv_charset($string, $pattern_size = 50) {
 	if(function_exists("mb_detect_encoding")) {
 		return mb_detect_encoding($string, array('UTF-8', 'Windows-1251', 'KOI8-R', 'ISO-8859-5'));
 	} else {
@@ -95,6 +126,11 @@ function or_iconv_charset($string) {
 	}
 }
 
+/**
+ * Get chmod for path
+ * @param string $path Path for detect chmod
+ * @return string Chmod directory
+ */
 function get_chmod($path) {
 	return substr(sprintf('%o', fileperms($path)), -4);
 }
@@ -105,6 +141,13 @@ function isoTOint($data) {
 	return $datetime->format('U');
 }
 
+/**
+ * Substring text in charset engine
+ * @param string $text Needed text
+ * @param int $start Start cut
+ * @param int $end End cut
+ * @return string Part text
+ */
 function nsubstr($text, $start, $end) {
 	if(function_exists("mb_substr")) {
 		return mb_substr($text, $start, $end, config::Select('charset'));
@@ -115,6 +158,11 @@ function nsubstr($text, $start, $end) {
 	}
 }
 
+/**
+ * String length in charset engine
+ * @param string $text Needed text
+ * @return int Length text
+ */
 function nstrlen($text) {
 	if(function_exists("mb_strlen")) {
 		return mb_strlen($text, config::Select('charset'));
@@ -125,6 +173,14 @@ function nstrlen($text) {
 	}
 }
 
+/**
+ * Added need length to competed string
+ * @param string $str Needed text
+ * @param int $pad_len Needed length
+ * @param string $pad_str Needed completed
+ * @param int $dir Where added text
+ * @return string Result pad text
+ */
 function nstr_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT) {
    return str_pad($str, strlen($str)-nstrlen($str)+$pad_len, $pad_str, $dir); 
 }
@@ -154,6 +210,7 @@ function nstrpos($text, $search, $pos = 0) {
 }
 
 function saves($text, $db=false, $ddb=false){return function_call('saves', array($text, $db, $ddb));}
+
 function or_saves($text, $db=false, $ddb=false) {
 	if($ddb) {
 		$text = str_replace('"', '\\\\"', $text);
@@ -188,9 +245,9 @@ function strtolowers($text) {
 	}
 }
 
-function comp_search($text=null, $finds = array()) {
+function comp_search($text="", $finds = array()) {
 	if(empty($text)) {
-		return;
+		return "";
 	}
 	$find = $finds['find'];
 	if(strpos($text, $find) !== false) {
@@ -205,6 +262,7 @@ function comp_search($text=null, $finds = array()) {
 		$return = ($before)."\n";
 		$i = 0;
 		$return .= $finds['bbview'];
+		$actors = array();
 		foreach($matches as $s) {
 			$actors[] = ($i ? ' ' : '').'[b][url="'.$finds['link'].trim($s).'"]'.trim($s).'[/url][/b]';
 			$i++;

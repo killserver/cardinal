@@ -1,14 +1,16 @@
 <?php
 /*
  *
- * @version 2015-10-07 17:50:38 1.25.6-rc3
- * @copyright 2014-2015 KilleR for Cardinal Engine
+ * @version 4.1
+ * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc3
+ * Version Engine: 4.1
  * Version File: 1
  *
  * 1.1
  * add support driver for databases
+ * 1.2
+ * add support all need columns
  *
 */
 if(!defined("IS_CORE")) {
@@ -18,9 +20,11 @@ die();
 
 abstract class DriverParam {
 
+	private $mc;
 	public $connecten;
 	public $type_driver;
 	public static $subname;
+	public $type_error;
 
 }
 

@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 2015-10-07 17:50:38 1.25.6-rc3
- * @copyright 2014-2015 KilleR for Cardinal Engine
+ * @version 4.1
+ * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc3
+ * Version Engine: 4.1
  * Version File: 1
  *
  * 1.1
@@ -32,6 +32,7 @@ interface drivers {
 	public function fetch_array($query);
 	public function fetch_assoc($query);
 	public function fetch_object($query, $class_name, $params);
+	public function escape($str);
 	public function num_rows($query);
 	public function free($query);
 	public function error($query);

@@ -156,7 +156,7 @@ final class cache {
 		}
 		$fdir = opendir(ROOT_PATH.'core'.DS.'cache');
 		while($file = readdir($fdir)) {
-			if($file != '.' && $file != '..' && $file != '.htaccess' && $file != 'index.php' && !is_dir(ROOT_PATH.'core'.DS.'cache'.DS.$file)) {
+			if($file != '.' && $file != '..' && $file != '.htaccess' && $file != 'index.'.ROOT_EX && !is_dir(ROOT_PATH.'core'.DS.'cache'.DS.$file)) {
 				if($cache_areas) {
 					foreach($cache_areas as $cache_area) {
 						if(strpos($file, $cache_area)!==false && file_exists(ROOT_PATH.'core'.DS.'cache'.DS.$file)) {

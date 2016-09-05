@@ -79,6 +79,7 @@ class ModuleList extends Core {
 			}
 			$modules[$fmod]['name'] = $name;
 			$modules[$fmod]['alt_name'] = $fmod;
+			$modules[$fmod]['update'] = modules::CheckNewVersion($fmod);
 			$modules[$fmod]['image'] = $image;
 			$modules[$fmod]['description'] = $description;
 			$modules[$fmod]['core_ver'] = $core_ver;

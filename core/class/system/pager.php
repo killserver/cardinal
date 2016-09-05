@@ -23,7 +23,7 @@ die();
 final class pager {
 	
 	private $pages = array();
-	private $limits = array();
+	private $limits = array(0,0);
 	
 	private function Route($array) {
 		$route = Route::get($array[0]);
@@ -51,6 +51,9 @@ final class pager {
 	}
 
 	function __construct($rpp, $count_all, $on_page, $url_page, $p_page = "/page/", $max_view = 10, $route = false) {
+		if(!is_numeric($rpp) || !is_numeric($count_all) || !is_numeric($on_page) || empty($url_page)) {
+			return;
+		}
 		$this->limits = array(ceil($rpp*$on_page), $on_page);
 		$c_link = 1;
 		if($count_all>$on_page) {

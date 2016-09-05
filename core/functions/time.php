@@ -4,7 +4,7 @@ echo "403 ERROR";
 die;
 }
 
-function get_date($date,$array) {
+function get_date($date, $array) {
 	$first=$array[0];
 	$second=$array[1];
 	$third=$array[2];
@@ -41,7 +41,7 @@ function langdate($date) {
 			$date = strtr($local->format($temp), lang::get_lang("langdate"));
 			return $date;
 		}
-		return;
+		return "";
 	}
 	if(date('Ymd', $date) == date('Ymd', time())) {
 		$local = new DateTime('@'.$date);
@@ -68,7 +68,7 @@ function langdate($date) {
 	}
 }
 
-function timespan($seconds = 1, $time = null) {
+function timespan($seconds = 1, $time = "") {
 global $lang;
 	if(!is_numeric($seconds)) {
 		$seconds = 1;

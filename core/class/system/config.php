@@ -88,7 +88,7 @@ final class config {
 		}
 	}
 	
-	public static function Exists($data, $sub=null, $subst = null) {
+	public static function Exists($data, $sub = "", $subst = "") {
 		if(!empty($sub) && !empty($subst) && isset(self::$config[$data]) && isset(self::$config[$data][$sub]) && isset(self::$config[$data][$subst])) {
 			return true;
 		} else if(!empty($sub) && isset(self::$config[$data]) && isset(self::$config[$data][$sub])) {
@@ -100,7 +100,7 @@ final class config {
 		}
 	}
 
-	public static function Select($data, $sub=null, $subst = null) {
+	public static function Select($data, $sub = "", $subst = "") {
 //		var_dump(self::$config, ROOT_PATH, ROOT_EX);die();
 		if(!empty($sub) && !empty($subst) && isset(self::$config[$data]) && isset(self::$config[$data][$sub]) && isset(self::$config[$data][$subst])) {
 			return self::$config[$data][$sub][$subst];
@@ -113,7 +113,7 @@ final class config {
 		}
 	}
 
-	public static function Update($name, $data=null) {
+	public static function Update($name, $data = "") {
 		db::doquery("UPDATE config SET config_value = \"".$data."\" WHERE config_name = \"".$name."\"");
 		cache::Delete("config");
 		if(!empty(self::$config[$data])) {

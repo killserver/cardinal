@@ -17,7 +17,7 @@ function CheckCanGzip() {
 	return false; 
 }
 
-
+// ToDo: Языковую панель на это дело надо вешать!
 function GzipOut($debug = false, $exit = false) {
 global $config, $Timer, $manifest;
 	if($exit) {
@@ -25,10 +25,12 @@ global $config, $Timer, $manifest;
 		return;
 	}
 	$s = "";
+	$tmp = round(templates::$time, 5);
+	$dbs = round(db::$time, 5);
 	if($debug) {
-		$s = "\n<!-- Время выполнения скрипта ".$Timer." секунд -->\n".
-		"<!-- Время затраченное на компиляцию шаблонов ".round(templates::$time, 5)." секунд -->\n".
-		"<!-- Время затраченное на выполнение MySQL запросов: ".round(db::$time, 5)." секунд -->\n".
+		$s = "\n<!-- Время выполнения скрипта ".($Timer>0 ? $Timer : 0)." секунд -->\n".
+		"<!-- Время затраченное на компиляцию шаблонов ".($tmp>0 ? $tmp : 0)." секунд -->\n".
+		"<!-- Время затраченное на выполнение MySQL запросов: ".($dbs>0 ? $dbs : 0)." секунд -->\n".
 		"<!-- Общее количество MySQL запросов ".db::$num." -->";
 	}
 

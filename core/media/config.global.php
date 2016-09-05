@@ -55,7 +55,7 @@ define("UPLOAD_CM", 12000);
 define("UPLOAD_CMD", 12000);
 define("UPLOAD_ALL", 240000);
 
-define("VERSION", "4.0");
+define("VERSION", "4.1");
 define("DB_VERSION", "3.5");
 define("LEVEL_ADMIN", 3);
 define("LEVEL_MODER", 2);
@@ -72,6 +72,17 @@ $config = array_merge($config, array(
 	"git_beta" => true,
 	"rewrite" => true,
 	"gzip" => false,
+	"uses" => array(
+		"Minify" => "2.1.7",
+		"Mobile Detect" => "2.8.0",
+		"PHPMailer" => "5.1",
+		"Sypex Geo" => "2.2.0",
+		"StopSpam" => "1.0",
+		"PEAR" => "1.10.1",
+		"Archive Tar" => "1.0",
+		"elFinder" => "2.0",
+		"Spyc" => "1.0",
+	),
 ));
 
 ?>

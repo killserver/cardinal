@@ -1,3 +1,4 @@
+2016-03-28 14:56:08 3.3
 [!] Добавлена защита от внедрения php-скрптов в шаблонизатор при включенной конвертации в исполняемый файл
 [!] Добавлена система кеша для браузеров из конфигурационного файла apache ".htaccess"
 [!] Удалён мета-тег "keywords" согласно статье: https://freshit.net/blog/poiskovoe-prodvizhenie-seo/pochemu-ne-nuzhno-ispolzovat-meta-teg-keywords/

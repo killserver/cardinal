@@ -83,10 +83,20 @@ class Users extends Core {
 			return;
 		}
 		templates::assign_var("is_edit", "0");
+		templates::assign_var("search_ip", "");
 		db::doquery("SELECT `id`, `username`, `level`, `email`, `activ` FROM `users`", true);
 		while($row = db::fetch_assoc()) {
 			$row['avatar'] = "http://www.gravatar.com/avatar/".md5(strtolower(trim($row['email'])))."?&s=103";
 			templates::assign_vars($row, "users", $row['id']);
+			if($row['level']==LEVEL_ADMIN) {
+				templates::assign_vars($row, "usersAdmin", $row['id']);
+			}
+			if($row['level']==LEVEL_MODER) {
+				templates::assign_vars($row, "usersModer", $row['id']);
+			}
+			if($row['level']==LEVEL_USER) {
+				templates::assign_vars($row, "usersUser", $row['id']);
+			}
 		}
 		$this->Prints("Users");
 	}

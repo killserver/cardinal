@@ -13,8 +13,8 @@
 class Logs extends Core {
 	
 	function Delete() {
-		if(file_exists(ROOT_PATH."core/cache/system/php_log.txt")) {
-			unlink(ROOT_PATH."core/cache/system/php_log.txt");
+		if(file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt")) {
+			unlink(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt");
 		}
 		$list = db::doquery("SELECT id FROM `error_log`", true);
 		while($l = db::fetch_assoc($list)) {
@@ -28,8 +28,8 @@ class Logs extends Core {
 			Header("Location: ./?pages=Logs");
 			die();
 		}
-		if(config::Select('logs')=="file" && file_exists(ROOT_PATH."core/cache/system/php_log.txt")) {
-			$logs = file(ROOT_PATH."core/cache/system/php_log.txt");
+		if(config::Select('logs')=="file" && file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt")) {
+			$logs = file(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt");
 			$log_el = array();
 			for($i=(sizeof($logs)-1);$i>=0;$i--) {
 				$log = json_decode(trim($logs[$i]));
@@ -58,6 +58,7 @@ class Logs extends Core {
 				), "logs", $log['filename'].$log['line']);
 			}
 		}
+		$this->ParseLang();
 		$tmp = templates::complited_assing_vars("errors", null);
 		templates::clean();
 		$this->Prints($tmp, true);

@@ -31,8 +31,8 @@ global $manifest;
 		$pages['object']->$pages['func']();
 		unset($pages);
 	}
-	if(array_key_exists($page, $manifest['pages']) && file_exists(ROOT_PATH."core/pages/".$manifest['pages'][$page])) {
-		include_once(ROOT_PATH."core/pages/".$manifest['pages'][$page]);
+	if(array_key_exists($page, $manifest['pages']) && file_exists(ROOT_PATH."core".DS."pages".DS.$manifest['pages'][$page])) {
+		include_once(ROOT_PATH."core".DS."pages".DS.$manifest['pages'][$page]);
 		if(array_key_exists($page, $manifest['after_ini_class'])) {
 			$page = $manifest['after_ini_class'][$page];
 			$page['object']->$page['func']();
@@ -53,28 +53,41 @@ global $manifest;
 	}
 	switch($page) {
 		case "error":
-			include_once(ROOT_PATH."core/pages/error.".ROOT_EX);
+			include_once(ROOT_PATH."core".DS."pages".DS."error.".ROOT_EX);
 		break;
 		case "upload":
-			include_once(ROOT_PATH."core/pages/upload.".ROOT_EX);
+			include_once(ROOT_PATH."core".DS."pages".DS."upload.".ROOT_EX);
 		break;
 		case "reg":
-			include_once(ROOT_PATH."core/pages/reg.".ROOT_EX);
+			include_once(ROOT_PATH."core".DS."pages".DS."reg.".ROOT_EX);
 		break;
 		case "add":
 		case "edit":
 		case "post":
-			include_once(ROOT_PATH."core/pages/post.".ROOT_EX);
+			include_once(ROOT_PATH."core".DS."pages".DS."post.".ROOT_EX);
 		break;
 		case "login":
-			include_once(ROOT_PATH."core/pages/login.".ROOT_EX);
+			include_once(ROOT_PATH."core".DS."pages".DS."login.".ROOT_EX);
 		break;
 		case "news":
-			include_once(ROOT_PATH."core/pages/view.".ROOT_EX);
+			include_once(ROOT_PATH."core".DS."pages".DS."view.".ROOT_EX);
 		break;
 		case "main":
+			include_once(ROOT_PATH."core".DS."pages".DS."main.".ROOT_EX);
+		break;
 		default:
-			include_once(ROOT_PATH."core/pages/main.".ROOT_EX);
+			if(array_key_exists("default", $manifest['class_pages'])) {
+				$pages = $manifest['class_pages']["default"];
+				$pages['object']->$pages['func']();
+				unset($pages);
+				if(array_key_exists("default", $manifest['after_ini_class'])) {
+					$page = $manifest['after_ini_class']["default"];
+					$page['object']->$page['func']();
+					unset($page);
+				}
+				return;
+			}
+			include_once(ROOT_PATH."core".DS."pages".DS."main.".ROOT_EX);
 		break;
 	}
 	if(array_key_exists($page, $manifest['after_ini_class'])) {

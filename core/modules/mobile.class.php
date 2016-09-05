@@ -17,9 +17,12 @@ exit();
 class mobile extends modules {
 
 	function __construct() {
+	global $mobileDetect;
 		if(!isset($_COOKIE['moby'])) {
-			$detect = new Mobile_Detect();
-			if($detect->isMobile() || $detect->isTablet()) {
+			if(!is_object($mobileDetect)) {
+				$mobileDetect = new Mobile_Detect();
+			}
+			if($mobileDetect->isMobile() || $mobileDetect->isTablet()) {
 				setcookie("moby", "true", time()+(120*24*60*60), "/", ".".$this->get_config('default_http_hostname'), false, true);
 				define("MOBILE", true);
 			}

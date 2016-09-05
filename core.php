@@ -128,7 +128,6 @@ if(function_exists("mb_internal_encoding") && mb_internal_encoding($config['char
 if(isset($config['date_timezone'])) {
 	date_default_timezone_set($config['date_timezone']);
 }
-//echo "test";die();
 $config_templates = array(
 	"gzip_output" => modules::get_config('gzip_output'),
 	"skins_skins" => (!modules::get_config('skins', 'skins') ? "main" : modules::get_config('skins', 'skins')),

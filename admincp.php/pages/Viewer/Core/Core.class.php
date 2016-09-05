@@ -40,7 +40,7 @@ class Core {
 	
 	protected function ParseLang() {
 	global $lang;
-		$dir = ROOT_PATH."admincp.php".DS."pages".DS."Lang".DS.lang::get_lg()."/";
+		$dir = ROOT_PATH."admincp.php".DS."pages".DS."Lang".DS.lang::get_lg().DS;
 		if(is_dir($dir)) {
 			if($dh = dir($dir)) {
 				while(($file = $dh->read()) !== false) {
@@ -51,6 +51,9 @@ class Core {
 			$dh->close();
 			}
 		}
+		$langs = $lang;
+		&$lang = $langs;
+		unset($langs);
 	}
 	
 	private function vsort(&$array) {

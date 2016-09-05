@@ -27,8 +27,9 @@ die();
 class modules {
 	
 	private static $load_modules = false;
+	private static $load_hooks = false;
 	private static $columns = array();
-	private static $listFunc = array("ChangeList","manifest_get","manifest_set","manifest_getlog","manifest_log","get_user","select_db","change_db","ChangeList","use_modules","UnInstall","UnInstallFile","Install","ReadXML","SearchOnArray","ReadRoot","parsePrimary","init_modules","load_modules","CheckVersion","init_cache","init_db","init_bb","init_lang","init_templates","get_lang","set_config","get_config");
+	private static $access_user = array('id', 'username', 'alt_name', 'level', 'email', 'time_reg', 'last_activ', 'activ', 'avatar');
 
 	final public static function get_config($get, $array = "") {
 	global $config;
@@ -125,6 +126,46 @@ class modules {
 			$if = intval(str_replace(".", "", $old))>intval(str_replace(".", "", $new));
 		}
 		return $if;
+	}
+	
+	final public static function load_hooks($module) {
+		if(is_bool(self::$load_hooks)) {
+			$cache = self::init_cache();
+			if(!$cache->exists("load_hooks")) {
+				$db = self::init_db();
+				$db->doquery("SELECT `module` FROM `modules` WHERE `activ` = \"yes\" AND `file` LIKE \"core%".$module.".class.php\"", true);
+				self::$load_hooks = array();
+				while($row = $db->fetch_assoc()) {
+					self::$load_hooks[$row['module']] = true;
+				}
+				$cache->set("load_hooks", self::$load_hooks);
+			} else {
+				self::$load_hooks = $cache->get("load_hooks");
+			}
+		}
+		if(!isset(self::$load_hooks[$module])) {
+			return false;
+		}
+		$dir = ROOT_PATH."core".DS."modules".DS."hooks".DS;
+		if(is_dir($dir)) {
+			if($dh = dir($dir)) {
+				while(($file = $dh->read()) !== false) {
+					if($file != "index.".ROOT_EX && $file != "." && $file != ".." && strpos($file, $module) !== false) {
+						require_once($dir.$file);
+						$class = str_replace(".", "", $file);
+						if(class_exists($class)) {
+							$classes = new $class();
+							if(method_exists($classes, "init_hook")) {
+								$classes->init_hook();
+							}
+							unset($classes);
+						}
+					}
+				}
+			$dh->close();
+			}
+		}
+		return true;
 	}
 	
 	final public static function load_modules($file, $load) {
@@ -357,12 +398,14 @@ class modules {
 				$sql .= "INSERT INTO `modules` SET ".implode(", ", array_map(function($k, $v) { return "`".$k."` = \"".$v."\""; }, array_keys($param), array_values($param)))."!;";
 			}
 			// register all files for module
+			$fileList = 0;
 			for($i=0;$i<sizeof($xml->files->file);$i++) {
 				$name = "name=".$xml->info->attributes()->module;
 				$sql .= "INSERT INTO `modules` SET `file` = \"".self::SearchOnArray($xml->files->file[$i]->attributes()->path, $files_root)."\", `module` = \"".(isset($xml->install->type) ? $xml->install->type : "site")."_-_".$xml->info->attributes()->module."\", `type` = \"".(isset($xml->install->type) ? $xml->install->type : "site")."\"!;";
+				$fileList++;
 			}
 		}
-		if(empty($sql)) {
+		if(empty($sql) || $fileList==0) {
 			return "Error sql configuration";
 		}
 		if(strpos($sql, "!;")!==false) {
@@ -647,11 +690,52 @@ class modules {
 		}
 	return $db;
 	}
+	
+	final public static function CheckNewVersion($module) {
+		if(!file_exists(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $module . ".xml")) {
+			return false;
+		}
+		try {
+			$xml = simplexml_load_string(file_get_contents(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $module . ".xml"));
+		} catch(Exception $ex) {
+			return false;
+		}
+		$version = (string) $xml->info->version;
+		$file = new Parser(SERVER_MODULES."shop/search/api/".$module."/yaml");
+		$file->header();
+		$file->header_array();
+		$file = $file->get();
+		$hr = $file->getHeaders();
+		if(strpos($hr['Content-Type'], "application/x-yaml")===false) {
+			return false;
+		}
+		$arr = Spyc::YAMLLoadString($file);
+		if(CheckVersion($version, $arr['Version'])) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	final public static function AccessUser($arr) {
+		if(is_string($arr) && $arr=="light") {
+			self::$access_user = array_merge(self::$access_user, array($arr));
+			return true;
+		} else if(is_array($arr)) {
+			$arr = array_values($arr);
+			if(in_array("light", $arr)) {
+				return false;
+			}
+			self::$access_user = array_merge(self::$access_user, $arr);
+			return true;
+		} else {
+			return false;
+		}
+	}
 
 	final public static function get_user($get) {
 	global $user;
-		$assess = array('id', 'username', 'alt_name', 'level', 'email', 'time_reg', 'last_activ', 'activ', 'avatar');
-		if(in_array($get, $assess)) {
+		if(in_array($get, self::$access_user)) {
 			if(isset($user[$get])) {
 				return $user[$get];
 			} else {

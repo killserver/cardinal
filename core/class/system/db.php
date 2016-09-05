@@ -1,11 +1,11 @@
 <?php
 /*
  *
- * @version 1.25.6-rc4
- * @copyright 2014-2015 KilleR for Cardinal Engine
+ * @version 4.1
+ * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.6-rc4
- * Version File: 17
+ * Version Engine: 4.1
+ * Version File: 18
  *
  * 16.1
  * fix errors
@@ -15,6 +15,8 @@
  * add support "drivers" - submodules for database
  * 17.2
  * fix method db for drivers
+ * 18.0
+ * completed working with core database and fix working with object
  *
 */
 if(!defined("IS_CORE")) {
@@ -44,6 +46,10 @@ final class db {
 			return false;
 		}
 		return self::$driver->check_connect($host, $user, $pass);
+	}
+
+	public static function escape($str) {
+		return self::$driver->escape($str);
 	}
 
 	public static function exists_db($host, $user, $pass, $db) {
@@ -83,7 +89,7 @@ final class db {
 		sort($dirs);
 		$drivers = array();
 		for($i=0;$i<sizeof($dirs);$i++) {
-			if($dirs[$i]=="index.php"||$dirs[$i]=="DriverParam.php"||$dirs[$i]=="drivers.php") {
+			if($dirs[$i]=="index.php"||$dirs[$i]=="DriverParam.php"||$dirs[$i]=="drivers.php"||$dirs[$i]=="DBObject.php") {
 				continue;
 			}
 			$dr_subname = str_replace(".php", "", $dirs[$i]);
@@ -141,10 +147,11 @@ final class db {
 			$sql = str_replace(array("::".$n, ":".$n, "$".$n), $v, $sql);
 		}
 		unset(self::$param);
-		return self::$query($sql);
+		return self::query($sql);
 	}
 
 	public static function doquery($query, $only = null, $check = false) {
+	global $user;
 		$table = preg_replace("/(.*)(FROM|TABLE|UPDATE|INSERT INTO) (.+?) (.*)/", "$3", $query);
 		$badword = false;
 		if((stripos($query, 'RUNCATE TABL') != FALSE) && ($table != 'shoutbox')) {
@@ -165,16 +172,16 @@ final class db {
 			$badword = true;
 		}
 		if($badword) {
-			$message = 'Привет, я не знаю то, что Вы пробовали сделать, но команда, которую Вы только послали базе данных, не выглядела очень дружественной и она была заблокированна.<br /><br />Ваш IP, и другие данные переданны администрации сервера. Удачи!.';
+			$message = 'пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.<br /><br />пїЅпїЅпїЅ IP, пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅ!.';
 			$report  = "Hacking attempt (".date("d.m.Y H:i:s")." - [".time()."]):\n";
 			$report .= ">Database Inforamation\n";
-			$report .= "\tID - ".$user['id']."\n";
-			$report .= "\tUser - ".$user['username']."\n";
-			$report .= "\tAuth level - ".$user['authlevel']."\n";
-			$report .= "\tUser IP - ".$user['ragip']."\n";
-			$report .= "\tUser IP at Reg - ".$user['lastip']."\n";
-			$report .= "\tUser Agent - ".$user['user_agent']."\n";
-			$report .= "\tRegister Time - ".$user['register_time']."\n";
+			$report .= "\tID - ".(isset($user['id']) ? $user['id'] : 0)."\n";
+			$report .= "\tUser - ".(isset($user['username']) ? $user['username'] : "")."\n";
+			$report .= "\tAuth level - ".(isset($user['authlevel']) ? $user['authlevel'] : 0)."\n";
+			$report .= "\tUser IP - ".(isset($user['regip']) ? $user['regip'] : "")."\n";
+			$report .= "\tUser IP at Reg - ".(isset($user['lastip']) ? $user['lastip'] : "")."\n";
+			$report .= "\tUser Agent - ".(isset($user['user_agent']) ? $user['user_agent'] : "")."\n";
+			$report .= "\tRegister Time - ".(isset($user['register_time']) ? $user['register_time'] : "")."\n";
 			$report .= "\n";
 			$report .= ">Query Information\n";
 			$report .= "\tTable - ".$table."\n";
@@ -190,7 +197,7 @@ final class db {
 			$report .= "\tUses Port - ".$_SERVER['REMOTE_PORT']."\n";
 			$report .= "\tServer Protocol - ".$_SERVER['SERVER_PROTOCOL']."\n";
 			$report .= "\n--------------------------------------------------------------------------------------------------\n";
-			$fp = fopen(ROOT_PATH.'core/cache/badqrys.txt', 'a');
+			$fp = fopen(ROOT_PATH.'core'.DS.'cache'.DS.'badqrys.txt', 'a');
 			fwrite($fp, $report);
 			fclose($fp);
 			die($message);
@@ -311,7 +318,7 @@ final class db {
 		if(empty($query)) {
 			$query = self::$qid;
 		}
-		return self::$driver->fetch_assoc($query, $class_name, $params);
+		return self::$driver->fetch_object($query, $class_name, $params);
 	}
 
 	public static function num_rows($query = null) {

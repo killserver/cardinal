@@ -7,6 +7,10 @@ class Phpinfo extends Core {
 		phpinfo();
 		$pinfo = ob_get_contents();
 		ob_end_clean();
+		$pinfo = preg_replace(array(
+			"#body \{.+?\}#",
+			"#a\:.+?\{.+?\}#"
+		), "", $pinfo);
 		$this->Prints($pinfo, true);
 	}
 	

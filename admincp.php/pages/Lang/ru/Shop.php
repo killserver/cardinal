@@ -5,6 +5,7 @@ die();
 }
 
 $lang = array_merge($lang, array(
+	"Shop" => "Магазин",
 	"doneInstall" => "Успешая установка",
 	"installModule" => "Установка",
 	"installNow" => "Сейчас будет установлен модуль",

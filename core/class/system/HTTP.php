@@ -18,7 +18,7 @@ echo "403 ERROR";
 die();
 }
 
-final class HTTP {
+class HTTP {
 	
 	public function HTTP() {
 		
@@ -62,17 +62,18 @@ final class HTTP {
 			$time = $delete;
 		}
 		if($save) {
-			if((version_compare(PHP_VERSION_ID, '70000', '>=')) || strpos("localhost", $domain)!==false) {
+			if((version_compare(PHP_VERSION_ID, '70000', '>=')) || strpos("localhost", $domain)!==false || strpos("127.0.0.1", $domain)!==false) {
 				setcookie($name, $value, $time, "/");
 			} else {
-				setcookie($name, $value, $time, "/", ".".config::Select('default_http_hostname'), false, true);
+				setcookie($name, $value, $time, "/", ".".$domain, false, true);
 			}
 		} else {
 			setcookie($name, $value, $time);
 		}
 	}
 	
-	final public static function lastmod($LastModified_unix) {
+	final public static function lastmod($LastModified_unix = 0) {
+		$LastModified_unix = intval($LastModified_unix);
 		$LastModified = gmdate("D, d M Y H:i:s \G\M\T", $LastModified_unix);
 		$IfModifiedSince = false;
 		if(isset($_SERVER['HTTP_IF_MODIFIED_SINCE']))
@@ -85,7 +86,7 @@ final class HTTP {
 		header('Expires: '.$LastModified);
 	}
 	
-	final public static function echos($echo = null) {
+	final public static function echos($echo = "") {
 		if(!empty($echo)) {
 			echo $echo;
 			unset($echo);

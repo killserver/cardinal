@@ -1,4 +1,4 @@
-# Cardinal Engine(Core) [B]
+# Cardinal Engine(Core) [Beta]
 
 Что нужно для запуска сайта на этом движке?
 

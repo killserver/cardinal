@@ -1,3 +1,7 @@
+@-webkit-keyframes pulse-border {
+    from, to { box-shadow: 0 0 0 0 black;}
+    50% { box-shadow: 0 0 0 4px black; }
+}
 #checkoutBreadcrumb {
 	display: table;
 	width: 100%;
@@ -55,6 +59,9 @@
     color: #ffffff;
     background-color: #2993c1;
     background-position: right -100px;
+}
+.selected {
+    -webkit-animation: pulse-border 1s infinite;
 }
 input.next {
     float: right;

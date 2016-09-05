@@ -118,42 +118,187 @@
 								<td class="action-links">
 									<a href="./?pages=Users&mod=Edit&id={users.id}" class="edit"> <i class="linecons-pencil"></i> {L_edit}</a>
 									[foreachif {users.id}!={U_id}]<a href="./?pages=Users&mod=Delete&id={users.id}" class="delete"> <i class="linecons-trash"></i> {L_delete}</a>[/foreachif {users.id}!={U_id}]
-									[foreachif {users.level}=={D_LEVEL_ADMIN}]<a href="./?pages=Users&mod=Login&id={users.id}">{L_login_on}</a>[/foreachif {users.level}=={D_LEVEL_ADMIN}]
+									[foreachif {users.level}=={D_LEVEL_ADMIN}&&{users.id}!={U_id}]<a href="./?pages=Users&mod=Login&id={users.id}">{L_login_on}</a>[/foreachif {users.level}=={D_LEVEL_ADMIN}&&{users.id}!={U_id}]
 								</td>
 							</tr>[/foreach]
 						</tbody>
 					</table>
 					<div class="row">
-					<div class="col-sm-6">
-						<div class="members-table-actions">
-							<div class="selected-actions">
-								<select name="action">
-									<option value="">---</option>
-									<option value="edit">{L_edit}</option>
-									<option value="delete">{L_delete}</option>
-								</select>
-								<input type="submit" name="submit" value="{L_submit}" />
+						<div class="col-sm-6">
+							<div class="members-table-actions">
+								<div class="selected-actions">
+									<select name="action">
+										<option value="">---</option>
+										<option value="edit">{L_edit}</option>
+										<option value="delete">{L_delete}</option>
+									</select>
+									<input type="submit" name="submit" value="{L_submit}" />
+								</div>
 							</div>
 						</div>
 					</div>
-					<div class="col-sm-6 text-right text-center-sm">
-						<ul class="pagination pagination-sm no-margin">
-							<li>
-								<a href="#">
-									<i class="fa-angle-left"></i>
-								</a>
-							</li>
-							<li class="active">
-								<a href="#">1</a>
-							</li>
-							<li>
-								<a href="#">
-									<i class="fa-angle-right"></i>
-								</a>
-							</li>
-						</ul>
+				</form>
+			</div>
+			<div class="tab-pane" id="admin">
+				<form method="post" action="./?pages=Users&mod=Mass">
+					<table class="table table-hover members-table middle-align">
+						<thead>
+							<tr>
+								<th></th>
+								<th>ID</th>
+								<th class="hidden-xs hidden-sm">{L_images}</th>
+								<th>{L_username} & {L_group}</th>
+								<th class="hidden-xs hidden-sm">{L_email}</th>
+								<th>{L_settings}</th>
+							</tr>
+						</thead>
+						<tbody>
+							[foreach block=usersAdmin]<tr>
+								<td class="user-cb">
+									<input type="checkbox" class="cbr" name="members-list[]" value="{usersAdmin.id}" />
+								</td>
+								<td class="user-id">{usersAdmin.id}</td>
+								<td class="user-image hidden-xs hidden-sm">
+									<a href="./?pages=Users&mod=Edit&id={usersAdmin.id}">
+										<img src="{usersAdmin.avatar}" class="img-circle" alt="user-pic" />
+									</a>
+								</td>
+								<td class="user-name">
+									<a href="./?pages=Users&mod=Edit&id={usersAdmin.id}" class="name">{usersAdmin.username}</a> <span style="font-weight:bold;color:[foreachif {usersAdmin.level}=={D_LEVEL_USER}]grey[/foreachif {usersAdmin.level}=={D_LEVEL_USER}][foreachif {usersAdmin.level}=={D_LEVEL_MODER}]green[/foreachif {usersAdmin.level}=={D_LEVEL_MODER}][foreachif {usersAdmin.level}=={D_LEVEL_ADMIN}]red[/foreachif {usersAdmin.level}=={D_LEVEL_ADMIN}];">{L_level[{usersAdmin.level}]}</span>
+								</td>
+								<td class="hidden-xs hidden-sm">
+									<span class="email"><a href="mailto:{usersAdmin.email}" target="_blank">{usersAdmin.email}</a></span>
+								</td>
+								<td class="action-links">
+									<a href="./?pages=Users&mod=Edit&id={usersAdmin.id}" class="edit"> <i class="linecons-pencil"></i> {L_edit}</a>
+									[foreachif {usersAdmin.id}!={U_id}]<a href="./?pages=Users&mod=Delete&id={usersAdmin.id}" class="delete"> <i class="linecons-trash"></i> {L_delete}</a>[/foreachif {usersAdmin.id}!={U_id}]
+									[foreachif {usersAdmin.level}=={D_LEVEL_ADMIN}&&{usersAdmin.id}!={U_id}]<a href="./?pages=Users&mod=Login&id={usersAdmin.id}">{L_login_on}</a>[/foreachif {usersAdmin.level}=={D_LEVEL_ADMIN}&&{usersAdmin.id}!={U_id}]
+								</td>
+							</tr>[/foreach]
+						</tbody>
+					</table>
+					<div class="row">
+						<div class="col-sm-6">
+							<div class="members-table-actions">
+								<div class="selected-actions">
+									<select name="action">
+										<option value="">---</option>
+										<option value="edit">{L_edit}</option>
+										<option value="delete">{L_delete}</option>
+									</select>
+									<input type="submit" name="submit" value="{L_submit}" />
+								</div>
+							</div>
+						</div>
 					</div>
-				</div>
+				</form>
+			</div>
+			<div class="tab-pane" id="moder">
+				<form method="post" action="./?pages=Users&mod=Mass">
+					<table class="table table-hover members-table middle-align">
+						<thead>
+							<tr>
+								<th></th>
+								<th>ID</th>
+								<th class="hidden-xs hidden-sm">{L_images}</th>
+								<th>{L_username} & {L_group}</th>
+								<th class="hidden-xs hidden-sm">{L_email}</th>
+								<th>{L_settings}</th>
+							</tr>
+						</thead>
+						<tbody>
+							[foreach block=usersModer]<tr>
+								<td class="user-cb">
+									<input type="checkbox" class="cbr" name="members-list[]" value="{usersModer.id}" />
+								</td>
+								<td class="user-id">{usersModer.id}</td>
+								<td class="user-image hidden-xs hidden-sm">
+									<a href="./?pages=Users&mod=Edit&id={usersModer.id}">
+										<img src="{usersModer.avatar}" class="img-circle" alt="user-pic" />
+									</a>
+								</td>
+								<td class="user-name">
+									<a href="./?pages=Users&mod=Edit&id={usersModer.id}" class="name">{usersModer.username}</a> <span style="font-weight:bold;color:[foreachif {usersModer.level}=={D_LEVEL_USER}]grey[/foreachif {usersModer.level}=={D_LEVEL_USER}][foreachif {usersModer.level}=={D_LEVEL_MODER}]green[/foreachif {usersModer.level}=={D_LEVEL_MODER}][foreachif {usersModer.level}=={D_LEVEL_ADMIN}]red[/foreachif {usersModer.level}=={D_LEVEL_ADMIN}];">{L_level[{usersModer.level}]}</span>
+								</td>
+								<td class="hidden-xs hidden-sm">
+									<span class="email"><a href="mailto:{usersModer.email}" target="_blank">{usersModer.email}</a></span>
+								</td>
+								<td class="action-links">
+									<a href="./?pages=Users&mod=Edit&id={usersModer.id}" class="edit"> <i class="linecons-pencil"></i> {L_edit}</a>
+									[foreachif {usersModer.id}!={U_id}]<a href="./?pages=Users&mod=Delete&id={usersModer.id}" class="delete"> <i class="linecons-trash"></i> {L_delete}</a>[/foreachif {usersModer.id}!={U_id}]
+									[foreachif {usersModer.level}=={D_LEVEL_ADMIN}&&{usersModer.id}!={U_id}]<a href="./?pages=Users&mod=Login&id={usersModer.id}">{L_login_on}</a>[/foreachif {usersModer.level}=={D_LEVEL_ADMIN}&&{usersModer.id}!={U_id}]
+								</td>
+							</tr>[/foreach]
+						</tbody>
+					</table>
+					<div class="row">
+						<div class="col-sm-6">
+							<div class="members-table-actions">
+								<div class="selected-actions">
+									<select name="action">
+										<option value="">---</option>
+										<option value="edit">{L_edit}</option>
+										<option value="delete">{L_delete}</option>
+									</select>
+									<input type="submit" name="submit" value="{L_submit}" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="tab-pane" id="user">
+				<form method="post" action="./?pages=Users&mod=Mass">
+					<table class="table table-hover members-table middle-align">
+						<thead>
+							<tr>
+								<th></th>
+								<th>ID</th>
+								<th class="hidden-xs hidden-sm">{L_images}</th>
+								<th>{L_username} & {L_group}</th>
+								<th class="hidden-xs hidden-sm">{L_email}</th>
+								<th>{L_settings}</th>
+							</tr>
+						</thead>
+						<tbody>
+							[foreach block=usersUser]<tr>
+								<td class="user-cb">
+									<input type="checkbox" class="cbr" name="members-list[]" value="{usersUser.id}" />
+								</td>
+								<td class="user-id">{usersUser.id}</td>
+								<td class="user-image hidden-xs hidden-sm">
+									<a href="./?pages=Users&mod=Edit&id={usersUser.id}">
+										<img src="{usersUser.avatar}" class="img-circle" alt="user-pic" />
+									</a>
+								</td>
+								<td class="user-name">
+									<a href="./?pages=Users&mod=Edit&id={usersUser.id}" class="name">{usersUser.username}</a> <span style="font-weight:bold;color:[foreachif {usersUser.level}=={D_LEVEL_USER}]grey[/foreachif {usersUser.level}=={D_LEVEL_USER}][foreachif {usersUser.level}=={D_LEVEL_MODER}]green[/foreachif {usersUser.level}=={D_LEVEL_MODER}][foreachif {usersUser.level}=={D_LEVEL_ADMIN}]red[/foreachif {usersUser.level}=={D_LEVEL_ADMIN}];">{L_level[{usersUser.level}]}</span>
+								</td>
+								<td class="hidden-xs hidden-sm">
+									<span class="email"><a href="mailto:{usersUser.email}" target="_blank">{usersUser.email}</a></span>
+								</td>
+								<td class="action-links">
+									<a href="./?pages=Users&mod=Edit&id={usersUser.id}" class="edit"> <i class="linecons-pencil"></i> {L_edit}</a>
+									[foreachif {usersUser.id}!={U_id}]<a href="./?pages=Users&mod=Delete&id={usersUser.id}" class="delete"> <i class="linecons-trash"></i> {L_delete}</a>[/foreachif {usersUser.id}!={U_id}]
+									[foreachif {usersUser.level}=={D_LEVEL_ADMIN}&&{usersUser.id}!={U_id}]<a href="./?pages=Users&mod=Login&id={usersUser.id}">{L_login_on}</a>[/foreachif {usersUser.level}=={D_LEVEL_ADMIN}&&{usersUser.id}!={U_id}]
+								</td>
+							</tr>[/foreach]
+						</tbody>
+					</table>
+					<div class="row">
+						<div class="col-sm-6">
+							<div class="members-table-actions">
+								<div class="selected-actions">
+									<select name="action">
+										<option value="">---</option>
+										<option value="edit">{L_edit}</option>
+										<option value="delete">{L_delete}</option>
+									</select>
+									<input type="submit" name="submit" value="{L_submit}" />
+								</div>
+							</div>
+						</div>
+					</div>
 				</form>
 			</div>
 		</div>

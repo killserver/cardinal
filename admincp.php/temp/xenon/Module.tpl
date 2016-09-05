@@ -8,6 +8,9 @@ td > img {
 td > img:hover {
 	transform: scale(2);
 }
+.full_descr {
+	display: none;
+}
 </style>
 <table width="100%">
 	<tr><td colspan="3"><div style="width:100%;height:18px;background:#ccc;"><div id="proccess" style="background:#00f;height:19px;width:0%;"></div></div></td></tr>
@@ -56,5 +59,6 @@ jQuery(".descr").click(function() {
 	jQuery('#modal-4').modal('show', {backdrop: 'static'});
 	var descr = jQuery(this).parent().children(".full_descr").html();
 	jQuery('#error-body').html(descr);
+	return false;
 });
 </script>

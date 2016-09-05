@@ -340,6 +340,7 @@ class PHPMailer {
    * @param boolean $exceptions Should we throw external exceptions?
    */
   public function __construct($exceptions = false) {
+    $this->PluginDir  = ROOT_PATH."core".DS."class".DS."Mail".DS;
     $this->exceptions = ($exceptions == true);
   }
 

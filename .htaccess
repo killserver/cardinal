@@ -1,6 +1,13 @@
 AddDefaultCharset UTF-8
 Options -Indexes
 
+<IfModule mod_http2.c>
+# for a https server
+Protocols h2 http/1.1
+# for a http server
+Protocols h2c http/1.1
+</IfModule>
+
 <ifModule mod_expires.c>
 ExpiresActive On
 ExpiresDefault "access plus 1 seconds"

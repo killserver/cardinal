@@ -73,20 +73,45 @@ $manifest['now_page'] = $page;
 $manifest['mod_page'][HTTP::getip()]['page'] = $page;
 $is_file = Route::param('is_file');
 $file = Route::param('file');
-if(!$is_file && empty($file)) {
-	view_pages($page);
-	if(class_exists($class)) {
-		$page = new $class();
-		if(!empty($method) && method_exists($page, $method)) {
-			$page->$method();
+
+$active = false;
+$load = true;
+$obj = "";
+if(config::Select("activeCache")) {
+	$par = Route::param();
+	array_walk($par, function(&$v, $k) { $v = ($k."-".$v); });
+	$url = implode("=", $par);
+	$md5 = md5($url);
+	if(!file_exists(ROOT_PATH."core".DS."cache".DS."page".DS.$md5.".txt")) {
+		$active = true;
+	} else {
+		$load = false;
+	}
+}
+if($load) {
+	if(!$is_file && empty($file)) {
+		view_pages($page);
+		if(class_exists($class)) {
+			$page = new $class();
+			if(!empty($method) && method_exists($page, $method)) {
+				$page->$method();
+			}
+		}
+	} else {
+		if(file_exists($file)) {
+			require_once($file);
+		} else {
+			templates::error("{L_error_page}", "{L_error_routification}");
 		}
 	}
 } else {
-	if(file_exists($file)) {
-		require_once($file);
-	} else {
-		templates::error("{L_error_page}", "{L_error_routification}");
-	}
+	include(ROOT_PATH."core".DS."cache".DS."page".DS.$md5.".txt");
+}
+if($active) {
+	$obj = ob_get_contents();
+	ob_end_clean();
+	file_put_contents(ROOT_PATH."core".DS."cache".DS."page".DS.$md5.".txt", $obj);
+	HTTP::echos($obj);
 }
 unset($page, $class, $method, $file, $is_file);
 if(defined("DEBUG")) {
@@ -97,7 +122,7 @@ $Timer = microtime()-$Timer;
 if(defined("DEBUG_ACTIVATED")) {
 	Error::Debug(null, true);
 }
-GzipOut(templates::$gzip, templates::$gzip_activ);
+GzipOut(templates::$gzip, templates::$gzipActive);
 HTTP::echos();
 unset($templates);
 unset($db);

@@ -11,19 +11,34 @@
  * delete $user and rebuild him on module system
  *
 */
+
+/**
+ * Class userlevel
+ */
 class userlevel {
 
-	public static function all() {
-		if(!modules::init_cache()->exists("userlevels")) {
-			$row = modules::init_db()->select_query("SELECT * FROM userlevels ORDER BY id ASC");
-			modules::init_cache()->set("userlevels", $row);
+	/**
+	 * Get all exists user levels in DB
+	 * @return array All user levels in DB
+     */
+	final public static function all() {
+		$cache = modules::init_cache();
+		if(!$cache->exists("userlevels")) {
+			$db = modules::init_db();
+			$row = $db->select_query("SELECT * FROM userlevels ORDER BY id ASC");
+			$cache->set("userlevels", $row);
 		} else {
-			$row = modules::init_cache()->get("userlevels");
+			$row = $cache->get("userlevels");
 		}
 	return $row;
 	}
 
-	public static function get($get) {
+	/**
+	 * Check if exists access in section
+	 * @param string $get Checking access
+	 * @return bool Result access
+     */
+	final public static function get($get) {
 		$all = self::all();
 		$level = modules::get_user('level');
 		if(is_bool($level) || empty($level)) {
@@ -38,7 +53,12 @@ class userlevel {
 		}
 	}
 
-	private static function define($array) {
+	/**
+	 * Rebuild standard access level
+	 * @param array $array All change level
+	 * @return array Result rebuilding
+     */
+	final private static function define($array) {
 		$def = array();
 		for($i=0;$i<sizeof($array);$i++) {
 			$array[$i]['id'] -= 1;
@@ -47,7 +67,13 @@ class userlevel {
 	return $def;
 	}
 
-	public static function check($get, $access = "") {
+	/**
+	 * Get check if exists access in section for template
+	 * @param string $get Checking access
+	 * @param string $access Assess to section
+	 * @return string Result access
+     */
+	final public static function check($get, $access = "") {
 		$all = self::all();
 		$all = self::define($all);
 		$level = modules::get_user('level');
@@ -61,7 +87,13 @@ class userlevel {
 		}
 	}
 
-	public static function set($id, $set, $data) {
+	/**
+	 * Set access for level on id and clear cache access
+	 * @param int $id Id for change
+	 * @param string $set Section access
+	 * @param string|bool $data Value access
+     */
+	final public static function set($id, $set, $data) {
 		if(is_bool($data)) {
 			if($data) {
 				$data = "yes";
@@ -74,8 +106,10 @@ class userlevel {
 		} elseif(!isset($data) || empty($data)) {
 			$data = "no";
 		}
-		modules::init_db()->doquery("UPDATE userlevels SET `".$set."` = ".$data." WHERE id = ".$id);
-		modules::init_cache()->delete("userlevels");
+		$db = modules::init_db();
+		$db->doquery("UPDATE userlevels SET `".$set."` = ".$data." WHERE id = ".$id);
+		$cache = modules::init_cache();
+		$cache->delete("userlevels");
 	}
 
 }

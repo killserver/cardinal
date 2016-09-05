@@ -37,7 +37,7 @@ final class cardinal {
 		}
 		$otime = config::Select("cardinal_time");
 		if($otime <= time()-12*60*60) {
-			include_dir(ROOT_PATH."core/modules/cron/", ".".ROOT_EX);
+			include_dir(ROOT_PATH."core".DS."modules".DS."cron".DS, ".".ROOT_EX);
 			config::Update("cardinal_time", time());
 		}
 	}
@@ -57,8 +57,8 @@ final class cardinal {
 		return $v;
 	}
 	
-	private function robots($useragent) {
-		if(!isset($useragent) || empty($useragent) || is_bool($useragent)) {
+	private function robots($userAgent) {
+		if(!isset($userAgent) || empty($userAgent) || is_bool($userAgent)) {
 			return false;
 		}
 		$arr = array();
@@ -69,8 +69,8 @@ final class cardinal {
 			for($i=0;$i<sizeof($pcre);$i++) {
 				$arr["#.*".$pcre[$i].".*#si"] = $dats[$i];
 			}
-			$result = preg_replace(array_keys($arr), $arr, $useragent);
-			return $result == $useragent ? false : $result;
+			$result = preg_replace(array_keys($arr), $arr, $userAgent);
+			return $result == $userAgent ? false : $result;
 		} else {
 			return false;
 		}
@@ -92,7 +92,7 @@ final class cardinal {
 	return md5(md5($pass).$pass);
 	}
 	
-	public static function change_pass($class = null, $method = null) {
+	public static function change_pass($class = "", $method = "") {
 		if(!empty($method) && !empty($class) && class_exists($class)) {
 			self::$ch_login['class'] = $class;
 			self::$ch_login['method'] = $method;

@@ -26,7 +26,7 @@ echo "403 ERROR";
 die();
 }
 
-function meta($array=array()) {
+function meta($array = array()) {
 	templates::assign_vars(array(
 		"url" => "{C_default_http_host}",
 		"title" => "{L_sitename}",
@@ -40,7 +40,7 @@ function meta($array=array()) {
 		}
 	}
 	unset($array);
-	$te = templates::lcud(templates::complited_assing_vars("meta", null));
+	$te = templates::lcud(templates::completed_assign_vars("meta", null));
 return $te;
 }
 
@@ -132,7 +132,6 @@ return $sRet;
 }
 
 function headers($array = array(), $clear = false, $no_js = false) {
-global $user;
 	$header = "";
 	if(isset($array['title'])) {
 		$header .= "\t<title>".$array['title']."</title>\n";
@@ -190,7 +189,7 @@ if(!$clear) {
 		$rss = true;
 	}
 	if($rss && !empty($link_rss)) {
-		$header .= "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"{L_sitename}\" href=\"{C_default_http_host}rss.xml\" />\n";
+		$header .= "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"{L_sitename}\" href=\"{C_default_http_host}".$link_rss."\" />\n";
 	}
 /*if(isset($array['title']) && isset($array['meta']['watch']) && $user['id'] == 1) {
 	$header .= "<link rel=\"alternate\" type=\"application/json+oembed\" href=\"{C_default_http_host}oembed?url={C_default_http_host}?watch%26v=".$array['meta']['watch']."&format=json\" title=\"".$array['title']."\" />\n";
@@ -201,7 +200,7 @@ if(!$clear) {
 	if($rss && !empty($link_rss)) {
 		$header .= "<meta name=\"application-name\" content=\"{L_sitename}\" />\n".
 			"<meta name=\"msapplication-TileColor\" content=\"#e0161d\"/>\n".
-			"<meta name=\"msapplication-notification\" content=\"frequency=30;polling-uri=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=1;polling-uri2=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=2;polling-uri3=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=3;polling-uri4=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=4;polling-uri5=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}rss.xml&amp;id=5; cycle=1\"/>\n\n";
+			"<meta name=\"msapplication-notification\" content=\"frequency=30;polling-uri=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=1;polling-uri2=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=2;polling-uri3=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=3;polling-uri4=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=4;polling-uri5=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=5; cycle=1\"/>\n\n";
 	}
 	if(isset($array['meta']['type_meta'])) {
 		$is_use = true;

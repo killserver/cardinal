@@ -4,6 +4,7 @@ echo "403 ERROR";
 die();
 }
 
+//ToDo: А эта функция мне ещё на кой чёрт?!
 function images($name, $save) {
 	if(!is_uploaded_file($_FILES[$name]['tmp_name'])) {
 		return "";

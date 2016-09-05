@@ -36,7 +36,7 @@
 </form>
 [/if]
 [if {page}==3]
-<form method="post" action="{C_default_http_local}{R_[install_first][file=install.php;page=install;method=change;is_file=true;line=4]}">
+<form method="post" id="Form" action="{C_default_http_local}{R_[install_first][file=install.php;page=install;method=change;is_file=true;line=4]}" onsubmit="return check();">
 <div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;background:rgb(255,230,196);text-align:center;font-weight:bold;padding:7px;margin:0px auto 10px;width:50%;color:#f00;font-size:18px;">Убедитесь, что все необходимые драйверы баз данных установленны!</div>
 <span style="float:left;">
 	<span style="width:400px;border:1px solid #000;display:block;padding:10px;">
@@ -81,6 +81,34 @@
 	</span>
 <input type="submit" name="submit" value="Принять" style="margin:10px auto;width:90%;padding:5pt;font-size:18pt;display:block;" />
 </form>
+<script type="text/javascript">
+function in_array(what, where) {
+    for(var i=0; i<where.length; i++)
+        if(what == where[i])
+            return true;
+    return false;
+}
+function check() {
+	var res = true;
+	var Form = document.getElementById('Form');
+	for(I = 0; I < Form.length; I++) {
+		var name = Form[I].name;
+		if(in_array(Form[I].name, ['db_pass','cache_host','cache_port','cache_user','cache_pass','cache_path','submit'])) {
+			continue;
+		}
+		if(Form[I].value=="") {
+			if(res) {
+				res = false;
+			}
+			Form[I].className = "selected";
+		}
+	}
+	if(!res) {
+		alert("Продолжение установки прервано, так как не заполнены обязательные поля!");
+	}
+	return res;
+}
+</script>
 [/if]
 [if {page}=="error"]
 <div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;padding:18px;background:rgb(255,230,196);color:#4C289E;">Нет соединения с Базой Данных.<br />Пожалуйста, вернитесь назад и проверьте введённые данные, либо обратитесь в службу тех.поддержки.<br /><a href="javascript:history.go(-1)">Назад</a></div>

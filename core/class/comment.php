@@ -21,11 +21,28 @@ echo "403 ERROR";
 exit();
 }
 
+/**
+ * Class comment
+ */
 final class comment {
 
+	/**
+	 * @var array Array all parameters for comments
+     */
 	private static $param = array("u_id" => null, "type" => "news", "user_row" => array(), "levels" => 0);
+	/**
+	 * @var int Count comments in table
+     */
 	private static $counts = 0;
 
+	/**
+	 * comment constructor.
+	 * @access public
+	 * @param $u_id Unique id all comments in table
+	 * @param string $type Type comments
+	 * @param array $user_row Array sub parameters user
+	 * @param int $levels Level viewing comments
+     */
 	public function comment($u_id, $type="news", $user_row = array(), $levels = 0) {
 		if(!userlevel::get("view_comments")) {
 			return;
@@ -39,6 +56,14 @@ final class comment {
 		}
 	}
 
+	/**
+	 * Reset default parameters
+	 * @access public
+	 * @param $u_id Unique id all comments in table
+	 * @param string $type Type comments
+	 * @param array $user_row Array sub parameters user
+	 * @param int $levels Level viewing comments
+     */
 	public static function set_default($u_id, $type="news", $user_row=array(), $levels = 0) {
 		self::$param['u_id'] = $u_id;
 		self::$param['type'] = $type;
@@ -49,6 +74,10 @@ final class comment {
 		}
 	}
 
+	/**
+	 * Add comments in DB
+	 * @access private
+     */
 	private static function add() {
 		if(!userlevel::get("add_comments")) {
 			templates::error("{L_error_level_full}", "{L_error_level}");
@@ -105,12 +134,18 @@ final class comment {
 		DELETE FROM comments WHERE parent_id = $id
 		DELETE FROM comments WHERE id = $id
 	}*/
-	
+
+	/**
+	 * Preparing template for including anyway
+	 * @access public
+	 * @param int $parent Parent comment for added
+	 * @return mixed|string Completed template for including anyway
+     */
 	public static function addcomments($parent = 0) {
 		if(modules::get_user('id') && modules::get_user('level')!=LEVEL_GUEST && userlevel::get("add_comments")) {
 			$add_com = templates::load_templates("addcomments", "cp1251");
 		} else {
-			$add_com = "";
+			return "";
 		}
 		if(modules::get_user('id') && modules::get_user('level')!=LEVEL_GUEST) {
 			$add_com=preg_replace('#\[not-logged\](.+?)\[/not-logged\]#is', '', $add_com);
@@ -121,7 +156,13 @@ final class comment {
 		$add_com = str_replace(array("{u_id}", "{parent}"), array(self::$param['u_id'], $parent), $add_com);
 		return $add_com;
 	}
-	
+
+	/**
+	 * Preparing template for including anyway without checking level for viewing
+	 * @access public
+	 * @param int $parent Parent comment for added
+	 * @return mixed|string Completed template for including anyway
+     */
 	public static function ViewAdd($parent = 0) {
 		$add_com = templates::load_templates("addcomments", "cp1251");
 		if(modules::get_user('id') && modules::get_user('level')!=LEVEL_GUEST) {
@@ -134,6 +175,13 @@ final class comment {
 		return $add_com;
 	}
 
+	/**
+	 * Get all comments
+	 * @access public
+	 * @param bool|true $add Add added comment in end
+	 * @param string $tpl Template for prepare viewing comments
+	 * @return mixed|string Done viewing list comments
+     */
 	public static function get($add = true, $tpl = "comments") {
 		$comments = "";
 		$file_com = templates::load_templates($tpl, "cp1251");
@@ -199,11 +247,25 @@ final class comment {
 		$comments = str_replace(array("{u_id}", "{parent}"), array(self::$param['u_id'], $parent), $comments);
 	return $comments;
 	}
-	
+
+	/**
+	 * Count comments on targeted criterion in DB
+	 * @access public
+	 * @return int Count comments on targeted criterion in DB
+     */
 	public static function getCount() {
 		return self::$counts;
 	}
 
+	/**
+	 * Compiled comments in list parent-children
+	 * @access private
+	 * @param array $comments Array comments
+	 * @param int $parentComment Parent comment
+	 * @param int $level Start level for sort
+	 * @param string $count Count comments
+	 * @return array|bool Result array parent-children
+     */
 	private static function crazysort(&$comments, $parentComment = 0, $level = 0, $count = "") {
 		if(is_array($comments) && sizeof($comments)) {
 			$return = array();

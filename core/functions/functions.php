@@ -65,8 +65,8 @@ function or_mrand($min = 0, $max = 0) {
 	}
 }
 
-function location($link, $time=0, $exit=true){return function_call('location', array($link, $time, $exit));}
-function or_location($link, $time=0, $exit=true) {
+function location($link, $time = 0, $exit = true){return function_call('location', array($link, $time, $exit));}
+function or_location($link, $time = 0, $exit = true) {
 	if($time == 0) {
 		header("Location: ".templates::view($link));
 	} else {
@@ -78,15 +78,15 @@ function or_location($link, $time=0, $exit=true) {
 }
 
 
-function search_file($file, $dir = null){return function_call('search_file', array($file, $dir));}
-function or_search_file($file, $dir = null) {
+function search_file($file, $dir = ""){return function_call('search_file', array($file, $dir));}
+function or_search_file($file, $dir = "") {
 	if(empty($dir)) {
 		return glob(ROOT_PATH.$file);
 	} else {
-		$ed = explode("/", $dir);
+		$ed = explode(DS, $dir);
 		$en = end($ed);
 		if(!empty($en)) {
-			$dir = $dir."/";
+			$dir = $dir.DS;
 		}
 		return glob(ROOT_PATH.$dir.$file);
 	}
@@ -107,19 +107,28 @@ function read_dir($dir, $type = "all") {
 return $files;
 }
 
-function vdump($var, $title = null) {
-	echo '<pre>'. (($title) ? "<b>".$title."</b>\n\n" : '');
+if(!function_exists("boolval")) {
+	function boolval($val) {
+		return (bool) $val;
+	}
+}
+
+function vdump($var, $title = "") {
+	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "Called: ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "").(($title) ? "<b>".$title."</b>\n\n" : '');
 	var_dump($var);
 	echo '</pre>';
 }
 
-/*function check_smartphone() {
-	$phone_array = array('iphone', 'android', 'pocket', 'palm', 'windows ce', 'windowsce', 'mobile windows', 'cellphone', 'opera mobi', 'operamobi', 'ipod', 'small', 'sharp', 'sonyericsson', 'symbian', 'symbos', 'opera mini', 'nokia', 'htc_', 'samsung', 'motorola', 'smartphone', 'blackberry', 'playstation portable', 'windows phone', 'ucbrowser');
-	$agent = strtolower($_SERVER['HTTP_USER_AGENT']);
-	foreach($phone_array as $value) {
-		if(strpos($agent, $value) !== false) return true;
+function check_smartphone() {
+global $mobileDetect;
+	if(!is_object($mobileDetect)) {
+		$mobileDetect = new Mobile_Detect();
 	}
-	return false;
+	if($mobileDetect->isMobile() || $mobileDetect->isTablet()) {
+		return true;
+	} else {
+		return false;
+	}
 
-}*/
+}
 ?>

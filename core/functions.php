@@ -47,18 +47,18 @@ spl_autoload_register(function($class) {
 	if(stripos(ini_get('include_path'), $class)!==false) {
 		return false;
 	}
-	if(file_exists(ROOT_PATH."core".DS."class".DS.$class.".".ROOT_EX)) {
+	if(file_exists(ROOT_PATH."core".DS."modules".DS."autoload".DS.$class.".".ROOT_EX)) {
+		include_once(ROOT_PATH."core".DS."modules".DS."autoload".DS.$class.".".ROOT_EX);
+	} elseif(file_exists(ROOT_PATH."core".DS."class".DS.$class.".".ROOT_EX)) {
 		include_once(ROOT_PATH."core".DS."class".DS.$class.".".ROOT_EX);
 	} elseif(file_exists(ROOT_PATH."core".DS."class".DS."system".DS.$class.".".ROOT_EX)) {
 		include_once(ROOT_PATH."core".DS."class".DS."system".DS.$class.".".ROOT_EX);
-	} elseif(file_exists(ROOT_PATH."core".DS."modules".DS."autoload".DS.$class.".".ROOT_EX)) {
-		include_once(ROOT_PATH."core".DS."modules".DS."autoload".DS.$class.".".ROOT_EX);
 	} elseif(file_exists(ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS.$class.".".ROOT_EX)) {
 		include_once(ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS.$class.".".ROOT_EX);
 	}
 });
 
-//ToDo: delete this function?
+//FIXME: delete this function?
 /*function FriendlyErrorType($type) {
 	if($type==E_ERROR) { // 1 // 
 		return 'E_ERROR'; 
@@ -99,9 +99,9 @@ set_error_handler(array('Error', 'handlePhpError'));
 set_exception_handler(array('Error', 'handleException'));
 register_shutdown_function(array('Error', 'handleFatalError'));
 
-function require_dir($dir = null, $modules = null, $mod = false) {include_dir($dir, $modules, $mod);}
+function require_dir($dir = "", $modules = "", $mod = false) {include_dir($dir, $modules, $mod);}
 
-function include_dir($dir = null, $modules = null, $mod = false) {
+function include_dir($dir = "", $modules = "", $mod = false) {
 	if(empty($dir)) {
 		$dir = ROOT_PATH."core".DS."functions".DS;
 	}
@@ -129,11 +129,11 @@ function include_dir($dir = null, $modules = null, $mod = false) {
 		}
 	}
 }
-if(file_exists(ROOT_PATH."core".DS."media".DS."config.route.global.php")) {
-	require_once(ROOT_PATH."core".DS."media".DS."config.route.global.php");
+if(file_exists(ROOT_PATH."core".DS."media".DS."config.route.global.".ROOT_EX)) {
+	require_once(ROOT_PATH."core".DS."media".DS."config.route.global.".ROOT_EX);
 }
-if(file_exists(ROOT_PATH."core".DS."media".DS."config.route.php")) {
-	require_once(ROOT_PATH."core".DS."media".DS."config.route.php");
+if(file_exists(ROOT_PATH."core".DS."media".DS."config.route.".ROOT_EX)) {
+	require_once(ROOT_PATH."core".DS."media".DS."config.route.".ROOT_EX);
 }
 include_dir(ROOT_PATH."core".DS."modules".DS, ".class.".ROOT_EX, true);
 include_dir();

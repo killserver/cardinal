@@ -59,8 +59,10 @@ if((isset($_SERVER['PATH_INFO']) && strpos($_SERVER['PATH_INFO'], "install/done"
 
 if(sizeof($_POST)==0||(sizeof($_POST)==1)||(sizeof($_POST)==2)) {
 	if(sizeof($_POST)==0) {
+		Route::RegParam("line", "1");
 		templates::assign_vars(array("page" => "1"));
 	} else if(sizeof($_POST)==1) {
+		Route::RegParam("line", "2");
 		if(function_exists("apache_get_version")) {
 			$apache = apache_get_version();
 			$apache = substr($apache, strlen("Apache/"));
@@ -81,12 +83,12 @@ if(sizeof($_POST)==0||(sizeof($_POST)==1)||(sizeof($_POST)==2)) {
 		}
 		templates::assign_vars(array("page" => "2", "apache" => $apache, "php" => $php, "cache" => $cache, "system_cache" => $system_cache, "template" => $template, "media" => $media, "mb" => $mb));
 	} else {
-		templates::assign_vars(array("page" => "3", "SERNAME" => getenv('SERVER_NAME').str_replace(array("install.php", "/install/step2", "/install/step3"), "", getenv("REQUEST_URI")), "SERVERS" => getenv('SERVER_NAME')));
+		templates::assign_vars(array("page" => "3", "SERNAME" => getenv('SERVER_NAME').str_replace(array("index.php/", "install.php", "/install/step2", "/install/step3"), "", getenv("REQUEST_URI")), "SERVERS" => getenv('SERVER_NAME')));
 		$driver = ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS;
 		$dirs = read_dir($driver, ".php");
 		sort($dirs);
 		for($i=0;$i<sizeof($dirs);$i++) {
-			if($dirs[$i]=="index.php"||$dirs[$i]=="DriverParam.php"||$dirs[$i]=="drivers.php") {
+			if($dirs[$i]=="index.php"||$dirs[$i]=="DriverParam.php"||$dirs[$i]=="drivers.php"||$dirs[$i]=="DBObject.php") {
 				continue;
 			}
 			include_once($driver.$dirs[$i]);
@@ -230,6 +232,7 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `modules` (
   `activ` enum('yes','no') NOT NULL DEFAULT 'yes',
   `tpl` longtext not null,
   `file` varchar(255) NOT NULL,
+  `type` enum('admincp','site') NOT NULL DEFAULT 'site',
   PRIMARY KEY (`id`),
   FULLTEXT `page` (`page`),
   FULLTEXT `modules` (`module`),
@@ -237,11 +240,12 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `modules` (
   KEY `activ` (`activ`),
   FULLTEXT KEY `param` (`param`),
   FULLTEXT KEY `tpl` (`tpl`),
-  FULLTEXT KEY `file` (`file`)
+  FULLTEXT KEY `file` (`file`),
+  KEY `type` (`type`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
-$SQL[] = "INSERT INTO `modules` SET `module` = 'base', `activ` = 'yes', `file` = 'core/modules/base.class.php';";
-$SQL[] = "INSERT INTO `modules` SET `module` = 'changelog', `activ` = 'yes', `file` = 'core/modules/changelog.class.php';";
-$SQL[] = "INSERT INTO `modules` SET `module` = 'mobile_detect', `activ` = 'yes', `file` = 'core/modules/mobile.class.php';";
+$SQL[] = "INSERT INTO `modules` SET `module` = 'base', `activ` = 'yes', `file` = 'core".DS."modules".DS."base.class.php';";
+$SQL[] = "INSERT INTO `modules` SET `module` = 'changelog', `activ` = 'yes', `file` = 'core".DS."modules".DS."changelog.class.php';";
+$SQL[] = "INSERT INTO `modules` SET `module` = 'mobile_detect', `activ` = 'yes', `file` = 'core".DS."modules".DS."mobile.class.php';";
 
 $SQL[] = "DROP TABLE IF EXISTS `posts`;";
 $SQL[] = "CREATE TABLE IF NOT EXISTS `posts` (

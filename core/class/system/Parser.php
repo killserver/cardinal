@@ -13,106 +13,270 @@
  * fix error in post data
  *
 */
+
+/**
+ * Class Parser
+ */
 class Parser {
-	
-	private $url = null;
-	private $agent = null;
-	private $proxy = null;
-	private $referer = null;
-	private $html = null;
-	private $cookie_path = null;
+
+	/**
+	 * @var string
+     */
+	private $url = "";
+	/**
+	 * @var string
+     */
+	private $agent = "";
+	/**
+	 * @var string
+     */
+	private $proxy = "";
+	/**
+	 * @var string
+     */
+	private $referrer = "";
+	/**
+	 * @var string
+     */
+	private $html = "";
+	/**
+	 * @var string
+     */
+	private $cookie_path = "";
+	/**
+	 * @var bool
+     */
 	private $cookie = false;
+	/**
+	 * @var bool
+     */
 	private $init = false;
+	/**
+	 * @var bool
+     */
 	private $header = false;
+	/**
+	 * @var bool
+     */
 	private $header_array = false;
+	/**
+	 * @var bool
+     */
 	private $header_clear = false;
+	/**
+	 * @var bool
+     */
 	private $gzip = false;
+	/**
+	 * @var bool
+     */
 	private $error = false;
+	/**
+	 * @var bool
+     */
+	private $forceReferrer = false;
+	/**
+	 * @var bool
+     */
 	private $display_errors = true;
+	/**
+	 * @var int
+     */
 	private $timeout = 3;
+	/**
+	 * @var array
+     */
 	private $post = array();
+	/**
+	 * @var array
+     */
 	private $headers = array();
+	/**
+	 * @var array
+     */
 	private $errors = array();
+	/**
+	 * @var array
+     */
 	private $headerList = array();
-	
+
+	/**
+	 * Parser constructor.
+	 * @param string $url Url for parser
+	 * @return Parser
+     */
 	function Parser($url = "") {
 		if(!empty($url)) {
 			$this->url = $url;
 		}
+		return $this;
 	}
-	
-	function post($post = array()) {
+
+	/**
+	 * Post data for sending
+	 * @param array $post Send post data
+	 * @return $this Parser
+     */
+	final function post($post = array()) {
 		if(is_array($post) && sizeof($post)>0) {
 			$this->post = array_merge($this->post, $post);
 		}
+		return $this;
 	}
-	
-	function cookie($coo = true, $coopath = "") {
+
+	/**
+	 * @param bool|true $coo Activate cookie
+	 * @param string $coopath Cookie path
+	 * @return $this Parser
+     */
+	final function cookie($coo = true, $coopath = "") {
 		if(empty($coopath)) {
 			$coopath = rand(0, getrandmax());
 		}
 		$this->cookie = $coo;
 		$this->cookie_path = $coopath;
+		return $this;
 	}
-	
-	function agent($agent) {
+
+	/**
+	 * Use agent
+	 * @param $agent UserAgent
+	 * @return $this
+     */
+	final function agent($agent) {
 		$this->agent = $agent;
+		return $this;
 	}
-	
-	function referer($referer) {
-		$this->referer = $referer;
+
+	/**
+	 * @param bool|true $forceReferrer
+	 * @return $this
+     */
+	final function forceReferer($forceReferrer = true) {
+		$this->forceReferrer = $forceReferrer;
+		return $this;
 	}
-	
-	function proxy($proxy) {
+
+	/**
+	 * @param $referer
+	 * @return $this
+     */
+	final function referer($referer) {
+		$this->referrer = $referer;
+		return $this;
+	}
+
+	/**
+	 * @param $proxy
+	 * @return $this
+     */
+	final function proxy($proxy) {
 		$this->proxy = $proxy;
+		return $this;
 	}
-	
-	function url($url) {
+
+	/**
+	 * @param $url
+	 * @return $this
+     */
+	final function url($url) {
 		$this->url = $url;
+		return $this;
 	}
-	
-	function error($error = true, $display_errors = true) {
+
+	/**
+	 * @param bool|true $error
+	 * @param bool|true $display_errors
+	 * @return $this
+     */
+	final function error($error = true, $display_errors = true) {
 		$this->error = $error;
 		$this->display_errors = $display_errors;
+		return $this;
 	}
-	
-	function header($header = true) {
+
+	/**
+	 * @param bool|true $header
+	 * @return $this
+     */
+	final function header($header = true) {
 		$this->header = $header;
+		return $this;
 	}
-	
-	function headers($h = array()) {
+
+	/**
+	 * @param array $h
+	 * @return $this
+     */
+	final function headers($h = array()) {
 		$this->headerList = array_merge($this->headerList, $h);
+		return $this;
 	}
-	
-	function header_array($header_array = true) {
+
+	/**
+	 * @param bool|true $header_array
+	 * @return $this
+     */
+	final function header_array($header_array = true) {
 		$this->header_array = $header_array;
+		return $this;
 	}
-	
-	function headerClear($headerClear = true) {
+
+	/**
+	 * @param bool|true $headerClear
+	 * @return $this
+     */
+	final function headerClear($headerClear = true) {
 		$this->header_clear = $headerClear;
+		return $this;
 	}
-	
-	function gzip($gzip = true) {
+
+	/**
+	 * @param bool|true $gzip
+	 * @return $this
+     */
+	final function gzip($gzip = true) {
 		$this->gzip = $gzip;
+		return $this;
 	}
-	
-	function init($init = true) {
+
+	/**
+	 * @param bool|true $init
+	 * @return $this
+     */
+	final function init($init = true) {
 		$this->init = $init;
+		return $this;
 	}
-	
-	function timeout($timeout) {
+
+	/**
+	 * @param $timeout
+	 * @return $this
+     */
+	final function timeout($timeout) {
 		$this->timeout = $timeout;
+		return $this;
 	}
-	
-	function getHeaders() {
+
+	/**
+	 * @return array
+     */
+	final function getHeaders() {
 		return $this->headers;
 	}
-	
-	function getErrors() {
+
+	/**
+	 * @return array
+     */
+	final function getErrors() {
 		return $this->errors;
 	}
-	
-	function get($url = null) {
+
+	/**
+	 * @param string $url
+	 * @return array|bool|mixed|string|$this
+     */
+	final function get($url = "") {
 		if(empty($url)) {
 			$url = $this->url;
 		}
@@ -123,12 +287,12 @@ class Parser {
 		} else {
 			curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 6.1; rv:14.0) Gecko/20100101 Firefox/14.0.1");
 		}
-//Установите эту опцию в ненулевое значение, если вы хотите, чтобы PHP завершал работу скрыто, если возвращаемый HTTP-код имеет значение выше 300. По умолчанию страница возвращается нормально с игнорированием кода.
+//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ PHP пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ HTTP-пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ 300. пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ.
 	//curl_setopt($ch, CURLOPT_FAILONERROR, 1);
-	//Устанавливаем значение referer - адрес последней активной страницы
+	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ referer - пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		if(is_bool($this->cookie) && $this->cookie && !empty($this->cookie_path)) {
-			curl_setopt($ch, CURLOPT_COOKIEJAR, ROOT_PATH."core/cache/".$this->cookie_path.".txt");
-			curl_setopt($ch, CURLOPT_COOKIEFILE, ROOT_PATH."core/cache/".$this->cookie_path.".txt");
+			curl_setopt($ch, CURLOPT_COOKIEJAR, ROOT_PATH."core".DS."cache".DS.$this->cookie_path.".txt");
+			curl_setopt($ch, CURLOPT_COOKIEFILE, ROOT_PATH."core".DS."cache".DS.$this->cookie_path.".txt");
 		}
 		if(!is_bool($this->cookie) && !empty($this->cookie)) {
 			if(is_array($this->cookie)) {
@@ -142,8 +306,8 @@ class Parser {
 			}
 			curl_setopt($ch, CURLOPT_COOKIE, $this->cookie);
 		}
-		if(!empty($this->referer)) {
-			curl_setopt($ch, CURLOPT_REFERER, $this->referer);
+		if(!empty($this->referrer)) {
+			curl_setopt($ch, CURLOPT_REFERER, $this->referrer);
 		} else {
 			curl_setopt($ch, CURLOPT_REFERER, $url);
 		}
@@ -170,11 +334,11 @@ class Parser {
 			curl_setopt($ch, CURLOPT_POST, 1);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, implode("&", $post));
 		}
-		if (strtolower(substr($url,0,5))=='https'){
+		if(strtolower(substr($url,0,5))=='https') {
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		}
-		if(!config::Select("hosting")) {
+		if(!config::Select("hosting") || $this->forceReferrer) {
 			curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 		}
@@ -202,7 +366,7 @@ class Parser {
 					}
 				}
 				if(strpos($exp[$i], "HTTP/")!==false) {
-					$ex = array("HTTP", str_replace("HTTP", "", $exp[$i]));
+					$ex = array("HTTP", str_replace(array("HTTP", "/", "1.0", "1.1", "2.0"), "", $exp[$i]));
 				} else {
 					$ex = explode(":", $exp[$i]);
 				}
@@ -218,11 +382,14 @@ class Parser {
 				return $this->html;
 			}
 		} else {
-			return true;
+			return $this;
 		}
 	}
-	
-	function getHTML() {
+
+	/**
+	 * @return string
+     */
+	final function getHTML() {
 		return $this->html;
 	}
 	
