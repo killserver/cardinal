@@ -19,6 +19,7 @@ die();
 final class config {
 
 	private static $config = array();
+	private static $default = false;
 	
 	public static function StandAlone() {
 	global $config;
@@ -99,6 +100,10 @@ final class config {
 			return false;
 		}
 	}
+	
+	public static function SetDefault($def) {
+		self::$default = $def;
+	}
 
 	public static function Select($data, $sub = "", $subst = "") {
 //		var_dump(self::$config, ROOT_PATH, ROOT_EX);die();
@@ -109,7 +114,7 @@ final class config {
 		} else if(isset(self::$config[$data])) {
 			return self::$config[$data];
 		} else {
-			return false;
+			return self::$default;
 		}
 	}
 

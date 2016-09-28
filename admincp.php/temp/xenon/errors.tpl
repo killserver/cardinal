@@ -4,12 +4,12 @@
 												<td colspan="6" align="right"><form method="post" action="{C_default_http_host}admincp.php/?pages=Logs&delete"><button class="btn btn-red btn-icon btn-icon-standalone"><i class="fa-remove"></i><span>{L_DeleteAll}</span></button></form></td>
 											</tr>
 											<tr>
-												<th width="90">Date/Time</th>
-												<th width="110">Added</th>
+												<th width="100">Date/Time</th>
+												<th width="110">Error Type</th>
 												<th>Name</th>
-												<th width="150">Views</th>
-												<th width="70">Page</th>
-												<th width="150">Page</th>
+												<th>File</th>
+												<th width="70">Line</th>
+												<th width="150">IP</th>
 											</tr>
 										</thead>
 										

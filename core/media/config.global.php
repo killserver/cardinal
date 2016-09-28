@@ -55,7 +55,7 @@ define("UPLOAD_CM", 12000);
 define("UPLOAD_CMD", 12000);
 define("UPLOAD_ALL", 240000);
 
-define("VERSION", "4.1");
+define("VERSION", "4.2");
 define("DB_VERSION", "3.5");
 define("LEVEL_ADMIN", 3);
 define("LEVEL_MODER", 2);
@@ -72,9 +72,12 @@ $config = array_merge($config, array(
 	"git_beta" => true,
 	"rewrite" => true,
 	"gzip" => false,
+	"activeCache" => false,
+	"mobyActive" => false,
+	"default_http_mobyhost" => "",
 	"uses" => array(
 		"Minify" => "2.1.7",
-		"Mobile Detect" => "2.8.0",
+		"Mobile Detect" => "2.8.22",
 		"PHPMailer" => "5.1",
 		"Sypex Geo" => "2.2.0",
 		"StopSpam" => "1.0",

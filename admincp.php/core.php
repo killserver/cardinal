@@ -43,12 +43,36 @@ if(in_array($view, array_keys($defined))) {
 	$view = $defined[$view];
 }
 $in_page = $view;
-if(class_exists($view)) {
-	if(method_exists(''.$view, 'start')) {
-		$view::start();
-		defines::init();
+if(class_exists($view)) {	
+	$active = false;
+	$load = true;
+	$obj = "";
+	if(config::Select("activeCache")) {
+		$par = $_GET;
+		array_walk($par, function(&$v, $k) { $v = ($k."-".$v); });
+		$url = implode("=", $par);
+		$md5 = md5($url);
+		if(!file_exists(ROOT_PATH."core".DS."cache".DS."page".DS."admin_".$md5.".txt")) {
+			$active = true;
+		} else {
+			$load = false;
+		}
 	}
-	new $view();
+	if($load) {
+		if(method_exists(''.$view, 'start')) {
+			$view::start();
+			defines::init();
+		}
+		new $view();
+	} else {
+		include(ROOT_PATH."core".DS."cache".DS."page".DS."admin_".$md5.".txt");
+	}
+	if($active) {
+		$obj = ob_get_contents();
+		ob_end_clean();
+		file_put_contents(ROOT_PATH."core".DS."cache".DS."page".DS."admin_".$md5.".txt", removeBOM($obj));
+		HTTP::echos($obj);
+	}
 }
 
 ?>

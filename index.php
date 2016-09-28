@@ -82,6 +82,10 @@ if(config::Select("activeCache")) {
 	array_walk($par, function(&$v, $k) { $v = ($k."-".$v); });
 	$url = implode("=", $par);
 	$md5 = md5($url);
+	$par = $_GET;
+	array_walk($par, function(&$v, $k) { $v = ($k."-".$v); });
+	$url = implode("=", $par);
+	$md5 = md5($md5.$url);
 	if(!file_exists(ROOT_PATH."core".DS."cache".DS."page".DS.$md5.".txt")) {
 		$active = true;
 	} else {
@@ -110,7 +114,7 @@ if($load) {
 if($active) {
 	$obj = ob_get_contents();
 	ob_end_clean();
-	file_put_contents(ROOT_PATH."core".DS."cache".DS."page".DS.$md5.".txt", $obj);
+	file_put_contents(ROOT_PATH."core".DS."cache".DS."page".DS.$md5.".txt", removeBOM($obj));
 	HTTP::echos($obj);
 }
 unset($page, $class, $method, $file, $is_file);

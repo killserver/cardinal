@@ -125,6 +125,7 @@ class Parser {
 	}
 
 	/**
+	 * Set activate cookie and set name file for save cookies
 	 * @param bool|true $coo Activate cookie
 	 * @param string $coopath Cookie path
 	 * @return $this Parser
@@ -139,9 +140,9 @@ class Parser {
 	}
 
 	/**
-	 * Use agent
+	 * Set user agent
 	 * @param $agent UserAgent
-	 * @return $this
+	 * @return $this Parser
      */
 	final function agent($agent) {
 		$this->agent = $agent;
@@ -149,8 +150,9 @@ class Parser {
 	}
 
 	/**
-	 * @param bool|true $forceReferrer
-	 * @return $this
+	 * Force switch referrer
+	 * @param bool|true $forceReferrer Switch referrer
+	 * @return $this Parser
      */
 	final function forceReferer($forceReferrer = true) {
 		$this->forceReferrer = $forceReferrer;
@@ -158,8 +160,9 @@ class Parser {
 	}
 
 	/**
-	 * @param $referer
-	 * @return $this
+	 * Link referer where come
+	 * @param $referer Needed link
+	 * @return $this Parser
      */
 	final function referer($referer) {
 		$this->referrer = $referer;
@@ -167,8 +170,9 @@ class Parser {
 	}
 
 	/**
-	 * @param $proxy
-	 * @return $this
+	 * Activation proxy
+	 * @param $proxy IP proxy
+	 * @return $this Parser
      */
 	final function proxy($proxy) {
 		$this->proxy = $proxy;
@@ -176,8 +180,9 @@ class Parser {
 	}
 
 	/**
-	 * @param $url
-	 * @return $this
+	 * Link for parser
+	 * @param $url Link
+	 * @return $this Parser
      */
 	final function url($url) {
 		$this->url = $url;
@@ -185,9 +190,10 @@ class Parser {
 	}
 
 	/**
-	 * @param bool|true $error
-	 * @param bool|true $display_errors
-	 * @return $this
+	 * Debug in parsing
+	 * @param bool|true $error Activation debug
+	 * @param bool|true $display_errors Activation view errors
+	 * @return $this Parser
      */
 	final function error($error = true, $display_errors = true) {
 		$this->error = $error;
@@ -196,8 +202,9 @@ class Parser {
 	}
 
 	/**
-	 * @param bool|true $header
-	 * @return $this
+	 * Activation get header
+	 * @param bool|true $header Activation parsing header
+	 * @return $this Parser
      */
 	final function header($header = true) {
 		$this->header = $header;
@@ -205,8 +212,9 @@ class Parser {
 	}
 
 	/**
-	 * @param array $h
-	 * @return $this
+	 * Send headers in proccess parsing
+	 * @param array $h Array headers
+	 * @return $this Parser
      */
 	final function headers($h = array()) {
 		$this->headerList = array_merge($this->headerList, $h);
@@ -214,8 +222,9 @@ class Parser {
 	}
 
 	/**
-	 * @param bool|true $header_array
-	 * @return $this
+	 * Activation parsing headers. Can get headers as array
+	 * @param bool|true $header_array Switch headers
+	 * @return $this Parser
      */
 	final function header_array($header_array = true) {
 		$this->header_array = $header_array;
@@ -223,8 +232,9 @@ class Parser {
 	}
 
 	/**
-	 * @param bool|true $headerClear
-	 * @return $this
+	 * Delete HTTP and Server headers
+	 * @param bool|true $headerClear Switch clear headers
+	 * @return $this Parser
      */
 	final function headerClear($headerClear = true) {
 		$this->header_clear = $headerClear;
@@ -232,8 +242,9 @@ class Parser {
 	}
 
 	/**
-	 * @param bool|true $gzip
-	 * @return $this
+	 * Activation gzip parsing
+	 * @param bool|true $gzip Switch gzip
+	 * @return $this Parser
      */
 	final function gzip($gzip = true) {
 		$this->gzip = $gzip;
@@ -241,8 +252,9 @@ class Parser {
 	}
 
 	/**
-	 * @param bool|true $init
-	 * @return $this
+	 * Switch parsing at once or after calling
+	 * @param bool|true $init Switch initialization
+	 * @return $this Parser
      */
 	final function init($init = true) {
 		$this->init = $init;
@@ -250,8 +262,9 @@ class Parser {
 	}
 
 	/**
-	 * @param $timeout
-	 * @return $this
+	 * Timeout parsing
+	 * @param $timeout Time in seconds
+	 * @return $this Parser
      */
 	final function timeout($timeout) {
 		$this->timeout = $timeout;
@@ -259,22 +272,25 @@ class Parser {
 	}
 
 	/**
-	 * @return array
+	 * Get header list
+	 * @return array Array headers
      */
 	final function getHeaders() {
 		return $this->headers;
 	}
 
 	/**
-	 * @return array
+	 * Get error list
+	 * @return array Get errors
      */
 	final function getErrors() {
 		return $this->errors;
 	}
 
 	/**
-	 * @param string $url
-	 * @return array|bool|mixed|string|$this
+	 * Initialization parsing
+	 * @param string $url Need link and start, or initialization parsing
+	 * @return array|bool|string|$this Result parsing
      */
 	final function get($url = "") {
 		if(empty($url)) {
@@ -287,9 +303,9 @@ class Parser {
 		} else {
 			curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 6.1; rv:14.0) Gecko/20100101 Firefox/14.0.1");
 		}
-//���������� ��� ����� � ��������� ��������, ���� �� ������, ����� PHP �������� ������ ������, ���� ������������ HTTP-��� ����� �������� ���� 300. �� ��������� �������� ������������ ��������� � �������������� ����.
+//Установите эту опцию в ненулевое значение, если вы хотите, чтобы PHP завершал работу скрыто, если возвращаемый HTTP-код имеет значение выше 300. По умолчанию страница возвращается нормально с игнорированием кода.
 	//curl_setopt($ch, CURLOPT_FAILONERROR, 1);
-	//������������� �������� referer - ����� ��������� �������� ��������
+	//Устанавливаем значение referer - адрес последней активной страницы
 		if(is_bool($this->cookie) && $this->cookie && !empty($this->cookie_path)) {
 			curl_setopt($ch, CURLOPT_COOKIEJAR, ROOT_PATH."core".DS."cache".DS.$this->cookie_path.".txt");
 			curl_setopt($ch, CURLOPT_COOKIEFILE, ROOT_PATH."core".DS."cache".DS.$this->cookie_path.".txt");
@@ -366,6 +382,15 @@ class Parser {
 					}
 				}
 				if(strpos($exp[$i], "HTTP/")!==false) {
+					if(strpos($exp[$i], "1.0")!==false) {
+						$this->headers['HTTPVersion'] = "1.0";
+					}
+					if(strpos($exp[$i], "1.1")!==false) {
+						$this->headers['HTTPVersion'] = "1.1";
+					}
+					if(strpos($exp[$i], "2.0")!==false) {
+						$this->headers['HTTPVersion'] = "2.0";
+					}
 					$ex = array("HTTP", str_replace(array("HTTP", "/", "1.0", "1.1", "2.0"), "", $exp[$i]));
 				} else {
 					$ex = explode(":", $exp[$i]);
@@ -387,7 +412,8 @@ class Parser {
 	}
 
 	/**
-	 * @return string
+	 * Get html code parsing
+	 * @return string Parsed html
      */
 	final function getHTML() {
 		return $this->html;

@@ -11,7 +11,7 @@ class Phpinfo extends Core {
 			"#body \{.+?\}#",
 			"#a\:.+?\{.+?\}#"
 		), "", $pinfo);
-		$this->Prints($pinfo, true);
+		$this->Prints($pinfo, true, true);
 	}
 	
 }

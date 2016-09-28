@@ -65,12 +65,12 @@ function or_mrand($min = 0, $max = 0) {
 	}
 }
 
-function location($link, $time = 0, $exit = true){return function_call('location', array($link, $time, $exit));}
-function or_location($link, $time = 0, $exit = true) {
+function location($link, $time = 0, $exit = true, $code = 200){return function_call('location', array($link, $time, $exit, $code));}
+function or_location($link, $time = 0, $exit = true, $code = 200) {
 	if($time == 0) {
-		header("Location: ".templates::view($link));
+		header("Location: ".templates::view($link), true, $code);
 	} else {
-		header("Refresh: ".$time."; url=".templates::view($link));
+		header("Refresh: ".$time."; url=".templates::view($link), true, $code);
 	}
 	if($exit) {
 		exit();
@@ -113,10 +113,26 @@ if(!function_exists("boolval")) {
 	}
 }
 
+function removeBOM($string) { 
+	if(substr($string, 0,3) == pack('CCC',0xef,0xbb,0xbf)) { 
+		$string=substr($string, 3); 
+	} 
+	return $string; 
+}
+
 function vdump($var, $title = "") {
+	$backtrace = debug_backtrace();
 	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "Called: ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "").(($title) ? "<b>".$title."</b>\n\n" : '');
 	var_dump($var);
 	echo '</pre>';
+}
+
+function is_ssl() {
+	return (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO']=='https') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+}
+
+function protocol() {
+	return (is_ssl() ? "https" : "http");
 }
 
 function check_smartphone() {

@@ -52,7 +52,7 @@ class Core {
 			}
 		}
 		$langs = $lang;
-		&$lang = $langs;
+		$lang = $langs;
 		unset($langs);
 	}
 	
@@ -228,7 +228,7 @@ class Core {
 		return $arr;
 	}
 	
-	protected function Prints($echo, $print=false) {
+	protected function Prints($echo, $print = false, $force = false) {
 	global $lang, $user, $in_page;
 		if(!userlevel::get("admin") || !isset($_COOKIE[COOK_ADMIN_USER]) || !isset($_COOKIE[COOK_ADMIN_PASS])) {
 			$ref = urlencode(str_replace(ROOT_PATH, "", cut(getenv("REQUEST_URI"), "/admincp.php/")));
@@ -331,7 +331,11 @@ class Core {
 			}
 		}
 		$echos = str_replace("{css_list}", $css_echo, $echos);
-		echo str_replace("{main_admin}", templates::view($echo), $echos);
+		$echoView = templates::view($echo);
+		if(empty($echoView) && $force) {
+			$echoView = $echo;
+		}
+		echo str_replace("{main_admin}", $echoView, $echos);
 	}
 	
 }

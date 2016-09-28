@@ -61,15 +61,17 @@ class HTTP {
 		} else {
 			$time = $delete;
 		}
+		$ret = false;
 		if($save) {
 			if((version_compare(PHP_VERSION_ID, '70000', '>=')) || strpos("localhost", $domain)!==false || strpos("127.0.0.1", $domain)!==false) {
-				setcookie($name, $value, $time, "/");
+				$ret = setcookie($name, $value, $time, "/");
 			} else {
-				setcookie($name, $value, $time, "/", ".".$domain, false, true);
+				$ret = setcookie($name, $value, $time, "/", ".".$domain, false, true);
 			}
 		} else {
-			setcookie($name, $value, $time);
+			$ret = setcookie($name, $value, $time);
 		}
+		return $ret;
 	}
 	
 	final public static function lastmod($LastModified_unix = 0) {
@@ -80,10 +82,11 @@ class HTTP {
 			$IfModifiedSince = strtotime(substr($_SERVER['HTTP_IF_MODIFIED_SINCE'], 5));
 		if(!is_bool($IfModifiedSince) && $IfModifiedSince >= $LastModified_unix) {
 			header($_SERVER['SERVER_PROTOCOL'].' 304 Not Modified');
-			return;
+			return false;
 		}
 		header('Last-Modified: '.$LastModified);
 		header('Expires: '.$LastModified);
+		return true;
 	}
 	
 	final public static function echos($echo = "") {

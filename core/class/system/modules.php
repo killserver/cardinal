@@ -31,19 +31,19 @@ class modules {
 	private static $columns = array();
 	private static $access_user = array('id', 'username', 'alt_name', 'level', 'email', 'time_reg', 'last_activ', 'activ', 'avatar');
 
-	final public static function get_config($get, $array = "") {
+	final public static function get_config($get, $array = "", $default = false) {
 	global $config;
 		if(!empty($array)) {
 			if(isset($config[$get][$array])) {
 				return $config[$get][$array];
 			} else {
-				return false;
+				return $default;
 			}
 		} else {
 			if(isset($config[$get])) {
 				return $config[$get];
 			} else {
-				return false;
+				return $default;
 			}
 		}
 	}
@@ -704,6 +704,7 @@ class modules {
 		$file = new Parser(SERVER_MODULES."shop/search/api/".$module."/yaml");
 		$file->header();
 		$file->header_array();
+		$file->init();
 		$file = $file->get();
 		$hr = $file->getHeaders();
 		if(strpos($hr['Content-Type'], "application/x-yaml")===false) {

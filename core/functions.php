@@ -44,7 +44,7 @@ if(file_exists(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX) && file_exists(
 }
 
 spl_autoload_register(function($class) {
-	if(stripos(ini_get('include_path'), $class)!==false) {
+	if(stripos(ini_get('include_path'), $class)!==false && class_exists($class)) {
 		return false;
 	}
 	if(file_exists(ROOT_PATH."core".DS."modules".DS."autoload".DS.$class.".".ROOT_EX)) {
@@ -57,43 +57,6 @@ spl_autoload_register(function($class) {
 		include_once(ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS.$class.".".ROOT_EX);
 	}
 });
-
-//FIXME: delete this function?
-/*function FriendlyErrorType($type) {
-	if($type==E_ERROR) { // 1 // 
-		return 'E_ERROR'; 
-	} else if($type==E_WARNING) { // 2 // 
-		return 'E_WARNING'; 
-	} else if($type==E_PARSE) { // 4 // 
-		return 'E_PARSE'; 
-	} else if($type==E_NOTICE) { // 8 // 
-		return 'E_NOTICE'; 
-	} else if($type==E_CORE_ERROR) { // 16 // 
-		return 'E_CORE_ERROR'; 
-	} else if($type==E_CORE_WARNING) { // 32 // 
-		return 'E_CORE_WARNING'; 
-	} else if($type==E_COMPILE_ERROR) { // 64 // 
-		return 'E_COMPILE_ERROR'; 
-	} else if($type==E_COMPILE_WARNING) { // 128 // 
-		return 'E_COMPILE_WARNING'; 
-	} else if($type==E_USER_ERROR) { // 256 // 
-		return 'E_USER_ERROR'; 
-	} else if($type==E_USER_WARNING) { // 512 // 
-		return 'E_USER_WARNING'; 
-	} else if($type==E_USER_NOTICE) { // 1024 // 
-		return 'E_USER_NOTICE'; 
-	} else if($type==E_STRICT) { // 2048 // 
-		return 'E_STRICT'; 
-	} else if($type==E_RECOVERABLE_ERROR) { // 4096 // 
-		return 'E_RECOVERABLE_ERROR'; 
-	} else if($type==E_DEPRECATED) { // 8192 // 
-		return 'E_DEPRECATED';
-	} else if($type==E_USER_DEPRECATED) { // 16384 //
-		return 'E_USER_DEPRECATED';
-	} else {
-		return "";
-	}
-}*/
 
 set_error_handler(array('Error', 'handlePhpError'));
 set_exception_handler(array('Error', 'handleException'));

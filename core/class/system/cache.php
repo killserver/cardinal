@@ -110,6 +110,10 @@ final class cache {
 			return false;
 		}
 	}
+	
+	public static function Has($name) {
+		return self::Exists($name);
+	}
 
 	public static function Set($name, $val) {
 		if(self::$type == CACHE_MEMCACHE || self::$type == CACHE_MEMCACHED) {
@@ -138,6 +142,24 @@ final class cache {
 			} else {
 				return false;
 			}
+		} else {
+			return false;
+		}
+	}
+	
+	public static function Pull($name) {
+		if(self::Exists($name)) {
+			$ret = self::Get($name);
+			self::Delete($name);
+			return $ret;
+		} else {
+			return false;
+		}
+	}
+	
+	public static function Put($name, $value) {
+		if(!self::Exists($name)) {
+			return self::Set($name, $value);
 		} else {
 			return false;
 		}

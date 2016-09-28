@@ -66,7 +66,7 @@ class base extends modules {
 		$tmp = $this->init_templates();
 		$skins = $tmp->get_skins();
 		if(!file_exists(ROOT_PATH."skins".DS.$skins.DS."blocks.tpl")) {
-			return;
+			return false;
 		}
 		$cache = $this->init_cache();
 		if(!$cache->Exists("menu")) {

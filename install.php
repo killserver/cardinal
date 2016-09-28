@@ -65,8 +65,12 @@ if(sizeof($_POST)==0||(sizeof($_POST)==1)||(sizeof($_POST)==2)) {
 		Route::RegParam("line", "2");
 		if(function_exists("apache_get_version")) {
 			$apache = apache_get_version();
-			$apache = substr($apache, strlen("Apache/"));
-			$apache = (intval($apache)>=2 ? "green":"red");
+			if(strpos($apache, "/")!==false) {
+				$apache = substr($apache, strlen("Apache/"));
+				$apache = (intval($apache)>=2 ? "green":"red");
+			} else {
+				$apache = "green";
+			}
 		} else {
 			$apache = "green";
 		}

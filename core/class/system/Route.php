@@ -71,10 +71,11 @@ final class Route {
 		if(is_array($n)) {
 			$b = self::$_secret;
 			global $$b;
+			$a = $$b;
 			if(isset($GLOBALS[$b]) && is_array($GLOBALS[$b])) {
 				$b = $GLOBALS[$b];
-			} else if(isset($$b) && is_array($$b)) {
-				$b = $$b;
+			} else if(isset($a) && is_array($a)) {
+				$b = $a;
 			}
 			if($b==self::$_secret) {
 				return false;
@@ -89,20 +90,22 @@ final class Route {
 		} else if(!empty($n)) {
 			$b = self::$_secret;
 			global $$b;
+			$a = $$b;
 			if(isset($GLOBALS[$b]) && is_array($GLOBALS[$b]) && isset($GLOBALS[$b][$n])) {
 				return $GLOBALS[$b][$n];
-			} else if(isset($$b) && is_array($$b) && isset($$b[$n])) {
-				return $$b[$n];
+			} else if(isset($a) && is_array($a) && isset($a[$n])) {
+				return $a[$n];
 			} else {
 				return false;
 			}
 		} else {
 			$b = self::$_secret;
 			global $$b;
+			$a = $$b;
 			if(isset($GLOBALS[$b])) {
 				return $GLOBALS[$b];
-			} else if(isset($$b)) {
-				return $$b;
+			} else if(isset($a)) {
+				return $a;
 			} else {
 				return false;
 			}

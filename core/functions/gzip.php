@@ -59,11 +59,15 @@ global $config, $Timer, $manifest;
 		header("Content-Encoding: ".$ENCODING); 
 		$Contents = gzencode($Contents, 9, FORCE_GZIP);
 		echo $Contents;
-		ob_end_flush();
+		if(isset($config["activeCache"]) && !$config["activeCache"]) {
+			ob_end_flush();
+		}
 		session_destroy();
         die();
 	} else {
-		ob_end_flush();
+		if(isset($config["activeCache"]) && !$config["activeCache"]) {
+			ob_end_flush();
+		}
 		session_destroy();
 		exit();
 	}

@@ -55,7 +55,7 @@ global $user;
 				$js[] = 'http://ie.microsoft.com/testdrive/HTML5/CompatInspector/inspector.js';
 			}
 		}
-		$dirs = read_dir(ROOT_PATH."core".DS."modules".DS."js".DS, ".php");
+		$dirs = read_dir(ROOT_PATH."core".DS."modules".DS."js".DS, ".".ROOT_EX);
 		sort($dirs);
 		for($i=0;$i<sizeof($dirs);$i++) {
 			if(file_exists(ROOT_PATH."core".DS."modules".DS."js".DS.$dirs[$i])) {
@@ -68,7 +68,7 @@ global $user;
 			}
 		}
 		unset($dirs, $js);
-		$dirs = read_dir(ROOT_PATH."core".DS."modules".DS."css".DS, ".php");
+		$dirs = read_dir(ROOT_PATH."core".DS."modules".DS."css".DS, ".".ROOT_EX);
 		sort($dirs);
 		for($i=0;$i<sizeof($dirs);$i++) {
 			if(file_exists(ROOT_PATH."core".DS."modules".DS."css".DS.$dirs[$i])) {

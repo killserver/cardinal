@@ -39,6 +39,7 @@ class Settings extends Core {
 			"default_http_local" => "'.str_replace("http://".$_SERVER['HTTP_HOST'], "", $_POST['PATH']).'",
 			"default_http_hostname" => "'.saves($_POST['SERVER'], true).'",
 			"default_http_host" => $protocol."://'.saves(str_replace(array("http", "https", "://"), "", $_POST['PATH']), true).'",
+			"default_http_mobyhost" => $protocol."://'.saves(str_replace(array("http", "https", "://"), "", $_POST['mobyhost']), true).'",
 			"lang" => "ru",
 			"cache" => array(
 				"type" => '.saves($_POST['cache_type'], true).',
@@ -48,6 +49,8 @@ class Settings extends Core {
 				"pass" => "'.saves($_POST['cache_pass'], true).'",
 				"path" => "'.saves($_POST['cache_path'], true).'",
 			),
+			"viewport" => "'.saves($_POST['viewport'], true).'",
+			"activeCache" => '.(isset($_POST['activeCache']) && $_POST['activeCache']=="1" ? "true" : "false").',
 			"ParsePHP" => '.(isset($_POST['ParsePHP']) && $_POST['ParsePHP']=="1" ? "true" : "false").','.$this->Saves($_POST).'
 			"lang" => "ru",
 			"charset" => "utf-8",
@@ -102,6 +105,7 @@ class Settings extends Core {
 		}
 		$name = lang::get_lang("sitename");
 		$descr = lang::get_lang("s_description");
+		config::SetDefault("");
 		templates::assign_vars(array(
 			"API" => config::Select("api_key"),
 			"SERPATH" => config::Select("default_http_host"),

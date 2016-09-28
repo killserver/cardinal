@@ -61,9 +61,9 @@ final class templates {
      */
 	private static $editor = array();
 	/**
-	 * @var
+	 * @var array
      */
-	private static $header;
+	private static $header = array();
 	/**
 	 * @var string
      */
