@@ -39,7 +39,7 @@
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">{L_GetNewUpdates}</div><input type="checkbox" name="speed_update" value="1"[if {C_speed_update}==1] checked="checked"[/if {C_speed_update}==1] class="iswitch iswitch-secondary" /><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">{L_CacheTemplates}</div><input type="checkbox" name="ParsePHP" value="1"[if {C_ParsePHP}==1] checked="checked"[/if {C_ParsePHP}==1] class="iswitch iswitch-secondary" /><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;" alt="Full cache page as html" title="Full cache page as html">Full cache [beta]</div><input type="checkbox" name="activeCache" value="1"[if {C_activeCache}==1] checked="checked"[/if {C_activeCache}==1] class="iswitch iswitch-secondary" alt="Full cache page as html" title="Full cache page as html" /><br />
-		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Viewport</div><input type="text" name="viewport" value="viewport" value="{C_viewport}" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
+		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Viewport</div><input type="text" name="viewport" value="{C_viewport}" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Moby Active Redirect to subdomain</div><input type="checkbox" name="mobyActive" value="1"[if {C_mobyActive}==1] checked="checked"[/if {C_mobyActive}==1] class="iswitch iswitch-secondary" /><br />
 	</span>
 </div>

@@ -28,6 +28,7 @@ die();
 
 $config = array();
 if(file_exists(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX) && file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX)) {
+	$config = array();
 	require_once(ROOT_PATH."core".DS."media".DS."config.global.".ROOT_EX);
 	require_once(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX);
 	if(file_exists(ROOT_PATH."core".DS."media".DS."config.install.".ROOT_EX)) {

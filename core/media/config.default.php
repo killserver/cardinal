@@ -29,7 +29,7 @@ if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off') {
 	$protocol = "http";
 }
 
-$config = array(
+$config = array_merge($config, array(
 	"api_key" => "1234567890",
 	"logs" => ERROR_FILE,
 	"hosting" => true,//true - hosting, false - vps/vds
@@ -80,6 +80,6 @@ $config = array(
 		"driver" => "mysql",
 	),
 	"related" => 5,
-);
+));
 
 ?>

@@ -65,8 +65,8 @@ function or_mrand($min = 0, $max = 0) {
 	}
 }
 
-function location($link, $time = 0, $exit = true, $code = 200){return function_call('location', array($link, $time, $exit, $code));}
-function or_location($link, $time = 0, $exit = true, $code = 200) {
+function location($link, $time = 0, $exit = true, $code = 0){return function_call('location', array($link, $time, $exit, $code));}
+function or_location($link, $time = 0, $exit = true, $code = 0) {
 	if($time == 0) {
 		header("Location: ".templates::view($link), true, $code);
 	} else {
