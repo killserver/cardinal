@@ -164,6 +164,10 @@ if(!$clear) {
 	//$header .= "<link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,700,400italic' rel='stylesheet' type='text/css'/>\n";
 
 	$header .= '<meta name="viewport" content="'.config::Select("viewport").'" />'."\n";
+	$header .= '<meta http-equiv="imagetoolbar" content="no" />'."\n";
+	$header .= '<!-- saved from url=(0014)about:internet -->'."\n";
+	$header .= '<meta name="apple-mobile-web-app-capable" content="yes">'."\n";
+	$header .= '<meta http-equiv="cleartype" content="on">'."\n";
 	$header .= "<script type=\"text/javascript\">\n".
 		"	var username = \"{U_username}\";\n".
 		"	var default_link = \"{C_default_http_host}\";\n".

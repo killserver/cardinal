@@ -20,6 +20,9 @@ die();
 
 define("BLOCK", 4*1024);
 define("API_URL", "http://online-killer.pp.ua/api.php");
+if(!defined("ROUTE_GET_URL")) {
+	define("ROUTE_GET_URL", "PATH_INFO");
+}
 
 if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off') {
 	$protocol = "https";

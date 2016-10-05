@@ -25,6 +25,10 @@ include_once("core.php");
 if(!defined("INSTALLER") && !userlevel::get("site")) {
 	templates::error("{L_error_level_full}", "{L_error_level}");
 }
+if(is_array($config) && sizeof($config)>0 && isset($config["default_http_local"]) && isset($_SERVER['REQUEST_URI']) && $_SERVER['REQUEST_URI']=="/index.php") {
+	header("Location: ".$config["default_http_local"], TRUE, 301);
+	exit();
+}
 
 $server = $_SERVER['QUERY_STRING'];
 if(!empty($server)) {

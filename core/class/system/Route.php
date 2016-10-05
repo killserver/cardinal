@@ -231,7 +231,15 @@ final class Route {
 	}
 
 	public static function Load($default = "") {
-		$uri = substr(getenv("PATH_INFO"), 1);
+		$uri = getenv(ROUTE_GET_URL);
+		$len = strlen($uri);
+		if(strpos($uri, "?")!==false) {
+			$len = strpos($uri, "?")-1;
+		}
+		if(strpos($uri, "&")!==false) {
+			$len = strpos($uri, "&")-1;
+		}
+		$uri = substr($uri, 1, $len);
 		if(!isset($GLOBALS[self::$_secret])) {
 			return false;
 		}

@@ -55,7 +55,7 @@ define("UPLOAD_CM", 12000);
 define("UPLOAD_CMD", 12000);
 define("UPLOAD_ALL", 240000);
 
-define("VERSION", "4.2");
+define("VERSION", "4.3");
 define("DB_VERSION", "3.5");
 define("LEVEL_ADMIN", 3);
 define("LEVEL_MODER", 2);
@@ -64,7 +64,12 @@ define("LEVEL_GUEST", 0);
 define("S_TIME_VIEW", "d-m-Y H:i:s");
 
 // Shop
-define("SERVER_MODULES", "http://shop.killer.pp.ua/");
+if(!defined("SERVER_MODULES")) {
+	define("SERVER_MODULES", "http://shop.killer.pp.ua/");
+}
+if(!defined("ROUTE_GET_URL")) {
+	define("ROUTE_GET_URL", "PATH_INFO");
+}
 
 $config = array_merge($config, array(
 	"lang" => "ru",
