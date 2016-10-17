@@ -27,21 +27,30 @@ class page {
 			templates::assign_vars($row, "index", "index".$row['id']);
 		}
 		$tmp = templates::complited_assing_vars("index");
-		templates::complited($tmp, array("title" => lang::get_lang('sitename'), "meta" => array(
-					"ogpr" => array(
-						"og:image" => "{C_default_http_host}logo.jpg?1",
-						"og:site_name" => "{L_sitename}",
-						"og:url" => "{C_default_http_host}",
-						"og:title" => "{L_sitename}",
-						"og:description" => "{L_s_description}",
-						"og:type" => "website",
-					),
-					"link" => array(
-						"image_src" => "{C_default_http_host}logo.jpg?1",
-					),
-					"keywords" => "{L_s_keywords}",
-					"description" => "{L_s_description}",
-				)));
+		$ogpr = array(
+			"og:site_name" => "{L_sitename}",
+			"og:url" => "{C_default_http_host}",
+			"og:title" => "{L_sitename}",
+			"og:description" => "{L_s_description}",
+			"og:type" => "website",
+		);
+		if(file_exists(ROOT_PATH."logo.jpg")) {
+			$ogpr = array_merge($ogpr, array(
+				"og:image" => "{C_default_http_host}logo.jpg?".time(),
+			));
+		}
+		$meta = array(
+			"ogpr" => $ogpr,
+			"description" => "{L_s_description}",
+		);
+		if(file_exists(ROOT_PATH."logo.jpg")) {
+			$meta = array_merge($meta, array(
+				"link" => array(
+					"image_src" => "{C_default_http_host}logo.jpg?".time(),
+				),
+			));
+		}
+		templates::complited($tmp, array("title" => lang::get_lang('sitename'), "meta" => $meta));
 		templates::display();
 	}
 

@@ -110,13 +110,13 @@ class ModuleList extends Core {
 				if(ajax_check()=="ajax") {
 					HTTP::echos("Done");die();
 				} else {
-					location("{C_default_http_host}admincp.php/?pages=ModuleList&action=UnDone");
+					location("{C_default_http_host}".ADMINCP_DIRECTORY."/?pages=ModuleList&action=UnDone");
 				}
 			} else {
 				if(ajax_check()=="ajax") {
 					HTTP::echos("Fail");die();
 				} else {
-					location("{C_default_http_host}admincp.php/?pages=ModuleList&action=UnFail");
+					location("{C_default_http_host}".ADMINCP_DIRECTORY."/?pages=ModuleList&action=UnFail");
 				}
 			}
 			return;
@@ -124,13 +124,13 @@ class ModuleList extends Core {
 		if(isset($_GET['unactive']) && is_string($_GET['unactive'])) {
 			db::doquery("UPDATE `modules` SET `activ` = \"no\" WHERE `module` = \"".saves($_GET['unactive'], true)."\"");
 			cache::Delete("load_modules");
-			location("{C_default_http_host}admincp.php/?pages=ModuleList");
+			location("{C_default_http_host}".ADMINCP_DIRECTORY."/?pages=ModuleList");
 			return;
 		}
 		if(isset($_GET['active']) && is_string($_GET['active'])) {
 			db::doquery("UPDATE `modules` SET `activ` = \"yes\" WHERE `module` = \"".saves($_GET['active'], true)."\"");
 			cache::Delete("load_modules");
-			location("{C_default_http_host}admincp.php/?pages=ModuleList");
+			location("{C_default_http_host}".ADMINCP_DIRECTORY."/?pages=ModuleList");
 			return;
 		}
 		$modules = $this->ReadModules();

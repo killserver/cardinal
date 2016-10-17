@@ -64,7 +64,7 @@ global $user;
 		}
 		if(is_array($js)) {
 			for($i=0;$i<sizeof($js);$i++) {
-				$sRet .= "<script type=\"text/javascript\" src=\"".$js[$i]."\"></script>\n";
+				$sRet .= "<script type=\"text/javascript\" src=\"".$js[$i].AmperOr($js[$i]).time()."\"></script>\n";
 			}
 		}
 		unset($dirs, $js);
@@ -77,7 +77,7 @@ global $user;
 		}
 		if(is_array($css)) {
 			for($i=0;$i<sizeof($css);$i++) {
-				$sRet .= "<link href=\"".$css[$i]."\" rel=\"stylesheet\" />\n";
+				$sRet .= "<link href=\"".$css[$i].AmperOr($css[$i]).time()."\" rel=\"stylesheet\" />\n";
 			}
 		}
 		unset($dirs, $css);
@@ -86,14 +86,14 @@ global $user;
 		if($js) {
 			$js = implode(",", $js);
 		}
-		$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}core/class/min/?g=general&amp;charset=".config::Select("charset").(sizeof($js)>0 ? "&amp;f=".implode(",", $js) : "")."&amp;".time()."\"></script>\n";
+		$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}core/class/min/index.php?g=general&amp;charset=".config::Select("charset").(sizeof($js)>0 ? "&amp;f=".implode(",", $js) : "")."&amp;".time()."\"></script>\n";
 	}
 	$all = modules::manifest_get(array("create_js", "full"));
 	if(is_array($all)) {
 		$all = array_values($all);
 		if($all) {
 			for($i=0;$i<sizeof($all);$i++) {
-				$sRet .= "<script type=\"text/javascript\" src=\"".$all[$i]."\"></script>\n";
+				$sRet .= "<script type=\"text/javascript\" src=\"".$all[$i].AmperOr($all[$i]).time()."\"></script>\n";
 			}
 		}
 	}
@@ -107,14 +107,14 @@ global $user;
 		}
 	}
 	if(isset($js_list) && is_array($js_list)) {
-		$sRet .= "<script type=\"text/javascript\" async src=\"{C_default_http_host}core/class/min/?g=general&amp;charset=".config::Select("charset").(sizeof($js_list)>0 ? "&amp;f=".implode(",", $js_list) : "")."&amp;".time()."\"></script>\n";
+		$sRet .= "<script type=\"text/javascript\" async src=\"{C_default_http_host}core/class/min/index.php?g=general&amp;charset=".config::Select("charset").(sizeof($js_list)>0 ? "&amp;f=".implode(",", $js_list) : "")."&amp;".time()."\"></script>\n";
 	}
 	$all = modules::manifest_get(array("create_css", "full"));
 	if(is_array($all)) {
 		$all = array_values($all);
 		if($all) {
 			for($i=0;$i<sizeof($all);$i++) {
-				$sRet .= "<link href=\"".$all[$i]."\" rel=\"stylesheet\" type=\"text/css\" />\n";
+				$sRet .= "<link href=\"".$all[$i].AmperOr($all[$i]).time()."\" rel=\"stylesheet\" type=\"text/css\" />\n";
 			}
 		}
 	}
@@ -129,6 +129,10 @@ global $user;
 	}
 	unset($all, $js, $user);
 return $sRet;
+}
+
+function AmperOr($str) {
+	return strpos($str, "?")===false ? "&" : "?";
 }
 
 function headers($array = array(), $clear = false, $no_js = false) {
@@ -152,9 +156,9 @@ function headers($array = array(), $clear = false, $no_js = false) {
 if(!$clear) {
 	if(!defined("MOBILE")) {
 		if(isset($array['user_row'])) {
-			$header .= "<link href='/?css&user=".$array['user_row']."' rel='stylesheet' type='text/css'/>\n";
+			$header .= "<link href='{C_default_http_local}?css&user=".$array['user_row']."' rel='stylesheet' type='text/css'/>\n";
 		} else {
-			$header .= "<link href='/?css' rel='stylesheet' type='text/css'/>\n";
+			$header .= "<link href='{C_default_http_local}?css' rel='stylesheet' type='text/css'/>\n";
 		}
 	}
 /*

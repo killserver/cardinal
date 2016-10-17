@@ -26,6 +26,7 @@ define("CACHE_MEMCACHED", 2);
 define("CACHE_FILE", 3);
 define("CACHE_FTP", 4);
 define("CACHE_XCACHE", 5);
+define("CACHE_REDIS", 6);
 define("CACHE_NONE", 0);
 
 // Error
@@ -55,7 +56,7 @@ define("UPLOAD_CM", 12000);
 define("UPLOAD_CMD", 12000);
 define("UPLOAD_ALL", 240000);
 
-define("VERSION", "4.3");
+define("VERSION", "4.4");
 define("DB_VERSION", "3.5");
 define("LEVEL_ADMIN", 3);
 define("LEVEL_MODER", 2);
@@ -69,6 +70,9 @@ if(!defined("SERVER_MODULES")) {
 }
 if(!defined("ROUTE_GET_URL")) {
 	define("ROUTE_GET_URL", "PATH_INFO");
+}
+if(!defined("ADMINCP_DIRECTORY")) {
+	define("ADMINCP_DIRECTORY", "admincp.php");
 }
 
 $config = array_merge($config, array(

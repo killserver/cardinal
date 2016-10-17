@@ -40,20 +40,17 @@ class Core {
 	
 	protected function ParseLang() {
 	global $lang;
-		$dir = ROOT_PATH."admincp.php".DS."pages".DS."Lang".DS.lang::get_lg().DS;
+		$dir = ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Lang".DS.lang::get_lg().DS;
 		if(is_dir($dir)) {
 			if($dh = dir($dir)) {
 				while(($file = $dh->read()) !== false) {
-					if($file != "index.".ROOT_EX && $file != "." && $file != ".." && strpos($file, ".".ROOT_EX) !== false) {
+					if($file != "index.".ROOT_EX && $file != "index.html" && $file != "." && $file != ".." && strpos($file, ".".ROOT_EX) !== false) {
 						require_once($dir.$file);
 					}
 				}
 			$dh->close();
 			}
 		}
-		$langs = $lang;
-		$lang = $langs;
-		unset($langs);
 	}
 	
 	private function vsort(&$array) {
@@ -176,7 +173,7 @@ class Core {
 	private function CheckLoadPlugins($file) {
 		if(is_bool($this->load_adminmodules)) {
 			if(!cache::Exists("load_adminmodules")) {
-				$delete = "admincp.php".DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS;
+				$delete = ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS;
 				db::doquery("SELECT `file` FROM `modules` WHERE `activ` = \"yes\" AND `type` = \"admincp\"", true);
 				$this->load_adminmodules = array();
 				while($row = db::fetch_assoc()) {
@@ -195,14 +192,15 @@ class Core {
 	}
 	
 	private function ReadPlugins() {
-		$dir = ROOT_PATH."admincp.php".DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS;
+		$dir = ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS;
 		if(file_exists($dir) && is_dir($dir)) {
 			$files = array();
+			$lengthEx = (-(strlen(ROOT_EX)+1));
 			if($dh = dir($dir)) {
 				$i=1;
 				while(($file = $dh->read()) !== false) {
-					if(substr($file, 0, 4) == "Core" && substr($file, -4) == ".php" && $file != "." && $file != ".." && $this->CheckLoadPlugins($file)) {
-						$class = str_replace(substr($file, -4), "", $file);
+					if(substr($file, 0, 4) == "Core" && substr($file, $lengthEx) == ".".ROOT_EX && $file != "." && $file != ".." && $this->CheckLoadPlugins($file)) {
+						$class = str_replace(substr($file, $lengthEx), "", $file);
 						include_once($dir.$file);
 						if(class_exists($class) && is_subclass_of($class, "Core")) {
 							new $class();
@@ -231,8 +229,8 @@ class Core {
 	protected function Prints($echo, $print = false, $force = false) {
 	global $lang, $user, $in_page;
 		if(!userlevel::get("admin") || !isset($_COOKIE[COOK_ADMIN_USER]) || !isset($_COOKIE[COOK_ADMIN_PASS])) {
-			$ref = urlencode(str_replace(ROOT_PATH, "", cut(getenv("REQUEST_URI"), "/admincp.php/")));
-			location("{C_default_http_host}admincp.php/?pages=Login".(!empty($ref) ? "&ref=".$ref : ""));
+			$ref = urlencode(str_replace(ROOT_PATH, "", cut(getenv("REQUEST_URI"), "/".ADMINCP_DIRECTORY."/")));
+			location("{C_default_http_host}".ADMINCP_DIRECTORY."/?pages=Login".(!empty($ref) ? "&ref=".$ref : ""));
 			return;
 		}
 		$this->ParseLang();
@@ -263,11 +261,11 @@ class Core {
 		templates::assign_var("count_unmoder", $this->unmoder());
 		templates::assign_var("title_admin", $this->title());
 		$links = array();
-		if($dh = dir(ROOT_PATH."admincp.php".DS."pages".DS."menu".DS)) {
+		if($dh = dir(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."menu".DS)) {
 			$i=1;
 			while(($file = $dh->read()) !== false) {
-				if($file != "index.".ROOT_EX && $file != "." && $file != "..") {
-					include_once(ROOT_PATH."admincp.php".DS."pages".DS."menu".DS.$file);
+				if($file != "index.".ROOT_EX && $file != "index.html" && $file != "." && $file != "..") {
+					include_once(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."menu".DS.$file);
 				}
 			}
 			$dh->close();
@@ -276,7 +274,7 @@ class Core {
 		$all=0;
 		$level = modules::get_user('level');
 		$page_v = getenv("REQUEST_URI");
-		$now = str_replace("admincp.php/?", "", substr($page_v, 1, strlen($page_v)));
+		$now = str_replace(ADMINCP_DIRECTORY."/?", "", substr($page_v, 1, strlen($page_v)));
 		foreach($links as $name => $datas) {
 			for($i=0;$i<sizeof($datas);$i++) {
 				for($is=0;$is<sizeof($datas[$i]);$is++) {
@@ -288,7 +286,7 @@ class Core {
 					} else {
 						$count = sizeof($datas[$i])-1;
 					}
-					$is_now = str_replace(array("{C_default_http_host}", "admincp.php/?"), "", $datas[$i][$is]['link']);
+					$is_now = str_replace(array("{C_default_http_host}", ADMINCP_DIRECTORY."/?"), "", $datas[$i][$is]['link']);
 					templates::assign_vars(array(
 						"value" => $datas[$i][$is]['title'],
 						"link" => $datas[$i][$is]['link'],

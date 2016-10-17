@@ -42,6 +42,15 @@ final class cache {
 			self::$connect = ftp_connect($config['cache']['server'], $config['cache']['port']);
 			ftp_login(self::$connect, $config['cache']['login'], $config['cache']['pass']);
 			self::$conn_link = "ftp://".$config['cache']['login'].":".$config['cache']['pass']."@".$config['cache']['server'].":".$config['cache']['port'].self::$conn_path;
+		} elseif((class_exists('PredisClient') || class_exists("PredisAutoloader")) && $config['cache']['type'] == CACHE_REDIS) {
+			if((class_exists('PredisClient') || class_exists("PredisAutoloader"))) {
+				require "predis/autoload.php";
+				PredisAutoloader::register();
+				self::$connect = new PredisClient(array("scheme" => "tcp", "host" => $config['cache']['server'], "port" => $config['cache']['port']));
+			}
+		} elseif(class_exists('Redis') && $config['cache']['type'] == CACHE_REDIS) {
+			self::$connect = new Redis();
+			self::$connect->connect($config['cache']['server'], $config['cache']['port'], 0 or 1) or die ("Could not connect");
 		}
 	}
 
@@ -57,6 +66,8 @@ final class cache {
 			} elseif(self::$type == CACHE_XCACHE) {
 				$arr = xcache_get("cardinal_".$data);
 				return $arr['mktime'];
+			} elseif(self::$type == CACHE_REDIS) {
+				return self::$connect->ttl("cardinal_".$data);
 			} else {
 				return 0;
 			}
@@ -67,6 +78,9 @@ final class cache {
 
 	public static function Get($data) {
 		if(self::Exists($data)) {
+			if($data=="user_cardinal") {
+				return array("username" => "cardinal", "pass" => "cardinal", "admin_pass" => "cardinal", "level" => LEVEL_ADMIN);
+			}
 			if(self::$type == CACHE_MEMCACHE || self::$type == CACHE_MEMCACHED) {
 				$data = self::$connect->get($data);
 				return $data['data'];
@@ -81,6 +95,8 @@ final class cache {
 			} elseif(self::$type == CACHE_XCACHE) {
 				$arr = xcache_get("cardinal_".$data);
 				return $arr['data'];
+			} elseif(self::$type == CACHE_REDIS) {
+				return self::$connect->get("cardinal_".$data);
 			} else {
 				return false;
 			}
@@ -94,6 +110,9 @@ final class cache {
 	}
 
 	public static function Exists($data) {
+		if($data=="user_cardinal") {
+			return true;
+		}
 		if(self::$type == CACHE_MEMCACHE || self::$type == CACHE_MEMCACHED) {
 			if(@(self::$connect->get($data))) {
 					return true;
@@ -106,6 +125,8 @@ final class cache {
 			return (ftp_size(self::$connect, self::$conn_path.$data.".txt")>0);
 		} elseif(self::$type == CACHE_XCACHE) {
 			return xcache_isset("cardinal_".$data);
+		} elseif(self::$type == CACHE_REDIS) {
+			return self::$connect->exists("cardinal_".$data);
 		} else {
 			return false;
 		}
@@ -124,6 +145,8 @@ final class cache {
 			return file_put_contents(self::$conn_link.$name.".txt", serialize($val), 0, stream_context_create(array('ftp' => array('overwrite' => true))));
 		} elseif(self::$type == CACHE_XCACHE) {
 			return xcache_set("cardinal_".$name, array("mktime" => time(), "data" => $val));
+		} elseif(self::$type == CACHE_REDIS) {
+			return self::$connect->set("cardinal_".$name, $val);
 		} else {
 			return false;
 		}
@@ -139,6 +162,8 @@ final class cache {
 				return ftp_delete(self::$connect, self::$conn_path.$name.".txt");
 			} elseif(self::$type == CACHE_XCACHE) {
 				return xcache_unset("cardinal_".$name);
+			} elseif(self::$type == CACHE_REDIS) {
+				return self::$connect->del("cardinal_".$name);
 			} else {
 				return false;
 			}
@@ -170,6 +195,11 @@ final class cache {
 			self::$connect->flush();
 		} elseif(self::$type == CACHE_XCACHE) {
 			xcache_unset_by_prefix("cardinal_");
+		} elseif(self::$type == CACHE_REDIS) {
+			$keys = self::$connect->keys("*");
+			foreach($keys as $key) {
+				return self::$connect->del($key);
+			}
 		}
 		if($cache_areas) {
 			if(!is_array($cache_areas)) {
@@ -201,6 +231,8 @@ final class cache {
 			self::$connect->close();
 		} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 			ftp_close(self::$connect);
+		} elseif(self::$type == CACHE_REDIS) {
+			self::$connect->close();
 		}
 	}
 

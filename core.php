@@ -32,6 +32,25 @@ if(!defined("IS_CORE")) {
 echo "403 ERROR";
 die();
 }
+/* fix for PHP float bug: http://bugs.php.net/bug.php?id=53632 (php 4 <= 4.4.9 and php 5 <= 5.3.4) */
+if(strstr(str_replace('.', '', serialize(array_merge($_GET, $_POST, $_COOKIE))), '22250738585072011')) {
+    header('Status: 422 Unprocessable Entity');
+    die();
+}
+if(isset($_SERVER['QUERY_STRING']) && strpos(urldecode($_SERVER['QUERY_STRING']), chr(0)) !== false) {
+	die();
+}
+if(function_exists("ini_get") && ini_get('register_globals') && isset($_REQUEST)) {
+	foreach($_REQUEST as $key => $value) {
+		$GLOBALS[$key] = "";
+		unset($GLOBALS[$key]);
+	}
+}
+$targets = array('PHP_SELF', 'HTTP_USER_AGENT', 'HTTP_REFERER', 'QUERY_STRING');
+foreach($targets as $target) {
+	$_SERVER[$target] = isset($_SERVER[$target]) ? htmlspecialchars($_SERVER[$target], ENT_QUOTES) : "";
+}
+
 if(!defined("CLOSE_FUNCTION")) {
 	define("CLOSE_FUNCTION", ini_get("disable_functions"));
 }
@@ -168,12 +187,12 @@ if(!defined("INSTALLER")) {
 				db::doquery("UPDATE `users` SET `last_activ` = UNIX_TIMESTAMP(), `last_ip` = \"".HTTP::getip()."\" WHERE `id` = ".$user['id']);
 				define("IS_AUTH", true);
 			}
-		} else {
+		} else if(cache::Exists("user_".$username)) {
 			$password = $admin_password = "";
-			if(isset($_COOKIE[COOK_PASS])) {
+			if(isset($_COOKIE[COOK_PASS]) && !empty($_COOKIE[COOK_PASS])) {
 				$password = saves($_COOKIE[COOK_PASS]);
 			}
-			if(isset($_COOKIE[COOK_ADMIN_PASS])) {
+			if(isset($_COOKIE[COOK_ADMIN_PASS]) && !empty($_COOKIE[COOK_ADMIN_PASS])) {
 				$admin_password = saves($_COOKIE[COOK_ADMIN_PASS]);
 			}
 			$user = cache::Get("user_".$username);
@@ -192,6 +211,8 @@ $templates = new templates($config_templates);
 templates::SetConfig($config_templates);
 header('Content-Type: text/html; charset='.config::Select('charset'));
 header('X-UA-Compatible: IE=edge,chrome=1');
+header("X-Content-Type-Options: SAMEORIGIN");
+header("X-XSS-Protection: 1; mode=block");
 header('Cache-Control: max-age');
 header("Cardinal: ".cardinal::SaveCardinal(VERSION));
 header_remove('x-powered-by');

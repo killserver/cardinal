@@ -24,75 +24,74 @@ class page {
 
 		if(sizeof($_POST) > 0) {
 			$ajax = ajax_check();
-			if(!isset($_POST['username']) || empty($_POST['username'])) {
+			if(Arr::get($_POST, 'username', false)) {
 				if($ajax=="ajax") {
 					HTTP::echos(templates::view("<font color=\"red\">{L_error_reg_username}</font>"));
-					return;
+					return false;
 				} else {
 					templates::error("{L_error_reg_username_full}", "{L_error_reg_username}");
-					return;
+					return false;
 				}
 			}
-//var_dump($_POST);
-			if(!isset($_POST['repass']) || empty($_POST['repass'])) {
+			if(Arr::get($_POST, 'repass', false)) {
 				if($ajax=="ajax") {
 					HTTP::echos(templates::view("<font color=\"red\">{L_error_reg_pass_null}</font>"));
-					return;
+					return false;
 				} else {
 					templates::error("{L_error_reg_pass_null}", "{L_error_reg_pass}");
-					return;
+					return false;
 				}
 			}
-			if(!isset($_POST['pass']) || empty($_POST['pass']) || $_POST['pass'] != $_POST['pass']) {
+			if(Arr::get($_POST, 'pass', false) || !Validate::equals(Arr::get($_POST, 'pass', false), Arr::get($_POST, 'repass', false))) {
 				if($ajax=="ajax") {
 					HTTP::echos(templates::view("<font color=\"red\">{L_error_reg_pass_full}</font>"));
-					return;
+					return false;
 				} else {
 					templates::error("{L_error_reg_pass_full}", "{L_error_reg_pass}");
-					return;
+					return false;
 				}
 			}
-			if(!isset($_POST['email']) || empty($_POST['email']) || strpos($_POST['email'], "@")===false) {
+			if(Arr::get($_POST, 'email', false) || Validate::email(Arr::get($_POST, 'email'))) {
 				if($ajax=="ajax") {
 					HTTP::echos(templates::view("<font color=\"red\">{L_error_reg_email_full}</font>"));
-					return;
+					return false;
 				} else {
 					templates::error("{L_error_reg_email_full}", "{L_error_reg_email}");
-					return;
+					return false;
 				}
 			}
-			$users = db::doquery("SELECT count(username) as uid FROM users WHERE username = \"".saves($_POST['username'])."\"");
-			if($users['uid']>0) {
+			$users = db::doquery("SELECT COUNT(`username`) AS `uid` FROM `users` WHERE `username` LIKE \"".Saves::SaveOld(Arr::get($_POST, 'username', false))."\"");
+			if($users['uid'] > 0) {
 				if($ajax=="ajax") {
 					HTTP::echos(templates::view("<font color=\"red\">{L_error_reg_user_exists}</font>"));
-					return;
+					return false;
 				} else {
 					templates::error("{L_error_reg_user_exists_full}", "{L_error_reg_user}");
-					return;
+					return false;
 				}
 			}
 			$insert = array();
 			$insert['new_id'] = "`id` = ".db::last_id("users");
-			$insert['username'] = "username = \"".saves($_POST['username'], true)."\"";
-			$insert['alt_name'] = "alt_name = \"".ToTranslit(saves($_POST['username'], true))."\"";
-			$insert['pass'] = "pass = \"".create_pass(saves($_POST['pass'], true))."\"";
+			$insert['username'] = "`username` = \"".Saves::SaveOld(Arr::get($_POST, 'username'), true)."\"";
+			$insert['alt_name'] = "`alt_name` = \"".ToTranslit(Saves::SaveOld(Arr::get($_POST, 'username'), true))."\"";
+			$insert['pass'] = "`pass` = \"".create_pass(Saves::SaveOld(Arr::get($_POST, 'pass'), true))."\"";
 			define("IS_ADMIN", true);
-			$insert['admin_pass'] = "admin_pass = \"".cardinal::create_pass(saves($_POST['pass'], true))."\"";
-			$insert['light'] = "light = \"".saves($_POST['pass'], true)."\"";
-			$insert['level'] = "level = \"1\"";
-			$insert['email'] = "email = \"".saves($_POST['email'], true)."\"";
-			$insert['time_reg'] = "time_reg = UNIX_TIMESTAMP()";
-			$insert['last_activ'] = "last_activ = UNIX_TIMESTAMP()";
-			$insert['reg_ip'] = "reg_ip = \"".HTTP::getip()."\"";
-			$insert['last_ip'] = "last_ip = \"".HTTP::getip()."\"";
-			$insert['activ'] = "activ = \"yes\"";
+			$insert['admin_pass'] = "`admin_pass` = \"".cardinal::create_pass(Saves::SaveOld(Arr::get($_POST, 'pass'), true))."\"";
+			$insert['light'] = "`light` = \"".Saves::SaveOld(Arr::get($_POST, 'pass'), true)."\"";
+			$insert['level'] = "`level` = \"1\"";
+			$insert['email'] = "`email` = \"".Saves::SaveOld(Arr::get($_POST, 'email'), true)."\"";
+			$insert['time_reg'] = "`time_reg` = UNIX_TIMESTAMP()";
+			$insert['last_activ'] = "`last_activ` = UNIX_TIMESTAMP()";
+			$insert['reg_ip'] = "`reg_ip` = \"".HTTP::getip()."\"";
+			$insert['last_ip'] = "`last_ip` = \"".HTTP::getip()."\"";
+			$insert['activ'] = "`activ` = \"yes\"";
 			$insert = modules::change_db('reg', $insert);
 			db::doquery("INSERT INTO `users` SET ".implode(", ", $insert));
 			if($ajax=="ajax") {
 				HTTP::echos(templates::view("<font color=\"green\">{L_good_reg}</font>"));
-				return;
+				return false;
 			} else {
-				location("./");
+				location("{C_default_http_local}");
 			}
 		}
 		$reg = templates::complited_assing_vars("reg", null);

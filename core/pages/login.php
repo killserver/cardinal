@@ -34,7 +34,7 @@ class page {
 		if(!empty($ref)) {
 			$referer = str_replace("http://".getenv("SERVER_NAME"), "", $ref);
 		} else {
-			$referer = "/";
+			$referer = "{C_default_http_local}";
 		}
 		if(isset($_GET['out'])) {
 			if(!isset($user['username'])) {
@@ -47,22 +47,22 @@ class page {
 		} else {
 			if(isset($user['username'])) {
 				location($referer, 3, false);
-				templates::error("Вы уже авторизированны на сайте");
+				templates::error("{L_login[authorized]}");
 				return;
 			}
-			$name = saves($_POST['login_name']);
-			$pass = saves($_POST['login_password']);
+			$name = Saves::SaveOld(Arr::get($_POST, 'login_name'));
+			$pass = Saves::SaveOld(Arr::get($_POST, 'login_password'));
 			$sql = db::doquery("SELECT `id`, `pass`, `light` FROM `users` WHERE `username` = \"".$name."\" AND (`light` = \"".$pass."\" OR `pass` = \"".create_pass($pass)."\")", true);
 			$num = db::num_rows($sql);
-			if($num==0) {
+			if($num == 0) {
 				location($referer, 3, false);
-				templates::error("Данный пользователь не найден на сайте, либо Вы ввели неверные данные для входа");
+				templates::error("{L_login[notFound]}");
 				exit();
 			}
 			$row = db::fetch_array($sql);
-			if($row['pass']!=create_pass($pass) && $row['light']!=$pass) {
+			if($row['pass'] != create_pass($pass) && $row['light'] != $pass) {
 				location($referer, 3, false);
-				templates::error("Не верный пароль для авторизации");
+				templates::error("{L_login[notCorrect]}");
 				return;
 			} else {
 				HTTP::set_cookie("id", $row['id']);
@@ -70,8 +70,8 @@ class page {
 				HTTP::set_cookie(COOK_PASS, $row['pass']);
 			}
 			location($referer, 3, false);
-			templates::error("Успешно прошли авторизацию! Возвращаем Вас на страницу с которой Вы пришли.");
-			return;
+			templates::error("{L_login[correct]}");
+			return false;
 		}
 	}
 

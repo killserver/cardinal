@@ -48,7 +48,7 @@ class Login extends Core {
 				if(!$is_admin) {
 					$row = db::fetch_assoc();
 				} else {
-					$row = array("pass" => "cardinal");
+					$row = array("pass" => "cardinal", "level" => LEVEL_ADMIN);
 				}
 				$resp['accessGranted'] = true;
 				HTTP::set_cookie('is_admin_login', 1, false, false);

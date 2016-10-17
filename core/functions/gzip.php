@@ -5,7 +5,7 @@ die();
 }
 
 function CheckCanGzip() {
-	if(headers_sent() || connection_aborted() || !function_exists('ob_gzhandler') || ini_get('zlib.output_compression')) { 
+	if((function_exists("headers_sent") && headers_sent()) || (function_exists("connection_aborted") && connection_aborted()) || !function_exists('ob_gzhandler') || ini_get('zlib.output_compression') || !isset($_SERVER['HTTP_ACCEPT_ENCODING'])) { 
 		return false;
 	}
 	if(strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'x-gzip') !== false) {
@@ -34,13 +34,13 @@ global $config, $Timer, $manifest;
 		"<!-- Общее количество MySQL запросов ".db::$num." -->";
 	}
 
-	if($debug AND function_exists( "memory_get_peak_usage")) {
+	if($debug AND function_exists("memory_get_peak_usage")) {
 		$s .="\n<!-- Затрачено оперативной памяти ".round((memory_get_peak_usage()-MEMORY_GET)/(1024*1024),2)." MB -->";
 	}
 
 	//@header("Last-Modified: " . date('r', time()) ." GMT");
 
-	if($config['gzip'] != "yes" && $manifest['gzip'] != true) {
+	if(isset($config['gzip']) && $config['gzip'] != "yes" && isset($manifest['gzip']) && $manifest['gzip'] != true) {
 		if($debug) {
 			echo $s;
 		}

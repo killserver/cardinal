@@ -21,12 +21,12 @@ final class config {
 	private static $config = array();
 	private static $default = false;
 	
-	public static function StandAlone() {
+	final public static function StandAlone() {
 	global $config;
 		self::$config = $config;
 	}
 	
-	public static function ReadConfig($name, $val) {
+	final public static function ReadConfig($name, $val) {
 		$configs = array();
 		if(strpos($val, ":-:")!==false) {
 			$vals = array();
@@ -48,7 +48,7 @@ final class config {
 		return $configs;
 	}
 
-	public static function init() {
+	final public static function init() {
 	global $config;
 		if(!db::connected()) {
 			self::$config = $config;
@@ -71,25 +71,27 @@ final class config {
 		self::$config = (sizeof(self::$config) > 0 ? array_merge($config, self::$config) : $config);
 	}
 
-	public static function All() {
+	final public static function All() {
 		return self::$config;
 	}
 	
-	public static function Set() {
+	final public static function Set() {
 		if(func_num_args()<2) {
 			return false;
 		}
 		$list = func_get_args();
 		if(sizeof($list)==2) {
 			self::$config[$list[0]] = $list[1];
+			return true;
 		} else if(sizeof($list)==3) {
 			self::$config[$list[0]][$list[1]] = $list[2];
+			return true;
 		} else {
 			return false;
 		}
 	}
 	
-	public static function Exists($data, $sub = "", $subst = "") {
+	final public static function Exists($data, $sub = "", $subst = "") {
 		if(!empty($sub) && !empty($subst) && isset(self::$config[$data]) && isset(self::$config[$data][$sub]) && isset(self::$config[$data][$subst])) {
 			return true;
 		} else if(!empty($sub) && isset(self::$config[$data]) && isset(self::$config[$data][$sub])) {
@@ -101,12 +103,11 @@ final class config {
 		}
 	}
 	
-	public static function SetDefault($def) {
+	final public static function SetDefault($def) {
 		self::$default = $def;
 	}
 
-	public static function Select($data, $sub = "", $subst = "") {
-//		var_dump(self::$config, ROOT_PATH, ROOT_EX);die();
+	final public static function Select($data, $sub = "", $subst = "") {
 		if(!empty($sub) && !empty($subst) && isset(self::$config[$data]) && isset(self::$config[$data][$sub]) && isset(self::$config[$data][$subst])) {
 			return self::$config[$data][$sub][$subst];
 		} else if(!empty($sub) && isset(self::$config[$data]) && isset(self::$config[$data][$sub])) {
@@ -118,13 +119,30 @@ final class config {
 		}
 	}
 
-	public static function Update($name, $data = "") {
-		db::doquery("UPDATE config SET config_value = \"".$data."\" WHERE config_name = \"".$name."\"");
+	final public static function Update($name, $data = "") {
+		db::doquery("REPLACE INTO `config` SET `config_value` = \"".$data."\" WHERE `config_name` = \"".$name."\"");
 		cache::Delete("config");
 		if(!empty(self::$config[$data])) {
 			return self::$config[$data];
 		} else {
 			return true;
+		}
+	}
+	
+	final public function __get($val) {
+		if(!empty($val) && isset(self::$config[$val])) {
+			return self::$config[$val];
+		} else {
+			return false;
+		}
+	}
+	
+	final public function __set($name, $val) {
+		if(!empty($name) && !empty($val)) {
+			self::$config[$name] = $val;
+			return true;
+		} else {
+			return false;
 		}
 	}
 

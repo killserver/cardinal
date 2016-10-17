@@ -288,6 +288,15 @@ class Parser {
 	}
 
 	/**
+	 * Get response code
+	 * @param $header Full request
+	 * @return $this Code response
+     */
+	final private function getResponseCode($header) {
+		return (int) substr($header, 9, 3);
+	}
+
+	/**
 	 * Initialization parsing
 	 * @param string $url Need link and start, or initialization parsing
 	 * @return array|bool|string|$this Result parsing
@@ -391,6 +400,7 @@ class Parser {
 					if(strpos($exp[$i], "2.0")!==false) {
 						$this->headers['HTTPVersion'] = "2.0";
 					}
+					$this->headers['code'] = $this->getResponseCode($exp[$i]);
 					$ex = array("HTTP", str_replace(array("HTTP", "/", "1.0", "1.1", "2.0"), "", $exp[$i]));
 				} else {
 					$ex = explode(":", $exp[$i]);

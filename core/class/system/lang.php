@@ -33,7 +33,7 @@ class lang {
 		}
 		if(!cache::Exists("lang_".self::$lang)) {
 			db::doquery("SELECT `orig`, `translate` FROM `lang` WHERE lang LIKE \"".self::$lang."\"", true);
-			while($lang = db::fetch_array()) {
+			while($lang = db::fetch_assoc()) {
 				$langs[$lang['orig']] = $lang['translate'];
 			}
 			cache::Set("lang_".self::$lang, $langs);
@@ -42,6 +42,21 @@ class lang {
 			$langs = cache::Get("lang_".self::$lang);
 		}
 	return $langs;
+	}
+	
+	final public static function Update($lang, $orig, $translate) {
+		if(
+			Validate::CheckType($lang, "string") && Validate::not_empty($lang)
+				&&
+			Validate::CheckType($orig, "string") && Validate::not_empty($orig)
+				&&
+			Validate::CheckType($translate, "string") && Validate::not_empty($translate)
+		) {
+			db::doquery("REPLACE INTO `lang` SET `lang` = '".Saves::SaveEscape(Saves::SaveText($lang))."', `orig` = '".Saves::SaveEscape(Saves::SaveText($orig))."', `translate` = '".Saves::SaveEscape(Saves::SaveText($translate))."'");
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	public function __construct() {
@@ -68,21 +83,23 @@ class lang {
 		if(!is_array($lang) || sizeof($lang)==0) {
 			$lang = array();
 		}
-		if($db) {
-			if(isset($manifest['lang']['main']) && file_Exists(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$manifest['lang']['main'].".".ROOT_EX)) {
-				include_once(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$manifest['lang']['main'].".".ROOT_EX);
+		if(isset($manifest['lang']['main']) && file_Exists(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$manifest['lang']['main'].".".ROOT_EX)) {
+			include(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$manifest['lang']['main'].".".ROOT_EX);
+			if($db) {
 				return array_merge($lang, self::lang_db());
+			} else {
+				return $lang;
 			}
 		}
 		if(file_exists(ROOT_PATH."core".DS."lang".DS.self::$lang.DS."main.".ROOT_EX)) {
-			include_once(ROOT_PATH."core".DS."lang".DS.self::$lang.DS."main.".ROOT_EX);
+			include(ROOT_PATH."core".DS."lang".DS.self::$lang.DS."main.".ROOT_EX);
 			if($db) {
 				$db_lang = self::lang_db();
 			} else {
 				$db_lang = array();
 			}
 			if(file_exists(ROOT_PATH."core".DS."media".DS."config.lang.".ROOT_EX)) {
-				include_once(ROOT_PATH."core".DS."media".DS."config.lang.".ROOT_EX);
+				include(ROOT_PATH."core".DS."media".DS."config.lang.".ROOT_EX);
 			}
 			if(is_array($db_lang)) {
 				return array_merge($lang, $db_lang);
@@ -94,7 +111,7 @@ class lang {
 		}
 	}
 	
-	final public static function get_lang($name, $sub="") {
+	final public static function get_lang($name, $sub = "") {
 	global $lang;
 		if(!empty($sub) && isset($lang[$name][$sub])) {
 			return $lang[$name][$sub];
@@ -102,6 +119,20 @@ class lang {
 			return $lang[$name];
 		} else {
 			return "";
+		}
+	}
+	
+	final public static function setLang($name, $val, $sub = "") {
+	global $lang;
+		if(!empty($sub)) {
+			if(!isset($lang[$name])) {
+				$lang[$name] = array();
+			}
+			$lang[$name][$sub] = $val;
+			return true;
+		} else {
+			$lang[$name] = $val;
+			return true;
 		}
 	}
 
@@ -115,11 +146,11 @@ class lang {
 			self::$lang = $clang;
 		}
 		if(isset($manifest['lang'][$page]) && file_Exists(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$manifest['lang'][$page].".".ROOT_EX)) {
-			include_once(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$manifest['lang'][$page].".".ROOT_EX);
+			include(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$manifest['lang'][$page].".".ROOT_EX);
 			return array_merge($lang, self::lang_db());
 		}
 		if(file_exists(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$page.".".ROOT_EX)) {
-			include_once(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$page.".".ROOT_EX);
+			include(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$page.".".ROOT_EX);
 			$langs = self::lang_db();
 			if(is_array($langs)) {
 				return array_merge($lang, $langs);
@@ -127,6 +158,14 @@ class lang {
 				return $lang;
 			}
 		}
+	}
+	
+	public function __get($val) {
+		return self::get_lang($val);
+	}
+	
+	public function __set($name, $val) {
+		return self::setLang($name, $val);
 	}
 
 	function __destruct() {

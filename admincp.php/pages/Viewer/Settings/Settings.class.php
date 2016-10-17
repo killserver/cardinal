@@ -39,7 +39,7 @@ class Settings extends Core {
 			"default_http_local" => "'.str_replace("http://".$_SERVER['HTTP_HOST'], "", $_POST['PATH']).'",
 			"default_http_hostname" => "'.saves($_POST['SERVER'], true).'",
 			"default_http_host" => $protocol."://'.saves(str_replace(array("http", "https", "://"), "", $_POST['PATH']), true).'",
-			"default_http_mobyhost" => $protocol."://'.saves(str_replace(array("http", "https", "://"), "", $_POST['mobyhost']), true).'",
+			"default_http_mobyhost" => "'.saves(str_replace(array("http", "https", "://"), "", $_POST['mobyhost']), true).'",
 			"lang" => "ru",
 			"cache" => array(
 				"type" => '.saves($_POST['cache_type'], true).',
@@ -57,10 +57,10 @@ class Settings extends Core {
 		));
 
 		?>';
-		if(file_exists(ROOT_PATH."core/media/config.install.php")) {
-			unlink(ROOT_PATH."core/media/config.install.php");
+		if(file_exists(ROOT_PATH."core".DS."media".DS."config.install.php")) {
+			unlink(ROOT_PATH."core".DS."media".DS."config.install.php");
 		}
-		file_put_contents(ROOT_PATH."core/media/config.install.php", $config);
+		file_put_contents(ROOT_PATH."core".DS."media".DS."config.install.php", $config);
 		$lang = '<?php
 		if(!defined("IS_CORE")) {
 		echo "403 ERROR";
@@ -74,10 +74,10 @@ class Settings extends Core {
 
 		?>';
 		$lang = charcode($lang);
-		if(file_exists(ROOT_PATH."core/media/config.lang.php")) {
-			unlink(ROOT_PATH."core/media/config.lang.php");
+		if(file_exists(ROOT_PATH."core".DS."media".DS."config.lang.php")) {
+			unlink(ROOT_PATH."core".DS."media".DS."config.lang.php");
 		}
-		file_put_contents(ROOT_PATH."core/media/config.lang.php", $lang);
+		file_put_contents(ROOT_PATH."core".DS."media".DS."config.lang.php", $lang);
 		setcookie("SaveDone", "1", time()+10);
 		location("./?pages=Settings");
 	}

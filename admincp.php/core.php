@@ -10,6 +10,9 @@ $defined = array("Cardinal" => "Cardin");
 function ReadPlugins($dir, $page, $include=true) {
 	$dirs = read_dir($dir, ".".ROOT_EX);
 	for($i=0;$i<sizeof($dirs);$i++) {
+		if(strpos($dirs[$i],"index.".ROOT_EX)!==false || strpos($dirs[$i],"index.html")!==false) {
+			continue;
+		}
 		include_once($dir.$dirs[$i]);
 		if($include) {
 			$view = $page."_".str_replace(".".ROOT_EX, "", $dirs[$i]);
@@ -18,17 +21,17 @@ function ReadPlugins($dir, $page, $include=true) {
 	}
 }
 $in_page = "Main";
-templates::dir_skins("admincp.php/temp/".config::Select('skins','admincp'));
+templates::dir_skins(ADMINCP_DIRECTORY."/temp/".config::Select('skins','admincp'));
 templates::set_skins("");
 
 
 spl_autoload_register(function($class) {
 global $in_page;
-	if(strpos($class, "/")===false&&strpos($class, "\\")===false&&file_exists(ROOT_PATH."admincp.php".DS."pages".DS."Viewer".DS.$class.DS.$class.".class.".ROOT_EX)) {
-		include_once(ROOT_PATH."admincp.php".DS."pages".DS."Viewer".DS.$class.DS.$class.".class.".ROOT_EX);
+	if(strpos($class, "/")===false&&strpos($class, "\\")===false&&file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS.$class.DS.$class.".class.".ROOT_EX)) {
+		include_once(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS.$class.DS.$class.".class.".ROOT_EX);
 	} else if(strpos($class, "_")===false) {
 		$in_page = "Errors";
-		include_once(ROOT_PATH."admincp.php".DS."pages".DS."Viewer".DS."Errors".DS."Errors.class.".ROOT_EX);
+		include_once(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Errors".DS."Errors.class.".ROOT_EX);
 		new Errors();
 	}
 });

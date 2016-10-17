@@ -57,6 +57,13 @@ class Saves {
 		return htmlspecialchars($var, ENT_QUOTES, $chatset, $double_encode);
 	}
 	
+	final public static function SaveAltName($uri) {
+		$uri = preg_replace("|[^\d\w ]+|i", "", $uri);
+		$uri = htmlspecialchars($uri, ENT_QUOTES, 'ISO-8859-1');
+		$uri = self::SaveOld($uri, true);
+		return $uri;
+	}
+	
 	final public static function SaveAuto($val, $double_encode = true, $charset = "") {
 		$ret = "";
 		if(is_string($val)) {

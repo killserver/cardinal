@@ -65,7 +65,7 @@ class modules {
 	final public static function get_lang($get, $array = "") {
 	global $lang;
 		if(empty($lang)) {
-			$langs = new lang();
+			$langs = self::init_lang();
 			$lang = $langs->init_lang(false);
 		}
 		if(strlen($array)>0) {
@@ -98,6 +98,10 @@ class modules {
 
 	final public static function init_bb() {
 		return new bbcodes();
+	}
+
+	final public static function init_config() {
+		return new config();
 	}
 
 	final public static function init_db() {
@@ -133,7 +137,7 @@ class modules {
 			$cache = self::init_cache();
 			if(!$cache->exists("load_hooks")) {
 				$db = self::init_db();
-				$db->doquery("SELECT `module` FROM `modules` WHERE `activ` = \"yes\" AND `file` LIKE \"core%".$module.".class.php\"", true);
+				$db->doquery("SELECT `module` FROM `modules` WHERE `activ` = \"yes\" AND `file` LIKE \"core%".$module.".class.".ROOT_EX."\"", true);
 				self::$load_hooks = array();
 				while($row = $db->fetch_assoc()) {
 					self::$load_hooks[$row['module']] = true;
@@ -212,7 +216,7 @@ class modules {
 		$cache = self::init_cache();
 		if(!$cache->exists("modules")) {
 //INSERT INTO `modules` SET activ = "yes", page = "reg", module = "reg_email"
-			self::init_db()->doquery("SELECT page, module, method, param, tpl FROM modules WHERE activ = \"yes\"", true);
+			self::init_db()->doquery("SELECT `page`, `module`, `method`, `param`, `tpl` FROM `modules` WHERE `activ` = \"yes\"", true);
 			$modules = array();
 			while($row = self::init_db()->fetch_assoc()) {
 				$modules[$row['page']][] = $row;
@@ -707,7 +711,7 @@ class modules {
 		$file->init();
 		$file = $file->get();
 		$hr = $file->getHeaders();
-		if(strpos($hr['Content-Type'], "application/x-yaml")===false) {
+		if(strpos($hr['Content-Type'], "application/x-yaml")===false || $hr['code']!=200) {
 			return false;
 		}
 		$arr = Spyc::YAMLLoadString($file);
@@ -719,7 +723,7 @@ class modules {
 	}
 	
 	final public static function AccessUser($arr) {
-		if(is_string($arr) && $arr=="light") {
+		if(is_string($arr) && $arr != "light") {
 			self::$access_user = array_merge(self::$access_user, array($arr));
 			return true;
 		} else if(is_array($arr)) {
@@ -765,11 +769,20 @@ class modules {
 
 	final public static function manifest_set($select, $set) {
 	global $manifest;
-		if(is_array($select)&&sizeof($select)==3) {
+		if(is_array($select) && sizeof($select)==3) {
+			if(!isset($manifest[$select[0]])) {
+				$manifest[$select[0]] = array();
+			}
+			if(!isset($manifest[$select[0]][$select[1]])) {
+				$manifest[$select[0]][$select[1]] = array();
+			}
 			$manifest[$select[0]][$select[1]][$select[2]] = $set;
-		} elseif(is_array($select)&&sizeof($select)==2) {
+		} elseif(is_array($select) && sizeof($select)==2) {
+			if(!isset($manifest[$select[0]])) {
+				$manifest[$select[0]] = array();
+			}
 			$manifest[$select[0]][$select[1]] = $set;
-		} elseif(is_array($select)&&sizeof($select)==1) {
+		} elseif(is_array($select) && sizeof($select)==1) {
 			$manifest[$select[0]] = $set;
 		} else {
 			$manifest[$select] = $set;
@@ -780,11 +793,11 @@ class modules {
 	final public static function manifest_get($get) {
 	global $manifest;
 		if(is_array($get)) {
-			if(sizeof($get)==3&&isset($manifest[$get[0]][$get[1]][$get[2]])) {
+			if(sizeof($get)==3 && isset($manifest[$get[0]]) && isset($manifest[$get[0]][$get[1]]) && isset($manifest[$get[0]][$get[1]][$get[2]])) {
 				return $manifest[$get[0]][$get[1]][$get[2]];
-			} elseif(sizeof($get)==2&&isset($manifest[$get[0]][$get[1]])) {
+			} elseif(sizeof($get)==2 && isset($manifest[$get[0]]) && isset($manifest[$get[0]][$get[1]])) {
 				return $manifest[$get[0]][$get[1]];
-			} elseif(sizeof($get)==1&&isset($manifest[$get[0]])) {
+			} elseif(sizeof($get)==1 && isset($manifest[$get[0]])) {
 				return $manifest[$get[0]];
 			} else {
 				return false;

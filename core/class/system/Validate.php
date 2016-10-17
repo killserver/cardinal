@@ -14,6 +14,15 @@ class Validate {
 		return ($number >= $min && $number <= $max);
 	}
 	
+	final public static function CheckType($val, $type) {
+		$types = gettype($val);
+		if(self::equals($types, $type)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 	final public static function numeric($str) {
 		$arr = array_values(localeconv());
 		return (bool) preg_match('/^-?+(?=.*[0-9])[0-9]*+'.preg_quote($arr[0]).'?+[0-9]*+$/D', (string) $str);

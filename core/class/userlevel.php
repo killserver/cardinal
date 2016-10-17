@@ -23,12 +23,12 @@ class userlevel {
      */
 	final public static function all() {
 		$cache = modules::init_cache();
-		if(!$cache->exists("userlevels")) {
+		if(!$cache->Exists("userlevels")) {
 			$db = modules::init_db();
-			$row = $db->select_query("SELECT * FROM userlevels ORDER BY id ASC");
-			$cache->set("userlevels", $row);
+			$row = $db->select_query("SELECT * FROM `userlevels` ORDER BY `id` ASC");
+			$cache->Set("userlevels", $row);
 		} else {
-			$row = $cache->get("userlevels");
+			$row = $cache->Get("userlevels");
 		}
 	return $row;
 	}
@@ -44,9 +44,9 @@ class userlevel {
 		if(is_bool($level) || empty($level)) {
 			$level = modules::get_config("guest_level");
 		}
-		if(isset($all[$level]["access_".$get]) && $all[$level]["access_".$get] == "yes") {
+		if(isset($all[$level]) && isset($all[$level]["access_".$get]) && $all[$level]["access_".$get] == "yes") {
 			return true;
-		} elseif(!isset($all[$level]["access_".$get]) || $all[$level]["access_".$get] == "no") {
+		} elseif(!isset($all[$level]) || !isset($all[$level]["access_".$get]) || $all[$level]["access_".$get] == "no") {
 			return false;
 		} else {
 			return false;
@@ -80,7 +80,7 @@ class userlevel {
 		if(is_bool($level) || empty($level)) {
 			$level = modules::get_config("guest_level");
 		}
-		if((isset($all[$get]['id']) && $level == $all[$get]['id']) && (isset($all[$get]['access_'.$access]) && $all[$get]['access_'.$access] == "yes")) {
+		if(isset($all[$get]) && (isset($all[$get]['id']) && $level == $all[$get]['id']) && (isset($all[$get]['access_'.$access]) && $all[$get]['access_'.$access] == "yes")) {
 			return "true";
 		} else {
 			return "false";
@@ -107,9 +107,9 @@ class userlevel {
 			$data = "no";
 		}
 		$db = modules::init_db();
-		$db->doquery("UPDATE userlevels SET `".$set."` = ".$data." WHERE id = ".$id);
+		$db->doquery("UPDATE `userlevels` SET `".$set."` = \"".$data."\" WHERE `id` = ".$id);
 		$cache = modules::init_cache();
-		$cache->delete("userlevels");
+		$cache->Delete("userlevels");
 	}
 
 }

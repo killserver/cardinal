@@ -79,7 +79,7 @@ final class db {
 		if(is_dir($dir)) {
 			if($dh = dir($dir)) {
 				while(($file = $dh->read()) !== false) {
-					if(is_file($dir.$file) && strpos($file, ".php")!==false) {
+					if(is_file($dir.$file) && strpos($file, ".".ROOT_EX)!==false) {
 						$dirs[] = $file;
 					}
 				}
@@ -89,10 +89,10 @@ final class db {
 		sort($dirs);
 		$drivers = array();
 		for($i=0;$i<sizeof($dirs);$i++) {
-			if($dirs[$i]=="index.php"||$dirs[$i]=="DriverParam.php"||$dirs[$i]=="drivers.php"||$dirs[$i]=="DBObject.php") {
+			if($dirs[$i]=="index.".ROOT_EX||$dirs[$i]=="index.html"||$dirs[$i]=="DriverParam.".ROOT_EX||$dirs[$i]=="drivers.".ROOT_EX||$dirs[$i]=="DBObject.".ROOT_EX) {
 				continue;
 			}
-			$dr_subname = str_replace(".php", "", $dirs[$i]);
+			$dr_subname = str_replace(".".ROOT_EX, "", $dirs[$i]);
 			$drivers[] = $dr_subname;
 		}
 		return $drivers;
@@ -112,7 +112,7 @@ final class db {
 		if(!defined("INSTALLER")) {
 			config::StandAlone();
 			self::$driver_name = config::Select('db','driver');
-			self::connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'), config::Select('db','db'), config::Select('db', 'charset'), 3306);
+			self::connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'), config::Select('db','db'), config::Select('db', 'charset'), config::Select('db', 'port'));
 		}
 	}
 
@@ -150,7 +150,7 @@ final class db {
 		return self::query($sql);
 	}
 
-	public static function doquery($query, $only = null, $check = false) {
+	public static function doquery($query, $only = "", $check = false) {
 	global $user;
 		$table = preg_replace("/(.*)(FROM|TABLE|UPDATE|INSERT INTO) (.+?) (.*)/", "$3", $query);
 		$badword = false;
@@ -188,14 +188,14 @@ final class db {
 			$report .= "\tQuery - ".$query."\n";
 			$report .= "\n";
 			$report .= ">\$_SERVER Information\n";
-			$report .= "\tIP - ".$_SERVER['REMOTE_ADDR']."\n";
-			$report .= "\tHost Name - ".$_SERVER['HTTP_HOST']."\n";
-			$report .= "\tUser Agent - ".$_SERVER['HTTP_USER_AGENT']."\n";
-			$report .= "\tRequest Method - ".$_SERVER['REQUEST_METHOD']."\n";
-			$report .= "\tCame From - ".$_SERVER['HTTP_REFERER']."\n";
-			$report .= "\tPage is - ".$_SERVER['SCRIPT_NAME']."\n";
-			$report .= "\tUses Port - ".$_SERVER['REMOTE_PORT']."\n";
-			$report .= "\tServer Protocol - ".$_SERVER['SERVER_PROTOCOL']."\n";
+			$report .= "\tIP - ".(isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : "")."\n";
+			$report .= "\tHost Name - ".(isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "")."\n";
+			$report .= "\tUser Agent - ".(isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : "")."\n";
+			$report .= "\tRequest Method - ".(isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : "")."\n";
+			$report .= "\tCame From - ".(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : "")."\n";
+			$report .= "\tPage is - ".(isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : "")."\n";
+			$report .= "\tUses Port - ".(isset($_SERVER['REMOTE_PORT']) ? $_SERVER['REMOTE_PORT'] : "")."\n";
+			$report .= "\tServer Protocol - ".(isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : "")."\n";
 			$report .= "\n--------------------------------------------------------------------------------------------------\n";
 			$fp = fopen(ROOT_PATH.'core'.DS.'cache'.DS.'badqrys.txt', 'a');
 			fwrite($fp, $report);
@@ -281,7 +281,7 @@ final class db {
 		return self::$driver->field_count();
 	}
 
-	public static function fetch_row($query = null) {
+	public static function fetch_row($query = "") {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
@@ -291,7 +291,7 @@ final class db {
 		return self::$driver->fetch_row($query);
 	}
 
-	public static function fetch_array($query = null) {
+	public static function fetch_array($query = "") {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
@@ -301,7 +301,7 @@ final class db {
 		return self::$driver->fetch_array($query);
 	}
 
-	public static function fetch_assoc($query = null) {
+	public static function fetch_assoc($query = "") {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
@@ -311,7 +311,7 @@ final class db {
 		return self::$driver->fetch_assoc($query);
 	}
 
-	public static function fetch_object($query = null, $class_name = null, $params = array()) {
+	public static function fetch_object($query = "", $class_name = "", $params = array()) {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
@@ -321,7 +321,7 @@ final class db {
 		return self::$driver->fetch_object($query, $class_name, $params);
 	}
 
-	public static function num_rows($query = null) {
+	public static function num_rows($query = "") {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
@@ -331,7 +331,7 @@ final class db {
 		return self::$driver->num_rows($query);
 	}
 
-	public static function free($query = null) {
+	public static function free($query = "") {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}

@@ -36,8 +36,8 @@ if(!defined("IS_INSTALLER")) {
 	define("IS_INSTALLER", true);
 }
 require_once("core.php");
-if(strpos($_SERVER['REQUEST_URI'], "index.php")!==false) {
-	$exp = explode("index.php", $_SERVER['REQUEST_URI']);
+if(strpos($_SERVER['REQUEST_URI'], "index.".ROOT_EX)!==false) {
+	$exp = explode("index.".ROOT_EX, $_SERVER['REQUEST_URI']);
 } else {
 	$exp = explode("install", $_SERVER['REQUEST_URI']);
 }
@@ -87,16 +87,16 @@ if(sizeof($_POST)==0||(sizeof($_POST)==1)||(sizeof($_POST)==2)) {
 		}
 		templates::assign_vars(array("page" => "2", "apache" => $apache, "php" => $php, "cache" => $cache, "system_cache" => $system_cache, "template" => $template, "media" => $media, "mb" => $mb));
 	} else {
-		templates::assign_vars(array("page" => "3", "SERNAME" => getenv('SERVER_NAME').str_replace(array("index.php/", "install.php", "/install/step2", "/install/step3"), "", getenv("REQUEST_URI")), "SERVERS" => getenv('SERVER_NAME')));
+		templates::assign_vars(array("page" => "3", "SERNAME" => getenv('SERVER_NAME').str_replace(array("index.".ROOT_EX."/", "install.".ROOT_EX, "/install/step2", "/install/step3"), "", getenv("REQUEST_URI")), "SERVERS" => getenv('SERVER_NAME')));
 		$driver = ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS;
-		$dirs = read_dir($driver, ".php");
+		$dirs = read_dir($driver, ".".ROOT_EX);
 		sort($dirs);
 		for($i=0;$i<sizeof($dirs);$i++) {
-			if($dirs[$i]=="index.php"||$dirs[$i]=="DriverParam.php"||$dirs[$i]=="drivers.php"||$dirs[$i]=="DBObject.php") {
+			if($dirs[$i]=="index.".ROOT_EX||$dirs[$i]=="DriverParam.".ROOT_EX||$dirs[$i]=="drivers.".ROOT_EX||$dirs[$i]=="DBObject.".ROOT_EX) {
 				continue;
 			}
 			include_once($driver.$dirs[$i]);
-			$dr_subname = str_replace(".php", "", $dirs[$i]);
+			$dr_subname = str_replace(".".ROOT_EX, "", $dirs[$i]);
 			if(!class_exists($dr_subname)) {
 				continue;
 			}
@@ -129,6 +129,7 @@ if(!db::check_connect($db_host, $db_user, $db_pass)) {
 }
 
 $SQL = array();
+$SQL[] = "SET FOREIGN_KEY_CHECKS = 0;";
 $SQL[] = "DROP TABLE IF EXISTS `config`;";
 $SQL[] = "CREATE TABLE IF NOT EXISTS `config` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -247,9 +248,9 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `modules` (
   FULLTEXT KEY `file` (`file`),
   KEY `type` (`type`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
-$SQL[] = "INSERT INTO `modules` SET `module` = 'base', `activ` = 'yes', `file` = 'core".DS."modules".DS."base.class.php';";
-$SQL[] = "INSERT INTO `modules` SET `module` = 'changelog', `activ` = 'yes', `file` = 'core".DS."modules".DS."changelog.class.php';";
-$SQL[] = "INSERT INTO `modules` SET `module` = 'mobile_detect', `activ` = 'yes', `file` = 'core".DS."modules".DS."mobile.class.php';";
+$SQL[] = "INSERT INTO `modules` SET `module` = 'base', `activ` = 'yes', `file` = 'core".DS."modules".DS."base.class.".ROOT_EX."';";
+$SQL[] = "INSERT INTO `modules` SET `module` = 'changelog', `activ` = 'yes', `file` = 'core".DS."modules".DS."changelog.class.".ROOT_EX."';";
+$SQL[] = "INSERT INTO `modules` SET `module` = 'mobile_detect', `activ` = 'yes', `file` = 'core".DS."modules".DS."mobile.class.".ROOT_EX."';";
 
 $SQL[] = "DROP TABLE IF EXISTS `posts`;";
 $SQL[] = "CREATE TABLE IF NOT EXISTS `posts` (
@@ -338,20 +339,20 @@ $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `acc
 
 
 
-db::connect($db_host, $db_user, $db_pass, $db_db, "utf8", 3306);
+db::connect($db_host, $db_user, $db_pass, $db_db, "utf8", $db_port);
 $insert = array();
 $last = db::last_id("users");
 if(!empty($last)) {
 	$insert['new_id'] = "id = ".$last;
 }
-$insert['username'] = "username = \"".saves($_POST['user_name'], true)."\"";
-$insert['alt_name'] = "alt_name = \"".ToTranslit(saves($_POST['user_name'], true))."\"";
-$insert['pass'] = "pass = \"".create_pass(saves($_POST['user_pass'], true))."\"";
+$insert['username'] = "username = \"".Saves::SaveOld($_POST['user_name'], true)."\"";
+$insert['alt_name'] = "alt_name = \"".ToTranslit(Saves::SaveOld($_POST['user_name'], true))."\"";
+$insert['pass'] = "pass = \"".create_pass(Saves::SaveOld($_POST['user_pass'], true))."\"";
 define("IS_ADMIN_PASS", true);
-$insert['admin_pass'] = "admin_pass = \"".cardinal::create_pass(saves($_POST['user_pass'], true))."\"";
-$insert['light'] = "light = \"".saves($_POST['user_pass'], true)."\"";
+$insert['admin_pass'] = "admin_pass = \"".cardinal::create_pass(Saves::SaveOld($_POST['user_pass'], true))."\"";
+$insert['light'] = "light = \"".Saves::SaveOld($_POST['user_pass'], true)."\"";
 $insert['level'] = "level = \"".LEVEL_ADMIN."\"";
-$insert['email'] = "email = \"".saves($_POST['user_email'], true)."\"";
+$insert['email'] = "email = \"".Saves::SaveOld($_POST['user_email'], true)."\"";
 $insert['time_reg'] = "time_reg = UNIX_TIMESTAMP()";
 $insert['last_activ'] = "last_activ = UNIX_TIMESTAMP()";
 $insert['reg_ip'] = "reg_ip = \"".HTTP::getip()."\"";
@@ -384,10 +385,10 @@ $config = array_merge($config, array(
 ));
 
 ?>';
-if(file_exists(ROOT_PATH."core".DS."media".DS."db.php")) {
-	unlink(ROOT_PATH."core".DS."media".DS."db.php");
+if(file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX)) {
+	unlink(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX);
 }
-file_put_contents(ROOT_PATH."core".DS."media".DS."db.php", $db_config);
+file_put_contents(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX, $db_config);
 
 $path = str_replace("http://", "", $_POST['PATH']);
 if(substr($path, -1)=="/") {
@@ -418,29 +419,29 @@ if(isset($_SERVER[\'HTTPS\']) && $_SERVER[\'HTTPS\']!=\'off\') {
 $config = array_merge($config, array(
 	"api_key" => "'.rand(1000000000, 9999999999).'",
 	"speed_update" => false,
-	"logs" => '.saves($_POST['error_type'], true).',
+	"logs" => '.Saves::SaveOld($_POST['error_type'], true).',
 	"hosting" => true,
 	"default_http_local" => "'.$path.'",
-	"default_http_hostname" => "'.saves($_POST['SERVER'], true).'",
-	"default_http_host" => $protocol."://'.saves($host, true).'/",
+	"default_http_hostname" => "'.Saves::SaveOld($_POST['SERVER'], true).'",
+	"default_http_host" => $protocol."://'.Saves::SaveOld($host, true).'/",
 	"lang" => "ru",
 	"cache" => array(
-		"type" => '.saves($_POST['cache_type'], true).',
-		"server" => "'.saves($_POST['cache_host'], true).'",
-		"port" => '.saves($_POST['cache_port'], true).',
-		"login" => "'.saves($_POST['cache_user'], true).'",
-		"pass" => "'.saves($_POST['cache_pass'], true).'",
-		"path" => "'.saves($_POST['cache_path'], true).'",
+		"type" => '.Saves::SaveOld($_POST['cache_type'], true).',
+		"server" => "'.Saves::SaveOld($_POST['cache_host'], true).'",
+		"port" => '.Saves::SaveOld($_POST['cache_port'], true).',
+		"login" => "'.Saves::SaveOld($_POST['cache_user'], true).'",
+		"pass" => "'.Saves::SaveOld($_POST['cache_pass'], true).'",
+		"path" => "'.Saves::SaveOld($_POST['cache_path'], true).'",
 	),
 	"lang" => "ru",
 	"charset" => "utf-8",
 ));
 
 ?>';
-if(file_exists(ROOT_PATH."core".DS."media".DS."config.install.php")) {
-	unlink(ROOT_PATH."core".DS."media".DS."config.install.php");
+if(file_exists(ROOT_PATH."core".DS."media".DS."config.install.".ROOT_EX)) {
+	unlink(ROOT_PATH."core".DS."media".DS."config.install.".ROOT_EX);
 }
-file_put_contents(ROOT_PATH."core".DS."media".DS."config.install.php", $config);
+file_put_contents(ROOT_PATH."core".DS."media".DS."config.install.".ROOT_EX, $config);
 
 $lang = '<?php
 if(!defined("IS_CORE")) {
@@ -449,18 +450,18 @@ die();
 }
 
 $lang = array_merge($lang, array(
-	"sitename" => "'.saves($_POST['sitename'], true).'",
-	"s_description" => "'.saves($_POST['description'], true).'",
+	"sitename" => "'.Saves::SaveOld($_POST['sitename'], true).'",
+	"s_description" => "'.Saves::SaveOld($_POST['description'], true).'",
 ));
 
 ?>';
 $lang = charcode($lang);
-if(file_exists(ROOT_PATH."core".DS."media".DS."config.lang.php")) {
-	unlink(ROOT_PATH."core".DS."media".DS."config.lang.php");
+if(file_exists(ROOT_PATH."core".DS."media".DS."config.lang.".ROOT_EX)) {
+	unlink(ROOT_PATH."core".DS."media".DS."config.lang.".ROOT_EX);
 }
-file_put_contents(ROOT_PATH."core".DS."media".DS."config.lang.php", $lang);
-if(file_exists(ROOT_PATH."core".DS."media".DS."config.default.php")) {
-	rename(ROOT_PATH."core".DS."media".DS."config.default.php", ROOT_PATH."core".DS."media".DS."config.php");
+file_put_contents(ROOT_PATH."core".DS."media".DS."config.lang.".ROOT_EX, $lang);
+if(file_exists(ROOT_PATH."core".DS."media".DS."config.default.".ROOT_EX)) {
+	rename(ROOT_PATH."core".DS."media".DS."config.default.".ROOT_EX, ROOT_PATH."core".DS."media".DS."config.".ROOT_EX);
 }
 header("Location: ../".Route::get("install_done")->uri(array()));
 ?>

@@ -1399,12 +1399,28 @@ if(!$test) {
 	public static function load_templates($file, $charset = "", $dir = "null") {
 		$time = self::time();
 		if($dir == "null") {
+			if(!file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".tpl")) {
+				self::ErrorTemplate("File \"".ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".tpl\" is not exists");
+				die();
+			}
 			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".tpl");
 		} elseif($dir=="admin") {
-			$tpl = file_get_contents(ROOT_PATH."admincp.php".DS."temp".DS.$file.".tpl");
+			if(!file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."temp".DS.$file.".tpl")) {
+				self::ErrorTemplate("File \"".ROOT_PATH.ADMINCP_DIRECTORY.DS."temp".DS.$file.".tpl\" is not exists");
+				die();
+			}
+			$tpl = file_get_contents(ROOT_PATH.ADMINCP_DIRECTORY.DS."temp".DS.$file.".tpl");
 		} elseif(empty($dir)) {
+			if(!file_exists(ROOT_PATH."".self::$dir_skins.DS.$file.".tpl")) {
+				self::ErrorTemplate("File \"".ROOT_PATH."".self::$dir_skins.DS.$file.".tpl\" is not exists");
+				die();
+			}
 			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.$file.".tpl");
 		} else {
+			if(!file_exists(ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".tpl")) {
+				self::ErrorTemplate("File \"".ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".tpl\" is not exists");
+				die();
+			}
 			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".tpl");
 		}
 		if(!empty($charset)) {
@@ -1689,9 +1705,11 @@ if(!$test) {
 			include_once(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."lang".DS."tpl.".ROOT_EX);
 		}
 		$h = self::completed_assign_vars("main");
-		$l = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."login.tpl");
-		$l = iconv("cp1251", modules::get_config('charset'), $l);
-		$h = str_replace("{login}", $l, $h);
+		if(file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."login.tpl")) {
+			$l = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."login.tpl");
+			$l = iconv("cp1251", modules::get_config('charset'), $l);
+			$h = str_replace("{login}", $l, $h);
+		}
 		$head = "";
 		if(isset(self::$module['head']['before'])) {
 			$head .= self::$module['head']['before'];
