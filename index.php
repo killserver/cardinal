@@ -129,6 +129,8 @@ if(defined("DEBUG")) {
 $Timer = microtime()-$Timer;
 $tplTime = templates::$time;
 $dbTime = db::$time;
+$gzip = templates::$gzip;
+$gActive = templates::$gzipActive;
 $list = array("targets","target","phpEx","protocol","route","cache","lang","user","config_templates","server","pages","active","load","obj","templates","db");
 for($i=0;$i<sizeof($list);$i++) {
 	unset($GLOBALS[$list[$i]]);
@@ -136,9 +138,6 @@ for($i=0;$i<sizeof($list);$i++) {
 if(defined("DEBUG_ACTIVATED")) {
 	Error::Debug(null, true);
 }
-GzipOut(templates::$gzip, templates::$gzipActive);
+GzipOut($gzip, $gActive);
 HTTP::echos();
-unset($templates);
-unset($db);
-
 ?>
