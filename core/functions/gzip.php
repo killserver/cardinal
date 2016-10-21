@@ -19,7 +19,7 @@ function CheckCanGzip() {
 
 // ToDo: Языковую панель на это дело надо вешать!
 function GzipOut($debug = false, $exit = false) {
-global $config, $Timer, $manifest, $tplTime, $dbTime;
+global $config, $Timer, $manifest, $tplTime, $dbTime, $dbNum;
 	if($exit) {
 		session_destroy();
 		return;
@@ -31,7 +31,7 @@ global $config, $Timer, $manifest, $tplTime, $dbTime;
 		$s = "\n<!-- Время выполнения скрипта ".($Timer>0 ? $Timer : 0)." секунд -->\n".
 		"<!-- Время затраченное на компиляцию шаблонов ".($tmp>0 ? $tmp : 0)." секунд -->\n".
 		"<!-- Время затраченное на выполнение MySQL запросов: ".($dbs>0 ? $dbs : 0)." секунд -->\n".
-		"<!-- Общее количество MySQL запросов ".db::$num." -->";
+		"<!-- Общее количество MySQL запросов ".$dbNum." -->";
 	}
 
 	if($debug AND function_exists("memory_get_peak_usage")) {

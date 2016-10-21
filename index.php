@@ -128,9 +128,10 @@ if(defined("DEBUG")) {
 }
 $Timer = microtime()-$Timer;
 $tplTime = templates::$time;
-$dbTime = db::$time;
 $gzip = templates::$gzip;
 $gActive = templates::$gzipActive;
+$dbTime = db::$time;
+$dbNum = db::$num;
 $list = array("targets","target","phpEx","protocol","route","cache","lang","user","config_templates","server","pages","active","load","obj","templates","db");
 for($i=0;$i<sizeof($list);$i++) {
 	unset($GLOBALS[$list[$i]]);
