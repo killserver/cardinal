@@ -20,12 +20,12 @@ die();
 
 define("IS_CRON", true);
 
-final class cardinal {
+class cardinal {
 
 	private static $ch_login = array("class" => "cardinal", "method" => "or_create_pass");
 	public function cardinal() {
 		if(defined("INSTALLER")) {
-			return;
+			return false;
 		}
 		if(isset($_SERVER['HTTP_USER_AGENT']) && !$this->robots(getenv("HTTP_USER_AGENT"))) {
 			define("IS_BOT", false);
@@ -39,7 +39,7 @@ final class cardinal {
 		}
 	}
 
-	public static function SaveCardinal($v) {
+	final public static function SaveCardinal($v) {
 		$dv = $nv = "";
 		for($i=0;$i<strlen($v);$i++) {
 			$nv .= ord($v[$i]).";";
@@ -54,7 +54,7 @@ final class cardinal {
 		return $v;
 	}
 	
-	private function robots($userAgent) {
+	final private function robots($userAgent) {
 		if(!isset($userAgent) || empty($userAgent) || is_bool($userAgent)) {
 			return false;
 		}
@@ -73,7 +73,7 @@ final class cardinal {
 		}
 	}
 	
-	private static function or_create_pass($pass) {
+	final private static function or_create_pass($pass) {
 		$pass = md5(md5($pass).$pass);
 		$pass = strrev($pass);
 		$pass = sha1($pass);
@@ -81,7 +81,7 @@ final class cardinal {
 	return md5(md5($pass).$pass);
 	}
 	
-	public static function change_pass($class = "", $method = "") {
+	final public static function change_pass($class = "", $method = "") {
 		if(!empty($method) && !empty($class) && class_exists($class)) {
 			self::$ch_login['class'] = $class;
 			self::$ch_login['method'] = $method;
@@ -91,25 +91,13 @@ final class cardinal {
 		}
 	}
 	
-	public static function create_pass($pass) {
+	final public static function create_pass($pass) {
 		$class = (self::$ch_login['class']);
 		$method = (self::$ch_login['method']);
 		return $class::$method($pass);
 	}
-	
-	public static function view_eighteen() {
-		if(!cardinal::get_eighteen()) {
-			templates::assign_vars(array(
-				"title" => "{L_alert}",
-				"error" => "{L_alert_up_eighteen}",
-			));
-			$view = templates::complited_assing_vars("info");
-			templates::complited($view);
-			templates::display();
-		}
-	}
 
-	protected static function amper($data) {
+	final protected static function amper($data) {
 		if(is_array($data)) {
 			$returns = array();
 			foreach($data as $name => $val) {
@@ -125,7 +113,10 @@ final class cardinal {
 		}
 	}
 
-	public static function hackers($page, $referer=null) {
+	final public static function hackers($page, $referer = "") {
+		if(defined("WITHOUT_DB")) {
+			return false;
+		}
 		if(!empty($referer)) {
 			$ref = ", referer = \"".urlencode($referer)."\"";
 		} else {

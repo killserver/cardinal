@@ -22,6 +22,13 @@ class userlevel {
 	 * @return array All user levels in DB
      */
 	final public static function all() {
+		if(defined("WITHOUT_DB")) {
+			$userlevels = array();
+			if(file_exists(ROOT_PATH."core".DS."media".DS."userlevels.".ROOT_EX)) {
+				include_once(ROOT_PATH."core".DS."media".DS."userlevels.".ROOT_EX);
+			}
+			return $userlevels;
+		}
 		$cache = modules::init_cache();
 		if(!$cache->Exists("userlevels")) {
 			$db = modules::init_db();
@@ -94,6 +101,9 @@ class userlevel {
 	 * @param string|bool $data Value access
      */
 	final public static function set($id, $set, $data) {
+		if(defined("WITHOUT_DB")) {
+			return false;
+		}
 		if(is_bool($data)) {
 			if($data) {
 				$data = "yes";

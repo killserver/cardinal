@@ -44,8 +44,11 @@ final class comment {
 	 * @param int $levels Level viewing comments
      */
 	public function comment($u_id, $type="news", $user_row = array(), $levels = 0) {
+		if(defined("WITHOUT_DB")) {
+			return false;
+		}
 		if(!userlevel::get("view_comments")) {
-			return;
+			return false;
 		}
 		self::$param['u_id'] = $u_id;
 		self::$param['type'] = $type;

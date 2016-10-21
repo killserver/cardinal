@@ -12,6 +12,9 @@ class updater {
 	}
 	
 	final public static function update($version, $db_version) {
+		if(defined("WITHOUT_DB")) {
+			return false;
+		}
 		if($version == $db_version) {
 			return true;
 		}

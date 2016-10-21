@@ -104,7 +104,9 @@ if(defined("DEBUG") || isset($_GET['debug'])) {
 	error_reporting(E_ALL);
 	define("DEBUG_ACTIVATED", true);
 }
-
+if(file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."core".DIRECTORY_SEPARATOR."media".DIRECTORY_SEPARATOR."isFrame.lock")) {
+	define("WITHOUT_DB", true);
+}
 
 if(!defined("MEMORY_GET")) {
 	define("MEMORY_GET", memory_get_usage());
@@ -154,14 +156,17 @@ $config_templates = array(
 	"skins_mobile" => modules::get_config('skins', 'mobile'),
 );
 
-if(!defined("INSTALLER")) {
-	if(!defined("IS_CRON_FILE") && isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], $config['default_http_hostname'])===false) {
+if(defined("WITHOUT_DB") || !defined("INSTALLER")) {
+	if(!defined("WITHOUT_DB") && !defined("IS_CRON_FILE") && isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], $config['default_http_hostname'])===false) {
 		header("HTTP/1.1 301 Moved Permanently");
 		header("Location: http://".$config['default_http_hostname'].$_SERVER['REQUEST_URI']);
 	die();
 	}
 
-	$user = array();
+	$user = $users = array();
+	if(file_exists(ROOT_PATH."core".DS."media".DS."users.".ROOT_EX)) {
+		include(ROOT_PATH."core".DS."media".DS."users.".ROOT_EX);
+	}
 	if((isset($_COOKIE[COOK_USER]) and !empty($_COOKIE[COOK_USER])) && ((isset($_COOKIE[COOK_PASS]) and !empty($_COOKIE[COOK_PASS])) || (isset($_COOKIE[COOK_ADMIN_PASS]) and !empty($_COOKIE[COOK_ADMIN_PASS])))) {
 		if(isset($_COOKIE[COOK_ADMIN_USER]) && defined("IS_ADMIN")) {
 			$username = saves($_COOKIE[COOK_ADMIN_USER]);
@@ -176,16 +181,30 @@ if(!defined("INSTALLER")) {
 			$password = saves($_COOKIE[COOK_PASS]);
 		}
 		if(!cache::Exists("user_".$username)) {
-			db::doquery("SELECT * FROM users WHERE `username` = \"".$username."\" AND `".$where."` = \"".$password."\"", true);
-			if(db::num_rows()==0) {
-				cache::Delete("user_".$username);
-				HTTP::set_cookie(COOK_USER, null, true);
-				HTTP::set_cookie(COOK_PASS, null, true);
+			if(defined("WITHOUT_DB")) {
+				if(file_exists(ROOT_PATH."core".DS."media".DS."users.".ROOT_EX)) {
+					if(isset($users[$username]) && isset($users[$username]['username']) && isset($users[$username][$where]) && $users[$username][$where] == $password) {
+						$user = $users[$username];
+						cache::Set("user_".$username, $user);
+						define("IS_AUTH", true);
+					} else {
+						cache::Delete("user_".$username);
+						HTTP::set_cookie(COOK_USER, null, true);
+						HTTP::set_cookie(COOK_PASS, null, true);
+					}
+				}
 			} else {
-				$user = db::fetch_array();
-				cache::Set("user_".$username, $user);
-				db::doquery("UPDATE `users` SET `last_activ` = UNIX_TIMESTAMP(), `last_ip` = \"".HTTP::getip()."\" WHERE `id` = ".$user['id']);
-				define("IS_AUTH", true);
+				db::doquery("SELECT * FROM `users` WHERE `username` LIKE \"".$username."\" AND `".$where."` LIKE \"".$password."\"", true);
+				if(db::num_rows()==0) {
+					cache::Delete("user_".$username);
+					HTTP::set_cookie(COOK_USER, null, true);
+					HTTP::set_cookie(COOK_PASS, null, true);
+				} else {
+					$user = db::fetch_array();
+					cache::Set("user_".$username, $user);
+					db::doquery("UPDATE `users` SET `last_activ` = UNIX_TIMESTAMP(), `last_ip` = \"".HTTP::getip()."\" WHERE `id` = ".$user['id']);
+					define("IS_AUTH", true);
+				}
 			}
 		} else if(cache::Exists("user_".$username)) {
 			$password = $admin_password = "";

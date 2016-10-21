@@ -19,13 +19,8 @@ exit();
 }
 
 class page {
-
-    function __construct() {
-		Route::RegParam("inPage", "index");
-		db::doquery("SELECT `id`, `alt_name`, `title`, `image`, `descr`, `time`, `added` FROM `posts` WHERE `active` = \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP()" : ""), true);
-		while($row = db::fetch_assoc()) {
-			templates::assign_vars($row, "index", "index".$row['id']);
-		}
+	
+	function view() {
 		$tmp = templates::complited_assing_vars("index");
 		$ogpr = array(
 			"og:site_name" => "{L_sitename}",
@@ -52,6 +47,19 @@ class page {
 		}
 		templates::complited($tmp, array("title" => lang::get_lang('sitename'), "meta" => $meta));
 		templates::display();
+	}
+
+    function __construct() {
+		if(defined("WITHOUT_DB")) {
+			$this->view();
+			return false;
+		}
+		Route::RegParam("inPage", "index");
+		db::doquery("SELECT `id`, `alt_name`, `title`, `image`, `descr`, `time`, `added` FROM `posts` WHERE `active` = \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP()" : ""), true);
+		while($row = db::fetch_assoc()) {
+			templates::assign_vars($row, "index", "index".$row['id']);
+		}
+		$this->view();
 	}
 
 }

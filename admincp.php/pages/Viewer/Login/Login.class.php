@@ -22,7 +22,7 @@ die();
 class Login extends Core {
 
 	function Login() {
-	global $user;
+	global $user, $users;
 		if(isset($_GET['out'])) {
 			HTTP::set_cookie(COOK_ADMIN_USER, "", true);
 			HTTP::set_cookie(COOK_ADMIN_PASS, "", true);
@@ -30,7 +30,7 @@ class Login extends Core {
 		$resp = array('accessGranted' => false, 'errors' => '');
 		if(isset($_POST['do_login'])) {
 			$check = false;
-			if((isset($_POST['username']) && !empty($_POST['username'])) && (isset($_POST['passwd']) && !empty($_POST['passwd']))) {
+			if((Arr::get($_POST, 'username', false)) && (Arr::get($_POST, 'passwd', false))) {
 				$given_username = Arr::get($_POST, 'username', "");
 				$given_password = Arr::get($_POST, 'passwd', "");
 				$is_admin = false;
@@ -40,13 +40,23 @@ class Login extends Core {
 				} else {
 					$given_username = Saves::SaveOld($given_username);
 					$given_password = cardinal::create_pass($given_password);
-					db::doquery("SELECT `id`, `pass` FROM `users` WHERE `username` LIKE \"".($given_username)."\" AND `admin_pass` LIKE \"".($given_password)."\"", true);
-					$check = (db::num_rows()!=0);
+					if(defined("WITHOUT_DB")) {
+						if(isset($users) && is_array($users) && isset($users[$given_username]) && isset($users[$given_username]['admin_pass']) && Validate::equals($users[$given_username]['admin_pass'], $given_password)) {
+							$check = true;
+						}
+					} else {
+						db::doquery("SELECT `id`, `pass` FROM `users` WHERE `username` LIKE \"".($given_username)."\" AND `admin_pass` LIKE \"".($given_password)."\"", true);
+						$check = (db::num_rows()!=0);
+					}
 				}
 			}
 			if($check) {
 				if(!$is_admin) {
-					$row = db::fetch_assoc();
+					if(!defined("WITHOUT_DB")) {
+						$row = db::fetch_assoc();
+					} else {
+						$row = $users[$given_username];
+					}
 				} else {
 					$row = array("pass" => "cardinal", "level" => LEVEL_ADMIN);
 				}
@@ -63,7 +73,7 @@ class Login extends Core {
 				}
 			} else {
 				// Failed Attempts
-				$fa = isset($_COOKIE['failed-attempts']) ? $_COOKIE['failed-attempts'] : 0;
+				$fa = Arr::get($_COOKIE, 'failed-attempts', 0);
 				$fa++;
 				HTTP::set_cookie('failed-attempts', $fa, time()+(5*60), false);
 				// Error message

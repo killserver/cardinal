@@ -28,7 +28,7 @@ class lang {
 
 	final public static function lang_db() {
 		$langs = array();
-		if(!db::connected()) {
+		if(defined("WITHOUT_DB") || !db::connected()) {
 			return $langs;
 		}
 		if(!cache::Exists("lang_".self::$lang)) {
@@ -45,6 +45,9 @@ class lang {
 	}
 	
 	final public static function Update($lang, $orig, $translate) {
+		if(defined("WITHOUT_DB")) {
+			return false;
+		}
 		if(
 			Validate::CheckType($lang, "string") && Validate::not_empty($lang)
 				&&

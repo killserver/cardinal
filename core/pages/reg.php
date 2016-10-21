@@ -17,6 +17,9 @@ class page {
 
 	function __construct() {
 	global $user;
+		if(defined("WITHOUT_DB")) {
+			return false;
+		}
 		if(isset($user['id'])) {
 			templates::error("{L_error_isset_reg_full}", "{L_error_isset_reg}");
 		return;

@@ -132,7 +132,46 @@ class modules {
 		return $if;
 	}
 	
+	final private static function ExecHooks($module) {
+		try {
+			$dir = ROOT_PATH."core".DS."modules".DS."hooks".DS;
+			if(is_dir($dir)) {
+				if($dh = dir($dir)) {
+					while(($file = $dh->read()) !== false) {
+						if($file != "index.".ROOT_EX && $file != "." && $file != ".." && strpos($file, $module) !== false) {
+							require_once($dir.$file);
+							$class = str_replace(".".ROOT_EX, "", $file);
+							if(class_exists($class)) {
+								$classes = new $class();
+								if(method_exists($classes, "init_hook")) {
+									$classes->init_hook();
+								}
+								unset($classes);
+							}
+						}
+					}
+				$dh->close();
+				}
+			}
+			return true;
+		} catch(Exception $ex) {
+			return false;
+		}
+	}
+	
 	final public static function load_hooks($module) {
+		if(defined("WITHOUT_DB")) {
+			if(file_exists(ROOT_PATH."core".DS."modules".DS."hooks".DS."loader.".ROOT_EX)) {
+				$hooksLoad = array();
+				include(ROOT_PATH."core".DS."modules".DS."hooks".DS."loader.".ROOT_EX);
+				if(!isset($hooksLoad[$module])) {
+					return false;
+				}
+				return self::ExecHooks($module);
+			} else {
+				return false;
+			}
+		}
 		if(is_bool(self::$load_hooks)) {
 			$cache = self::init_cache();
 			if(!$cache->exists("load_hooks")) {
@@ -150,33 +189,14 @@ class modules {
 		if(!isset(self::$load_hooks[$module])) {
 			return false;
 		}
-		$dir = ROOT_PATH."core".DS."modules".DS."hooks".DS;
-		if(is_dir($dir)) {
-			if($dh = dir($dir)) {
-				while(($file = $dh->read()) !== false) {
-					if($file != "index.".ROOT_EX && $file != "." && $file != ".." && strpos($file, $module) !== false) {
-						require_once($dir.$file);
-						$class = str_replace(".", "", $file);
-						if(class_exists($class)) {
-							$classes = new $class();
-							if(method_exists($classes, "init_hook")) {
-								$classes->init_hook();
-							}
-							unset($classes);
-						}
-					}
-				}
-			$dh->close();
-			}
-		}
-		return true;
+		return self::ExecHooks($module);
 	}
 	
 	final public static function load_modules($file, $load) {
-		if(defined("IS_INSTALLER") || !self::init_db()->connected()) {
+		if(!defined("WITHOUT_DB") && (defined("IS_INSTALLER") || !self::init_db()->connected())) {
 			return false;
 		}
-		if(!defined("START_VERSION")) {
+		if(!defined("WITHOUT_DB") && !defined("START_VERSION")) {
 			return true;
 		}
 		if(self::CheckVersion("3.1", START_VERSION)) {
@@ -187,6 +207,16 @@ class modules {
 			if(!is_subclass_of($files, "modules")) {
 				modules::manifest_set(array('dependency_modules', $files), $file);
 			}
+		}
+		if(defined("WITHOUT_DB")) {
+			if(file_exists(ROOT_PATH."core".DS."modules".DS."loader.".ROOT_EX)) {
+				$modulesLoad = array();
+				include(ROOT_PATH."core".DS."modules".DS."loader.".ROOT_EX);
+				if(isset($modulesLoad[$file])) {
+					return true;
+				}
+			}
+			return false;
 		}
 		if(is_bool(self::$load_modules)) {
 			$cache = self::init_cache();
@@ -211,6 +241,9 @@ class modules {
 
 	final private static function init_modules() {
 		if(defined("IS_INSTALLER") || !self::init_db()->connected()) {
+			return array();
+		}
+		if(defined("WITHOUT_DB")) {
 			return array();
 		}
 		$cache = self::init_cache();
@@ -432,6 +465,9 @@ class modules {
 	}
 	
 	final public static function Install($module, $file = false, $names = "") {
+		if(defined("WITHOUT_DB")) {
+			return false;
+		}
 		if($file) {
 			if(!file_exists(ROOT_PATH."core".DS."cache".DS."system".DS.$module.".tar")) {
 				return "File archive is not exists";
@@ -504,6 +540,9 @@ class modules {
 	}
 
 	final public static function UnInstall($module) {
+		if(defined("WITHOUT_DB")) {
+			return false;
+		}
 		$moduleFile = self::FindXML($module);
 		if(!file_exists(ROOT_PATH."core".DS."modules".DS."xml".DS.$moduleFile.".xml")) {
 			return self::UnInstallFile($module, $moduleFile);
@@ -696,6 +735,9 @@ class modules {
 	}
 	
 	final public static function CheckNewVersion($module) {
+		if(defined("WITHOUT_DB")) {
+			return false;
+		}
 		if(!file_exists(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $module . ".xml")) {
 			return false;
 		}

@@ -46,7 +46,33 @@ if(file_exists(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX) && file_exists(
 		require_once(ROOT_PATH."core".DS."media".DS."config.client.php");
 	}
 	require_once(ROOT_PATH."core".DS."media".DS."config.global.".ROOT_EX);
-	if(!defined("IS_INSTALLER") && (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], "install")===false)) {
+	if(defined("WITHOUT_DB")) {
+		define("COOK_USER", "username_123456");
+		define("COOK_PASS", "password_123456");
+		define("COOK_ADMIN_USER", "admin_username_123456");
+		define("COOK_ADMIN_PASS", "admin_password_123456");
+		if(file_exists(ROOT_PATH."core".DS."media".DS."config.default.".ROOT_EX)) {
+			require_once(ROOT_PATH."core".DS."media".DS."config.default.".ROOT_EX);
+			if(defined("VERSION")) {
+				define("START_VERSION", VERSION);
+			}
+			if(isset($_SERVER['PHP_SELF'])) {
+				$link = str_replace(array("index.php", "admincp.php/"), "", $_SERVER['PHP_SELF']);
+			} else {
+				$link = "/";
+			}
+			$config = array_merge($config, array(
+				"default_http_local" => $link,
+				"default_http_hostname" => (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua"),
+				"default_http_host" => $protocol."://".(isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua").$link,
+			));
+			unset($link);
+		}
+		if(file_exists(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX)) {
+			require_once(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX);
+		}
+	}
+	if(!defined("WITHOUT_DB") && !defined("IS_INSTALLER") && (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], "install")===false)) {
 		if(isset($_SERVER['PHP_SELF'])) {
 			$link = str_replace(array("index.php", "admincp.php/"), "", $_SERVER['PHP_SELF']);
 		} else {

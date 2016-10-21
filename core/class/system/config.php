@@ -50,7 +50,7 @@ class config {
 
 	final public static function init() {
 	global $config;
-		if(!db::connected()) {
+		if(defined("WITHOUT_DB") || !db::connected()) {
 			self::$config = $config;
 			return $config;
 		}
@@ -131,6 +131,9 @@ class config {
 	}
 
 	final public static function Update($name, $data = "") {
+		if(defined("WITHOUT_DB")) {
+			return false;
+		}
 		db::doquery("REPLACE INTO `config` SET `config_value` = \"".$data."\" WHERE `config_name` = \"".$name."\"");
 		cache::Delete("config");
 		if(!empty(self::$config[$data])) {

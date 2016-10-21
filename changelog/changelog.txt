@@ -7,6 +7,6 @@
 [@] Эта информация будет интересна только админам и/или разработчикам
     This information is only for administrators and/or developers
 
-Cardinal Engine Release 4
+Cardinal Engine Release 5
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 [!] ВНИМАНИЕ! Требуется версия PHP >= 5.3.2

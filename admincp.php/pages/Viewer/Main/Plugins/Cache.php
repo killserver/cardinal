@@ -41,7 +41,7 @@ class Main_Cache extends Main {
 		$path = ROOT_PATH."core".DS."cache".DS;
 		$files = read_dir($path);
 		for($i=0;$i<sizeof($files);$i++) {
-			if($files[$i]=="index.php" || $files[$i] == "index.html") {
+			if($files[$i] == "index.php" || $files[$i] == "index.html") {
 				unset($files[$i]);
 			} else {
 				$size += filesize($path.$files[$i]);
@@ -61,7 +61,7 @@ class Main_Cache extends Main {
 		$path = ROOT_PATH."core".DS."cache".DS."page".DS;
 		$files = read_dir($path);
 		for($i=0;$i<sizeof($files);$i++) {
-			if($files[$i]=="index.php" || $files[$i] == "index.html") {
+			if($files[$i] == "index.php" || $files[$i] == "index.html") {
 				unset($files[$i]);
 			} else {
 				$size += filesize($path.$files[$i]);

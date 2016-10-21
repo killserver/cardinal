@@ -30,6 +30,9 @@ class page {
 
 	function __construct() {
 	global $user;
+		if(defined("WITHOUT_DB")) {
+			return false;
+		}
 		$ref = getenv("HTTP_REFERER");
 		if(!empty($ref)) {
 			$referer = str_replace("http://".getenv("SERVER_NAME"), "", $ref);
