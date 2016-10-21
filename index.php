@@ -127,6 +127,12 @@ if(defined("DEBUG")) {
 	error_reporting(E_ALL);
 }
 $Timer = microtime()-$Timer;
+$tplTime = templates::$time;
+$dbTime = db::$time;
+$list = array("targets","target","phpEx","protocol","route","cache","lang","user","config_templates","server","pages","active","load","obj","templates","db");
+for($i=0;$i<sizeof($list);$i++) {
+	unset($GLOBALS[$list[$i]]);
+}
 if(defined("DEBUG_ACTIVATED")) {
 	Error::Debug(null, true);
 }

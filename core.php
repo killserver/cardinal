@@ -169,14 +169,14 @@ if(!defined("INSTALLER")) {
 			$username = saves($_COOKIE[COOK_USER]);
 		}
 		if(isset($_COOKIE[COOK_ADMIN_PASS]) && defined("IS_ADMIN")) {
-			$where = "`admin_pass`";
+			$where = "admin_pass";
 			$password = saves($_COOKIE[COOK_ADMIN_PASS]);
 		} else {
-			$where = "`pass`";
+			$where = "pass";
 			$password = saves($_COOKIE[COOK_PASS]);
 		}
 		if(!cache::Exists("user_".$username)) {
-			db::doquery("SELECT * FROM users WHERE `username` = \"".$username."\" AND ".$where." = \"".$password."\"", true);
+			db::doquery("SELECT * FROM users WHERE `username` = \"".$username."\" AND `".$where."` = \"".$password."\"", true);
 			if(db::num_rows()==0) {
 				cache::Delete("user_".$username);
 				HTTP::set_cookie(COOK_USER, null, true);
@@ -196,7 +196,7 @@ if(!defined("INSTALLER")) {
 				$admin_password = saves($_COOKIE[COOK_ADMIN_PASS]);
 			}
 			$user = cache::Get("user_".$username);
-			if($user['pass']!=$password && $user['admin_pass']!=$admin_password) {
+			if($user['pass'] != $password && $user['admin_pass'] != $admin_password) {
 				cache::Delete("user_".$username);
 				HTTP::set_cookie(COOK_USER, null, true);
 				HTTP::set_cookie(COOK_PASS, null, true);

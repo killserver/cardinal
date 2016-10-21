@@ -16,7 +16,7 @@ echo "403 ERROR";
 die();
 }
 
-final class config {
+class config {
 
 	private static $config = array();
 	private static $default = false;
@@ -57,7 +57,7 @@ final class config {
 		self::$config = array();
 		if(!cache::Exists("config")) {
 			$configs = array();
-			db::doquery("SELECT config_name, config_value FROM config", true);
+			db::doquery("SELECT `config_name`, `config_value` FROM `config`", true);
 			while($conf = db::fetch_array()) {
 				$ret = self::ReadConfig($conf['config_name'], $conf['config_value']);
 				$configs = array_merge($configs, $ret);
@@ -84,6 +84,9 @@ final class config {
 			self::$config[$list[0]] = $list[1];
 			return true;
 		} else if(sizeof($list)==3) {
+			if(!is_array(self::$config[$list[0]])) {
+				self::$config[$list[0]] = array();
+			}
 			self::$config[$list[0]][$list[1]] = $list[2];
 			return true;
 		} else {
@@ -91,12 +94,16 @@ final class config {
 		}
 	}
 	
-	final public static function Exists($data, $sub = "", $subst = "") {
-		if(!empty($sub) && !empty($subst) && isset(self::$config[$data]) && isset(self::$config[$data][$sub]) && isset(self::$config[$data][$subst])) {
+	final public static function Exists() {
+		if(func_num_args() == 0 || func_num_args() > 2) {
+			return false;
+		}
+		$list = func_get_args();
+		if(isset($list[1]) && !empty($list[1]) && isset($list[2]) && !empty($list[2]) && isset(self::$config[$list[0]]) && isset(self::$config[$list[0]][$list[1]]) && isset(self::$config[$list[0]][$list[1]][$list[2]])) {
 			return true;
-		} else if(!empty($sub) && isset(self::$config[$data]) && isset(self::$config[$data][$sub])) {
+		} else if(isset($list[1]) && !empty($list[1]) && isset(self::$config[$list[0]]) && isset(self::$config[$list[0]][$list[1]])) {
 			return true;
-		} else if(isset(self::$config[$data])) {
+		} else if(isset(self::$config[$list[0]])) {
 			return true;
 		} else {
 			return false;
@@ -107,13 +114,17 @@ final class config {
 		self::$default = $def;
 	}
 
-	final public static function Select($data, $sub = "", $subst = "") {
-		if(!empty($sub) && !empty($subst) && isset(self::$config[$data]) && isset(self::$config[$data][$sub]) && isset(self::$config[$data][$subst])) {
-			return self::$config[$data][$sub][$subst];
-		} else if(!empty($sub) && isset(self::$config[$data]) && isset(self::$config[$data][$sub])) {
-			return self::$config[$data][$sub];
-		} else if(isset(self::$config[$data])) {
-			return self::$config[$data];
+	final public static function Select() {
+		if(func_num_args() == 0 || func_num_args() > 2) {
+			return false;
+		}
+		$list = func_get_args();
+		if(isset($list[1]) && !empty($list[1]) && isset($list[2]) && !empty($list[2]) && isset(self::$config[$list[0]]) && isset(self::$config[$list[0]][$list[1]]) && isset(self::$config[$list[0]][$list[1]][$list[2]])) {
+			return self::$config[$list[0]][$list[1]][$list[2]];
+		} else if(isset($list[1]) && !empty($list[1]) && isset(self::$config[$list[0]]) && isset(self::$config[$list[0]][$list[1]])) {
+			return self::$config[$list[0]][$list[1]];
+		} else if(isset(self::$config[$list[0]])) {
+			return self::$config[$list[0]];
 		} else {
 			return self::$default;
 		}

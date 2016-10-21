@@ -47,7 +47,14 @@ if(file_exists(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX) && file_exists(
 	}
 	require_once(ROOT_PATH."core".DS."media".DS."config.global.".ROOT_EX);
 	if(!defined("IS_INSTALLER") && (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], "install")===false)) {
-		header("Location: install.php");
+		if(isset($_SERVER['PHP_SELF'])) {
+			$link = str_replace(array("index.php", "admincp.php/"), "", $_SERVER['PHP_SELF']);
+		} else {
+			$link = "/";
+		}
+		header("Location: ".(isset($_SERVER['HTTP_HOST']) ? "http://".$_SERVER['HTTP_HOST'] : "").$link."install.php");
+		unset($link);
+		die();
 	}
 }
 

@@ -35,6 +35,7 @@ final class Error {
 		}
 		templates::assign_var("db_time", number_format($arr['db']['time'], 5, '.', ' '));
 		templates::assign_var("db_count", $arr['db']['num']);
+		/* Start File */
 		$size = $lines = 0;
 		templates::assign_var("count_file", sizeof($arr['use_files']));
 		for($i=0;$i<sizeof($arr['use_files']);$i++) {
@@ -44,12 +45,15 @@ final class Error {
 				"line" => $arr['use_files'][$i]['lines'],
 			), "files", "file".$i);
 			$lines += $arr['use_files'][$i]['lines'];
-			$size += $arr['use_files'][$i]['size'];
+			$size += $arr['use_files'][$i]['sizeNum'];
 		}
 		$size = sprintf("%u", $size);
 		$size = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
 		templates::assign_var("total_fileline", $lines);
 		templates::assign_var("total_filesize", $size);
+		/* End File */
+		/* Start Include */
+		$size = $lines = 0;
 		templates::assign_var("count_include", sizeof($arr['included_files']));
 		for($i=0;$i<sizeof($arr['included_files']);$i++) {
 			templates::assign_vars(array(
@@ -58,36 +62,45 @@ final class Error {
 				"line" => $arr['included_files'][$i]['lines'],
 			), "include", "include".$i);
 			$lines += $arr['included_files'][$i]['lines'];
-			$size += $arr['included_files'][$i]['size'];
+			$size += $arr['included_files'][$i]['sizeNum'];
 		}
 		templates::assign_var("total_includeline", $lines);
 		$size = sprintf("%u", $size);
 		$size = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
 		templates::assign_var("total_includesize", $size);
+		/* End Include */
+		/* Start GET */
 		templates::assign_var("count_get", sizeof($_GET));
 		$i = 0;
 		foreach($_GET as $k => $v) {
 			templates::assign_vars(array("key" => $k, "val" => $v), "gets", "get".$i);
 			$i++;
 		}
+		/* End GET */
+		/* Start POST */
 		templates::assign_var("count_post", sizeof($_POST));
 		$i = 0;
 		foreach($_POST as $k => $v) {
 			templates::assign_vars(array("key" => $k, "val" => $v), "posts", "posts".$i);
 			$i++;
 		}
+		/* End POST */
+		/* Start COOKIE */
 		templates::assign_var("count_cookie", sizeof($_COOKIE));
 		$i = 0;
 		foreach($_COOKIE as $k => $v) {
 			templates::assign_vars(array("key" => $k, "val" => $v), "cookies", "cookie".$i);
 			$i++;
 		}
+		/* End COOKIE */
+		/* Start SERVER */
 		templates::assign_var("count_server", sizeof($_SERVER));
 		$i = 0;
 		foreach($_SERVER as $k => $v) {
-			templates::assign_vars(array("key" => $k, "val" => $v), "servers", "server".$i);
+			templates::assign_vars(array("key" => $k, "val" => (is_string($v) ? $v : var_export($v, true))), "servers", "server".$i);
 			$i++;
 		}
+		/* End SERVER */
 		templates::dir_skins("skins");
 		templates::set_skins("");
 		$tpl = templates::complited_assing_vars("debug_panel", null);
@@ -99,11 +112,12 @@ final class Error {
 			$type = DEBUG_MEMORY * DEBUG_TIME * DEBUG_FILES * DEBUG_INCLUDE * DEBUG_DB * DEBUG_TEMPLATE;
 		}
 		$incl_files = $files = $db_querys = $include = array();
-		$memory = $time = $incl_filesize = $filesize = $db_time = $db_num = $tmp = 0;
+		$memory = $memoryNum = $time = $incl_filesize = $filesize = $db_time = $db_num = $tmp = 0;
 		$filesizename = array(" Bytes", " Kb", " Mb", " Gb", " Tb", " Pb", " Eb", " Zb", " Yb");
 		switch($type) {
 			case DEBUG_MEMORY:
 				$size = sprintf("%u", memory_get_peak_usage()-MEMORY_GET);
+				$memoryNum = $size;
 				$memory = $size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes';
 				unset($size, $filesizename, $i);
 			break;
@@ -120,6 +134,7 @@ final class Error {
 						$files[$num]['file'] = $tmp_files[$i]['file'];
 						$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
 						$files[$num]['size'] = filesize($tmp_files[$i]['file']);
+						$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
 						$num++;
 					}
 				}
@@ -133,6 +148,7 @@ final class Error {
 						$include[$num]['file'] = $f;
 						$include[$num]['lines'] = self::FileLine($f);
 						$size = sprintf("%u", filesize($f));
+						$include[$num]['sizeNum'] = filesize($f);
 						$include[$num]['size'] = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
 						$num++;
 					}
@@ -156,6 +172,7 @@ final class Error {
 						$include[$num]['file'] = $f;
 						$include[$num]['lines'] = self::FileLine($f);
 						$size = sprintf("%u", filesize($f));
+						$include[$num]['sizeNum'] = filesize($f);
 						$include[$num]['size'] = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
 						$num++;
 					}
@@ -168,11 +185,13 @@ final class Error {
 						$files[$num]['file'] = $tmp_files[$i]['file'];
 						$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
 						$files[$num]['size'] = filesize($tmp_files[$i]['file']);
+						$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
 						$num++;
 					}
 				}
 				unset($tmp_files, $i);
 				$size = sprintf("%u", memory_get_peak_usage()-MEMORY_GET);
+				$memoryNum = $size;
 				$memory = $size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes';
 				unset($size, $filesizename, $i);
 				global $Timer;
@@ -188,6 +207,7 @@ final class Error {
 						$include[$num]['file'] = $f;
 						$include[$num]['lines'] = self::FileLine($f);
 						$size = sprintf("%u", filesize($f));
+						$include[$num]['sizeNum'] = filesize($f);
 						$include[$num]['size'] = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
 						$num++;
 					}
@@ -199,6 +219,7 @@ final class Error {
 					if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
 						$files[$num]['file'] = $tmp_files[$i]['file'];
 						$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
+						$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
 						$files[$num]['size'] = filesize($tmp_files[$i]['file']);
 						$num++;
 					}
@@ -225,6 +246,7 @@ final class Error {
 						$include[$num]['file'] = $f;
 						$include[$num]['lines'] = self::FileLine($f);
 						$size = sprintf("%u", filesize($f));
+						$include[$num]['sizeNum'] = filesize($f);
 						$include[$num]['size'] = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
 						$num++;
 					}
@@ -236,12 +258,15 @@ final class Error {
 					if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
 						$files[$num]['file'] = $tmp_files[$i]['file'];
 						$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
-						$files[$num]['size'] = filesize($tmp_files[$i]['file']);
+						$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
+						$size = sprintf("%u", filesize($tmp_files[$i]['file']));
+						$files[$num]['size'] = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
 						$num++;
 					}
 				}
 				unset($tmp_files, $i);
 				$size = sprintf("%u", memory_get_peak_usage()-MEMORY_GET);
+				$memoryNum = $size;
 				$memory = $size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes';
 				unset($size, $filesizename, $i);
 				global $Timer;
@@ -249,7 +274,7 @@ final class Error {
 				unset($Timer);
 			break;
 		}
-		$arr = array("memory" => $memory, "time_work" => $time, "included_files" => $include, "use_files" => $files, "work_template" => $tmp, "db" => array("time" => $db_time, "num" => $db_num, "list" => $db_querys));
+		$arr = array("memory" => $memory, "memoryNum" => $memoryNum, "time_work" => $time, "included_files" => $include, "use_files" => $files, "work_template" => $tmp, "db" => array("time" => $db_time, "num" => $db_num, "list" => $db_querys));
 		unset($memory, $time, $incl_filesize, $incl_files, $include, $files, $tmp, $db_time, $db_num, $db_querys);
 		if(!$echo) {
 			return $arr;
@@ -355,7 +380,7 @@ primary key `id`(`id`)
 ) ENGINE=MyISAM;
 */
 
-			if(modules::get_config('logs')==ERROR_FILE) {
+			if(config::Select('logs')==ERROR_FILE) {
 				file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt", json_encode(array("times" => time(), "ip" => HTTP::getip(), "exception_type" => self::FriendlyErrorType($e->getCode()), "message" => self::saves($messagePrefix . $e->getMessage()), "filename" => self::saves($file), "line" => $e->getLine(), "trace_string" => self::saves($e->getTraceAsString()), "request_state" => self::saves(serialize($request), true)))."\n", FILE_APPEND);
 			} else {
 				$db = modules::init_db();

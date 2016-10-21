@@ -19,14 +19,14 @@ function CheckCanGzip() {
 
 // ToDo: Языковую панель на это дело надо вешать!
 function GzipOut($debug = false, $exit = false) {
-global $config, $Timer, $manifest;
+global $config, $Timer, $manifest, $tplTime, $dbTime;
 	if($exit) {
 		session_destroy();
 		return;
 	}
 	$s = "";
-	$tmp = round(templates::$time, 5);
-	$dbs = round(db::$time, 5);
+	$tmp = round($tplTime, 5);
+	$dbs = round($dbTime, 5);
 	if($debug) {
 		$s = "\n<!-- Время выполнения скрипта ".($Timer>0 ? $Timer : 0)." секунд -->\n".
 		"<!-- Время затраченное на компиляцию шаблонов ".($tmp>0 ? $tmp : 0)." секунд -->\n".
@@ -40,7 +40,7 @@ global $config, $Timer, $manifest;
 
 	//@header("Last-Modified: " . date('r', time()) ." GMT");
 
-	if(isset($config['gzip']) && $config['gzip'] != "yes" && isset($manifest['gzip']) && $manifest['gzip'] != true) {
+	if((function_exists("ob_get_length") && ob_get_length()>0) && isset($config['gzip']) && $config['gzip'] != "yes" && isset($manifest['gzip']) && $manifest['gzip'] != true) {
 		if($debug) {
 			echo $s;
 		}
@@ -59,7 +59,7 @@ global $config, $Timer, $manifest;
 		header("Content-Encoding: ".$ENCODING); 
 		$Contents = gzencode($Contents, 9, FORCE_GZIP);
 		echo $Contents;
-		if(isset($config["activeCache"]) && !$config["activeCache"]) {
+		if((function_exists("ob_get_length") && ob_get_length()>0) && (isset($config["activeCache"]) && !$config["activeCache"])) {
 			ob_end_flush();
 		}
 		session_destroy();

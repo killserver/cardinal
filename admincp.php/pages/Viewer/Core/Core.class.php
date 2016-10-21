@@ -89,7 +89,7 @@ class Core {
 				while(($file = $dh->read()) !== false) {
 					if(is_dir($dir.$file) && $parse == 1) {
 						$arrs = $this->ParseDirSkins($dir.$file, 2);
-						if(in_array("main.tpl", $arrs) && in_array("login.tpl", $arrs)) {
+						if(in_array("main.tpl", $arrs)) {
 							$skins[] = $file;
 						}
 					} else if($parse == 2) {

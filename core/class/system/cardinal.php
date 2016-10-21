@@ -32,9 +32,6 @@ final class cardinal {
 		} else {
 			define("IS_BOT", true);
 		}
-		if(isset($_COOKIE['plus18'])) {
-			define("IS_XXX", "true");
-		}
 		$otime = config::Select("cardinal_time");
 		if($otime <= time()-12*60*60) {
 			include_dir(ROOT_PATH."core".DS."modules".DS."cron".DS, ".".ROOT_EX);
@@ -76,14 +73,6 @@ final class cardinal {
 		}
 	}
 	
-	public static function set_eighteen() {
-		if(!isset($_COOKIE['plus18'])) {
-			setcookie("plus18", "1", (time()+(60*24*60*60)), "/", ".".config::Select("default_http_hostname"), false, true);
-		} else {
-			setcookie("plus18", "", (time()-(120*24*60*60)), "/", ".".config::Select("default_http_hostname"), false, true);
-		}
-	}
-	
 	private static function or_create_pass($pass) {
 		$pass = md5(md5($pass).$pass);
 		$pass = strrev($pass);
@@ -106,14 +95,6 @@ final class cardinal {
 		$class = (self::$ch_login['class']);
 		$method = (self::$ch_login['method']);
 		return $class::$method($pass);
-	}
-	
-	public static function get_eighteen() {
-		if(isset($_COOKIE['plus18'])) {
-			return true;
-		} else {
-			return false;
-		}
 	}
 	
 	public static function view_eighteen() {
@@ -150,7 +131,7 @@ final class cardinal {
 		} else {
 			$ref = "";
 		}
-		db::doquery("INSERT INTO hackers SET ip = \"".HTTP::getip()."\", page = \"".urlencode($page)."\", post = \"".urlencode(self::amper($_POST))."\", get = \"".urlencode(self::amper($_GET))."\"".$ref.", activ = \"yes\"");
+		db::doquery("INSERT INTO `hackers` SET `ip` = \"".HTTP::getip()."\", `page` = \"".urlencode($page)."\", `post` = \"".urlencode(self::amper($_POST))."\", `get` = \"".urlencode(self::amper($_GET))."\"".$ref.", `activ` = \"yes\"");
 		location("{C_default_http_host}?hacker");
 	}
 

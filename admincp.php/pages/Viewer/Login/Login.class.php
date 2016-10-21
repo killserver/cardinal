@@ -31,16 +31,16 @@ class Login extends Core {
 		if(isset($_POST['do_login'])) {
 			$check = false;
 			if((isset($_POST['username']) && !empty($_POST['username'])) && (isset($_POST['passwd']) && !empty($_POST['passwd']))) {
-				$given_username = $_POST['username'];
-				$given_password = $_POST['passwd'];
+				$given_username = Arr::get($_POST, 'username', "");
+				$given_password = Arr::get($_POST, 'passwd', "");
 				$is_admin = false;
 				if($given_username=="cardinal" && $given_password=="cardinal") {
 					$check = true;
 					$is_admin = true;
 				} else {
-					$given_username = saves($given_username);
+					$given_username = Saves::SaveOld($given_username);
 					$given_password = cardinal::create_pass($given_password);
-					db::doquery("SELECT id, pass FROM users WHERE username LIKE \"".($given_username)."\" AND admin_pass LIKE \"".($given_password)."\"", true);
+					db::doquery("SELECT `id`, `pass` FROM `users` WHERE `username` LIKE \"".($given_username)."\" AND `admin_pass` LIKE \"".($given_password)."\"", true);
 					$check = (db::num_rows()!=0);
 				}
 			}

@@ -3,13 +3,13 @@
 class Users extends Core {
 	
 	private function Add() {
-		$name = saves($_POST['name'], true);
-		$password = saves($_POST['password'], true);
+		$name = Saves::SaveOld(Arr::get($_POST, 'name'), true);
+		$password = Saves::SaveOld(Arr::get($_POST, 'password'), true);
 		$pass = create_pass($password);
 		define("IS_ADMIN_PASS", true);
 		$admin_pass = create_pass($password);
-		$level = intval($_POST['level']);
-		$email = saves($_POST['email'], true);
+		$level = intval(Arr::get($_POST, 'level', 0));
+		$email = Saves::SaveOld(Arr::get($_POST, 'email'), true);
 		if(isset($_POST['activ']) && $_POST['activ']=="on") {
 			$activ = "yes";
 		} else {
@@ -21,13 +21,13 @@ class Users extends Core {
 	}
 	
 	private function Edit($row, $id) {
-		$name = saves($_POST['name'], true);
-		$password = saves($_POST['password'], true);
+		$name = Saves::SaveOld(Arr::get($_POST, 'name'), true);
+		$password = Saves::SaveOld(Arr::get($_POST, 'password'), true);
 		$pass = create_pass($password);
 		define("IS_ADMIN_PASS", true);
 		$admin_pass = create_pass($password);
-		$level = intval($_POST['level']);
-		$email = saves($_POST['email'], true);
+		$level = intval(Arr::get($_POST, 'level', 0));
+		$email = Saves::SaveOld(Arr::get($_POST, 'email'), true);
 		if(isset($_POST['activ']) && $_POST['activ']=="on") {
 			$activ = "yes";
 		} else {
@@ -83,8 +83,15 @@ class Users extends Core {
 			return;
 		}
 		templates::assign_var("is_edit", "0");
-		templates::assign_var("search_ip", "");
-		db::doquery("SELECT `id`, `username`, `level`, `email`, `activ` FROM `users`", true);
+		$searchIP = "";
+		if(isset($_GET['search'])) {
+			$searchIP = Arr::get($_GET, 'ip', "");
+			if(!Validate::ip($search)) {
+				$searchIP = "";
+			}
+		}
+		templates::assign_var("search_ip", $search);
+		db::doquery("SELECT `id`, `username`, `level`, `email`, `activ` FROM `users`".(!empty($searchIP) ? " WHERE `reg_ip` LIKE \"%".$searchIP."%\" OR `last_ip` LIKE \"%".$searchIP."%\"" : ""), true);
 		while($row = db::fetch_assoc()) {
 			$row['avatar'] = "http://www.gravatar.com/avatar/".md5(strtolower(trim($row['email'])))."?&s=103";
 			templates::assign_vars($row, "users", $row['id']);
