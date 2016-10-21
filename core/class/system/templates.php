@@ -1,83 +1,225 @@
 <?php
 /*
-*
-* Version Engine: 1.25.3
-* Version File: 3
-*
-* 3.0
-* add fix foreach block. before - if given string in foreaching data - viewing error in page
-* 3.0.5
-* add fix lost password in templates and fix old call config
-* 3.1
-* fix userlevel data
-* 3.2
-* fix error in minify for position in page
-*
+ *
+ * @version 4.0a
+ * @copyright 2014-2016 KilleR for Cardinal Engine
+ *
+ * Version Engine: 4.0a
+ * Version File: 4
+ *
+ * 3.0
+ * add fix foreach block. before - if given string in foreaching data - viewing error in page
+ * 3.0.5
+ * add fix lost password in templates and fix old call config
+ * 3.1
+ * fix userlevel data
+ * 3.2
+ * fix error in minify for position in page
+ * 3.3
+ * add and fix header list for pages
+ * 3.4
+ * add support preg_replace_callback_array function in php 7
+ * 3.5
+ * fix title in error
+ * 3.6
+ * add support routification
+ * clean and boost code
+ * 4.0
+ * first doc-file on engine, comment all method and variable
+ * add support include template as php file[BETA-TEST]
+ * add support special code for use variable as data for php file
+ * 4.1
+ * add support get params in routification
+ * 4.2
+ * rebuild get config in templates, rebuild logic parse templates and safe mode in php format
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
 die();
 }
 
+/**
+ * Class templates
+ */
 final class templates {
 
+	/**
+	 * @var array
+     */
 	public static $blocks = array();
+	/**
+	 * @var array
+     */
 	private static $foreach = array("count" => 0, "all" => array());
+	/**
+	 * @var array
+     */
 	private static $module = array("head" => array(), "body" => array(), "blocks" => array(), "menu" => array());
+	/**
+	 * @var array
+     */
 	private static $editor = array();
-	private static $header;
+	/**
+	 * @var array
+     */
+	private static $header = array();
+	/**
+	 * @var string
+     */
 	private static $tmp = "";
-	private static $skins = "";
+	/**
+	 * @var bool|string
+     */
+	private static $skins = "main";
+	/**
+	 * @var string
+     */
 	private static $dir_skins = "skins";
+	/**
+	 * @var bool
+     */
 	public static $gzip = true;
-	public static $gzip_activ = false;
+	/**
+	 * @var bool
+     */
+	public static $gzipActive = false;
+	/**
+	 * @var int
+     */
 	public static $time = 0;
 
-	public function __construct() {
-		if(!modules::get_config('gzip_output')) {
-			self::$gzip = modules::get_config('gzip_output');
+	/**
+	 * templates constructor.
+	 * @param array $config Configuration template
+     */
+	public function __construct($config = array()) {
+		if(isset($config['gzip_output']) && !$config['gzip_output']) {
+			self::$gzip = $config['gzip_output'];
 		}
-		self::$skins = modules::get_config('skins', 'skins');
-		$test_shab = modules::get_config('skins', 'test_shab');
-		if(!empty($test_shab) && in_array(HTTP::getip(), modules::get_config('ip_test_shab'))) {
-			self::$skins = $test_shab;
+		if(isset($config['skins_skins'])) {
+			self::$skins = $config['skins_skins'];
 		}
-		if(defined("MOBILE") && MOBILE && modules::get_config('skins', 'mobile')) {
-			self::$skins = modules::get_config('skins', 'mobile');
+		if(isset($config["skins_test_shab"]) && !empty($test_shab)) {
+			self::$skins = $config["skins_test_shab"];
+		}
+		if(defined("MOBILE") && MOBILE && isset($config['skins_mobile'])) {
+			self::$skins = $config['skins_mobile'];
 		}
 	}
 
-	public function __call($name,array $params) {
+	/**
+	 *  Reset config template
+	 * @access public
+	 * @param array $config Array configuration template
+     */
+	public static function SetConfig($config) {
+		if(isset($config['gzip_output']) && !$config['gzip_output']) {
+			self::$gzip = $config['gzip_output'];
+		}
+		if(isset($config['skins_skins'])) {
+			self::$skins = $config['skins_skins'];
+		}
+		if(isset($config["skins_test_shab"]) && !empty($test_shab)) {
+			self::$skins = $config["skins_test_shab"];
+		}
+		if(defined("MOBILE") && MOBILE && isset($config['skins_mobile'])) {
+			self::$skins = $config['skins_mobile'];
+		}
+	}
+
+	/**
+	 * Safe template from clone
+	 * @access private
+	 * @return bool Block clone this class
+	 */
+	private function __clone() {
+		return false;
+	}
+
+	/**
+	 * Call function as object method
+	 * @access public
+	 * @param string $name Name method for static call
+	 * @param array $params Params for static call
+	 * @return mixed Result work static method
+     */
+	public function __call($name, array $params) {
 		$new = __METHOD__;
 		return self::$new($name, $params);
 	}
 
-	public static function __callStatic($name,array $params) {
+	/**
+	 * Call function as static method
+	 * @access public
+	 * @param string $name Name method for static call
+	 * @param array $params Params for static call
+	 * @return mixed Result work static method
+     */
+	public static function __callStatic($name, array $params) {
 		$new = __METHOD__;
 		return self::$new($name, $params);
 	}
 
-	public static function dir_skins($skin = null) {
+	/**
+	 * Call another function
+	 * @access public
+	 * @param string $func Name function for call
+	 * @param array $args Params for calling
+	 * @return mixed Result work function
+     */
+	public static function __callBack($func, array $args) {
+		return call_user_func_array($func, $args);
+	}
+
+	/**
+	 * If skin setting - reset default directory skin or return default
+	 * @access public
+	 * @param string $skin Directory skin name
+	 * @return string default or set directory skin
+     */
+	public static function dir_skins($skin = "") {
 		if(!empty($skin)) {
 			self::$dir_skins = $skin;
-		} else {
-			return self::$dir_skins;
 		}
+		return self::$dir_skins;
 	}
 
+	/**
+	 * Set skin
+	 * @access public
+	 * @param string $skin Skin
+     */
 	public static function set_skins($skin) {
 		self::$skins = $skin;
 	}
 
+	/**
+	 * Get skin
+	 * @access public
+	 * @return bool|string Skin
+     */
 	public static function get_skins() {
 		return self::$skins;
 	}
 
+	/**
+	 * Return UNIX-time with microseconds
+	 * @access private
+	 * @return mixed time with microseconds
+     */
 	private static function time() {
 		return microtime();
 	}
 
-	public static function assign_vars($array, $block = null, $view = null) {
+	/**
+	 * Set array datas for template
+	 * @access public
+	 * @param array $array Array data for template
+	 * @param string $block Block data for cycle
+	 * @param string $view Unique id for block data
+     */
+	public static function assign_vars($array, $block = "", $view = "") {
 		if(empty($block)) {
 			foreach($array as $name => $value) {
 				self::$blocks[$name] = $value;
@@ -93,7 +235,14 @@ final class templates {
 		}
 	}
 
-	public static function assign_var($name, $value, $block = null) {
+	/**
+	 * Set data for template
+	 * @access public
+	 * @param string $name Name data for template
+	 * @param string $value Value data for template
+	 * @param string $block Block data for create array
+     */
+	public static function assign_var($name, $value, $block = "") {
 		if(empty($block)) {
 			self::$blocks[$name] = $value;
 		} else {
@@ -101,7 +250,14 @@ final class templates {
 		}
 	}
 
-	public static function set_menu($name, $html = null, $block = null) {
+	/**
+	 * Set datas for menu
+	 * @access public
+	 * @param string $name Name menu on template
+	 * @param string $html HTML-code for template
+	 * @param string $block Block menu
+     */
+	public static function set_menu($name, $html = "", $block = "") {
 		if(empty($block)) {
 			self::$module['menu'][$name] = $html;
 		} else {
@@ -109,15 +265,31 @@ final class templates {
 		}
 	}
 
+	/**
+	 * Get menu datas
+	 * @access public
+	 * @param string $name Name menu
+	 * @param string $block Block menu
+	 * @return mixed Return data on menu
+     */
 	public static function select_menu($name, $block) {
-		if(isset(self::$module['menu'][$name][$block])) {
+		if(isset(self::$module['menu'][$name][$block]) && is_array(self::$module['menu'][$name][$block]) && isset(self::$module['menu'][$name][$block]['value'])) {
 			return self::$module['menu'][$name][$block]['value'];
 		} else {
 			return false;
 		}
 	}
 
+	/**
+	 * Add insert in before and after head or body
+	 * @access public
+	 * @param string $data Data for insert in template
+	 * @param array $where Conditions for insert
+     */
 	public static function add_modules($data, $where) {
+		if(!is_string($where)) {
+			$where = (string)($where);
+		}
 		$where = explode("|", $where);
 		if($where[0]=="head") {
 			if(empty(self::$module['head'][$where[1]])) {
@@ -134,9 +306,31 @@ final class templates {
 		}
 	}
 
+	/**
+	 * Method return result work preg_replace for php 7 and old
+	 * @access private
+	 * @param string $pattern Template for Regular aspect
+	 * @param mixed $func Called function after work
+	 * @param string $data Original data
+	 * @return array|mixed|NUll Return data after replace
+     */
+	private static function callback_array($pattern, $func, $data) {
+		if(function_exists("preg_replace_callback_array")) {
+			return preg_replace_callback_array(array($pattern => $func), $data);
+		} else {
+			return preg_replace_callback($pattern, $func, $data);
+		}
+	}
+
+	/**
+	 * Replace data in template
+	 * @access private
+	 * @param array $array Array data
+	 * @return string|void Return result replacing
+     */
 	private static function foreachs($array) {
 		if(!isset(self::$blocks[$array[1]])) {
-			return;
+			return false;
 		}
 		$data = self::$blocks[$array[1]];
 		$key = array_keys($data);
@@ -164,12 +358,12 @@ final class templates {
 				$dd = str_replace('{'.$array[1].'.'.$nams[$is].'}', $vals[$is], $new);
 			}
 			$dd = str_replace('{$size_for}', $all+1, $dd);
-			$dd = preg_replace_callback("#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $dd);
-			$dd = preg_replace_callback("#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $dd);
-			$dd = preg_replace_callback('#\[foreachif (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/foreachif \\1\]#i', ("templates::is"), $dd);
-			$dd = preg_replace_callback('#\[foreachif (.*?)\]([\s\S]*?)\[/foreachif \\1\]#i', ("templates::is"), $dd);
-			$dd = preg_replace_callback("#\\[foreachif (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/foreachif\\]#i", ("templates::is"), $dd);
-			$dd = preg_replace_callback("#\\[foreachif (.*?)\\]([\s\S]*?)\\[/foreachif\\]#i", ("templates::is"), $dd);
+			$dd = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $dd);
+			$dd = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $dd);
+			$dd = self::callback_array('#\[foreachif (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/foreachif \\1\]#i', ("templates::is"), $dd);
+			$dd = self::callback_array('#\[foreachif (.*?)\]([\s\S]*?)\[/foreachif \\1\]#i', ("templates::is"), $dd);
+			$dd = self::callback_array("#\\[foreachif (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/foreachif\\]#i", ("templates::is"), $dd);
+			$dd = self::callback_array("#\\[foreachif (.*?)\\]([\s\S]*?)\\[/foreachif\\]#i", ("templates::is"), $dd);
 			$num++;
 			$rnum--;
 			$tt .= str_replace('\n', "\n", $dd);
@@ -177,6 +371,12 @@ final class templates {
 	return $tt;
 	}
 
+	/**
+	 * Get save data about user
+	 * @access private
+	 * @param array $array Array data about user
+	 * @return bool|string Result get information about user
+     */
 	private static function user($array) {
 		if(isset($array[2])) {
 			$mod = modules::get_user(array($array[1], $array[2]));
@@ -192,28 +392,121 @@ final class templates {
 			return $array[0];
 		}
 	}
-	
-	private static function systems($array) {
-		$return = $array[0];
-		switch($array[1]) {
-			case "rand":
-				$return = mt_rand(1, mt_getrandmax());
-			break;
-			case "time":
-				$return = time();
-			break;
-			default:
-			$return = $array[0];
-			break;
+
+	/**
+	 * Return isset parameter in routification
+	 * @access private
+	 * @param array $arr Array gets params
+	 * @return mixed Return data in routification or original line
+     */
+	private static function routeparam($arr) {
+		$list = Route::param();
+		if(isset($arr[1]) && !empty($arr[1]) && isset($list[$arr[1]])) {
+			return $list[$arr[1]];
+		} else {
+			return $arr[0];
 		}
-		return $return;
 	}
 
+	/**
+	 * Get routification link
+	 * @access private
+	 * @param array $array Params for routification
+	 * @return mixed Return routification link or original line
+     */
+	private static function route($array) {
+		if(isset($array[1]) && isset($array[2])) {
+			$route = Route::get($array[1]);
+			if(!is_bool($route)) {
+				$params = array();
+				$array = explode(";", $array[2]);
+				for($i=0;$i<sizeof($array);$i++) {
+					$exp = explode("=", $array[$i]);
+					if(isset($exp[1])) {
+						$val = $exp[1];
+					} else {
+						$val = "";
+					}
+					if(isset($exp[0])) {
+						$params[$exp[0]] = $val;
+					} else {
+						$params[] = $val;
+					}
+				}
+				unset($val, $exp, $array);
+				return $route->uri($params);
+			} else {
+				return $array[0];
+			}
+		} else {
+			return $array[0];
+		}
+	}
+
+	/**
+	 * Get system data
+	 * @access private
+	 * @param array $array Data for getting
+	 * @return int|mixed Return safe data system function or original line
+     */
+	private static function systems($array) {
+		switch($array[1]) {
+			case "rand":
+				$ret = self::mrand();
+			break;
+			case "time":
+				$ret = time();
+			break;
+			default:
+				$ret = $array[0];
+			break;
+		}
+		return $ret;
+	}
+
+	/**
+	 * Get random numeric
+	 * @access private
+	 * @param int $min Minimal integer for random numeric
+	 * @param int $max Maximal integer for random numeric
+	 * @return int Return random numeric
+     */
+	private static function mrand($min = 0, $max = 0) {
+		if($min==0 && $max==0) {
+			if(function_exists("random_int") && defined("PHP_INT_MIN")) {
+				$min = PHP_INT_MIN;
+			}
+			if(function_exists("random_int") && defined("PHP_INT_MAX")) {
+				$max = PHP_INT_MAX;
+			} else {
+				if(function_exists("mt_rand")) {
+					$max = mt_getrandmax();
+				} else {
+					$max = getrandmax();
+				}
+			}
+		}
+		if(function_exists("random_int")) {
+			return random_int($min, $max);
+		}
+		if(function_exists("mt_rand")) {
+			return mt_rand($min, $max);
+		} else {
+			return rand($min, $max);
+		}
+	}
+
+	/**
+	 * Get config data
+	 * @access private
+	 * @param array $array Params for get config
+	 * @return bool Return data in config or original line
+     */
 	private static function config($array) {
 		if(isset($array[2])) {
-			$isset = modules::get_config($array[1], $array[2]);
+			$isset = config::Select($array[1], $array[2]);
 		} else {
-			$isset = modules::get_config($array[1]);
+			$isset = config::Select($array[1]);
 		}
 		if(!empty($isset)) {
 			return $isset;
@@ -222,6 +515,12 @@ final class templates {
 		}
 	}
 
+	/**
+	 * Get language data
+	 * @access private
+	 * @param array $array Params for get language
+	 * @return bool Return data in language or original line
+     */
 	private static function lang($array) {
 		if(isset($array[2])) {
 			$isset = modules::get_lang($array[1], $array[2]);
@@ -235,6 +534,13 @@ final class templates {
 		}
 	}
 
+	/**
+	 * Line replaced on params
+	 * @access private
+	 * @param string $text Original line
+	 * @param array $arr Array data for replacing
+	 * @return string Return replaced string
+     */
 	private static function sprintf($text, $arr=array()) {
 		for($i=0;$i<sizeof($arr); $i++) {
 			$text = str_replace("%s[".($i+1)."]", $arr[$i], $text);
@@ -242,6 +548,12 @@ final class templates {
 		return $text;
 	}
 
+	/**
+	 * Review language data
+	 * @access private
+	 * @param array $array Datas language and he's parameters
+	 * @return string Return reviewed language data or original line
+     */
 	private static function slangf($array) {
 		if(isset($array[3])) {
 			$decode = $array[3];
@@ -262,6 +574,12 @@ final class templates {
 		}
 	}
 
+	/**
+	 * Get constant
+	 * @access private
+	 * @param array $array Get constant
+	 * @return string Return data in constant or original line
+     */
 	private static function define($array) {
 		if(defined($array[1])) {
 			return constant($array[1]);
@@ -270,6 +588,12 @@ final class templates {
 		}
 	}
 
+	/**
+	 * Rebuild DateTime with and without start time
+	 * @access private
+	 * @param array $data Array data for rebuild view time
+	 * @return bool|string Return DateTime to template
+     */
 	private static function sys_date($data) {
 		if(is_array($data)) {
 			if(empty($data[2])) {
@@ -286,21 +610,173 @@ final class templates {
 		return "";
 	}
 
-	private static function ecomp($tmp) {
-		$tmp = preg_replace_callback("#\{include templates=['\"](.*?)['\"]\}#", ("templates::include_tpl"), $tmp);
-		$tmp = preg_replace_callback("#\{include module=['\"](.*?)['\"]\}#", ("templates::include_module"), $tmp);
+	/**
+	 * Include created php-file template
+	 * @access private
+	 * @param string $tpl Rebuild template
+	 * @param string $file Execute template file
+	 * @return bool|string Return result including file
+     */
+	private static function ParseTemp($tpl, $file) {
+		$del = false;
+		if($file==self::$dir_skins.DS.self::$skins.DS."null") {
+			$del = true;
+		}
+		$file = str_replace(array("/", DS, "-", ".."), array("-", "_", "_", "_"), $file);
+		$file = ROOT_PATH."core".DS."cache".DS."tmp".DS.$file.".".md5($file).".".ROOT_EX;
+		$tpl = self::minify($tpl, true);
+		if(!file_exists($file)) {
+			file_put_contents($file, '<?php if(!defined("IS_CORE")) { echo "403 ERROR"; die(); } ?>'.$tpl);
+		}
+		if(file_exists($file)) {
+			ob_start();
+			$data = self::$blocks;
+			require($file);
+			$file_content = ob_get_clean();
+		} else {
+			return false;
+		}
+		if($del && file_exists($file)) {
+			unlink($file);
+		}
+		return $file_content;
+	}
+
+	/**
+	 * Re-Rebuild back in template
+	 * @access private
+	 * @param string $tpl Rebuild line
+	 * @return mixed Return re-rebuilding
+     */
+	private static function RebuildOffPhp($tpl) {
+		$tpl = preg_replace("#<!-- FOREACH (.+?) -->#", '[foreach block=\\1]', $tpl);
+		$tpl = preg_replace("#<!-- ENDFOREACH (.+?) -->#", '[/foreach]', $tpl);
+		$tpl = preg_replace("#<!-- ENDFOREACH -->#", '[/foreach]', $tpl);
+		$tpl = preg_replace("#<!-- IF (.+?) -->#", "[if \\1]", $tpl);
+		$tpl = preg_replace("#<!-- ELSE -->#", "[else]", $tpl);
+		$tpl = preg_replace("#<!-- ELSEIF (.+?) -->#", "[else \\1]", $tpl);
+		$tpl = preg_replace("#<!-- ENDIF -->#", "[/if]", $tpl);
+		
+		$tpl = preg_replace("#\{% L_sprintf\(([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\],(.*?)\) %\}#", '{L_sprintf(\\1[\\2],\\3)}', $tpl);
+		$tpl = preg_replace("#\{% L_sprintf\(([a-zA-Z0-9\-_]+),(.*?)\) %\}#", '{L_sprintf(\\1,\\2)}', $tpl);
+		$tpl = preg_replace("#\{% L_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", '{L_\\1[\\2]}', $tpl);
+		$tpl = preg_replace("#\{% L_([a-zA-Z0-9\-_]+) %\}#", '{L_\\1}', $tpl);
+		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", '{C_\\1[\\2]}', $tpl);
+		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+) %\}#", '{C_\\1}', $tpl);
+		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", '{U_\\1[\\2]}', $tpl);
+		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+) %\}#", '{U_\\1}', $tpl);
+		$tpl = preg_replace("#\{% D_([a-zA-Z0-9\-_]+) %\}#", '{D_\\1}', $tpl);
+		$tpl = preg_replace("#\{% R_\[(.+?)\]\[(.+?)\] %\}#", '{R_[\\1][\\2]}', $tpl);
+		$tpl = preg_replace("#\{\$ R_\[(.+?)\]\[(.+?)\] \$\}#", '{R_[\\1][\\2]}', $tpl);
+		$tpl = preg_replace("#\{% RP\[(.+?)\] %\}#", '{RP[\\1]}', $tpl);
+		
+		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) %\}#is", '{\\1.\\2}', $tpl);
+		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+) %\}#is", '{\\1}', $tpl);
+		
+		
+		$tpl = preg_replace("#\{\# ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) \#\}#is", '{\\1.\\2}', $tpl);
+		$tpl = preg_replace("#\{\# ([a-zA-Z0-9\-_]+) \#\}#is", '{\\1}', $tpl);
+		return $tpl;
+	}
+
+	/**
+	 * Rebuild template in php-file
+	 * @access private
+	 * @param string $tpl Original template
+	 * @param string $file Execute file template
+	 * @return mixed Result rebuild and including file
+     */
+	private static function ParsePHP($tpl, $file = "") {
+		if(!config::Select("ParsePHP")) {
+			return self::RebuildOffPhp($tpl);
+		}
+		if(empty($file) || !file_exists(ROOT_PATH."core".DS."cache".DS."tmp".DS) || !is_dir(ROOT_PATH."core".DS."cache".DS."tmp".DS) || !is_writable(ROOT_PATH."core".DS."cache".DS."tmp".DS)) {
+			return $tpl;
+		}
+		if(strpos($tpl, "<?xml")===false) {
+			$safe = array(
+				"<?php" => "&lt;?php",
+				"<?" => "&lt;?",
+				"?>" => "?&gt;",
+			);
+			$tpl = str_replace(array_keys($safe), array_values($safe), $tpl);
+		} else {
+			$safe = array(
+				"<?xml" => '<?php echo \'<?xml\'; ?>',
+			);
+			$tpl = str_replace(array_keys($safe), array_values($safe), $tpl);
+		}
+		$tpl = preg_replace("#<!-- FOREACH (.+?) -->#", '<?php if(isset($data[\'\\1\']) && is_array($data[\'\\1\']) && sizeof($data[\'\\1\'])>0) { foreach($data[\'\\1\'] as $\\1) { ?>', $tpl);
+		$tpl = preg_replace("#<!-- ENDFOREACH (.+?) -->#", '<?php } } ?>', $tpl);
+		$tpl = preg_replace("#<!-- ENDFOREACH -->#", '<?php } } ?>', $tpl);
+		$tpl = preg_replace("#<!-- IF (.+?) -->#", "<?php if(\\1) { ?>", $tpl);
+		$tpl = preg_replace("#<!-- ELSE -->#", "<?php } else { ?>", $tpl);
+		$tpl = preg_replace("#<!-- ELSEIF (.+?) -->#", "<?php } elseif(\\1) { ?>", $tpl);
+		$tpl = preg_replace("#<!-- ENDIF -->#", "<?php } ?>", $tpl);
+		
+		$tpl = preg_replace("#\{% L_sprintf\(([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\],(.*?)\) %\}#", 'templates::slangf(array(null, \'\\1\', \'\\2\'))', $tpl);
+		$tpl = preg_replace("#\{% L_sprintf\(([a-zA-Z0-9\-_]+),(.*?)\) %\}#", 'templates::slangf(array(null, \'\\1\'))', $tpl);
+		$tpl = preg_replace("#\{% L_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", 'templates::lang(array(null, \'\\1\', \'\\2\'))', $tpl);
+		$tpl = preg_replace("#\{% L_([a-zA-Z0-9\-_]+) %\}#", 'templates::lang(array(null, \'\\1\'))', $tpl);
+		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", 'config::Select(\'\\1\', \'\\2\')', $tpl);
+		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+) %\}#", 'config::Select(\'\\1\')', $tpl);
+		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", 'templates::user(array(null, \'\\1\', \'\\2\'))', $tpl);
+		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+) %\}#", 'templates::user(array(null, \'\\1\'))', $tpl);
+		$tpl = preg_replace("#\{% D_([a-zA-Z0-9\-_]+) %\}#", 'templates::define(array(null, \'\\1\'))', $tpl);
+		$tpl = preg_replace("#\{% R_\[(.+?)\]\[(.+?)\] %\}#", 'templates::route(array(null, "\\1", "\\2"))', $tpl);
+		$tpl = preg_replace("#\{% RP\[(.+?)\] %\}#", 'templates::routeparam(array(null, \'\\1\'))', $tpl);
+		
+		$tpl = preg_replace("#\{\@ ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) \@\}#is", '(isset($\\1[\'\\2\']) ? $\\1[\'\\2\'] : \'\')', $tpl);
+		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) %\}#is", '$\\1[\'\\2\']', $tpl);
+		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+) %\}#is", '$data[\'\\1\']', $tpl);
+		
+		$tpl = preg_replace("#\{L_sprintf\(([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", '<?php echo templates::slangf(array(null, \'\\1\', \'\\2\')); ?>', $tpl);
+		$tpl = preg_replace("#\{L_sprintf\(([a-zA-Z0-9\-_]+),(.*?)\)\}#", '<?php echo templates::slangf(array(null, \'\\1\')); ?>', $tpl);
+		$tpl = preg_replace("#\{L_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", '<?php echo templates::lang(array(null, \'\\1\', \'\\2\')); ?>', $tpl);
+		$tpl = preg_replace("#\{L_([a-zA-Z0-9\-_]+)\}#", '<?php echo templates::lang(array(null, \'\\1\')); ?>', $tpl);
+		$tpl = preg_replace("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", '<?php echo config::Select(\'\\1\', \'\\2\'); ?>', $tpl);
+		$tpl = preg_replace("#\{C_([a-zA-Z0-9\-_]+)\}#", '<?php echo config::Select(\'\\1\'); ?>', $tpl);
+		$tpl = preg_replace("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", '<?php echo templates::user(array(null, \'\\1\', \'\\2\')); ?>', $tpl);
+		$tpl = preg_replace("#\{U_([a-zA-Z0-9\-_]+)\}#", '<?php echo templates::user(array(null, \'\\1\')); ?>', $tpl);
+		$tpl = preg_replace("#\{D_([a-zA-Z0-9\-_]+)\}#", '<?php echo templates::define(array(null, \'\\1\')); ?>', $tpl);
+		$tpl = preg_replace("#\{R_\[(.+?)\]\[(.+?)\]\}#", '<?php echo templates::route(array(null, "\\1", "\\2")); ?>', $tpl);
+		$tpl = preg_replace("#\{\@ R_\[(.+?)\]\[(.+?)\] \@\}#", '<?php echo templates::route(array(null, \'\\1\', \\2)); ?>', $tpl);
+		$tpl = preg_replace("#\{RP\[(.+?)\]\}#", '<?php echo templates::routeparam(array(null, \'\\1\')); ?>', $tpl);
+		
+		$tpl = preg_replace("#\{\# ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) \#\}#is", '<?php echo (isset($\\1[\'\\2\']) ? $\\1[\'\\2\'] : \'{\\1.\\2}\'); ?>', $tpl);
+		$tpl = preg_replace("#\{\# ([a-zA-Z0-9\-_]+) \#\}#is", '<?php echo (isset($data[\'\\1\']) ? $data[\'\\1\'] : \'{\\1}\'); ?>', $tpl);
+		$tpl = self::ParseTemp($tpl, $file);
+		return $tpl;
+	}
+
+	/**
+	 * "Last" compiling template before he view
+	 * @access private
+	 * @param string $tmp Template for last rebuild
+	 * @param string $file Execute file
+	 * @return array|mixed|NUll|string Result rebuild
+     */
+	private static function ecomp($tmp, $file = "") {
+		if(strpos($tmp, "///***")!==false&&strpos($tmp, "***///")!==false) {
+			$tmp = nsubstr($tmp, 0, nstrpos($tmp, "///***")).nsubstr($tmp, nstrpos($tmp, "***///")+6, nstrlen($tmp));
+		}
+		$tmp = self::ParsePHP($tmp, $file);
+		$tmp = self::callback_array("#\{include (.+?)=['\"](.*?)['\"]\}#", ("templates::includeFile"), $tmp);
 		$tmp = preg_replace("~\{\#is_last\[(\"|)(.*?)(\"|)\]\}~", "\\1", $tmp);
-		$tmp = preg_replace_callback("#\\[(not-group)=(.+?)\\](.+?)\\[/not-group\\]#is", ("templates::group"), $tmp);
-		$tmp = preg_replace_callback("#\\[(group)=(.+?)\\](.+?)\\[/group\\]#is", ("templates::group"), $tmp);
-		$tmp = preg_replace_callback("#\{L_sprintf\(([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = preg_replace_callback("#\{L_sprintf\(([a-zA-Z0-9\-_]+),(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = preg_replace_callback("#\{L_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
-		$tmp = preg_replace_callback("#\{L_([a-zA-Z0-9\-_]+)\}#", ("templates::lang"), $tmp);
-		$tmp = preg_replace_callback("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tmp);
-		$tmp = preg_replace_callback("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tmp);
-		$tmp = preg_replace_callback("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tmp);
-		$tmp = preg_replace_callback("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tmp);
-		$tmp = preg_replace_callback("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tmp);
+		$tmp = self::callback_array("#\\[(not-group)=(.+?)\\](.+?)\\[/not-group\\]#is", ("templates::group"), $tmp);
+		$tmp = self::callback_array("#\\[(group)=(.+?)\\](.+?)\\[/group\\]#is", ("templates::group"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\(([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\(([a-zA-Z0-9\-_]+),(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{L_([a-zA-Z0-9\-_]+)\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{LP_\[(.*?)\]\[(.*?)\](|\[(.*?)\])\}#", ("plural_form"), $tmp);
+		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tmp);
+		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tmp);
+		$tmp = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tmp);
+		$tmp = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tmp);
+		$tmp = self::callback_array("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tmp);
+		$tmp = self::callback_array("#\{R_\[(.+?)\]\[(.+?)\]\}#", ("templates::route"), $tmp);
+		$tmp = self::callback_array("#\{RP\[(.+?)\]\}#", ("templates::routeparam"), $tmp);
 		$tmp = str_replace("{reg_link}", config::Select('link', 'reg'), $tmp);
 		$tmp = str_replace("{login_link}", config::Select('link', 'login'), $tmp);
 		$tmp = str_replace("{logout-link}", config::Select('link', 'logout'), $tmp);
@@ -308,21 +784,35 @@ final class templates {
 		$tmp = str_replace("{login}", modules::get_user('username'), $tmp);
 		$tmp = str_replace("{addnews-link}", config::Select('link', 'add'), $tmp);
 		$tmp = str_replace("{lostpassword-link}", config::Select('link', 'recover'), $tmp);
-		$tmp = preg_replace_callback("#\{UL_(.*?)\[(.*?)\]\}#", ("templates::level"), $tmp);
+		$tmp = self::callback_array("#\{UL_(.*?)\[(.*?)\]\}#", ("templates::level"), $tmp);
 		
-		$tmp = preg_replace_callback('#\[page=(.*?)\]([^[]*)\[/page\]#i', ("templates::nowpage"), $tmp);
-		$tmp = preg_replace_callback('#\[not-page=(.*?)\]([^[]*)\[/not-page\]#i', ("templates::npage"), $tmp);
+		$tmp = self::callback_array('#\[page=(.*?)\]([^[]*)\[/page\]#i', ("templates::nowpage"), $tmp);
+		$tmp = self::callback_array('#\[not-page=(.*?)\]([^[]*)\[/not-page\]#i', ("templates::npage"), $tmp);
 		
-		$tmp = preg_replace_callback('#\[if (.+?)\](.*?)\[else \\1\](.*?)\[/if \\1\]#i', ("templates::is"), $tmp);
-		$tmp = preg_replace_callback('~\[if (.+?)\]([^[]*)\[/if \\1\]~iU', ("templates::is"), $tmp);
+		$tmp = self::callback_array('#\[if (.+?)\](.*?)\[else \\1\](.*?)\[/if \\1\]#i', ("templates::is"), $tmp);
+		while(preg_match('~\[if (.+?)\]([^[]*)\[/if \\1\]~iU', $tmp)) {
+			$tmp = self::callback_array('~\[if (.+?)\]([^[]*)\[/if \\1\]~iU', ("templates::is"), $tmp);
+		}
 		
-		$tmp = preg_replace_callback("#\\[if (.+?)\\](.*?)\\[else\\](.*?)\\[/if\\]#i", ("templates::is"), $tmp);
-		$tmp = preg_replace_callback('~\[if (.+?)\]([^[]*)\[/if\]~iU', ("templates::is"), $tmp);
-		$tmp = preg_replace_callback("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tmp);
-		$tmp = preg_replace_callback("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tmp);
+		$tmp = self::callback_array("#\\[if (.+?)\\](.*?)\\[else\\](.*?)\\[/if\\]#i", ("templates::is"), $tmp);
+		$tmp = self::callback_array('~\[if (.+?)\]([^[]*)\[/if\]~iU', ("templates::is"), $tmp);
+		while(preg_match('~\[if (.+?)\]([^[]*)\[/if\]~iU', $tmp)) {
+			$tmp = self::callback_array('~\[if (.+?)\]([^[]*)\[/if\]~iU', ("templates::is"), $tmp);
+		}
+		$tmp = self::callback_array("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tmp);
+		if(preg_match("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true)\}#", $tmp)) {
+			$tmp = self::callback_array("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true)\}#", "langdate", $tmp);
+		}
+		$tmp = self::callback_array("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tmp);
 		return $tmp;
 	}
 
+	/**
+	 * View part template if group user more than
+	 * @access private
+	 * @param array $array Group and template
+	 * @return string Result checking
+     */
 	private static function group($array) {
 		$level = modules::get_user('level');
 		if($level==0) {
@@ -343,6 +833,12 @@ final class templates {
 	return $block;
 	}
 
+	/**
+	 * View part template if use ajax
+	 * @access public
+	 * @param array $array Params checking
+	 * @return string Result view
+     */
 	public static function ajax($array) {
 		if(strpos($array[0], "!ajax") !== false) {
 			if((isset($_GET['tajax']) && isset($_GET['jajax'])) || getenv('HTTP_X_REQUESTED_WITH') != 'XMLHttpRequest') {
@@ -359,6 +855,12 @@ final class templates {
 		}
 	}
 
+	/**
+	 * View part template if use GET-param "jajax"
+	 * @access private
+	 * @param array $array Array data
+	 * @return string Result review
+     */
 	private static function ajax_click($array) {
 		if(strpos($array[0], "!ajax_click") !== false) {
 			if(!isset($_GET['tajax']) && !isset($_GET['jajax'])) {
@@ -375,6 +877,12 @@ final class templates {
 		}
 	}
 
+	/**
+	 * Get utensils user to group and hath access to part template
+	 * @access private
+	 * @param array $array Array data
+	 * @return string Return "true" or "false"
+     */
 	private static function level($array) {
 		$ret = "false";
 		$data = "true";
@@ -382,6 +890,13 @@ final class templates {
 		return userlevel::check($array[1], $array[2]);
 	}
 
+	/**
+	 * IF
+	 * @access private
+	 * @param array $array Array data
+	 * @param bool|false $elseif Check elseif or not
+	 * @return array|bool|string Return result conditions
+     */
 	private static function is($array, $elseif=false) {
 		$else=false;
 		$good = true;
@@ -401,6 +916,7 @@ final class templates {
 		} else {
 			$data = true;
 		}
+		$e = array();
 		if(strpos($array[1], "UL") !== false) {
 			$type = "true";
 		} elseif(strpos($array[1], "!ajax") !== false) {
@@ -447,7 +963,7 @@ final class templates {
 			$e = preg_replace("/empty(.+?)/", "$1", $array[1]);
 			$e = str_replace(array("(", ")"), "", $e);
 		}
-		if(!isset($type)) return;
+		if(!isset($type)) return false;
 		if($type == "UL") {
 			$e = str_replace("\"", "", $e);
 			if(($e=="true" || $else) && $good) {
@@ -580,21 +1096,39 @@ final class templates {
 				return "";
 			}
 		}
+		return "";
 	}
 
+	/**
+	 * Reset count element in array
+	 * @access private
+	 * @param array $array Count elements in array
+     */
 	private static function foreach_set($array) {
 		self::$foreach = array_merge(self::$foreach, array("count" => $array[1]));
 	}
 
+	/**
+	 * Return count elements in array
+	 * @access private
+	 * @param array $array Needed array for count elements in he'm
+	 * @return int
+     */
 	private static function countforeach($array) {
 		if(isset(self::$foreach["all"][$array[1]])) {
 			$data = self::$foreach["all"][$array[1]]+1;
 		} else {
-			$data = 1;
+			$data = 0;
 		}
 		return $data;
 	}
 
+	/**
+	 * Replace part template
+	 * @access private
+	 * @param array $array Array data for replacing
+	 * @return mixed Return part template or original line
+     */
 	private static function replace_tmp($array) {
 		if(isset(self::$blocks[$array[1]][$array[2]])) {
 			return self::$blocks[$array[1]][$array[2]];
@@ -603,6 +1137,27 @@ final class templates {
 		}
 	}
 
+	/**
+	 * Included completed template or result working module
+	 * @param $arr Parameters for sub functions
+	 * @return string Result working
+     */
+	private static function includeFile($arr) {
+		if($arr[1]=="module") {
+			unset($arr[1]);$arr = array_values($arr);
+			return self::include_module($arr);
+		} else if($arr[1]=="templates") {
+			unset($arr[1]);$arr = array_values($arr);
+			return self::include_tpl($arr);
+		}
+	}
+
+	/**
+	 * Include other template in main template
+	 * @access private
+	 * @param array $array Array data for including
+	 * @return array|mixed|NUll|string Return part template for insert in main template
+     */
 	private static function include_tpl($array) {
 		if(strpos($array[1], ",") !== false) {
 			$file = explode(",", $array[1]);
@@ -613,23 +1168,29 @@ final class templates {
 			$file[0] = $file[0].".tpl";
 		}
 		if(!isset($file[1])) {
-			$dir = ROOT_PATH."".self::$dir_skins."/".self::$skins."/".$file[0];
+			$dir = ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file[0];
 		} elseif(isset($file[1]) && !empty($file[1])) {
-			$dir = ROOT_PATH."".self::$dir_skins."/".$file[1]."/".$file[0];
+			$dir = ROOT_PATH."".self::$dir_skins.DS.$file[1].DS.$file[0];
 		} else {
-			$dir = ROOT_PATH."".self::$dir_skins."/".$file[0];
+			$dir = ROOT_PATH."".self::$dir_skins.DS.$file[0];
 		}
 		if(file_Exists($dir)) {
 			$files = file_get_contents($dir);
 			return self::comp_datas($files, $file[0]);
 		} else {
-			return $array[0]."1";
+			return $array[0];
 		}
 	}
 
+	/**
+	 * Include module
+	 * @access private
+	 * @param array $array Array data for initialize module-file
+	 * @return mixed Result work module or original line
+     */
 	private static function include_module($array) {
-		if(strpos($array[1], ".php") === false) {
-			$array[1] = $array[1].".php";
+		if(strpos($array[1], ".".ROOT_EX) === false) {
+			$array[1] = $array[1].".".ROOT_EX;
 		}
 		if(strpos($array[1], ",") !== false) {
 			$exp = explode(",", $array[1]);
@@ -638,8 +1199,8 @@ final class templates {
 		} else {
 			$ret = $array[0];
 		}
-		$class = str_replace(array(".class", ".php"), "", $array[1]);
-		if(!file_exists(ROOT_PATH."core/modules/".$array[1]) && !file_exists(ROOT_PATH."core/modules/autoload/".$array[1])) {
+		$class = str_replace(array(".class", ".".ROOT_EX), "", $array[1]);
+		if(!file_exists(ROOT_PATH."core".DS."modules".DS.$array[1]) && !file_exists(ROOT_PATH."core".DS."modules".DS."autoload".DS.$array[1])) {
 			return $ret;
 		}
 		if(!class_exists($class)) {
@@ -649,7 +1210,14 @@ final class templates {
 		return $mod->start();
 	}
 
-	public function change_blocks($name, $value = null, $func="add") {
+	/**
+	 * Change block-data in memory
+	 * @access public
+	 * @param string $name Name block-data
+	 * @param string $value Value block-data
+	 * @param string $func Method working(add,edit,delete)
+     */
+	public function change_blocks($name, $value = "", $func = "add") {
 		if($func=="add" || $func=="edit") {
 			self::$blocks[$name] = $value;
 		} elseif($func=="delete") {
@@ -657,10 +1225,22 @@ final class templates {
 		}
 	}
 
+	/**
+	 * Count block-data in memory
+	 * @access private
+	 * @param array $array Block-data
+	 * @return int Return count block-data
+     */
 	private static function count_blocks($array) {
 		return sizeof(self::$blocks[$array[2]]);
 	}
-	
+
+	/**
+	 * "Not In Page". Check user without this page
+	 * @access private
+	 * @param array $array Array data
+	 * @return mixed Return part template if user without this page
+     */
 	private static function npage($array) {
 	global $manifest;
 		if(strpos($array[1], "|")!==false) {
@@ -671,8 +1251,15 @@ final class templates {
 		if(!in_array($manifest['mod_page'][HTTP::getip()]['page'], $search)) {
 			return $array[2];
 		}
+		return "";
 	}
-	
+
+	/**
+	 * "In Page". Check user on this page
+	 * @access private
+	 * @param array $array Array data
+	 * @return mixed Return part template if user on this page
+     */
 	private static function nowpage($array) {
 	global $manifest;
 		if(strpos($array[1], "|")!==false) {
@@ -683,21 +1270,31 @@ final class templates {
 		if(in_array($manifest['mod_page'][HTTP::getip()]['page'], $search)) {
 			return $array[2];
 		}
+		return "";
 	}
 
-	private static function comp_datas($tpl, $file="null", $test = false) {
-		$tpl = preg_replace_callback("#\{include templates=['\"](.*?)['\"]\}#", ("templates::include_tpl"), $tpl);
-		$tpl = preg_replace_callback("#\{include module=['\"](.*?)['\"]\}#", ("templates::include_module"), $tpl);
+	/**
+	 * Final completed template
+	 * @access private
+	 * @param string $tpl File template
+	 * @param string $file Sub file for completed
+	 * @param bool|false $test ToDo: WTF?!
+	 * @return array|mixed|NUll Done completed
+     */
+	private static function comp_datas($tpl, $file = "null", $test = false) {
+		$tpl = self::ParsePHP($tpl, self::$dir_skins.DS.self::$skins.DS.$file);
+		$tpl = self::callback_array("#\{include (.+?)=['\"](.*?)['\"]\}#", ("templates::includeFile"), $tpl);
 		$tpl = preg_replace(array('~\{\#\#(.+?)}~', '~\{\#(.+?)}~', '~\{\_(.+?)}~'), "{\\1}", $tpl);
-		$tpl = preg_replace_callback("~\{is_last\[(\"|)(.+?)(\"|)\]\}~", ("templates::count_blocks"), $tpl);
-		$tpl = preg_replace_callback("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tpl);
-		$tpl = preg_replace_callback("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tpl);
-		$tpl = preg_replace_callback("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tpl);
-		$tpl = preg_replace_callback("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tpl);
-		$tpl = preg_replace_callback("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tpl);
-		$tpl = preg_replace_callback("#\{UL_(.*?)\[(.*?)\]\}#", ("templates::level"), $tpl);
-		$tpl = preg_replace_callback('#\[page=(.*?)\](.*)\[/page\]#i', ("templates::nowpage"), $tpl);
-		$tpl = preg_replace_callback('#\[not-page=(.*?)\](.*)\[/not-page\]#i', ("templates::npage"), $tpl);
+		$tpl = self::callback_array("~\{is_last\[(\"|)(.+?)(\"|)\]\}~", ("templates::count_blocks"), $tpl);
+		$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tpl);
+		$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tpl);
+		$tpl = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tpl);
+		$tpl = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tpl);
+		$tpl = self::callback_array("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tpl);
+		$tpl = self::callback_array("#\{UL_(.*?)\[(.*?)\]\}#", ("templates::level"), $tpl);
+		$tpl = self::callback_array("#\{RP\[([a-zA-Z0-9\-_]+)\]\}#", ("templates::routeparam"), $tpl);
+		$tpl = self::callback_array('#\[page=(.*?)\](.*)\[/page\]#i', ("templates::nowpage"), $tpl);
+		$tpl = self::callback_array('#\[not-page=(.*?)\](.*)\[/not-page\]#i', ("templates::npage"), $tpl);
 		if(modules::manifest_get(array("temp", "block"))!==false) {
 			self::$blocks = array_merge(self::$blocks, modules::manifest_get(array("temp", "block")));
 		}
@@ -709,15 +1306,15 @@ final class templates {
 			if(!is_array($val) && strpos($tpl, "{".$name."}") !== false) {
 				$tpls = str_replace("{".$name."}", $val, $tpls);
 			} else {
-				$tpls = preg_replace_callback("/{(.+?)\[(.+?)\]}/", ("templates::replace_tmp"), $tpls);
+				$tpls = self::callback_array("/{(.+?)\[(.+?)\]}/", ("templates::replace_tmp"), $tpls);
 			}
 		}
 if(!$test) {
-		$tpl = preg_replace_callback("#\{foreach\}([0-9]+)\{/foreach\}#i", ("templates::foreach_set"), $tpl);
-		$tpl = preg_replace_callback("#\\[foreach block=(.+?)\\](.+?)\\[/foreach $1\\]#is", ("templates::foreachs"), $tpls);
-		$tpl = preg_replace_callback("#\\[foreach block=(.+?)\\](.+?)\\[/foreach\\]#is", ("templates::foreachs"), $tpls);
+		$tpl = self::callback_array("#\{foreach\}([0-9]+)\{/foreach\}#i", ("templates::foreach_set"), $tpl);
+		$tpl = self::callback_array("#\\[foreach block=(.+?)\\](.+?)\\[/foreach $1\\]#is", ("templates::foreachs"), $tpls);
+		$tpl = self::callback_array("#\\[foreach block=(.+?)\\](.+?)\\[/foreach\\]#is", ("templates::foreachs"), $tpls);
 		$tpl = preg_replace("#\{foreach\}([0-9]+)\{/foreach\}#i", "", $tpl);
-		$tpl = preg_replace_callback("#\{count\[(.*?)\]\}#is", ("templates::countforeach"), $tpl);
+		$tpl = self::callback_array("#\{count\[(.*?)\]\}#is", ("templates::countforeach"), $tpl);
 }
 		$array_use = array();
 		foreach(self::$blocks as $name => $val) {
@@ -728,34 +1325,39 @@ if(!$test) {
 				$tpl = str_replace("{".$name."}", $val, $tpl);
 				$array_use[$name] = $val;
 			} else {
-				$tpl = preg_replace_callback("/{(.+?)\[(.+?)\]}/", ("templates::replace_tmp"), $tpl);
+				$tpl = self::callback_array("/{(.+?)\[(.+?)\]}/", ("templates::replace_tmp"), $tpl);
 			}
 		}
-		$tpl = preg_replace_callback("#\\[ajax\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/ajax\\]#i", ("templates::ajax"), $tpl);
-		$tpl = preg_replace_callback("#\\[ajax\\]([\s\S]*?)\\[/ajax\\]#i", ("templates::ajax"), $tpl);
-		$tpl = preg_replace_callback("#\\[ajax_click\\]([\s\S]*?)\\[/ajax_click\\]#i", ("templates::ajax_click"), $tpl);
-		$tpl = preg_replace_callback("#\\[!ajax_click\\]([\s\S]*?)\\[/!ajax_click\\]#i", ("templates::ajax_click"), $tpl);
-		$tpl = preg_replace_callback("#\\[!ajax\\]([\s\S]*?)\\[/!ajax\\]#i", ("templates::ajax"), $tpl);
-
-		$tpl = preg_replace_callback('#\[if (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/if \\1\]#i', ("templates::is"), $tpl);
-		$tpl = preg_replace_callback('#\[if (.*?)\]([\s\S]*?)\[/if \\1\]#i', ("templates::is"), $tpl);
 		
-		$tpl = preg_replace_callback("#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $tpl);
-		$tpl = preg_replace_callback("#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $tpl);
-/*
-ToDo: WTF?!
-if($test) {
-		$tpl = preg_replace_callback("#\{foreach\}([0-9]+)\{/foreach\}#i", ("templates::foreach_set"), $tpl);
-		$tpl = preg_replace_callback("#\\[foreach block=(.+?)\\](.+?)\\[/foreach $1\\]#is", ("templates::foreachs"), $tpl);
-		$tpl = preg_replace_callback("#\\[foreach block=(.+?)\\](.+?)\\[/foreach\\]#is", ("templates::foreachs"), $tpl);
-		$tpl = preg_replace("#\{foreach\}([0-9]+)\{/foreach\}#i", "", $tpl);
-		$tpl = preg_replace_callback("#\{count\[(.*?)\]\}#is", ("templates::countforeach"), $tpl);
-}
-*/
-		$tpl = preg_replace_callback("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tpl);
-		$tpl = preg_replace_callback("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tpl);
-		$tpl = preg_replace_callback("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
-		$tpl = preg_replace_callback("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
+		$tpl = self::callback_array('#\[for ([0-9]+) to ([0-9]+)(| step=([0-9]+))\](.+?)\[/for\]#is', function($data) {
+			$step = 1;
+			if(!empty($data[4]) && is_numeric($data[4]) && $data[4]>0) {
+				$step = intval($data[4]);
+			}
+			$tpl = $data[5];
+			$sub = "";
+			for($i=$data[1];$i<=$data[2];$i=$i+$step) {
+				$sub .= str_replace("{id}", $i, $tpl);
+			}
+			return $sub;
+		}, $tpl);
+		$tpl = self::callback_array("#\\[ajax\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/ajax\\]#i", ("templates::ajax"), $tpl);
+		$tpl = self::callback_array("#\\[ajax\\]([\s\S]*?)\\[/ajax\\]#i", ("templates::ajax"), $tpl);
+		$tpl = self::callback_array("#\\[ajax_click\\]([\s\S]*?)\\[/ajax_click\\]#i", ("templates::ajax_click"), $tpl);
+		$tpl = self::callback_array("#\\[!ajax_click\\]([\s\S]*?)\\[/!ajax_click\\]#i", ("templates::ajax_click"), $tpl);
+		$tpl = self::callback_array("#\\[!ajax\\]([\s\S]*?)\\[/!ajax\\]#i", ("templates::ajax"), $tpl);
+
+		$tpl = self::callback_array('#\[if (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/if \\1\]#i', ("templates::is"), $tpl);
+		$tpl = self::callback_array('#\[if (.*?)\]([\s\S]*?)\[/if \\1\]#i', ("templates::is"), $tpl);
+		
+		$tpl = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $tpl);
+		$tpl = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $tpl);
+
+		$tpl = self::callback_array("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tpl);
+		$tpl = self::callback_array("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tpl);
+		$tpl = self::callback_array("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
+		$tpl = self::callback_array("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
+		$tpl = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $tpl);
 		if(strpos($tpl, "[clear]") !== false) {
 			foreach($array_use as $name => $val) {
 				unset(self::$blocks[$name]);
@@ -766,30 +1368,60 @@ if($test) {
 		return $tpl;
 	}
 
+	/**
+	 * Rebuild standard template for completed
+	 * @access public
+	 * @param string $file File for completed
+	 * @param bool|false $no_skin Template exist on directory without skin
+     */
 	public static function load_template($file, $no_skin = false) {
 		$time = self::time();
 		if($no_skin) {
-			if(file_exists(ROOT_PATH."".self::$dir_skins."/".$file.".tpl")) {
-				self::$tmp = file_get_contents(ROOT_PATH."".self::$dir_skins."/".$file.".tpl");
+			if(file_exists(ROOT_PATH."".self::$dir_skins.DS.$file.".tpl")) {
+				self::$tmp = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.$file.".tpl");
 			}
 		} else {
-			if(file_exists(ROOT_PATH."".self::$dir_skins."/".self::$skins."/".$file.".tpl")) {
-				self::$tmp = file_get_contents(ROOT_PATH."".self::$dir_skins."/".self::$skins."/".$file.".tpl");
+			if(file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".tpl")) {
+				self::$tmp = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".tpl");
 			}
 		}
 		self::$time += self::time()-$time;
 	}
 
-	public static function load_templates($file, $charset = null, $dir = "null") {
+	/**
+	 * Load template as string for further using
+	 * @access public
+	 * @param string $file File template
+	 * @param string $charset Charset file
+	 * @param string $dir Directory template
+	 * @return string Template for further using
+     */
+	public static function load_templates($file, $charset = "", $dir = "null") {
 		$time = self::time();
 		if($dir == "null") {
-			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".self::$skins."/".$file.".tpl");
+			if(!file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".tpl")) {
+				self::ErrorTemplate("File \"".ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".tpl\" is not exists");
+				die();
+			}
+			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".tpl");
 		} elseif($dir=="admin") {
-			$tpl = file_get_contents(ROOT_PATH."admincp.php/temp/".$file.".tpl");
+			if(!file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."temp".DS.$file.".tpl")) {
+				self::ErrorTemplate("File \"".ROOT_PATH.ADMINCP_DIRECTORY.DS."temp".DS.$file.".tpl\" is not exists");
+				die();
+			}
+			$tpl = file_get_contents(ROOT_PATH.ADMINCP_DIRECTORY.DS."temp".DS.$file.".tpl");
 		} elseif(empty($dir)) {
-			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".$file.".tpl");
+			if(!file_exists(ROOT_PATH."".self::$dir_skins.DS.$file.".tpl")) {
+				self::ErrorTemplate("File \"".ROOT_PATH."".self::$dir_skins.DS.$file.".tpl\" is not exists");
+				die();
+			}
+			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.$file.".tpl");
 		} else {
-			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".$dir."/".$file.".tpl");
+			if(!file_exists(ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".tpl")) {
+				self::ErrorTemplate("File \"".ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".tpl\" is not exists");
+				die();
+			}
+			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".tpl");
 		}
 		if(!empty($charset)) {
 			$tpl = iconv($charset, modules::get_config("charset"), $tpl);
@@ -798,48 +1430,107 @@ if($test) {
 		return $tpl;
 	}
 
+	/**
+	 * Completed template for finally using
+	 * @access public
+	 * @param string $file File template
+	 * @param string $dir Directory template
+	 * @param bool|false $test //ToDo: WTF?!
+	 * @return array|mixed|NUll|string Completed template
+     */
 	public static function complited_assing_vars($file, $dir = "null", $test = false) {
 		$time = self::time();
 		if($dir == "null") {
-			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".self::$skins."/".$file.".tpl");
+			try {
+				$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".tpl");
+			} catch(Exception $ex) {
+				self::ErrorTemplate("File \"".ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".tpl\" is not exists");
+				die();
+			}
 		} elseif(empty($dir)) {
 			try {
-				$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".$file.".tpl");
+				$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.$file.".tpl");
 			} catch(Exception $ex) {
-				echo ROOT_PATH."".self::$dir_skins."/".$file.".tpl";
+				self::ErrorTemplate("File \"".ROOT_PATH."".self::$dir_skins.DS.$file.".tpl\" is not exists");
 				die();
 			}
 		} else {
-			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins."/".$dir."/".$file.".tpl");
+			try {
+				$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".tpl");
+			} catch(Exception $ex) {
+				self::ErrorTemplate("File \"".ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".tpl\" is not exists");
+				die();
+			}
 		}
 		$tpl = self::comp_datas($tpl, $file, $test);
 		if($dir == "null") {
-			$tpl = str_replace("{THEME}", "/".self::$dir_skins."/".self::$skins, $tpl);
+			$tpl = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $tpl);
 		} elseif(empty($dir)) {
-			$tpl = str_replace("{THEME}", "/".self::$dir_skins, $tpl);
+			$tpl = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins, $tpl);
 		} else {
-			$tpl = str_replace("{THEME}", "/".self::$dir_skins."/".$dir, $tpl);
+			$tpl = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".$dir, $tpl);
 		}
 		self::$time += self::time()-$time;
 		return $tpl;
 	}
+	/**
+	 * Completed template for finally using
+	 * @access public
+	 * @param string $file File template
+	 * @param string $dir Directory template
+	 * @param bool|false $test //ToDo: WTF?!
+	 * @return array|mixed|NUll|string Completed template
+	 */
+	public static function completed_assign_vars($file, $dir = "null", $test = false) { return self::complited_assing_vars($file, $dir, $test); }
 
-	public static function complited($tmp, $header = null) {
-	global $manifest, $user;
+	/**
+	 * Prepare template for viewing
+	 * @access public
+	 * @param string $tmp Completed template
+	 * @param array|string $header List headers or title
+     */
+	public static function complited($tmp, $header = "") {
+	global $manifest;
 		$time = self::time();
 		if(!is_array($header)) {
-			self::$header = array("title" => $header);
+			self::$header = array(
+				"title" => $header,
+				"meta" => array(
+					"og" => array(
+						"title" => $header,
+						"description" => "{L_s_description}",
+					),
+					"ogpr" => array(
+						"og:title" => $header,
+						"og:description" => "{L_s_description}",
+					),
+					"description" => "{L_s_description}",
+				),
+			);
 		} else {
 			self::$header = $header;
 		}
-		$manifest['mod_page'][getenv("REMOTE_ADDR")]['title'] = self::$header['title'];
-		modules::manifest_set(array('mod_page', getenv("REMOTE_ADDR"), 'title'), self::$header['title']);
+		$manifest['mod_page'][HTTP::getip()]['title'] = self::$header['title'];
+		modules::manifest_set(array('mod_page', HTTP::getip(), 'title'), self::$header['title']);
 		$tmp = self::comp_datas($tmp);
 		self::$tmp = $tmp;
 		self::$time += self::time()-$time;
 	}
 
-	private static function change_head($header) {
+	/**
+	 * Prepare template for viewing
+	 * @access public
+	 * @param string $tmp Completed template
+	 * @param array|string $header List headers or title
+	 */
+	public static function completed($tmp, $header = "") { return self::complited($tmp, $header); }
+
+	/**
+	 * Change title page
+	 * @access public
+	 * @param string $header Necessary title
+     */
+	public static function change_head($header) {
 		if(!is_array($header)) {
 			self::$header = array("title" => $header);
 		} else {
@@ -847,38 +1538,64 @@ if($test) {
 		}
 	}
 
+	/**
+	 * Completed special system variables
+	 * @access public
+	 * @param string $tmp Template for needed complete
+	 * @return array|mixed|NUll Result completed
+     */
 	public static function lcud($tmp) {
-		$tmp = preg_replace_callback("#\{L_sprintf\(([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = preg_replace_callback("#\{L_sprintf\(([a-zA-Z0-9\-_]+),(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = preg_replace_callback("#\{L_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
-		$tmp = preg_replace_callback("#\{L_([a-zA-Z0-9\-_]+)\}#", ("templates::lang"), $tmp);
-		$tmp = preg_replace_callback("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tmp);
-		$tmp = preg_replace_callback("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tmp);
-		$tmp = preg_replace_callback("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tmp);
-		$tmp = preg_replace_callback("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tmp);
-		$tmp = preg_replace_callback("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tmp);
-		$tmp = preg_replace_callback("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tmp);
-		$tmp = preg_replace_callback("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\(([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\(([a-zA-Z0-9\-_]+),(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{L_([a-zA-Z0-9\-_]+)\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tmp);
+		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tmp);
+		$tmp = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tmp);
+		$tmp = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tmp);
+		$tmp = self::callback_array("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tmp);
+		$tmp = self::callback_array("#\{S_data=['\"](.+?)['\"],['\"](.*?)['\"]\}#", ("templates::sys_date"), $tmp);
+		$tmp = self::callback_array("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tmp);
 	return $tmp;
 	}
 
-	public static function view($data, $header = null) {
+	/**
+	 * Quick viewing template
+	 * @access public
+	 * @param string $data Template for completed
+	 * @param string|array $header List headers or title
+	 * @return array|mixed|NUll|string Result completed
+     */
+	public static function view($data, $header = "") {
 		self::complited($data, $header);
 		$h = self::$tmp;
-		$h = str_replace("{THEME}", "/".self::$dir_skins."/".self::$skins, $h);
+		self::$tmp = "";
+		$h = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $h);
 		return self::ecomp($h);
 	}
 
-	public static function templates($tmp, $header = null) { return self::complited($tmp, $header);}
+	/**
+	 * Prepare template for viewing
+	 * @access public
+	 * @param string $tmp Completed template
+	 * @param array|string $header List headers or title
+	 */
+	public static function templates($tmp, $header = "") { return self::completed($tmp, $header);}
 
-	public static function error($data, $header=null) {
+	/**
+	 * View error page
+	 * @access public
+	 * @param string $data Error message
+	 * @param string|array $header Title or array headers
+     */
+	public static function error($data, $header = "") {
 		if(!is_array($header)) {
 			self::$header = array("title" => $header);
 		} else {
 			self::$header = $header;
 		}
-		if(is_array($header) && !isset($header['title'])) {
-			$header['title'] = "";
+		if(is_array(self::$header) && !isset(self::$header['title'])) {
+			self::$header['title'] = "";
 		}
 		if(isset(self::$header['code']) && self::$header['code']=="404") {
 			$sapi_name = php_sapi_name();
@@ -887,14 +1604,20 @@ if($test) {
 			}
 			header('HTTP/1.1 404 Not Found');
 		}
-		self::$blocks = array_merge(self::$blocks, array("error" => $data, "title" => (isset($header['title']) ? $header['title'] : "")));
-		self::$tmp = self::complited_assing_vars("info");
+		self::$blocks = array_merge(self::$blocks, array("error" => $data, "title" => (isset(self::$header['title']) ? self::$header['title'] : "")));
+		self::$tmp = self::completed_assign_vars("info");
 		self::display();
 		exit();
 	}
 
+	/**
+	 * Block data for replace
+	 * @access public
+	 * @param string $name Name replace
+	 * @param string|array $var Value replace
+     */
 	public static function set_block($name, $var) {
-		if(is_array($var) && sizeof($var)) {
+		if(is_array($var) && sizeof($var)>0) {
 			foreach($var as $key => $vars) {
 				self::set_block($key, $vars);
 			}
@@ -908,8 +1631,8 @@ if($test) {
 	* Minifies template w/i PHP code by removing extra spaces
 	* @access private
 	*/
-	private static function minify($html) {
-		if(!modules::get_config('tpl_minifier')) {
+	private static function minify($html, $force = false) {
+		if(!$force && !modules::get_config('tpl_minifier')) {
 			return $html;
 		}
 		// TODO: Match <code> and <pre> too - in separate arrays
@@ -953,25 +1676,49 @@ if($test) {
 	}
 	// Gorlum's minifier EOF
 
+	/**
+	 * Style error template
+	 * @param string $msg Error message
+     */
+	private static function ErrorTemplate($msg) {
+		if(file_exists(ROOT_PATH."skins".DS."ErrorTpl.tpl")) {
+			$file = file_get_contents(ROOT_PATH."skins".DS."ErrorTpl.tpl");
+			$file = str_replace("{msg}", $msg, $file);
+			echo $file;
+		} else {
+			echo $msg;
+		}
+	}
+
+	/**
+	 * Display done completed page
+	 * @access public
+     */
 	public static function display() {
 	global $lang;
 		$time = self::time();
-		if(!file_exists(ROOT_PATH."".self::$dir_skins."/".self::$skins."/main.tpl")) {
-			echo "error templates";
+		if(!file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."main.tpl")) {
+			self::ErrorTemplate("error templates");
 			return;
 		}
-		if(file_exists(ROOT_PATH."".self::$dir_skins."/".self::$skins."/lang/tpl.php")) {
-			include_once(ROOT_PATH."".self::$dir_skins."/".self::$skins."/lang/tpl.php");
+		if(file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."lang".DS."tpl.".ROOT_EX)) {
+			include_once(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."lang".DS."tpl.".ROOT_EX);
 		}
-		$h = file_get_contents(ROOT_PATH."".self::$dir_skins."/".self::$skins."/main.tpl");
-		$l = file_get_contents(ROOT_PATH."".self::$dir_skins."/".self::$skins."/login.tpl");
-		$l = iconv("cp1251", modules::get_config('charset'), $l);
-		$h = str_replace("{login}", $l, $h);
+		$h = self::completed_assign_vars("main");
+		if(file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."login.tpl")) {
+			$l = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."login.tpl");
+			$l = iconv("cp1251", modules::get_config('charset'), $l);
+			$h = str_replace("{login}", $l, $h);
+		}
 		$head = "";
 		if(isset(self::$module['head']['before'])) {
 			$head .= self::$module['head']['before'];
 		}
-		$head .= headers(self::$header);
+		if(strpos($h, "{create_js}")!==false) {
+			$head .= headers(self::$header, false, true);
+		} else {
+			$head .= headers(self::$header);
+		}
 		if(isset(self::$module['head']['after'])) {
 			$head .= self::$module['head']['after'];
 		}
@@ -988,13 +1735,14 @@ if($test) {
 		if(isset(self::$header['meta_body'])) {
 			$mtt = meta(self::$header['meta_body']);
 			$h = str_replace("{meta_tt}", $mtt, $h);
+			unset($mtt);
 		} else {
 			$h = str_replace("{meta_tt}", meta(), $h);
 		}
 		$h = str_replace("{content}", $body, $h);
 		if(isset($_GET['jajax']) || (getenv('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest' && isset($_GET['jajax']))) {
 			unset($h);
-			$thead = "<script type=\"text/javascript\" src=\"{C_default_http_host}js/gooan.js\"></script><div id=\"pretitle\">{L_sitename}</div>";
+			$thead = "<div id=\"pretitle\">{L_sitename}</div>";
 			if(isset(self::$header['title'])) {
 				$thead = "<div id=\"pretitle\">".self::$header['title']."</div>";
 			}
@@ -1018,9 +1766,10 @@ if($test) {
 					$h = str_replace("{".$name."}", self::comp_datas($value), $h);
 				}
 			}
+			self::$module['menu'] = array();
 		}
-		$h = str_replace("{THEME}", "/".self::$dir_skins."/".self::$skins, $h);
-		$h = self::ecomp($h);
+		$h = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $h);
+		$h = self::ecomp($h);//, self::$dir_skins.DS.self::$skins.DS."main"
 		$find_preg = $replace_preg = array();
 		if(sizeof(self::$editor)) {
 			foreach(self::$editor as $key_find => $key_replace) {
@@ -1030,24 +1779,33 @@ if($test) {
 			$h = preg_replace($find_preg, $replace_preg, $h);
 		}
 		HTTP::echos(self::minify($h));
-		unset($this);
+		unset($this, $h, $body, $lang);
+		self::clean();
 		if(function_exists("memory_get_usage")) {
 			echo "<!-- ".round((memory_get_usage()/1024/1024), 2)." -->";
 		}
 		self::$time += self::time()-$time;
 	}
-	
+
+	/**
+	 * Clear all data in template
+	 * @access public
+     */
 	public static function clean() {
 		self::$blocks = array();
 		self::$foreach = array("count" => 0, "all" => array());
 		self::$module = array("head" => array(), "body" => array(), "blocks" => array(), "menu" => array());
 		self::$editor = array();
 		self::$header = null;
-		//self::$tmp = "";
-		//self::$skins = "";
+		self::$tmp = "";
+		self::$skins = "";
 	}
 
-	public function __destruct() { 
+	/**
+	 * Clear all templates
+	 * @access public
+     */
+	public function __destruct() {
 		unset($this);
 	} 
 

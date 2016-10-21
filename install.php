@@ -1,194 +1,112 @@
 <?php
-ini_set('display_errors',1);
-error_reporting(E_ALL);
-
-define("IS_CORE", true);
-define("IS_INSTALLER", true);
+/*
+ *
+ * @version 3.1
+ * @copyright 2014-2016 KilleR for Cardinal Engine
+ *
+ * Version Engine: 3.1
+ * Version File: 3
+ *
+ * 2.1
+ * add sql query for support updater
+ * 2.2
+ * add support stop installing without need modules in php
+ * 2.3
+ * add support "drivers" - submodules for database
+ * 2.4
+ * add support for localhost?
+ * 2.5
+ * fix time cron
+ * 2.6
+ * add support speed updates
+ * 2.7
+ * add support routification on files
+ * 2.8
+ * fix support routification on files and fix error on table-list
+ * 2.9
+ * fix bugs on routification and add support admin level
+ * 3.0
+ * add support breadcrumbs for view step installing and view version php and apache, remove russian language in template installer
+ *
+*/
+if(!defined("IS_CORE")) {
+	define("IS_CORE", true);
+}
+if(!defined("IS_INSTALLER")) {
+	define("IS_INSTALLER", true);
+}
 require_once("core.php");
-if(isset($_GET['done'])) {
-	templates::assign_vars(array("page" => "3"));
+if(strpos($_SERVER['REQUEST_URI'], "index.".ROOT_EX)!==false) {
+	$exp = explode("index.".ROOT_EX, $_SERVER['REQUEST_URI']);
+} else {
+	$exp = explode("install", $_SERVER['REQUEST_URI']);
+}
+config::Set("default_http_local", $exp[0]);
+if(isset($_POST['rewrite'])) {
+	config::Set("rewrite", false);
+	unset($_POST['rewrite']);
+}
+lang::include_lang("install");
+Route::Config(array(
+	"rewrite" => config::Select("rewrite"),
+	"default_http_host" => config::Select("default_http_host"),
+));
+if((isset($_SERVER['PATH_INFO']) && strpos($_SERVER['PATH_INFO'], "install/done")!==false) || isset($_GET['done'])) {
+	templates::assign_vars(array("page" => "4"));
 	echo templates::view(templates::complited_assing_vars("install", null, ""));
 	die();
 }
 
-if(sizeof($_POST)==0||sizeof($_POST)==1) {
+if(sizeof($_POST)==0||(sizeof($_POST)==1)||(sizeof($_POST)==2)) {
 	if(sizeof($_POST)==0) {
+		Route::RegParam("line", "1");
 		templates::assign_vars(array("page" => "1"));
+	} else if(sizeof($_POST)==1) {
+		Route::RegParam("line", "2");
+		if(function_exists("apache_get_version")) {
+			$apache = apache_get_version();
+			if(strpos($apache, "/")!==false) {
+				$apache = substr($apache, strlen("Apache/"));
+				$apache = (intval($apache)>=2 ? "green":"red");
+			} else {
+				$apache = "green";
+			}
+		} else {
+			$apache = "green";
+		}
+		$php = (PHP_VERSION_ID>=50302 ? "green":"red");
+		$cache = (get_chmod(ROOT_PATH."core".DS."cache".DS)=="0777" ? "green":"red");
+		$system_cache = (get_chmod(ROOT_PATH."core".DS."cache".DS."system".DS)=="0777" ? "green":"red");
+		$template = (get_chmod(ROOT_PATH."core".DS."cache".DS."tmp".DS)=="0777" ? "green":"red");
+		$media = (get_chmod(ROOT_PATH."core".DS."media".DS)=="0777" ? "green":"red");
+		$mb = (function_exists('mb_detect_encoding') ? "green" : "red");
+		if($apache=="red"||$php=="red"||$cache=="red"||$system_cache=="red"||$media=="red"||$mb=="red") {
+			templates::assign_var("is_stop", "1");
+		} else {
+			templates::assign_var("is_stop", "0");
+		}
+		templates::assign_vars(array("page" => "2", "apache" => $apache, "php" => $php, "cache" => $cache, "system_cache" => $system_cache, "template" => $template, "media" => $media, "mb" => $mb));
 	} else {
-		templates::assign_vars(array("page" => "2", "SERNAME" => getenv('SERVER_NAME')));
+		templates::assign_vars(array("page" => "3", "SERNAME" => getenv('SERVER_NAME').str_replace(array("index.".ROOT_EX."/", "install.".ROOT_EX, "/install/step2", "/install/step3"), "", getenv("REQUEST_URI")), "SERVERS" => getenv('SERVER_NAME')));
+		$driver = ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS;
+		$dirs = read_dir($driver, ".".ROOT_EX);
+		sort($dirs);
+		for($i=0;$i<sizeof($dirs);$i++) {
+			if($dirs[$i]=="index.".ROOT_EX||$dirs[$i]=="DriverParam.".ROOT_EX||$dirs[$i]=="drivers.".ROOT_EX||$dirs[$i]=="DBObject.".ROOT_EX) {
+				continue;
+			}
+			include_once($driver.$dirs[$i]);
+			$dr_subname = str_replace(".".ROOT_EX, "", $dirs[$i]);
+			if(!class_exists($dr_subname)) {
+				continue;
+			}
+			$dr_name = $dr_subname::$subname;
+			templates::assign_vars(array("name" => $dr_subname, "value" => $dr_name), "drivers", "driver".$i);
+		}
 	}
 	echo templates::view(templates::complited_assing_vars("install", null, ""));
 	die();
 }
-
-class DB_install {
-
-	private static $mysql;
-	private static $qid;
-	private static $type = "mysql";
-	public static $time = 0;
-	public static $num = 0;
-	public static $querys = array();
-
-	public static function check_connect($host, $user, $pass) {
-		if(function_exists("mysqli_connect")) {
-			$mysqli = @new mysqli($host, $user, $pass);
-			$ret = empty($mysqli->connect_error);
-			if($ret) {
-				$mysqli->close();
-			}
-			return $ret;
-		} else {
-			$mysqli = mysql_connect($host, $user, $pass);
-			$ret = $mysqli!==false;
-			if($ret) {
-				mysql_close($mysqli);
-			}
-			return $ret;
-		}
-	}
-	
-	public static function exists_db($host, $user, $pass, $db) {
-		if(static::check_connect()) {
-			if(function_exists("mysqli_connect")) {
-				$mysqli = @new mysqli($host, $user, $pass, $db);
-				$ret = empty($mysqli->connect_error);
-				if($ret) {
-					$mysqli->close();
-				}
-				return $ret;
-			} else {
-				$mysqli = mysql_connect($host, $user, $pass);
-				$ret = mysql_select_db($db, $mysqli);
-				if($ret) {
-					mysql_close($mysqli);
-				}
-				return $ret;
-			}
-		}
-	}
-	
-	public static function connect($host, $user, $pass, $db) {
-		if (!class_exists('mysqli') && !function_exists('mysql_connect')) {
-			HTTP::echos();
-			echo ('Server database MySQL not support PHP');
-			die();
-		}
-		if(function_exists("mysqli_connect")) {
-			self::$type = "mysqli";
-
-			if(!@self::$mysql = mysqli_init()) {
-				HTTP::echos();
-				echo "[error]";
-				die();
-			}
-			self::$mysql->options(MYSQLI_INIT_COMMAND, "SET NAMES 'utf8'");
-			self::$mysql->options(MYSQLI_INIT_COMMAND, "SET CHARACTER SET 'utf8'");
-			if(!self::$mysql->real_connect($host, $user, $pass, $db, 3306, false, MYSQLI_CLIENT_COMPRESS)) {
-				HTTP::echos();
-				switch(self::$mysql->connect_errno) {
-					case 1044:
-					case 1045:
-						echo ("Connect to database not exists, incorrect login-password");
-						break;
-					case 1049:
-						echo ("Select database not exists");
-						break;
-					case 2003:
-						echo ("Connect to database not exists, error in port database");
-						break;
-					case 2005:
-						echo ("Connect to database is not exists, addres database or server database not exists");
-						break;
-					case 2006:
-						echo ("Connect to database in not exists, server database is not exists");
-						break;
-					default:
-						echo ("[".self::$mysql->connect_errno."]: ".self::$mysql->connect_errno);
-						break;
-				}
-				die();
-			}
-			self::$mysql->autocommit(false);
-		} else {
-			if(!@self::$mysql = mysql_connect($host, $user, $pass, $db)) {
-				HTTP::echos();
-				switch(mysql_errno(self::$mysql)) {
-					case 1045:
-						echo ("Connect to database not exists, incorrect login-password");
-						break;
-					case 2003:
-						echo ("Connect to database not exists, error in port database");
-						break;
-					case 2005:
-						echo ("Connect to database is not exists, addres database or server database not exists");
-						break;
-					case 2006:
-						echo ("Connect to database in not exists, server database is not exists");
-						break;
-					default:
-						echo "[".mysql_errno(self::$mysql)."]: ".mysql_error(self::$mysql);
-						break;
-				}
-				die();
-			}
-			mysql_select_db(config::Select('db', 'db'), self::$mysql);
-			self::doquery("SET NAMES 'utf8'", true);
-			self::doquery("SET CHARACTER SET 'utf8'", true);
-		}
-	}
-
-	private static function time() {
-		return microtime();
-	}
-
-	public static function last_id($table) {
-		$tables = self::query("SHOW TABLE STATUS LIKE '".$table."'");
-		if(self::$type == "mysqli") {
-			$table = $tables->fetch_assoc();
-		} else {
-			$table = mysql_fetch_assoc($tables);
-		}
-		return $table['Auto_increment'];
-	}
-
-	public static function query($query) {
-		$stime = self::time();
-		if(self::$type == "mysqli") {
-			if(method_exists(self::$mysql, "begin_transaction")) {
-				self::$mysql->begin_transaction();
-			}
-			if(!(self::$qid = $return = self::$mysql->query($query))) {
-				self::error($query);
-			}
-			if(method_exists(self::$mysql, "commit")) {
-				self::$mysql->commit();
-			}
-		} else {
-			mysql_query("START TRANSACTION;", self::$mysql);
-			if(!(self::$qid = $return = mysql_query($query, self::$mysql))) {
-				self::error($query);
-			}
-			mysql_query("COMMIT;", self::$mysql);
-		}
-		$etime = self::time()-$stime;
-		self::$time += $etime;
-		self::$num += 1;
-		self::$querys[] = array("time" => $etime, "query" => htmlspecialchars($query));
-	return $return;
-	}
-
-}
-
-/*function saves($text) {
-	$text = str_replace("\\", "\\\\", $text);
-	$text = str_replace('"', '\\"', $text);
-	$text = preg_replace('#<script[^>]*>.*?</script>#is', "", $text);
-	$text = strip_tags($text);
-	$text = htmlspecialchars($text);
-	$text = str_replace("&quot;", '"', $text);
-return $text;
-}*/
 
 modules::manifest_set(array('functions', "create_pass"), "create_pass_install");
 function create_pass_install($pass) {
@@ -200,14 +118,18 @@ $db_port = saves($_POST['db_port'], true);
 $db_user = saves($_POST['db_user'], true);
 $db_pass = saves($_POST['db_pass'], true);
 $db_db = saves($_POST['db_db'], true);
+$db_driver = saves($_POST['db_driver'], true);
 
-if(!DB_install::check_connect($db_host, $db_user, $db_pass)) {
+db::changeDriver($db_driver);
+db::OpenDriver();
+if(!db::check_connect($db_host, $db_user, $db_pass)) {
 	templates::assign_vars(array("page" => "error"));
 	echo templates::view(templates::complited_assing_vars("install", null, ""));
 	die();
 }
 
 $SQL = array();
+$SQL[] = "SET FOREIGN_KEY_CHECKS = 0;";
 $SQL[] = "DROP TABLE IF EXISTS `config`;";
 $SQL[] = "CREATE TABLE IF NOT EXISTS `config` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -217,6 +139,36 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `config` (
   KEY `config_name` (`config_name`),
   FULLTEXT KEY `config_value` (`config_value`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
+$SQL[] = "INSERT INTO `config` SET `config_name` = \"db_version\", `config_value` = \"".VERSION."\"";
+$SQL[] = "INSERT INTO `config` SET `config_name` = \"cardinal_time\", `config_value` = \"\"";
+
+$SQL[] = "DROP TABLE IF EXISTS `comments`;";
+$SQL[] = "CREATE TABLE IF NOT EXISTS `comments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `u_id` varchar(255) NOT NULL,
+  `added` varchar(255) NOT NULL,
+  `ip` varchar(255) NOT NULL,
+  `type` enum('catalog','salons') NOT NULL DEFAULT 'catalog',
+  `time` int(11) NOT NULL,
+  `comment` text NOT NULL,
+  `parent_id` varchar(255) NOT NULL,
+  `level` int(11) NOT NULL,
+  `user_agent` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `guest` varchar(255) NOT NULL,
+  `mod` enum('yes','no') NOT NULL DEFAULT 'no',
+  `spam` enum('yes','no') NOT NULL DEFAULT 'no',
+  PRIMARY KEY (`id`),
+  FULLTEXT `added` (`added`),
+  KEY `ip` (`ip`),
+  KEY `data` (`u_id`),
+  KEY `others` (`type`,`time`,`parent_id`,`level`),
+  KEY `agent` (`user_agent`),
+  KEY `spam` (`spam`),
+  FULLTEXT KEY `email` (`email`),
+  FULLTEXT KEY `guest` (`guest`),
+  FULLTEXT KEY `comment` (`comment`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 
 $SQL[] = "DROP TABLE IF EXISTS `error_log`;";
 $SQL[] = "CREATE TABLE IF NOT EXISTS `error_log` (
@@ -281,17 +233,43 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `modules` (
   `page` varchar(255) NOT NULL,
   `module` varchar(255) NOT NULL,
   `method` varchar(255) NOT NULL,
-  `param` longtext,
+  `param` longtext not null,
   `activ` enum('yes','no') NOT NULL DEFAULT 'yes',
-  `tpl` longtext,
+  `tpl` longtext not null,
+  `file` varchar(255) NOT NULL,
+  `type` enum('admincp','site') NOT NULL DEFAULT 'site',
   PRIMARY KEY (`id`),
-  KEY `page` (`page`),
-  KEY `modules` (`module`),
-  KEY `method` (`method`),
+  FULLTEXT `page` (`page`),
+  FULLTEXT `modules` (`module`),
+  FULLTEXT `method` (`method`),
   KEY `activ` (`activ`),
   FULLTEXT KEY `param` (`param`),
-  FULLTEXT KEY `tpl` (`tpl`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 DELAY_KEY_WRITE=1 AUTO_INCREMENT=1;";
+  FULLTEXT KEY `tpl` (`tpl`),
+  FULLTEXT KEY `file` (`file`),
+  KEY `type` (`type`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
+$SQL[] = "INSERT INTO `modules` SET `module` = 'base', `activ` = 'yes', `file` = 'core".DS."modules".DS."base.class.".ROOT_EX."';";
+$SQL[] = "INSERT INTO `modules` SET `module` = 'changelog', `activ` = 'yes', `file` = 'core".DS."modules".DS."changelog.class.".ROOT_EX."';";
+$SQL[] = "INSERT INTO `modules` SET `module` = 'mobile_detect', `activ` = 'yes', `file` = 'core".DS."modules".DS."mobile.class.".ROOT_EX."';";
+
+$SQL[] = "DROP TABLE IF EXISTS `posts`;";
+$SQL[] = "CREATE TABLE IF NOT EXISTS `posts` (
+   `id` int(11) NOT NULL AUTO_INCREMENT,
+   `title` varchar(255) NOT NULL,
+   `alt_name` varchar(255) NOT NULL,
+   `image` varchar(255) NOT NULL,
+   `descr` LONGTEXT NOT NULL,
+   `cat_id` varchar(255) NOT NULL,
+   `time` int(11) NOT NULL,
+   `added` varchar(255) NOT NULL,
+   `active` enum('yes','no') NOT NULL DEFAULT 'no',
+   PRIMARY KEY `id`(`id`),
+   FULLTEXT `title_name` (`title`, `alt_name`),
+   FULLTEXT `category` (`cat_id`),
+   FULLTEXT `idescr`(`image`, `descr`),
+   FULLTEXT `added`(`added`),
+   KEY `active_time`(`active`, `time`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 
 $SQL[] = "DROP TABLE IF EXISTS `users`;";
 $SQL[] = "CREATE TABLE IF NOT EXISTS `users` (
@@ -299,8 +277,10 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `users` (
   `username` varchar(255) NOT NULL,
   `alt_name` varchar(255) NOT NULL,
   `pass` varchar(255) NOT NULL,
+  `admin_pass` varchar(255) NOT NULL,
   `light` varchar(255) NOT NULL,
   `level` int(11) NOT NULL,
+  `avatar` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `reg_ip` varchar(255) NOT NULL,
   `last_ip` varchar(255) NOT NULL,
@@ -308,16 +288,16 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `users` (
   `last_activ` int(11) NOT NULL,
   `activ` enum('yes','no') NOT NULL DEFAULT 'yes',
   PRIMARY KEY (`id`),
-  KEY `user` (`username`),
-  KEY `pass` (`pass`),
-  KEY `light` (`light`),
+  FULLTEXT `user` (`username`),
+  FULLTEXT `pass` (`pass`, `admin_pass`),
+  FULLTEXT `light` (`light`),
   KEY `level` (`level`),
-  KEY `add_data` (`email`),
+  FULLTEXT `add_data` (`email`),
   KEY `activ` (`activ`),
   KEY `time` (`time_reg`,`last_activ`),
-  KEY `alt_name` (`alt_name`),
-  KEY `reg_ip` (`reg_ip`),
-  KEY `last_ip` (`last_ip`)
+  FULLTEXT `alt_name` (`alt_name`),
+  FULLTEXT `reg_ip` (`reg_ip`),
+  FULLTEXT `last_ip` (`last_ip`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 
 $SQL[] = "DROP TABLE IF EXISTS `userlevels`;";
@@ -354,22 +334,25 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `userlevels` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (1, 'Гость', 'GUEST', 'no', 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'no', 'no', 'no', 'no', 'yes', 'yes', 'no', 'no', 'no', 'yes', 'no', 'no', 'no');";
 $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (2, 'Пользователь', 'USER', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
-$SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (3, 'Администратор', 'ADMIN', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
+$SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (3, 'Модератор', 'ADMIN', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
+$SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (4, 'Администратор', 'ADMIN', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
 
 
 
-DB_install::connect($db_host, $db_user, $db_pass, $db_db);
+db::connect($db_host, $db_user, $db_pass, $db_db, "utf8", $db_port);
 $insert = array();
-$last = DB_install::last_id("users");
+$last = db::last_id("users");
 if(!empty($last)) {
-	$insert['new_id'] = $last;
+	$insert['new_id'] = "id = ".$last;
 }
-$insert['username'] = "username = \"".saves($_POST['user_name'], true)."\"";
-$insert['alt_name'] = "alt_name = \"".ToTranslit(saves($_POST['user_name'], true))."\"";
-$insert['pass'] = "pass = \"".create_pass(saves($_POST['user_pass'], true))."\"";
-$insert['light'] = "light = \"".saves($_POST['user_pass'], true)."\"";
-$insert['level'] = "level = \"".LEVEL_MODER."\"";
-$insert['email'] = "email = \"".saves($_POST['user_email'], true)."\"";
+$insert['username'] = "username = \"".Saves::SaveOld($_POST['user_name'], true)."\"";
+$insert['alt_name'] = "alt_name = \"".ToTranslit(Saves::SaveOld($_POST['user_name'], true))."\"";
+$insert['pass'] = "pass = \"".create_pass(Saves::SaveOld($_POST['user_pass'], true))."\"";
+define("IS_ADMIN_PASS", true);
+$insert['admin_pass'] = "admin_pass = \"".cardinal::create_pass(Saves::SaveOld($_POST['user_pass'], true))."\"";
+$insert['light'] = "light = \"".Saves::SaveOld($_POST['user_pass'], true)."\"";
+$insert['level'] = "level = \"".LEVEL_ADMIN."\"";
+$insert['email'] = "email = \"".Saves::SaveOld($_POST['user_email'], true)."\"";
 $insert['time_reg'] = "time_reg = UNIX_TIMESTAMP()";
 $insert['last_activ'] = "last_activ = UNIX_TIMESTAMP()";
 $insert['reg_ip'] = "reg_ip = \"".HTTP::getip()."\"";
@@ -377,17 +360,9 @@ $insert['last_ip'] = "last_ip = \"".HTTP::getip()."\"";
 $insert['activ'] = "activ = \"yes\"";
 $insert = modules::change_db('reg', $insert);
 $SQL[] = "INSERT INTO users SET ".implode(", ", $insert);
-function create_passs($pass) {
-	$pass = md5(md5($pass).$pass);
-	$pass = strrev($pass);
-	$pass = sha1($pass);
-	//$pass = crypt($pass);
-	$pass = bin2hex($pass);
-return md5(md5($pass).$pass);
-}
 
 for($i=0;$i<sizeof($SQL);$i++) {
-	DB_install::query($SQL[$i]);
+	db::query($SQL[$i]);
 }
 
 
@@ -397,25 +372,41 @@ echo "403 ERROR";
 die();
 }
 
-$config = array_merge(array(
+$config = array_merge($config, array(
 	"db" => array(
 		"host" => "'.$db_host.'",
 		"port" => "'.$db_port.'",
 		"user" => "'.$db_user.'",
 		"pass" => "'.$db_pass.'",
 		"db" => "'.$db_db.'",
+		"driver" => "'.$db_driver.'",
 		"charset" => "utf8",
 	),
-), $config);
+));
 
 ?>';
-file_put_contents(ROOT_PATH."core/media/db.php", $db_config);
+if(file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX)) {
+	unlink(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX);
+}
+file_put_contents(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX, $db_config);
 
+$path = str_replace("http://", "", $_POST['PATH']);
+if(substr($path, -1)=="/") {
+	$host = nsubstr($path, 0, nstrlen($path)-1);
+} else {
+	$host = $path;
+}
+$path = str_replace("http://".$_SERVER['HTTP_HOST'], "", $_POST['PATH']);
 $config = '<?php
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
 die();
 }
+
+define("COOK_USER", "username_'.rand(0, 1000).'");
+define("COOK_PASS", "password_'.rand(0, 1000).'");
+define("COOK_ADMIN_USER", "admin_username_'.rand(0, 1000).'");
+define("COOK_ADMIN_PASS", "admin_password_'.rand(0, 1000).'");
 
 if(isset($_SERVER[\'HTTPS\']) && $_SERVER[\'HTTPS\']!=\'off\') {
 	$protocol = "https";
@@ -426,25 +417,51 @@ if(isset($_SERVER[\'HTTPS\']) && $_SERVER[\'HTTPS\']!=\'off\') {
 }
 
 $config = array_merge($config, array(
-	"logs" => '.saves($_POST['error_type'], true).',
+	"api_key" => "'.rand(1000000000, 9999999999).'",
+	"speed_update" => false,
+	"logs" => '.Saves::SaveOld($_POST['error_type'], true).',
 	"hosting" => true,
-	"default_http_hostname" => "'.saves($_POST['SERVER'], true).'",
-	"default_http_host" => $protocol."://'.saves($_POST['PATH'], true).'/",
+	"default_http_local" => "'.$path.'",
+	"default_http_hostname" => "'.Saves::SaveOld($_POST['SERVER'], true).'",
+	"default_http_host" => $protocol."://'.Saves::SaveOld($host, true).'/",
 	"lang" => "ru",
 	"cache" => array(
-		"type" => '.saves($_POST['cache_type'], true).',
-		"server" => "'.saves($_POST['cache_host'], true).'",
-		"port" => '.saves($_POST['cache_port'], true).',
-		"login" => "'.saves($_POST['cache_user'], true).'",
-		"pass" => "'.saves($_POST['cache_pass'], true).'",
-		"path" => "'.saves($_POST['cache_path'], true).'",
+		"type" => '.Saves::SaveOld($_POST['cache_type'], true).',
+		"server" => "'.Saves::SaveOld($_POST['cache_host'], true).'",
+		"port" => '.Saves::SaveOld($_POST['cache_port'], true).',
+		"login" => "'.Saves::SaveOld($_POST['cache_user'], true).'",
+		"pass" => "'.Saves::SaveOld($_POST['cache_pass'], true).'",
+		"path" => "'.Saves::SaveOld($_POST['cache_path'], true).'",
 	),
 	"lang" => "ru",
 	"charset" => "utf-8",
 ));
 
 ?>';
-file_put_contents(ROOT_PATH."core/media/config.install.php", $config);
-rename(ROOT_PATH."core/media/config.default.php", ROOT_PATH."core/media/config.php");
-header("Location: install.php?done");
+if(file_exists(ROOT_PATH."core".DS."media".DS."config.install.".ROOT_EX)) {
+	unlink(ROOT_PATH."core".DS."media".DS."config.install.".ROOT_EX);
+}
+file_put_contents(ROOT_PATH."core".DS."media".DS."config.install.".ROOT_EX, $config);
+
+$lang = '<?php
+if(!defined("IS_CORE")) {
+echo "403 ERROR";
+die();
+}
+
+$lang = array_merge($lang, array(
+	"sitename" => "'.Saves::SaveOld($_POST['sitename'], true).'",
+	"s_description" => "'.Saves::SaveOld($_POST['description'], true).'",
+));
+
+?>';
+$lang = charcode($lang);
+if(file_exists(ROOT_PATH."core".DS."media".DS."config.lang.".ROOT_EX)) {
+	unlink(ROOT_PATH."core".DS."media".DS."config.lang.".ROOT_EX);
+}
+file_put_contents(ROOT_PATH."core".DS."media".DS."config.lang.".ROOT_EX, $lang);
+if(file_exists(ROOT_PATH."core".DS."media".DS."config.default.".ROOT_EX)) {
+	rename(ROOT_PATH."core".DS."media".DS."config.default.".ROOT_EX, ROOT_PATH."core".DS."media".DS."config.".ROOT_EX);
+}
+header("Location: ../".Route::get("install_done")->uri(array()));
 ?>

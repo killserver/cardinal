@@ -1,15 +1,19 @@
 <?php
 /*
-*
-* Version Engine: 1.25.3
-* Version File: 10
-*
-* 10
-* add video light(really?!five version in cp1251 and five version after - in utf-8....finally!)
-*
-* 10.1
-* add alert and error for ajax, add repeat(really?! I do this?!)
-*
+ *
+ * @version 1.25.7-a1
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.7-a1
+ * Version File: 10
+ *
+ * 10.0
+ * add video light(really?!five version in cp1251 and five version after - in utf-8....finally!)
+ * 10.1
+ * add alert and error for ajax, add repeat(really?! I do this?!)
+ * 10.2
+ * add error for routification
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
@@ -21,9 +25,12 @@ $lang = array_merge($lang, array(
 	"site_name" => "Онлайн-видео",
 	"sitename" => "Онлайн-видео",
 	"adminpanel" => "Админ-панель",
+	"save" => "Сохранить",
 	"alert_parser" => "<b><font color=\"red\">!!!ВНИМАНИЕ!!!</font></b><br />Данным парсером поддерживаются только разрешенные сервисы, список которых Вы можете найти нажав на кнопку \"Поддерживаемые сервисы\"",
 //errors
 	"error" => "Ошибка!!!",
+	"error_routification" => "Ошибка \"роутификатора\"",
+	"error_page" => "Ошибка! Страница, которую Вы запрашивали - не найдена! Если Вы считаете, что это ошибка - пожалуйста, свяжитесь с администрацией!",
 	"error_video_exists" => "Ошибка!!!<br />Видео с таким названием уже есть в системе!!!",
 	"error_level_full" => "!!!Ошибка доступа!!!<br />У вас нет права находиться в данном разделе сайта!",
 	"error_level" => "Ошибка доступа",
@@ -258,7 +265,8 @@ $lang = array_merge($lang, array(
 	),
 
 	"level" => array(
-		LEVEL_MODER => "Администрация",
+		LEVEL_ADMIN => "Администрация",
+		LEVEL_MODER => "Модератор",
 		LEVEL_USER => "Пользователь",
 		LEVEL_GUEST => "Гость",
 	),
@@ -325,14 +333,68 @@ $lang = array_merge($lang, array(
 	"recover_not_exists_user" => "Введённый пользователь не найден в базе данных",
 	"recover_not_exists_email" => "Введённый электронный адрес не найден в базе данных",
 
-"test" => "\"%Сюжет сериала Квантовый скачок%\"",
-
-"linet" => "LiveInternet: показано число просмотров за 24",
-"yam" => "яндекс.метрика",
-"yam_full" => "яндекс.метрика: данные за сегодня (просмотры, визиты и уникальные посетители)",
-"mail_rating" => "рейтинг@Mail.ru",
-"linet_full" => "часа, посетителей за 24 часа и за сегодня",
-
+	"linet" => "LiveInternet: показано число просмотров за 24",
+	"yam" => "яндекс.метрика",
+	"yam_full" => "яндекс.метрика: данные за сегодня (просмотры, визиты и уникальные посетители)",
+	"mail_rating" => "рейтинг@Mail.ru",
+	"linet_full" => "часа, посетителей за 24 часа и за сегодня",
+	
+	'time_heute' =>	"Сегодня",
+	'time_gestern' => "Вчера",
+	
+	"langdate" => array(
+		'January' => "января",
+		'February' => "февраля",
+		'March' => "марта",
+		'April' => "апреля",
+		'May' => "мая",
+		'June' => "июня",
+		'July' => "июля",
+		'August' =>	"августа",
+		'September' => "сентября",
+		'October' => "октября",
+		'November' => "ноября",
+		'December' => "декабря",
+		'Jan' => "янв",
+		'Feb' => "фев",
+		'Mar' => "мар",
+		'Apr' => "апр",
+		'Jun' => "июн",
+		'Jul' => "июл",
+		'Aug' => "авг",
+		'Sep' => "сен",
+		'Oct' => "окт",
+		'Nov' => "ноя",
+		'Dec' => "дек",
+		'Sunday' => "Воскресенье",
+		'Monday' => "Понедельник",
+		'Tuesday' => "Вторник",
+		'Wednesday'	=> "Среда",
+		'Thursday' => "Четверг",
+		'Friday' => "Пятница",
+		'Saturday' => "Суббота",
+		'Sun' => "Вс",
+		'Mon' => "Пн",
+		'Tue' => "Вт",
+		'Wed' => "Ср",
+		'Thu' => "Чт",
+		'Fri' => "Пт",
+		'Sat' => "Сб",
+		'Sun' => "Вос",
+		'Mon' => "Пон",
+		'Tue' => "Вт",
+		'Wed' => "Ср",
+		'Thu' => "Чет",
+		'Fri' => "Пят",
+		'Sat' => "Суб",
+	),
+	
+	"login" => array(
+		"authorized" => "Вы уже авторизированны на сайте",
+		"notFound" => "Данный пользователь не найден на сайте, либо Вы ввели неверные данные для входа",
+		"notCorrect" => "Не верный пароль для авторизации",
+		"correct" => "Успешно прошли авторизацию! Возвращаем Вас на страницу с которой Вы пришли.",
+	),
 ));
 
 ?>

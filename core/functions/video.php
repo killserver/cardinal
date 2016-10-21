@@ -15,7 +15,7 @@ die();
 
 
 function others_video($video, $type="current", &$season = 1, &$seriya = 1) {
-global $lang, $user;
+global $lang;
 //var_dump(strtolowers($video));die();
 	if(strpos($video, "#") !== false) {
 		$ex = explode("#", $video);

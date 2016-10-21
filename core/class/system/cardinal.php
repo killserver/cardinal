@@ -1,12 +1,17 @@
 <?php
 /*
-*
-* Version Engine: 1.25.3
-* Version File: 2
-*
-* 2.4
-* add support XXX category
-*
+ *
+ * @version 1.25.7-a2
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.7-a2
+ * Version File: 2
+ *
+ * 2.4
+ * add support XXX category
+ * 2.5
+ * delete old test constant
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
@@ -17,7 +22,7 @@ define("IS_CRON", true);
 
 final class cardinal {
 
-	private $config;
+	private static $ch_login = array("class" => "cardinal", "method" => "or_create_pass");
 	public function cardinal() {
 		if(defined("INSTALLER")) {
 			return;
@@ -27,21 +32,30 @@ final class cardinal {
 		} else {
 			define("IS_BOT", true);
 		}
-		if(isset($_COOKIE['plus18'])) {
-			define("IS_XXX", "true");
-		}
 		$otime = config::Select("cardinal_time");
-		if(isset($_GET['d'])) {
-			var_dump(CRON_TIME, $otime);die();
-		}
 		if($otime <= time()-12*60*60) {
-			include_dir(ROOT_PATH."core/modules/cron/", ".".ROOT_EX);
+			include_dir(ROOT_PATH."core".DS."modules".DS."cron".DS, ".".ROOT_EX);
 			config::Update("cardinal_time", time());
 		}
 	}
+
+	public static function SaveCardinal($v) {
+		$dv = $nv = "";
+		for($i=0;$i<strlen($v);$i++) {
+			$nv .= ord($v[$i]).";";
+		}
+		$v = $nv;
+		unset($nv);
+		if(function_exists("convert_uuencode")) {
+			$dv .= "uu";
+			$v = urlencode(convert_uuencode($v));
+		}
+		$v = urlencode($dv.$v);
+		return $v;
+	}
 	
-	private function robots($useragent) {
-		if(!isset($useragent) || empty($useragent) || is_bool($useragent)) {
+	private function robots($userAgent) {
+		if(!isset($userAgent) || empty($userAgent) || is_bool($userAgent)) {
 			return false;
 		}
 		$arr = array();
@@ -52,27 +66,35 @@ final class cardinal {
 			for($i=0;$i<sizeof($pcre);$i++) {
 				$arr["#.*".$pcre[$i].".*#si"] = $dats[$i];
 			}
-			$result = preg_replace(array_keys($arr), $arr, $useragent);
-			return $result == $useragent ? false : $result;
+			$result = preg_replace(array_keys($arr), $arr, $userAgent);
+			return $result == $userAgent ? false : $result;
 		} else {
 			return false;
 		}
 	}
 	
-	public static function set_eighteen() {
-		if(!isset($_COOKIE['plus18'])) {
-			setcookie("plus18", "1", (time()+(60*24*60*60)), "/", ".".config::Select("default_http_hostname"), false, true);
-		} else {
-			setcookie("plus18", "", (time()-(120*24*60*60)), "/", ".".config::Select("default_http_hostname"), false, true);
+	private static function or_create_pass($pass) {
+		$pass = md5(md5($pass).$pass);
+		$pass = strrev($pass);
+		$pass = sha1($pass);
+		$pass = bin2hex($pass);
+	return md5(md5($pass).$pass);
+	}
+	
+	public static function change_pass($class = "", $method = "") {
+		if(!empty($method) && !empty($class) && class_exists($class)) {
+			self::$ch_login['class'] = $class;
+			self::$ch_login['method'] = $method;
+		} else if(!empty($class)) {
+			self::$ch_login['class'] = $class;
+			self::$ch_login['method'] = "login";
 		}
 	}
 	
-	public static function get_eighteen() {
-		if(isset($_COOKIE['plus18'])) {
-			return true;
-		} else {
-			return false;
-		}
+	public static function create_pass($pass) {
+		$class = (self::$ch_login['class']);
+		$method = (self::$ch_login['method']);
+		return $class::$method($pass);
 	}
 	
 	public static function view_eighteen() {
@@ -109,7 +131,7 @@ final class cardinal {
 		} else {
 			$ref = "";
 		}
-		db::doquery("INSERT INTO hackers SET ip = \"".HTTP::getip()."\", page = \"".urlencode($page)."\", post = \"".urlencode(self::amper($_POST))."\", get = \"".urlencode(self::amper($_GET))."\"".$ref.", activ = \"yes\"");
+		db::doquery("INSERT INTO `hackers` SET `ip` = \"".HTTP::getip()."\", `page` = \"".urlencode($page)."\", `post` = \"".urlencode(self::amper($_POST))."\", `get` = \"".urlencode(self::amper($_GET))."\"".$ref.", `activ` = \"yes\"");
 		location("{C_default_http_host}?hacker");
 	}
 

@@ -15,69 +15,27 @@ echo "403 ERROR";
 die();
 }
 
-function parser_url($url, $referer = null, $header=false, $coo=false, $coopath=null, $proxy=null, $error=false, $gzip=false, $uagent=null, $timeout=3) {
-	$ch = curl_init();
-	curl_setopt($ch, CURLOPT_URL, $url);
-	if(!empty($uagent)) {
-		curl_setopt($ch, CURLOPT_USERAGENT, $uagent);
-	} else {
-		curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 6.1; rv:14.0) Gecko/20100101 Firefox/14.0.1");
-	}
-//Установите эту опцию в ненулевое значение, если вы хотите, чтобы PHP завершал работу скрыто, если возвращаемый HTTP-код имеет значение выше 300. По умолчанию страница возвращается нормально с игнорированием кода.
-	//curl_setopt($ch, CURLOPT_FAILONERROR, 1);
-	//Устанавливаем значение referer - адрес последней активной страницы
-	if(is_bool($coo) && $coo) {
-		curl_setopt($ch, CURLOPT_COOKIEJAR, ROOT_PATH."core/cache/parser_video/".$coopath.".txt");
-		curl_setopt($ch, CURLOPT_COOKIEFILE, ROOT_PATH."core/cache/parser_video/".$coopath.".txt");
-	}
-	if(!is_bool($coo) && !empty($coo)) {
-		if(is_array($coo)) {
-			$nam = array_keys($coo);
-			$val = array_values($coo);
-			$coo = array();
-			for($i=0;$i<sizeof($nam);$i++) {
-				$coo .= $nam[$i]."=".$val[$i]."; ";
-			}
-			unset($nam, $val);
-		}
-		curl_setopt($ch, CURLOPT_COOKIE, $coo);
-	}
+//FIXME: Р° РЅР°С„РёРі РјРЅРµ С‚РѕРіРґР° СЌС‚Р° С„СѓРЅРєС†РёСЏ, РµСЃР»Рё РµСЃС‚СЊ РєР»Р°СЃСЃ Parser?!
+function parser_url($url, $referer = "", $header=false, $coo=false, $coopath="", $proxy="", $error=false, $gzip=false, $uagent="", $timeout=3) {
+	$p = new Parser($url);
+	$p->agent($uagent);
+	$p->cookie($coo, $coopath);
 	if(!empty($referer)) {
-		curl_setopt($ch, CURLOPT_REFERER, $referer);
-	} else {
-		curl_setopt($ch, CURLOPT_REFERER, $url);
+		$p->referer($referer);
 	}
-	curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-	if(!$header) {
-		curl_setopt($ch, CURLOPT_HEADER, 0);
-	} else {
-		curl_setopt($ch, CURLOPT_HEADER, 1);
-	}
-	if (strtolower(substr($url,0,5))=='https'){
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-	}
-	if(!config::Select("hosting")) {
-		curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
-		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-	}
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	$p->timeout($timeout);
+	$p->header($header);
 	if($gzip) {
-		curl_setopt($ch, CURLOPT_ENCODING, 'gzip');
+		$p->gzip($gzip);
 	}
 	if(!empty($proxy)) {
-		curl_setopt($ch, CURLOPT_PROXY, $proxy);
+		$p->proxy($proxy);
 	}
-	if(($html = curl_exec($ch)) === false) {
-		$html = curl_error($ch);
+	if($error) {
+		$p->error($error, $error);
+		$p->init();
 	}
-	$errors = curl_error($ch);
-	curl_close($ch);
-if($error) {
-return array("html" => $html, "error" => $errors);
-} else {
-return $html;
-}
+	return $p->get();
 }
 
 function parser_video($content, $start, $end){

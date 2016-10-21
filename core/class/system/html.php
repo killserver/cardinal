@@ -93,6 +93,16 @@ class html {
 	return $this;
 	}
 
+	function label($label) {
+		$this->html .= " label=".$this->sc.$label.$this->sc;
+	return $this;
+	}
+
+	function selected($selected = "selected") {
+		$this->html .= " selected=".$this->sc.$selected.$this->sc;
+	return $this;
+	}
+
 	function onclick($onclick) {
 		$this->html .= " onclick=".$this->sc.$onclick.$this->sc;
 	return $this;
@@ -100,6 +110,31 @@ class html {
 
 	function val($val) {
 		$this->html .= " value=".$this->sc.$val.$this->sc;
+	return $this;
+	}
+
+	function placeholder($placeholder) {
+		$this->html .= " placeholder=".$this->sc.$placeholder.$this->sc;
+	return $this;
+	}
+
+	function fors($for) {
+		$this->html .= " for=".$this->sc.$for.$this->sc;
+	return $this;
+	}
+	
+	function checked($checked) {
+		$this->html .= " checked=".$this->sc.$checked.$this->sc;
+	return $this;
+	}
+	
+	function method($method) {
+		$this->html .= " method=".$this->sc.$method.$this->sc;
+	return $this;
+	}
+	
+	function attr($attr, $val) {
+		$this->html .= " ".$attr."=".$this->sc.$val.$this->sc;
 	return $this;
 	}
 
@@ -123,7 +158,15 @@ class html {
 	return $this;
 	}
 
-	function cont($html) {
+	function cont($htmls) {
+		$html = "";
+		if(is_array($htmls)) {
+			foreach($htmls as $ht) {
+				$html .= $ht;
+			}
+		} else {
+			$html = $htmls;
+		}
 		if($this->type==1) {
 			$this->html .= ">".$html;
 		} elseif($this->type==2) {

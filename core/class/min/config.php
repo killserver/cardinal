@@ -29,13 +29,6 @@ $min_errorLogger = false;
 
 
 /**
- * Allow use of the Minify URI Builder app. If you no longer need 
- * this, set to false.
- **/
-$min_enableBuilder = false;
-
-
-/**
  * For best performance, specify your temp directory here. Otherwise Minify
  * will have to load extra code to guess. Some examples below:
  */

@@ -1,14 +1,19 @@
 <?php
 /*
-*
-* Version Engine: 1.25.5a8
-* Version File: 3
-*
-* 3.1
-* add support created password for modules
-*
-* add support writing and deleting data in cookies
-*
+ *
+ * @version 1.25.6-rc4
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc4
+ * Version File: 3
+ *
+ * 3.1
+ * add support created password for modules
+ * 3.2
+ * add support writing and deleting data in cookies
+ * 3.3
+ * delete old function set/get/delete cookie and transfer logic to HTTP class
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
@@ -25,6 +30,7 @@ function or_create_pass($pass) {
 return md5(md5($pass).$pass);
 }
 
+//ToDo: Надо с этой функцией что-то делать... она баластом в движке валяется
 function user_link($user_link, $user=null, $type=null, $added=null) {
 	if(empty($user_link)) {
 		$user_link = "404";
@@ -37,14 +43,6 @@ function user_link($user_link, $user=null, $type=null, $added=null) {
 		return $user;
 	}
 return "";
-}
-
-function ToCookie($name, $value=null, $method="write") {
-	if($method=="delete") {
-		setcookie($name, $value, time()-(60*24*60*60), "/", ".".config::Select('default_http_hostname'), 1);
-	} else {
-		setcookie($name, $value, time()+(120*24*60*60), "/", ".".config::Select('default_http_hostname'), false, true);
-	}
 }
 
 ?>

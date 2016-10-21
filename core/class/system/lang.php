@@ -1,15 +1,21 @@
 <?php
 /*
-*
-* Version Engine: 1.25.5a7
-* Version File: 2
-*
-* 2.2
-* add checker connection to db and fix core
-*
-* 2.3
-* add support lang without set variable for select lang pack
-*
+ *
+ * @version 2015-09-30 13:30:44 1.25.6-rc3
+ * @copyright 2014-2015 KilleR for Cardinal Engine
+ *
+ * Version Engine: 1.25.6-rc3
+ * Version File: 2
+ *
+ * 2.2
+ * add checker connection to db and fix core
+ * 2.3
+ * add support lang without set variable for select lang pack
+ * 2.4
+ * add config lang creating in installer
+ * 2.5
+ * add getting lang now
+ *
 */
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
@@ -20,15 +26,15 @@ class lang {
 
 	private static $lang = "ru";
 
-	public static function lang_db() {
+	final public static function lang_db() {
+		$langs = array();
 		if(!db::connected()) {
-			return "";
+			return $langs;
 		}
 		if(!cache::Exists("lang_".self::$lang)) {
-			db::doquery("SELECT orig, translate FROM lang WHERE lang = \"".self::$lang."\"", true);
-			$langs = array();
-			while($langs = db::fetch_array()) {
-				$langs[$langs['orig']] = $langs['translate'];
+			db::doquery("SELECT `orig`, `translate` FROM `lang` WHERE lang LIKE \"".self::$lang."\"", true);
+			while($lang = db::fetch_assoc()) {
+				$langs[$lang['orig']] = $lang['translate'];
 			}
 			cache::Set("lang_".self::$lang, $langs);
 			db::free();
@@ -37,11 +43,26 @@ class lang {
 		}
 	return $langs;
 	}
+	
+	final public static function Update($lang, $orig, $translate) {
+		if(
+			Validate::CheckType($lang, "string") && Validate::not_empty($lang)
+				&&
+			Validate::CheckType($orig, "string") && Validate::not_empty($orig)
+				&&
+			Validate::CheckType($translate, "string") && Validate::not_empty($translate)
+		) {
+			db::doquery("REPLACE INTO `lang` SET `lang` = '".Saves::SaveEscape(Saves::SaveText($lang))."', `orig` = '".Saves::SaveEscape(Saves::SaveText($orig))."', `translate` = '".Saves::SaveEscape(Saves::SaveText($translate))."'");
+			return true;
+		} else {
+			return false;
+		}
+	}
 
 	public function __construct() {
 	global $user;
 		$clang = config::Select('lang');
-		$ulang = (!empty($user['lang']) ? $user['lang'] : "");
+		$ulang = (isset($user['lang']) && !empty($user['lang']) ? $user['lang'] : "");
 		if(!empty($ulang)) {
 			self::$lang = $ulang;
 		} elseif(!empty($clang)) {
@@ -49,20 +70,37 @@ class lang {
 		}
 	}
 
-	public static function set_lang($langs) {
+	final public static function set_lang($langs) {
 		self::$lang = $langs;
 	}
+	
+	final public static function get_lg() {
+		return self::$lang;
+	}
 
-	public static function init_lang() {
-	global $manifest;
-		$lang=array();
-		if(isset($manifest['lang']['main']) && file_Exists(ROOT_PATH."core/lang/".self::$lang."/".$manifest['lang']['main'].".php")) {
-			include(ROOT_PATH."core/lang/".self::$lang."/".$manifest['lang']['main'].".php");
-			return array_merge($lang, self::lang_db());
+	final public static function init_lang($db = true) {
+	global $lang, $manifest;
+		if(!is_array($lang) || sizeof($lang)==0) {
+			$lang = array();
 		}
-		if(file_exists(ROOT_PATH."core/lang/".self::$lang."/main.php")) {
-			include(ROOT_PATH."core/lang/".self::$lang."/main.php");
-			$db_lang = self::lang_db();
+		if(isset($manifest['lang']['main']) && file_Exists(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$manifest['lang']['main'].".".ROOT_EX)) {
+			include(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$manifest['lang']['main'].".".ROOT_EX);
+			if($db) {
+				return array_merge($lang, self::lang_db());
+			} else {
+				return $lang;
+			}
+		}
+		if(file_exists(ROOT_PATH."core".DS."lang".DS.self::$lang.DS."main.".ROOT_EX)) {
+			include(ROOT_PATH."core".DS."lang".DS.self::$lang.DS."main.".ROOT_EX);
+			if($db) {
+				$db_lang = self::lang_db();
+			} else {
+				$db_lang = array();
+			}
+			if(file_exists(ROOT_PATH."core".DS."media".DS."config.lang.".ROOT_EX)) {
+				include(ROOT_PATH."core".DS."media".DS."config.lang.".ROOT_EX);
+			}
 			if(is_array($db_lang)) {
 				return array_merge($lang, $db_lang);
 			} else {
@@ -73,7 +111,7 @@ class lang {
 		}
 	}
 	
-	public static function get_lang($name, $sub=null) {
+	final public static function get_lang($name, $sub = "") {
 	global $lang;
 		if(!empty($sub) && isset($lang[$name][$sub])) {
 			return $lang[$name][$sub];
@@ -83,22 +121,36 @@ class lang {
 			return "";
 		}
 	}
+	
+	final public static function setLang($name, $val, $sub = "") {
+	global $lang;
+		if(!empty($sub)) {
+			if(!isset($lang[$name])) {
+				$lang[$name] = array();
+			}
+			$lang[$name][$sub] = $val;
+			return true;
+		} else {
+			$lang[$name] = $val;
+			return true;
+		}
+	}
 
-	public static function include_lang($page) {
+	final public static function include_lang($page) {
 	global $lang, $user, $manifest;
 		$clang = config::Select('lang');
-		$ulang = (!empty($user['lang']) ? $user['lang'] : "");
+		$ulang = (isset($user['lang']) && !empty($user['lang']) ? $user['lang'] : "");
 		if(!empty($ulang)) {
 			self::$lang = $ulang;
 		} else {
 			self::$lang = $clang;
 		}
-		if(isset($manifest['lang'][$page]) && file_Exists(ROOT_PATH."core/lang/".self::$lang."/".$manifest['lang'][$page].".php")) {
-			include(ROOT_PATH."core/lang/".self::$lang."/".$manifest['lang'][$page].".php");
+		if(isset($manifest['lang'][$page]) && file_Exists(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$manifest['lang'][$page].".".ROOT_EX)) {
+			include(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$manifest['lang'][$page].".".ROOT_EX);
 			return array_merge($lang, self::lang_db());
 		}
-		if(file_exists(ROOT_PATH."core/lang/".self::$lang."/".$page.".php")) {
-			include(ROOT_PATH."core/lang/".self::$lang."/".$page.".php");
+		if(file_exists(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$page.".".ROOT_EX)) {
+			include(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$page.".".ROOT_EX);
 			$langs = self::lang_db();
 			if(is_array($langs)) {
 				return array_merge($lang, $langs);
@@ -106,6 +158,14 @@ class lang {
 				return $lang;
 			}
 		}
+	}
+	
+	public function __get($val) {
+		return self::get_lang($val);
+	}
+	
+	public function __set($name, $val) {
+		return self::setLang($name, $val);
 	}
 
 	function __destruct() {

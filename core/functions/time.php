@@ -4,7 +4,7 @@ echo "403 ERROR";
 die;
 }
 
-function get_date($date,$array) {
+function get_date($date, $array) {
 	$first=$array[0];
 	$second=$array[1];
 	$third=$array[2];
@@ -20,7 +20,55 @@ function get_date($date,$array) {
 		return $second;
 	}
 }
-function timespan($seconds = 1, $time = null) {
+
+function langdate($date) {
+	$only_date = false;
+	if(is_array($date) && isset($date[3]) && !empty($date[3])) {
+		$temp = $date[3];
+	} else {
+		$temp = ", H:i";
+	}
+	if(is_array($date) && isset($date[4]) && !empty($date[4])) {
+		$only_date = true;
+	}
+	if(is_array($date) && isset($date[1])) {
+		$date = $date[1];
+	}
+	if(empty($date) || $date==0 || !is_numeric($date)) {
+		if($only_date) {
+			$local = new DateTime('@'.time());
+			$local->setTimeZone(new DateTimeZone(config::Select("date_timezone")));
+			$date = strtr($local->format($temp), lang::get_lang("langdate"));
+			return $date;
+		}
+		return "";
+	}
+	if(date('Ymd', $date) == date('Ymd', time())) {
+		$local = new DateTime('@'.$date);
+		$local->setTimeZone(new DateTimeZone(config::Select("date_timezone")));
+		$date = strtr($local->format($temp), lang::get_lang("langdate"));
+		if(!$only_date) {
+			return lang::get_lang("time_heute").",".$date;
+		} else {
+			return $date;
+		}
+	} elseif(date('Ymd', $date) == date('Ymd', (time()-86400))) {
+		$local = new DateTime('@'.$date);
+		$local->setTimeZone(new DateTimeZone(config::Select("date_timezone")));
+		$date = strtr($local->format($temp), lang::get_lang("langdate"));
+		if(!$only_date) {
+			return lang::get_lang("time_gestern").",".$date;
+		} else {
+			return $date;
+		}
+	} else {
+		$local = new DateTime('@'.$date);
+		$local->setTimeZone(new DateTimeZone(config::Select("date_timezone")));
+		return strtr($local->format($temp), lang::get_lang("langdate"));
+	}
+}
+
+function timespan($seconds = 1, $time = "") {
 global $lang;
 	if(!is_numeric($seconds)) {
 		$seconds = 1;

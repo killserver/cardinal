@@ -26,6 +26,11 @@ if (isset($_GET['f'])) {
 	$_GET['f'] = str_replace(chr(0), '', (string)$_GET['f']); 
 } 
 
+define("IS_CORE", true);
+$config = array();
+include_once($min_documentRoot."/core/media/config.php");
+
+
 define('MINIFY_MIN_DIR', dirname(__FILE__));
 
 // load config
@@ -35,6 +40,7 @@ if (isset($_GET['test'])) {
     include MINIFY_MIN_DIR . '/config-test.php';
 }
 
+global $min_libPath;
 require "$min_libPath/Minify/Loader.php";
 Minify_Loader::register();
 
@@ -82,9 +88,6 @@ if (isset($_GET['f']) || isset($_GET['g'])) {
     }
     Minify::serve($min_serveController, $min_serveOptions);
         
-} elseif ($min_enableBuilder) {
-    header('Location: builder/');
-    exit();
 } else {
     header("Location: /");
     exit();
