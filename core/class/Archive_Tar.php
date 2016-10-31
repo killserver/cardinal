@@ -1,10 +1,4 @@
 <?php
-if(file_exists("PEAR.php") || class_exists("PEAR")) {
-	require_once 'PEAR.php';
-} else {
-	require_once(dirname(__FILE__)."/PEAR.php");
-}
-
 define('ARCHIVE_TAR_ATT_SEPARATOR', 90001);
 define('ARCHIVE_TAR_END_BLOCK', pack("a512", ''));
 

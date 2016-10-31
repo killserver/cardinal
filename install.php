@@ -130,6 +130,19 @@ if(!db::check_connect($db_host, $db_user, $db_pass)) {
 
 $SQL = array();
 $SQL[] = "SET FOREIGN_KEY_CHECKS = 0;";
+$SQL[] = "DROP TABLE IF EXISTS `category`;";
+$SQL[] = "CREATE TABLE IF NOT EXISTS `category` (
+  `cat_id` int(11) NOT NULL AUTO_INCREMENT,
+  `alt_name` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `parent` int(11) NOT NULL,
+  `sort` int(11) NOT NULL,
+  PRIMARY KEY (`cat_id`),
+  KEY `all` (`parent`,`sort`),
+  FULLTEXT KEY `name` (`name`);
+  FULLTEXT KEY `alt_name` (`alt_name`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
 $SQL[] = "DROP TABLE IF EXISTS `config`;";
 $SQL[] = "CREATE TABLE IF NOT EXISTS `config` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -262,6 +275,7 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `posts` (
    `cat_id` varchar(255) NOT NULL,
    `time` int(11) NOT NULL,
    `added` varchar(255) NOT NULL,
+   `stat` int(11) NOT NULL,
    `active` enum('yes','no') NOT NULL DEFAULT 'no',
    PRIMARY KEY `id`(`id`),
    FULLTEXT `title_name` (`title`, `alt_name`),
@@ -269,6 +283,7 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `posts` (
    FULLTEXT `idescr`(`image`, `descr`),
    FULLTEXT `added`(`added`),
    KEY `active_time`(`active`, `time`)
+   KEY `stat`(`stat`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 
 $SQL[] = "DROP TABLE IF EXISTS `users`;";

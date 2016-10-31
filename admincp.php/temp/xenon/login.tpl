@@ -137,7 +137,7 @@
 				</div>
 				
 				<!-- Add class "fade-in-effect" for login form effect -->
-				<form method="post" role="form" id="login" class="login-form fade-in-effect">
+				<form method="post" role="form" id="login" class="login-form fade-in-effect" autocomplete="off">
 					<input type="hidden" name="method" id="method" value="login" />
 					<div class="login-header">
 						<a href="#" class="logo">

@@ -23,7 +23,9 @@ class base extends modules {
 
 	function __construct() {
 		$this->manifest_log('load_modules', 'blocks');
-		$this->blocks();
+		if(!defined("WITHOUT_DB")) {
+			$this->blocks();
+		}
 	}
 
 	private function set_menu($name, $html = null, $block = null) {

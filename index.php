@@ -30,8 +30,12 @@ if(is_array($config) && sizeof($config)>0 && isset($config["default_http_local"]
 	exit();
 }
 
-$server = $_SERVER['QUERY_STRING'];
-if(!empty($server)) {
+if(isset($_SERVER['QUERY_STRING'])) {
+	$server = $_SERVER['QUERY_STRING'];
+} else {
+	$server = "";
+}
+if(!empty($server) || (defined("ROUTE_GET_URL") && isset($_SERVER[ROUTE_GET_URL]) && strlen($_SERVER[ROUTE_GET_URL])>1)) {
 	$page = $server;
 	if(strpos($page, "&") !== false) {
 		$pages = explode("&", $page);

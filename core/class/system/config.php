@@ -134,7 +134,7 @@ class config {
 		if(defined("WITHOUT_DB")) {
 			return false;
 		}
-		db::doquery("REPLACE INTO `config` SET `config_value` = \"".$data."\" WHERE `config_name` = \"".$name."\"");
+		db::doquery("REPLACE INTO `config` SET `config_value` = \"".$data."\", `config_name` = \"".$name."\"");
 		cache::Delete("config");
 		if(!empty(self::$config[$data])) {
 			return self::$config[$data];

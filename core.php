@@ -100,11 +100,14 @@ session_start();
 //define("NOT_DIE", true);
 
 if(defined("DEBUG") || isset($_GET['debug'])) {
-	ini_set('display_errors',1);
+	ini_set('display_errors', 1);
 	error_reporting(E_ALL);
-	define("DEBUG_ACTIVATED", true);
+	if(!defined("DEBUG_ACTIVATED")) {
+		define("DEBUG_ACTIVATED", true);
+	}
 }
-if(file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."core".DIRECTORY_SEPARATOR."media".DIRECTORY_SEPARATOR."isFrame.lock")) {
+
+if(!defined("WITHOUT_DB") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."core".DIRECTORY_SEPARATOR."media".DIRECTORY_SEPARATOR."isFrame.lock")) {
 	define("WITHOUT_DB", true);
 }
 
@@ -167,18 +170,18 @@ if(defined("WITHOUT_DB") || !defined("INSTALLER")) {
 	if(file_exists(ROOT_PATH."core".DS."media".DS."users.".ROOT_EX)) {
 		include(ROOT_PATH."core".DS."media".DS."users.".ROOT_EX);
 	}
-	if((isset($_COOKIE[COOK_USER]) and !empty($_COOKIE[COOK_USER])) && ((isset($_COOKIE[COOK_PASS]) and !empty($_COOKIE[COOK_PASS])) || (isset($_COOKIE[COOK_ADMIN_PASS]) and !empty($_COOKIE[COOK_ADMIN_PASS])))) {
-		if(isset($_COOKIE[COOK_ADMIN_USER]) && defined("IS_ADMIN")) {
-			$username = saves($_COOKIE[COOK_ADMIN_USER]);
+	if(Arr::get($_COOKIE, COOK_USER, false) && (Arr::get($_COOKIE, COOK_PASS, false) || Arr::get($_COOKIE, COOK_ADMIN_PASS, false))) {
+		if(Arr::get($_COOKIE, COOK_ADMIN_USER, false) && defined("IS_ADMIN")) {
+			$username = Saves::SaveOld(Arr::get($_COOKIE, COOK_ADMIN_USER));
 		} else {
-			$username = saves($_COOKIE[COOK_USER]);
+			$username = Saves::SaveOld(Arr::get($_COOKIE, COOK_USER));
 		}
-		if(isset($_COOKIE[COOK_ADMIN_PASS]) && defined("IS_ADMIN")) {
+		if(Arr::get($_COOKIE, COOK_ADMIN_PASS, false) && defined("IS_ADMIN")) {
 			$where = "admin_pass";
-			$password = saves($_COOKIE[COOK_ADMIN_PASS]);
+			$password = Saves::SaveOld(Arr::get($_COOKIE, COOK_ADMIN_PASS));
 		} else {
 			$where = "pass";
-			$password = saves($_COOKIE[COOK_PASS]);
+			$password = Saves::SaveOld(Arr::get($_COOKIE, COOK_PASS));
 		}
 		if(!cache::Exists("user_".$username)) {
 			if(defined("WITHOUT_DB")) {
@@ -208,11 +211,11 @@ if(defined("WITHOUT_DB") || !defined("INSTALLER")) {
 			}
 		} else if(cache::Exists("user_".$username)) {
 			$password = $admin_password = "";
-			if(isset($_COOKIE[COOK_PASS]) && !empty($_COOKIE[COOK_PASS])) {
-				$password = saves($_COOKIE[COOK_PASS]);
+			if(Arr::get($_COOKIE, COOK_PASS, false)) {
+				$password = Saves::SaveOld(Arr::get($_COOKIE, COOK_PASS));
 			}
-			if(isset($_COOKIE[COOK_ADMIN_PASS]) && !empty($_COOKIE[COOK_ADMIN_PASS])) {
-				$admin_password = saves($_COOKIE[COOK_ADMIN_PASS]);
+			if(Arr::get($_COOKIE, COOK_ADMIN_PASS, false)) {
+				$admin_password = Saves::SaveOld(Arr::get($_COOKIE, COOK_ADMIN_PASS));
 			}
 			$user = cache::Get("user_".$username);
 			if($user['pass'] != $password && $user['admin_pass'] != $admin_password) {

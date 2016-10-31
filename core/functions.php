@@ -56,8 +56,8 @@ if(file_exists(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX) && file_exists(
 			if(defined("VERSION")) {
 				define("START_VERSION", VERSION);
 			}
-			if(isset($_SERVER['PHP_SELF'])) {
-				$link = str_replace(array("index.php", "admincp.php/"), "", $_SERVER['PHP_SELF']);
+			if(isset($_SERVER['SCRIPT_NAME'])) {
+				$link = str_replace(array("index.php", "admincp.php/"), "", $_SERVER['SCRIPT_NAME']);
 			} else {
 				$link = "/";
 			}
@@ -70,6 +70,12 @@ if(file_exists(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX) && file_exists(
 		}
 		if(file_exists(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX)) {
 			require_once(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX);
+		}
+		if(file_exists(ROOT_PATH."core".DS."media".DS."config.install.".ROOT_EX)) {
+			require_once(ROOT_PATH."core".DS."media".DS."config.install.".ROOT_EX);
+		}
+		if(file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX)) {
+			require_once(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX);
 		}
 	}
 	if(!defined("WITHOUT_DB") && !defined("IS_INSTALLER") && (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], "install")===false)) {

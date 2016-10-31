@@ -127,7 +127,7 @@
 					});
 				</script>
 				
-				<form role="form" id="lockscreen" class="lockcreen-form fade-in-effect">
+				<form role="form" id="lockscreen" class="lockcreen-form fade-in-effect" autocomplete="off">
 					<input type="hidden" name="method" value="login" />
 					<div class="user-thumb">
 						<a href="#">
@@ -140,7 +140,7 @@
 						<p>Enter your password to access the admin.</p>
 						
 						<div class="input-group">
-							<input type="password" class="form-control input-dark" name="passwd" id="passwd" placeholder="Password" />
+							<input type="password" class="form-control input-dark" name="passwd" id="passwd" placeholder="Password" autocomplete="off" />
 							<span class="input-group-btn">
 								<button type="submit" class="btn btn-primary">Log In</button>
 							</span>

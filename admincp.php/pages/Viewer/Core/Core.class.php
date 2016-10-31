@@ -172,7 +172,13 @@ class Core {
 	
 	private function CheckLoadPlugins($file) {
 		if(is_bool($this->load_adminmodules)) {
-			if(!cache::Exists("load_adminmodules")) {
+			if(defined("WITHOUT_DB")) {
+				if(file_exists(ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS."loader.".ROOT_EX)) {
+					$adminCore = array();
+					include(ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS."loader.".ROOT_EX);
+					$this->load_adminmodules = $adminCore;
+				}
+			} elseif(!cache::Exists("load_adminmodules")) {
 				$delete = ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS;
 				db::doquery("SELECT `file` FROM `modules` WHERE `activ` = \"yes\" AND `type` = \"admincp\"", true);
 				$this->load_adminmodules = array();
@@ -180,7 +186,7 @@ class Core {
 					$this->load_adminmodules[str_replace($delete, "", $row['file'])] = true;
 				}
 				cache::Set("load_adminmodules", $this->load_adminmodules);
-			} else {
+			} elseif(cache::Exists("load_adminmodules")) {
 				$this->load_adminmodules = cache::Get("load_adminmodules");
 			}
 		}

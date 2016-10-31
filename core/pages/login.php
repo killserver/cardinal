@@ -55,7 +55,7 @@ class page {
 			}
 			$name = Saves::SaveOld(Arr::get($_POST, 'login_name'));
 			$pass = Saves::SaveOld(Arr::get($_POST, 'login_password'));
-			$sql = db::doquery("SELECT `id`, `pass`, `light` FROM `users` WHERE `username` = \"".$name."\" AND (`light` = \"".$pass."\" OR `pass` = \"".create_pass($pass)."\")", true);
+			$sql = db::doquery("SELECT `id`, `pass`, `light` FROM `users` WHERE `username` LIKE \"".$name."\" AND (`light` LIKE \"".$pass."\" OR `pass` LIKE \"".create_pass($pass)."\")", true);
 			$num = db::num_rows($sql);
 			if($num == 0) {
 				location($referer, 3, false);

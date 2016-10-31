@@ -28,25 +28,54 @@ function view_pages($page) {
 global $manifest;
 	if(array_key_exists($page, $manifest['before_ini_class'])) {
 		$pages = $manifest['before_ini_class'][$page];
-		$pages['object']->$pages['func']();
+		if(is_array($pages) && !isset($pages['object'])) {
+			foreach($pages as $p) {
+				if(!isset($p['object'])) {
+					continue;
+				}
+				$p['object']->$p['func']();
+			}
+		} else if(isset($pages['object'])) {
+			$pages['object']->$pages['func']();
+		}
 		unset($pages);
 	}
 	if(array_key_exists($page, $manifest['pages']) && file_exists(ROOT_PATH."core".DS."pages".DS.$manifest['pages'][$page])) {
 		include_once(ROOT_PATH."core".DS."pages".DS.$manifest['pages'][$page]);
 		if(array_key_exists($page, $manifest['after_ini_class'])) {
 			$page = $manifest['after_ini_class'][$page];
-			$page['object']->$page['func']();
+			if(is_array($page) && !isset($page['object'])) {
+				foreach($page as $p) {
+					if(!isset($p['object'])) {
+						continue;
+					}
+					$p['object']->$p['func']();
+				}
+			} else if(isset($page['object'])) {
+				$page['object']->$page['func']();
+			}
 			unset($page);
 		}
 		return;
 	}
 	if(array_key_exists($page, $manifest['class_pages'])) {
 		$pages = $manifest['class_pages'][$page];
-		$pages['object']->$pages['func']();
+		if(isset($pages['object'])) {
+			$pages['object']->$pages['func']();
+		}
 		unset($pages);
 		if(array_key_exists($page, $manifest['after_ini_class'])) {
 			$page = $manifest['after_ini_class'][$page];
-			$page['object']->$page['func']();
+			if(is_array($page) && !isset($page['object'])) {
+				foreach($page as $p) {
+					if(!isset($p['object'])) {
+						continue;
+					}
+					$p['object']->$p['func']();
+				}
+			} else if(isset($page['object'])) {
+				$page['object']->$page['func']();
+			}
 			unset($page);
 		}
 		return;
@@ -77,12 +106,34 @@ global $manifest;
 		break;
 		default:
 			if(array_key_exists("default", $manifest['class_pages'])) {
+				if(array_key_exists("default", $manifest['before_ini_class'])) {
+					$pages = $manifest['before_ini_class']["default"];
+					if(is_array($pages) && !isset($pages['object'])) {
+						foreach($pages as $p) {
+							$p['object']->$p['func']();
+						}
+					} else {
+						$pages['object']->$pages['func']();
+					}
+					unset($pages);
+				}
 				$pages = $manifest['class_pages']["default"];
-				$pages['object']->$pages['func']();
+				if(isset($pages['object'])) {
+					$pages['object']->$pages['func']();
+				}
 				unset($pages);
 				if(array_key_exists("default", $manifest['after_ini_class'])) {
 					$page = $manifest['after_ini_class']["default"];
-					$page['object']->$page['func']();
+					if(is_array($page) && !isset($page['object'])) {
+						foreach($page as $p) {
+							if(!isset($p['object'])) {
+								continue;
+							}
+							$p['object']->$p['func']();
+						}
+					} else if(isset($page['object'])) {
+						$page['object']->$page['func']();
+					}
 					unset($page);
 				}
 				return;
@@ -92,7 +143,16 @@ global $manifest;
 	}
 	if(array_key_exists($page, $manifest['after_ini_class'])) {
 		$page = $manifest['after_ini_class'][$page];
-		$page['object']->$page['func']();
+		if(is_array($page) && !isset($page['object'])) {
+			foreach($page as $p) {
+				if(!isset($p['object'])) {
+					continue;
+				}
+				$p['object']->$p['func']();
+			}
+		} else if(isset($page['object'])) {
+			$page['object']->$page['func']();
+		}
 		unset($page);
 	}
 }

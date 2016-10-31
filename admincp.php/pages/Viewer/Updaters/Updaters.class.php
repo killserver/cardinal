@@ -67,10 +67,16 @@ class Updaters extends Core {
 			}
 			$tar_object = new Archive_Tar(ROOT_PATH."core".DS."cache".DS."system".DS."lastest.tar.gz", "gz");
 			$list = $tar_object->listContent();
-			if(is_array($list) && sizeof($list)>0) {
-				$tar_object->extractModify(ROOT_PATH, "cardinal-trunk/");
+			if(!is_array($list) || sizeof($list)==0) {
+				header("HTTP/1.0 404 Not Found");
 			}
-			unlink(ROOT_PATH."core".DS."cache".DS."system".DS."lastest.tar.gz");
+			$tr = $tar_object->extractModify(ROOT_PATH, "cardinal-trunk/");
+			if($tr===true) {
+				unlink(ROOT_PATH."core".DS."cache".DS."system".DS."lastest.tar.gz");
+				echo "1";
+			} else {
+				header("HTTP/1.1 406 Not Acceptable");
+			}
 			return;
 		}
 		if(file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."lastest.tar.gz")) {

@@ -35,7 +35,7 @@ function DebugPanel_ShowHidePanel() {
 		</li>
 		<li>
 			<span class="icon vars"></span>
-			<a href="javascript:DebugPanel_Toggle('i-vars-log')">vars <span class="small">(G: {count_get} / P: {count_post} / C: {count_cookie})</span></a>
+			<a href="javascript:DebugPanel_Toggle('i-vars-log')">vars <span class="small">(G: {count_get} / P: {count_post} / C: {count_cookie} / R: {count_router})</span></a>
 		</li>
 		<li>
 			<span class="icon files"></span>
@@ -168,6 +168,31 @@ function DebugPanel_ShowHidePanel() {
 									<td colspan="3" class="center">Empty</td>
 								</tr>
 							[/if {count_server}>=1]
+						</table>
+					</div>
+				</li>
+				<li>
+					<a href="javascript:DebugPanel_Toggle('i-router-log')">Route <span>({count_router})</span></a>
+					<div id="i-router-log" style="display: none">
+						<table cellpadding="0" cellspacing="0">
+							<tr>
+								<th>#</th>
+								<th>key</th>
+								<th>value</th>
+							</tr>
+							[if {count_router}>=1]
+								[foreach block=router]
+									<tr>
+										<td class="num">{router.$id}</td>
+										<td>{router.key}</td>
+										<td>{router.val}</td>
+									</tr>
+								[/foreach]
+							[else {count_router}>=1]
+								<tr>
+									<td colspan="3" class="center">Empty</td>
+								</tr>
+							[/if {count_router}>=1]
 						</table>
 					</div>
 				</li>

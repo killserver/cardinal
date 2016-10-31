@@ -65,10 +65,10 @@ class Login extends Core {
 				HTTP::set_cookie('failed-attempts', 0, time()+(5*60), false);
 				HTTP::set_cookie(COOK_ADMIN_USER, $given_username);
 				HTTP::set_cookie(COOK_ADMIN_PASS, $given_password);
-				if(!isset($_COOKIE[COOK_USER]) || empty($_COOKIE[COOK_USER])) {
+				if(!Arr::get($_COOKIE, COOK_USER)) {
 					HTTP::set_cookie(COOK_USER, $given_username);
 				}
-				if(!isset($_COOKIE[COOK_PASS]) || empty($_COOKIE[COOK_PASS])) {
+				if(!Arr::get($_COOKIE, COOK_PASS)) {
 					HTTP::set_cookie(COOK_PASS, $row['pass']);
 				}
 			} else {

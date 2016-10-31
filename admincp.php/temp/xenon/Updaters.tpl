@@ -41,6 +41,7 @@ function rebuild() {
 					"hideMethod": "fadeOut"
 				};
 				toastr.success("{L_done_updates}", "{L_done_update}", opts);
+				jQuery(".download").unbind("click");
 				jQuery("a#core-cardinal").removeClass("btn-red").removeClass("download").addClass("btn-success").addClass("install");
 				jQuery("a#core-cardinal span").html("{L_install} {L_new_versions} [{new_version}]");
 				rebuild();

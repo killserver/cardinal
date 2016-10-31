@@ -1,4 +1,4 @@
-<form role="form" class="form-horizontal" method="post">
+<form role="form" action="./?pages=Settings&save" class="form-horizontal" method="post">
 <div class="col-md-12">
 <center>API-{L_key}: <input type="text" value="{API}" readonly="readonly" disabled="disabled"></center>
 <ul class="nav nav-tabs right-aligned"> 
@@ -34,12 +34,12 @@
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">{L_SiteDescr}</div><input type="text" name="description" maxlength="160" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;" value="{description}"><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">{L_SiteDomain}</div><input type="text" name="SERVER" value="{SERNAME}" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">{L_SitePath}</div><input type="text" name="PATH" value="{SERPATH}" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
-		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Moby site link</div><input type="text" name="mobyhost" value="{C_default_http_mobyhost}" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
+		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Moby site link</div><input type="text" name="mobyhost" value="[if {C_default_http_mobyhost}!="{C_default_http_mobyhost}"]{C_default_http_mobyhost}[/if {C_default_http_mobyhost}!="{C_default_http_mobyhost}"]" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">{L_LogErrors}</div><select name="error_type" style="width:50%;padding:5px;margin:1px;"><option value="ERROR_FILE">{L_LogFile}</option><option value="ERROR_DB">{L_LogDB}</option></select><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">{L_GetNewUpdates}</div><input type="checkbox" name="speed_update" value="1"[if {C_speed_update}==1] checked="checked"[/if {C_speed_update}==1] class="iswitch iswitch-secondary" /><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">{L_CacheTemplates}</div><input type="checkbox" name="ParsePHP" value="1"[if {C_ParsePHP}==1] checked="checked"[/if {C_ParsePHP}==1] class="iswitch iswitch-secondary" /><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;" alt="Full cache page as html" title="Full cache page as html">Full cache [beta]</div><input type="checkbox" name="activeCache" value="1"[if {C_activeCache}==1] checked="checked"[/if {C_activeCache}==1] class="iswitch iswitch-secondary" alt="Full cache page as html" title="Full cache page as html" /><br />
-		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Viewport</div><input type="text" name="viewport" value="{C_viewport}" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
+		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Viewport</div><input type="text" name="viewport" value="[if {C_viewport}!="{C_viewport}"]{C_viewport}[/if {C_viewport}!="{C_viewport}"]" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Moby Active Redirect to subdomain</div><input type="checkbox" name="mobyActive" value="1"[if {C_mobyActive}==1] checked="checked"[/if {C_mobyActive}==1] class="iswitch iswitch-secondary" /><br />
 	</span>
 </div>

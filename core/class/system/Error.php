@@ -101,6 +101,15 @@ final class Error {
 			$i++;
 		}
 		/* End SERVER */
+		/* Start Route */
+		$params = Route::param();
+		templates::assign_var("count_router", sizeof($params));
+		$i = 0;
+		foreach($params as $k => $v) {
+			templates::assign_vars(array("key" => $k, "val" => (is_string($v) ? $v : var_export($v, true))), "router", "router".$i);
+			$i++;
+		}
+		/* End Route */
 		templates::dir_skins("skins");
 		templates::set_skins("");
 		$tpl = templates::complited_assing_vars("debug_panel", null);

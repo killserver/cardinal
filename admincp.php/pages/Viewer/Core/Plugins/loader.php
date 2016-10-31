@@ -4,8 +4,7 @@ if(!defined("IS_CORE")) {
 	die();
 }
 
-$hooksLoad = array_merge($hooksLoad, array(
-	"base" => true,
+$adminCore = array_merge($adminCore, array(
 ));
 
 ?>

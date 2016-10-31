@@ -65,7 +65,7 @@ final class db {
 
 	public static function OpenDriver() {
 		$driv = self::$driver_name;
-		if(!class_exists($driv)) {
+		if(!is_string($driv) || !class_exists($driv)) {
 			$driv = self::DriverList();
 			$driv = $driv[array_rand($driv)];
 		}
@@ -370,10 +370,10 @@ final class db {
 
 		$trace = debug_backtrace();
 
-		$level = 0;
-		if (isset($trace[1]['function']) && $trace[1]['function'] == "query" ) $level = 1;
-		if (isset($trace[2]['function']) && $trace[2]['function'] == "doquery" ) $level = 2;
-
+		$level = 4;
+		/*if (isset($trace[1]['function']) && $trace[1]['function'] == "query" ) $level = 1;
+		if (isset($trace[2]['function']) && $trace[2]['function'] == "doquery" ) $level = 2;*/
+		
 		$trace[$level]['file'] = str_replace(ROOT_PATH, "", $trace[$level]['file']);
 
 		if(self::$driver->get_type() === 1) {

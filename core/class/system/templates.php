@@ -415,22 +415,24 @@ final class templates {
 	 * @return mixed Return routification link or original line
      */
 	private static function route($array) {
-		if(isset($array[1]) && isset($array[2])) {
+		if(isset($array[1])) {
 			$route = Route::get($array[1]);
 			if(!is_bool($route)) {
 				$params = array();
-				$array = explode(";", $array[2]);
-				for($i=0;$i<sizeof($array);$i++) {
-					$exp = explode("=", $array[$i]);
-					if(isset($exp[1])) {
-						$val = $exp[1];
-					} else {
-						$val = "";
-					}
-					if(isset($exp[0])) {
-						$params[$exp[0]] = $val;
-					} else {
-						$params[] = $val;
+				if(isset($array[2])) {
+					$array = explode(";", $array[2]);
+					for($i=0;$i<sizeof($array);$i++) {
+						$exp = explode("=", $array[$i]);
+						if(isset($exp[1])) {
+							$val = $exp[1];
+						} else {
+							$val = "";
+						}
+						if(isset($exp[0])) {
+							$params[$exp[0]] = $val;
+						} else {
+							$params[] = $val;
+						}
 					}
 				}
 				unset($val, $exp, $array);
@@ -668,6 +670,8 @@ final class templates {
 		$tpl = preg_replace("#\{% D_([a-zA-Z0-9\-_]+) %\}#", '{D_\\1}', $tpl);
 		$tpl = preg_replace("#\{% R_\[(.+?)\]\[(.+?)\] %\}#", '{R_[\\1][\\2]}', $tpl);
 		$tpl = preg_replace("#\{\$ R_\[(.+?)\]\[(.+?)\] \$\}#", '{R_[\\1][\\2]}', $tpl);
+		$tpl = preg_replace("#\{% R_\[(.+?)\] %\}#", '{R_[\\1]}', $tpl);
+		$tpl = preg_replace("#\{\$ R_\[(.+?)\] \$\}#", '{R_[\\1]}', $tpl);
 		$tpl = preg_replace("#\{% RP\[(.+?)\] %\}#", '{RP[\\1]}', $tpl);
 		
 		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) %\}#is", '{\\1.\\2}', $tpl);
@@ -740,7 +744,9 @@ final class templates {
 		$tpl = preg_replace("#\{U_([a-zA-Z0-9\-_]+)\}#", '<?php echo templates::user(array(null, \'\\1\')); ?>', $tpl);
 		$tpl = preg_replace("#\{D_([a-zA-Z0-9\-_]+)\}#", '<?php echo templates::define(array(null, \'\\1\')); ?>', $tpl);
 		$tpl = preg_replace("#\{R_\[(.+?)\]\[(.+?)\]\}#", '<?php echo templates::route(array(null, "\\1", "\\2")); ?>', $tpl);
+		$tpl = preg_replace("#\{R_\[(.+?)\]\}#", '<?php echo templates::route(array(null, "\\1")); ?>', $tpl);
 		$tpl = preg_replace("#\{\@ R_\[(.+?)\]\[(.+?)\] \@\}#", '<?php echo templates::route(array(null, \'\\1\', \\2)); ?>', $tpl);
+		$tpl = preg_replace("#\{\@ R_\[(.+?)\] \@\}#", '<?php echo templates::route(array(null, \'\\1\')); ?>', $tpl);
 		$tpl = preg_replace("#\{RP\[(.+?)\]\}#", '<?php echo templates::routeparam(array(null, \'\\1\')); ?>', $tpl);
 		
 		$tpl = preg_replace("#\{\# ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) \#\}#is", '<?php echo (isset($\\1[\'\\2\']) ? $\\1[\'\\2\'] : \'{\\1.\\2}\'); ?>', $tpl);
@@ -776,6 +782,7 @@ final class templates {
 		$tmp = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tmp);
 		$tmp = self::callback_array("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tmp);
 		$tmp = self::callback_array("#\{R_\[(.+?)\]\[(.+?)\]\}#", ("templates::route"), $tmp);
+		$tmp = self::callback_array("#\{R_\[(.+?)\]\}#", ("templates::route"), $tmp);
 		$tmp = self::callback_array("#\{RP\[(.+?)\]\}#", ("templates::routeparam"), $tmp);
 		$tmp = str_replace("{reg_link}", config::Select('link', 'reg'), $tmp);
 		$tmp = str_replace("{login_link}", config::Select('link', 'login'), $tmp);
@@ -1580,7 +1587,7 @@ if(!$test) {
 	 * @param string $tmp Completed template
 	 * @param array|string $header List headers or title
 	 */
-	public static function templates($tmp, $header = "") { return self::completed($tmp, $header);}
+	public static function templates($tmp, $header = "") { return self::completed($tmp, $header); }
 
 	/**
 	 * View error page
