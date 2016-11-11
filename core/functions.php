@@ -91,7 +91,7 @@ if(file_exists(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX) && file_exists(
 }
 
 spl_autoload_register(function($class) {
-	if(stripos(ini_get('include_path'), $class)!==false && class_exists($class)) {
+	if(stripos(ini_get('include_path'), $class)!==false && class_exists($class, false)) {
 		return false;
 	}
 	if(file_exists(ROOT_PATH."core".DS."modules".DS."autoload".DS.$class.".".ROOT_EX)) {

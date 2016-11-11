@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 4.1
+ * @version 5.2
  * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 4.1
+ * Version Engine: 5.2
  * Version File: 18
  *
  * 16.1
@@ -17,6 +17,8 @@
  * fix method db for drivers
  * 18.0
  * completed working with core database and fix working with object
+ * 18.1
+ * add support get version database
  *
 */
 if(!defined("IS_CORE")) {
@@ -32,7 +34,8 @@ final class db {
 	public static $time = 0;
 	public static $num = 0;
 	public static $querys = array();
-	private static $driver_name = null;
+	private static $driver_name = "";
+	public static $dbName = "";
 
 	public static function connected() {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
@@ -112,7 +115,8 @@ final class db {
 		if(!defined("INSTALLER")) {
 			config::StandAlone();
 			self::$driver_name = config::Select('db','driver');
-			self::connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'), config::Select('db','db'), config::Select('db', 'charset'), config::Select('db', 'port'));
+			self::$dbName = config::Select('db','db');
+			self::connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'), self::$dbName, config::Select('db', 'charset'), config::Select('db', 'port'));
 		}
 	}
 
@@ -148,6 +152,19 @@ final class db {
 		}
 		unset(self::$param);
 		return self::query($sql);
+	}
+	
+	public static function version() {
+		if(is_bool(self::$driver) || empty(self::$driver)) {
+			return 0;
+		}
+		$ver = self::query("SELECT VERSION() AS `v`");
+		$version = self::fetch_assoc($ver);
+		$version = $version['v'];
+		$version = preg_replace("/^([0-9]{0,2})\.([0-9]{0,2})\.([0-9]{0,2})(-|)(.*?)$/is", "$1.$2.$3", $version);
+		$exVersion = explode(".", $version);
+		$version = $exVersion[0]*10000+$exVersion[1]*100+$exVersion[2];
+		return $version;
 	}
 
 	public static function doquery($query, $only = "", $check = false) {
@@ -377,7 +394,7 @@ final class db {
 		$trace[$level]['file'] = str_replace(ROOT_PATH, "", $trace[$level]['file']);
 
 		if(self::$driver->get_type() === 1) {
-			modules::init_templates()->dir_skins("skins/");
+			modules::init_templates()->dir_skins("skins".DS);
 			modules::init_templates()->assign_vars(array(
 				"query" => $query,
 				"error" => $mysql_error,

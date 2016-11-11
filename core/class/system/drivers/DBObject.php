@@ -21,6 +21,19 @@ class DBObject {
     final public function getArray() {
         return get_object_vars($this);
     }
+	
+	final public function loadTable($name) {
+		$row = db::doquery("SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema = '".db::$dbName."' AND table_name = '".$name."') AS `exists`");
+		if(!isset($row['exists']) || $row['exists'] != 1) {
+			throw new Exception("Table is not exists");
+			die();
+		}
+		db::doquery("SELECT * FROM `".db::$dbName."`.`".$name."` LIMIT 1", true);
+		$row = db::fetch_assoc();
+		foreach($row as $k => $v) {
+			$this->{$k} = "";
+		}
+	}
 
     final public function Time() {
         $r = db::doquery("SELECT UNIX_TIMESTAMP() AS `time`");

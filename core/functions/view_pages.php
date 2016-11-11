@@ -136,7 +136,7 @@ global $manifest;
 					}
 					unset($page);
 				}
-				return;
+				return false;
 			}
 			include_once(ROOT_PATH."core".DS."pages".DS."main.".ROOT_EX);
 		break;

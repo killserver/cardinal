@@ -61,6 +61,50 @@ class modules {
 			return true;
 		}
 	}
+	
+	final public static function loader($class, $standard = array()) {
+		if(!class_exists($class, false)) {
+			if(file_exists(ROOT_PATH."core".DS."modules".DS."autoload".DS.$class.".".ROOT_EX)) {
+				include_once(ROOT_PATH."core".DS."modules".DS."autoload".DS.$class.".".ROOT_EX);
+			} elseif(file_exists(ROOT_PATH."core".DS."class".DS.$class.".".ROOT_EX)) {
+				include_once(ROOT_PATH."core".DS."class".DS.$class.".".ROOT_EX);
+			} elseif(file_exists(ROOT_PATH."core".DS."class".DS."system".DS.$class.".".ROOT_EX)) {
+				include_once(ROOT_PATH."core".DS."class".DS."system".DS.$class.".".ROOT_EX);
+			} elseif(file_exists(ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS.$class.".".ROOT_EX)) {
+				include_once(ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS.$class.".".ROOT_EX);
+			} elseif(file_exists(ROOT_PATH."core".DS."modules".DS."library".DS.$class.".".ROOT_EX)) {
+				include_once(ROOT_PATH."core".DS."modules".DS."library".DS.$class.".".ROOT_EX);
+			}
+			if(!class_exists($class, false)) {
+				throw new Exception('Class is not exists', 6);
+			}
+			$refMethod = new ReflectionMethod($class,  '__construct');
+			$params = $refMethod->getParameters();
+			$re_args = array();
+			foreach($params as $key => $param) {
+				if($param->isPassedByReference() && isset($standard[$key])) {
+					$re_args[$key] = &$standard[$key];
+				} else if(isset($standard[$key])) {
+					$re_args[$key] = $standard[$key];
+				}
+			}
+			$refClass = new ReflectionClass($class);
+			return $refClass->newInstanceArgs((array) $re_args);
+		} else {
+			$refMethod = new ReflectionMethod($class,  '__construct');
+			$params = $refMethod->getParameters();
+			$re_args = array();
+			foreach($params as $key => $param) {
+				if($param->isPassedByReference() && isset($standard[$key])) {
+					$re_args[$key] = &$standard[$key];
+				} else if(isset($standard[$key])) {
+					$re_args[$key] = $standard[$key];
+				}
+			}
+			$refClass = new ReflectionClass($class);
+			return $refClass->newInstanceArgs((array) $re_args);
+		}
+	}
 
 	final public static function get_lang($get, $array = "") {
 	global $lang;
