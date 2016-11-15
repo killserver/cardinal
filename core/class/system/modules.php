@@ -777,6 +777,7 @@ class modules {
 	}
 	
 	final public static function CheckNewVersion($module) {
+		$version = (string) $xml->info->version;
 		if(defined("WITHOUT_DB")) {
 			return false;
 		}
@@ -788,18 +789,18 @@ class modules {
 		} catch(Exception $ex) {
 			return false;
 		}
-		$version = (string) $xml->info->version;
 		$file = new Parser(SERVER_MODULES."shop/search/api/".$module."/yaml");
 		$file->header();
 		$file->header_array();
 		$file->init();
 		$file = $file->get();
 		$hr = $file->getHeaders();
+		$file = (string) ($file);
 		if(strpos($hr['Content-Type'], "application/x-yaml")===false || $hr['code']!=200) {
 			return false;
 		}
 		$arr = Spyc::YAMLLoadString($file);
-		if(CheckVersion($version, $arr['Version'])) {
+		if(self::CheckVersion($version, $arr['Version'])) {
 			return true;
 		} else {
 			return false;

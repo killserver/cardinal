@@ -420,6 +420,10 @@ class Parser {
 			return $this;
 		}
 	}
+	
+	final function __toString() {
+		return $this->html;
+	}
 
 	/**
 	 * Get html code parsing

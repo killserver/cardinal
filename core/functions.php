@@ -39,7 +39,9 @@ if(file_exists(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX) && file_exists(
 	}
 	require_once(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX);
 } else {
-	define("INSTALLER", true);
+	if(!defined("WITHOUT_DB")) {
+		define("INSTALLER", true);
+	}
 	$config = array("charset" => "utf-8");
 	if(file_exists(ROOT_PATH."core".DS."media".DS."config.client.php")) {
 		chmod(ROOT_PATH."core".DS."media".DS."config.client.php", 0664);

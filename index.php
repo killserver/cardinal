@@ -102,7 +102,9 @@ if(config::Select("activeCache")) {
 }
 if($load) {
 	if(!$is_file && empty($file)) {
-		view_pages($page);
+		if($class == "page") {
+			view_pages($page);
+		}
 		if(class_exists($class)) {
 			$page = new $class();
 			if(!empty($method) && method_exists($page, $method)) {

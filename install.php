@@ -139,7 +139,7 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `category` (
   `sort` int(11) NOT NULL,
   PRIMARY KEY (`cat_id`),
   KEY `all` (`parent`,`sort`),
-  FULLTEXT KEY `name` (`name`);
+  FULLTEXT KEY `name` (`name`),
   FULLTEXT KEY `alt_name` (`alt_name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
@@ -282,7 +282,7 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `posts` (
    FULLTEXT `category` (`cat_id`),
    FULLTEXT `idescr`(`image`, `descr`),
    FULLTEXT `added`(`added`),
-   KEY `active_time`(`active`, `time`)
+   KEY `active_time`(`active`, `time`),
    KEY `stat`(`stat`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 
