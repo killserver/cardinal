@@ -106,7 +106,7 @@ global $user;
 			}
 		}
 	}
-	if(isset($js_list) && is_array($js_list)) {
+	if(isset($js_list) && is_array($js_list) && sizeof($js_list)>0) {
 		$sRet .= "<script type=\"text/javascript\" async src=\"{C_default_http_host}core/class/min/index.php?g=general&amp;charset=".config::Select("charset").(sizeof($js_list)>0 ? "&amp;f=".implode(",", $js_list) : "")."&amp;".time()."\"></script>\n";
 	}
 	$all = modules::manifest_get(array("create_css", "full"));

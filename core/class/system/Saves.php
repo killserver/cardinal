@@ -1,16 +1,45 @@
 <?php
+if(!defined("IS_CORE")) {
+echo "403 ERROR";
+die();
+}
 
 class Saves {
-	
-	const SAVEText = 1;
-	const SAVEInt = 2;
-	const SAVEFloat = 3;
-	const SAVEHtml = 4;
-	const SAVEEscape = 5;
-	
-	private static $blockAllowed = array('javascript\s*:', '(document|(document\.)?window)\.(location|on\w*)', 'expression\s*(\(|&\#40;)', 'vbscript\s*:', 'wscript\s*:', 'jscript\s*:', 'vbs\s*:', 'Redirect\s+30\d', "([\"'])?data\s*:[^\\1]*?base64[^\\1]*?,[^\\1]*?\\1?");
-	
-	final public static function SaveOld($text, $db = false, $ddb = false) {
+
+    /**
+     * Save as text
+     */
+    const SAVEText = 1;
+    /**
+     * Save as integer
+     */
+    const SAVEInt = 2;
+    /**
+     * Save as float
+     */
+    const SAVEFloat = 3;
+    /**
+     * Save as html
+     */
+    const SAVEHtml = 4;
+    /**
+     * Save as string for database
+     */
+    const SAVEEscape = 5;
+
+    /**
+     * @var array Set blocking elements
+     */
+    private static $blockAllowed = array('javascript\s*:', '(document|(document\.)?window)\.(location|on\w*)', 'expression\s*(\(|&\#40;)', 'vbscript\s*:', 'wscript\s*:', 'jscript\s*:', 'vbs\s*:', 'Redirect\s+30\d', "([\"'])?data\s*:[^\\1]*?base64[^\\1]*?,[^\\1]*?\\1?");
+
+    /**
+     * Old version saves
+     * @param string $text Old version saves
+     * @param bool $db Save as string for database
+     * @param bool $ddb Save as string for database double
+     * @return string Saved string
+     */
+    final public static function SaveOld($text, $db = false, $ddb = false) {
 		if($ddb) {
 			$text = str_replace('"', '\\\\"', $text);
 		} elseif($db) {
@@ -27,8 +56,14 @@ class Saves {
 		}
 	return $text;
 	}
-	
-	final public static function remove_invisible_characters($str, $url_encoded = true) {
+
+    /**
+     * Remove invisible characters
+     * @param string $str Needed string
+     * @param bool $url_encoded Save links
+     * @return string Removed invisible characters
+     */
+    final public static function remove_invisible_characters($str, $url_encoded = true) {
 		$non_displayables = array();
 		// every control character except newline (dec 10),
 		// carriage return (dec 13) and horizontal tab (dec 09)
@@ -42,33 +77,50 @@ class Saves {
 		} while ($count);
 		return $str;
 	}
-	
-	final public static function html_escape($var, $double_encode = true, $chatset = "") {
+
+    /**
+     * Save html special chars
+     * @param string|array $var Needed string
+     * @param bool $double_encode Double encoded. See official documentation
+     * @param string $charset Needed charset
+     * @return array|string Save html special chars
+     */
+    final public static function html_escape($var, $double_encode = true, $charset = "") {
 		if(empty($var)) {
 			return $var;
 		}
 		if(is_array($var)) {
 			$arr = array_keys($var);
 			foreach($arr as $key) {
-				$var[$key] = self::html_escape($var[$key], $double_encode, $chatset);
+				$var[$key] = self::html_escape($var[$key], $double_encode, $charset);
 			}
 			return $var;
 		}
-		return htmlspecialchars($var, ENT_QUOTES, $chatset, $double_encode);
+		return htmlspecialchars($var, ENT_QUOTES, $charset, $double_encode);
 	}
-	
-	final public static function SaveAltName($uri) {
+
+    /**
+     * Save string for alternative name
+     * @param string $uri Link for save
+     * @return string Saved link
+     */
+    final public static function SaveAltName($uri) {
 		$uri = preg_replace("|[^\d\w ]+|i", "", $uri);
 		$uri = htmlspecialchars($uri, ENT_QUOTES, 'ISO-8859-1');
 		$uri = self::SaveOld($uri, true);
 		return $uri;
 	}
-	
-	final public static function SaveAuto($val, $double_encode = true, $charset = "") {
+
+    /**
+     * Save text check type data
+     * @param string $val Needed string
+     * @param bool $double_encode Double encoded. See official documentation for htmlspecialchars
+     * @param string $charset If value is string saves data in needed charset
+     * @return array|bool|float|int|string Saved data
+     */
+    final public static function SaveAuto($val, $double_encode = true, $charset = "") {
 		$ret = "";
-		if(is_string($val)) {
-			$ret = self::SaveText($val, $double_encode, $charset);
-		} elseif(is_bool($val)) {
+		if(is_bool($val)) {
 			$ret = self::SaveBool($val);
 		} elseif(is_numeric($val) && is_int($val)) {
 			$ret = self::SaveInt($val);
@@ -76,11 +128,20 @@ class Saves {
 			$ret = self::SaveFloat($val);
 		} elseif(is_array($val)) {
 			$ret = array_map("Saves::SaveAuto", $val);
-		}
+		} elseif(is_string($val)) {
+            $ret = self::SaveText($val, $double_encode, $charset);
+        }
 		return $ret;
 	}
-	
-	final public static function SaveText($val, $double_encode = true, $charset = "") {
+
+    /**
+     * Remove all suspects symbols
+     * @param string $val Needed string
+     * @param bool $double_encode Double encoded. See official documentation for htmlspecialchars
+     * @param string $charset Saves data in needed charset
+     * @return string Saved data
+     */
+    final public static function SaveText($val, $double_encode = true, $charset = "") {
 		$val = preg_replace('#<script[^>]*>.*?</script>#is', "", $val);
 		$val = strip_tags($val);
 		$val = self::html_escape($val, $double_encode, $charset);
@@ -88,31 +149,66 @@ class Saves {
 		$val = preg_replace('#('.implode("|", array_keys(self::$blockAllowed)).')#is', '[removed]', $val);
 		return $val;
 	}
-	
-	final public static function SaveInt($val) {
+
+    /**
+     * Save data as integer
+     * @param mixed $val Needed save
+     * @return int Saved data
+     */
+    final public static function SaveInt($val) {
 		return intval($val);
 	}
-	
-	final public static function SaveBool($val) {
+
+    /**
+     * Save data as boolean
+     * @param mixed $val Needed save
+     * @return bool Saved data
+     */
+    final public static function SaveBool($val) {
 		return boolval($val);
 	}
-	
-	final public static function SaveFloat($val) {
+
+    /**
+     * Save data as float
+     * @param mixed $val Needed save
+     * @return float Saved data
+     */
+    final public static function SaveFloat($val) {
 		return floatval($val);
 	}
-	
-	final public static function SaveHtml($val) {
+
+    /**
+     * Save all info in html
+     * @param string $val Needed saves
+     * @param bool $delete Remove "<p>" and replace "<strong>" on "<b>"
+     * @return string Saved data
+     */
+    final public static function SaveHtml($val, $delete = false) {
 		$val = str_replace("\r\n", "\n", $val);
 		$val = str_replace(array("\"", "<p>&nbsp;</p>", "&nbsp;"), array("\\\"", "<br />", " "), $val);
 		$val = preg_replace('#<p(.+?)> </p>#i', "<br />", $val);
+		if($delete) {
+			$val = str_replace(array("<strong>", "</strong>", "<p>", "</p>"), array("<b>", "</b>", "", ""), $val);
+		}
 		return $val;
 	}
-	
-	final public static function SaveEscape($val) {
+
+    /**
+     * Save data as prepared data for database
+     * @param string $val Needed saves
+     * @return string Saved data
+     */
+    final public static function SaveEscape($val) {
 		return str_replace(array('\x00', '\n', '\r', '\\', "'", '"', '\x1a'), array('\\x00', '\\n', '\\r', '\\\\', "\'", '\"', '\\x1a'), $val);
 	}
-	
-	final public static function SaveType($val, $type = Saves::SAVEText) {
+
+    /**
+     * Save as neatly selected type
+     * @param array|float|int|string $val Needed saves
+     * @param int $type Type saves
+     * @return array|float|int|string Saved data
+     */
+    final public static function SaveType($val, $type = Saves::SAVEText) {
 		$ret = "";
 		switch($type) {
 			case self::SAVEText:

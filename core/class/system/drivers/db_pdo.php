@@ -147,9 +147,9 @@ class db_pdo extends DriverParam implements drivers {
 	}
 	public function close() {
 		if(!$this->mc) {
-			return;
+			return false;
 		}
-		$this->mc = null;
+		$this->mc = false;
 	}
 
 }

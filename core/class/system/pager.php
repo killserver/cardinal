@@ -24,6 +24,7 @@ final class pager {
 	
 	private $pages = array();
 	private $limits = array(0,0);
+	private $links = array("next" => "", "prev" => "");
 	
 	private function Route($array) {
 		$route = Route::get($array[0]);
@@ -51,8 +52,8 @@ final class pager {
 	}
 
 	function __construct($rpp, $count_all, $on_page, $url_page, $p_page = "/page/", $max_view = 10, $route = false) {
-		if(!is_numeric($rpp) || !is_numeric($count_all) || !is_numeric($on_page) || empty($url_page)) {
-			return;
+		if(!is_numeric($rpp) || !is_numeric($count_all) || !is_numeric($on_page) || empty($url_page) || $on_page > 0) {
+			return false;
 		}
 		$this->limits = array(ceil($rpp*$on_page), $on_page);
 		$c_link = 1;
@@ -66,9 +67,15 @@ final class pager {
 							if($j==($rpp+1)) {
 								$this->pages[$c_link]['prev'] = 0;
 								$this->pages[$c_link]['next'] = 1;
+								if(empty($this->links['next'])) {
+									$this->links['next'] = $j;
+								}
 							} else if($j==($rpp-1)) {
 								$this->pages[$c_link]['prev'] = 1;
 								$this->pages[$c_link]['next'] = 0;
+								if(empty($this->links['prev'])) {
+									$this->links['prev'] = $j;
+								}
 							} else {
 								$this->pages[$c_link]['prev'] = 0;
 								$this->pages[$c_link]['next'] = 0;
@@ -137,9 +144,15 @@ final class pager {
 						if($j==($rpp+1)) {
 							$this->pages[$c_link]['prev'] = 0;
 							$this->pages[$c_link]['next'] = 1;
+							if(empty($this->links['next'])) {
+								$this->links['next'] = $j;
+							}
 						} else if($j==($rpp-1)) {
 							$this->pages[$c_link]['prev'] = 1;
 							$this->pages[$c_link]['next'] = 0;
+							if(empty($this->links['prev'])) {
+								$this->links['prev'] = $j;
+							}
 						} else {
 							$this->pages[$c_link]['prev'] = 0;
 							$this->pages[$c_link]['next'] = 0;
@@ -197,6 +210,14 @@ final class pager {
 	
 	function limit() {
 		return "LIMIT ".$this->limits[0].",".$this->limits[1];
+	}
+	
+	function prevLink() {
+		return $this->links['prev'];
+	}
+	
+	function nextLink() {
+		return $this->links['next'];
 	}
 	
 	function get() {

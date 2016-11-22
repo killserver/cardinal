@@ -147,9 +147,10 @@ class db_mysql extends DriverParam implements drivers {
 	}
 	public function close() {
 		if(!$this->mc) {
-			return;
+			return false;
 		}
 		mysql_close($this->mc);
+		$this->mc = false;
 	}
 	
 }

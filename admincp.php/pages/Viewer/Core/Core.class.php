@@ -173,9 +173,9 @@ class Core {
 	private function CheckLoadPlugins($file) {
 		if(is_bool($this->load_adminmodules)) {
 			if(defined("WITHOUT_DB")) {
-				if(file_exists(ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS."loader.".ROOT_EX)) {
+				if(file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS."loader.".ROOT_EX)) {
 					$adminCore = array();
-					include(ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS."loader.".ROOT_EX);
+					include(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS."loader.".ROOT_EX);
 					$this->load_adminmodules = $adminCore;
 				}
 			} elseif(!cache::Exists("load_adminmodules")) {

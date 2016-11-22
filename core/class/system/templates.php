@@ -698,12 +698,14 @@ final class templates {
 			return $tpl;
 		}
 		if(strpos($tpl, "<?xml")===false) {
-			$safe = array(
-				"<?php" => "&lt;?php",
-				"<?" => "&lt;?",
-				"?>" => "?&gt;",
-			);
-			$tpl = str_replace(array_keys($safe), array_values($safe), $tpl);
+			if(!defined("PERMISSION_PHP")) {
+				$safe = array(
+					"<?php" => "&lt;?php",
+					"<?" => "&lt;?",
+					"?>" => "?&gt;",
+				);
+				$tpl = str_replace(array_keys($safe), array_values($safe), $tpl);
+			}
 		} else {
 			$safe = array(
 				"<?xml" => '<?php echo \'<?xml\'; ?>',

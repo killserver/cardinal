@@ -69,6 +69,11 @@ $config = array_merge($config, array(
 	"js_min" => true,
 	
 	"viewport" => "width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=1",
+	
+	"skins" => array(
+		"skins" => "main",
+		"admincp" => "xenon",
+	),
 
 	"default_http_local" => "/",
 	"default_http_hostname" => "online-killer.pp.ua",

@@ -17,7 +17,7 @@ echo "403 ERROR";
 die();
 }
 
-final class cache {
+class cache {
 
 	private static $type = CACHE_NONE;
 	private static $connect = false;
@@ -25,10 +25,10 @@ final class cache {
 	private static $conn_link = null;
 	private static $conn_path = null;
 
-	public function cache() {
+	final public function cache() {
 	global $config;
 		if(defined("INSTALLER")) {
-			return;
+			return false;
 		}
 		self::$type = $config['cache']['type'];
 		self::$conn_path = $config['cache']['path'];
@@ -54,7 +54,7 @@ final class cache {
 		}
 	}
 
-	public static function Mtime($data) {
+	final public static function Mtime($data) {
 		if(self::Exists($data)) {
 			if(self::$type == CACHE_MEMCACHE || self::$type == CACHE_MEMCACHED) {
 				$data = self::$connect->get($data);
@@ -76,7 +76,7 @@ final class cache {
 		}
 	}
 
-	public static function Get($data) {
+	final public static function Get($data) {
 		if(self::Exists($data)) {
 			if($data=="user_cardinal") {
 				return array("username" => "cardinal", "pass" => "cardinal", "admin_pass" => "cardinal", "level" => LEVEL_ADMIN);
@@ -105,11 +105,11 @@ final class cache {
 		}
 	}
 
-	public static function Get_timelive() {
+	final public static function Get_timelive() {
 		return self::$live_time;
 	}
 
-	public static function Exists($data) {
+	final public static function Exists($data) {
 		if($data=="user_cardinal") {
 			return true;
 		}
@@ -132,11 +132,11 @@ final class cache {
 		}
 	}
 	
-	public static function Has($name) {
+	final public static function Has($name) {
 		return self::Exists($name);
 	}
 
-	public static function Set($name, $val) {
+	final public static function Set($name, $val) {
 		if(self::$type == CACHE_MEMCACHE || self::$type == CACHE_MEMCACHED) {
 			return self::$connect->set($name, array("time" => time(), "data" => $val), MEMCACHE_COMPRESSED, self::$live_time);
 		} elseif(self::$type == CACHE_FILE) {
@@ -152,7 +152,7 @@ final class cache {
 		}
 	}
 
-	public static function Delete($name) {
+	final public static function Delete($name) {
 		if(self::Exists($name)) {
 			if(self::$type == CACHE_MEMCACHE || self::$type == CACHE_MEMCACHED) {
 				return self::$connect->delete($name);
@@ -172,7 +172,7 @@ final class cache {
 		}
 	}
 	
-	public static function Pull($name) {
+	final public static function Pull($name) {
 		if(self::Exists($name)) {
 			$ret = self::Get($name);
 			self::Delete($name);
@@ -182,7 +182,7 @@ final class cache {
 		}
 	}
 	
-	public static function Put($name, $value) {
+	final public static function Put($name, $value) {
 		if(!self::Exists($name)) {
 			return self::Set($name, $value);
 		} else {
@@ -190,7 +190,7 @@ final class cache {
 		}
 	}
 
-	public static function Clear_cache($cache_areas = false) {
+	final public static function Clear_cache($cache_areas = false) {
 		if(self::$type == CACHE_MEMCACHE || self::$type == CACHE_MEMCACHED) {
 			self::$connect->flush();
 		} elseif(self::$type == CACHE_XCACHE) {
@@ -224,7 +224,7 @@ final class cache {
 		}
 	}
 
-	public function __destruct() {
+	final public function __destruct() {
 		if(self::$type == CACHE_MEMCACHED) {
 			self::$connect->quit();
 		} elseif(self::$type == CACHE_MEMCACHE) {

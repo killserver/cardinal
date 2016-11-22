@@ -107,6 +107,19 @@ if(defined("DEBUG") || isset($_GET['debug'])) {
 	}
 }
 
+if(!defined("PHP_INT_MIN")) {
+	define("PHP_INT_MIN", -2147483647);
+}
+if(!defined("PHP_INT_MAX")) {
+	define("PHP_INT_MAX", 2147483647);
+}
+if(!defined("PHP_FLOAT_MIN")) {
+	define("PHP_FLOAT_MIN", 3.4e-38);
+}
+if(!defined("PHP_FLOAT_MAX")) {
+	define("PHP_FLOAT_MAX", 3.4e+38);
+}
+
 if(!defined("WITHOUT_DB") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."core".DIRECTORY_SEPARATOR."media".DIRECTORY_SEPARATOR."isFrame.lock")) {
 	define("WITHOUT_DB", true);
 }
@@ -129,23 +142,31 @@ $Timer = microtime();
 require_once(ROOT_PATH."core".DS."functions.".ROOT_EX);
 
 $lang = array();
-$db = new db();
+if(file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX)) {
+	$db = new db();
+}
 $cache = new cache();
 $cnf = new config();
 $cnf->init();
 $config = $cnf->all();
 unset($cnf);
-if(isset($config['db_version'])) {
-	updater::update(DB_VERSION, $config['db_version']);
-} else {
-	updater::update(DB_VERSION, "");
+if(!defined("WITHOUT_DB")) {
+	if(isset($config['db_version'])) {
+		updater::update(DB_VERSION, $config['db_version']);
+	} else {
+		updater::update(DB_VERSION, "");
+	}
 }
 $langs = new lang();
 $lang = $langs->init_lang();
 unset($langs);
-defines::add("CRON_TIME", config::Select("cardinal_time"));
-defines::init();
-new cardinal();
+if(!defined("WITHOUT_DB")) {
+	defines::add("CRON_TIME", config::Select("cardinal_time"));
+	defines::init();
+	new cardinal();
+} else {
+	defines::init();
+}
 if(function_exists("mb_internal_encoding") && mb_internal_encoding($config['charset'])) {
 	mb_internal_encoding($config['charset']);
 }
@@ -225,7 +246,7 @@ if(defined("WITHOUT_DB") || !defined("INSTALLER")) {
 			}
 		}
 	} else {
-		$user['level'] = 0;
+		$user['level'] = LEVEL_GUEST;
 	}
 }
 

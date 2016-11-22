@@ -159,9 +159,10 @@ class db_mysqli extends DriverParam implements drivers {
 	}
 	public function close() {
 		if(!$this->mc) {
-			return;
+			return false;
 		}
 		$this->mc->close();
+		$this->mc = false;
 	}
 
 }
