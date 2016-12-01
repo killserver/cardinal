@@ -31,7 +31,7 @@ return md5(md5($pass).$pass);
 }
 
 //ToDo: Надо с этой функцией что-то делать... она баластом в движке валяется
-function user_link($user_link, $user=null, $type=null, $added=null) {
+function user_link($user_link, $user = "", $type = "", $added = "") {
 	if(empty($user_link)) {
 		$user_link = "404";
 	}

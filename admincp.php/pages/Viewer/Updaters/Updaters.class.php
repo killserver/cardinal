@@ -71,13 +71,18 @@ class Updaters extends Core {
 				header("HTTP/1.0 404 Not Found");
 			}
 			$tr = $tar_object->extractModify(ROOT_PATH, "cardinal-trunk/");
-			if($tr===true) {
+			if($tr === true) {
 				unlink(ROOT_PATH."core".DS."cache".DS."system".DS."lastest.tar.gz");
 				echo "1";
 			} else {
 				header("HTTP/1.1 406 Not Acceptable");
 			}
 			return;
+		}
+		if(!is_writable(ROOT_PATH."core".DS."cache".DS) || !is_writable(ROOT_PATH."core".DS."cache".DS."system".DS)) {
+			templates::assign_var("is_locked", "1");
+		} else {
+			templates::assign_var("is_locked", "0");
 		}
 		if(file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."lastest.tar.gz")) {
 			templates::assign_var("is_download", "1");

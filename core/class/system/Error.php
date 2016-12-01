@@ -4,29 +4,29 @@ echo "403 ERROR";
 die();
 }
 
-final class Error {
+class Error {
 
 	protected static $_handlePhpError = true;
 	protected static $_debug = false;
 	private static $_debugHandler = false;
 	public static $_echo = true;
 
-	function Error() {
+	final function Error() {
 		
 	}
 	
-	public static function DebugHandler($func = "") {
+	final public static function DebugHandler($func = "") {
 		
 	}
 	
-	public static function Log($log) {
+	final public static function Log($log) {
 		if(!self::$_debugHandler) {
 			return false;
 		}
 		return call_user_func_array(self::$_debugHandler, array($log));
 	}
 	
-	public static function TplDebug($arr) {
+	final public static function TplDebug($arr) {
 		$filesizename = array(" Bytes", " Kb", " Mb", " Gb", " Tb", " Pb", " Eb", " Zb", " Yb");
 		templates::assign_var("time_work", $arr['time_work']);
 		templates::assign_var("memory", $arr['memory']);
@@ -116,7 +116,7 @@ final class Error {
 		return templates::view($tpl);
 	}
 	
-	public static function Debug($type = "", $echo = false) {
+	final public static function Debug($type = "", $echo = false) {
 		if(empty($type)) {
 			$type = DEBUG_MEMORY * DEBUG_TIME * DEBUG_FILES * DEBUG_INCLUDE * DEBUG_DB * DEBUG_TEMPLATE;
 		}
@@ -289,11 +289,11 @@ final class Error {
 			return $arr;
 		} else {
 			$arr = self::TplDebug($arr);
-			HTTP::echos($arr);
+			self::viewOnPage($arr);
 		}
 	}
 	
-	private static function FileLine($file) {
+	final private static function FileLine($file) {
 		$lines = 0;
 		$fh = fopen($file, "r");
 		while(fgets($fh) !== false) {
@@ -303,11 +303,11 @@ final class Error {
 		return $lines;
 	}
 	
-	public static function SetEcho() {
+	final public static function SetEcho() {
 		self::$_echo = false;
 	}
 	
-	public static function FriendlyErrorType($type) {
+	final public static function FriendlyErrorType($type) {
 		if($type==0) { // 0 // 
 			return 'E_CORE'; 
 		} else if($type==E_ERROR) { // 1 // 
@@ -345,11 +345,15 @@ final class Error {
 		}
 	}
 	
-	public static function handleException(Exception $e) {
+	final private static function viewOnPage($data) {
+		echo $data;
+	}
+	
+	final public static function handleException(Exception $e) {
 		self::logException($e);
 	}
 	
-	public static function handleFatalError() {
+	final public static function handleFatalError() {
 		$error = @error_get_last();
 		if(!$error) {
 			return false;
@@ -365,7 +369,7 @@ final class Error {
 		catch(Exception $e) {return false;}
 	}
 	
-	public static function logException(Exception $e, $rollbackTransactions = true, $messagePrefix = '') {
+	final public static function logException(Exception $e, $rollbackTransactions = true, $messagePrefix = '') {
 		try {
 			$file = str_replace(ROOT_PATH, "", $e->getFile());
 			$request = array(
@@ -389,10 +393,9 @@ primary key `id`(`id`)
 ) ENGINE=MyISAM;
 */
 
-			if(defined("WITHOUT_DB") || config::Select('logs') == ERROR_FILE) {
-				if(is_writable(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt")) {
-					file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt", json_encode(array("times" => time(), "ip" => HTTP::getip(), "exception_type" => self::FriendlyErrorType($e->getCode()), "message" => self::saves($messagePrefix . $e->getMessage()), "filename" => self::saves($file), "line" => $e->getLine(), "trace_string" => self::saves($e->getTraceAsString()), "request_state" => self::saves(serialize($request), true)))."\n", FILE_APPEND);
-				}
+			if(defined("WITHOUT_DB") || config::Select('logs')==ERROR_FILE) {
+				if(is_writable(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt"))
+				file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt", json_encode(array("times" => time(), "ip" => HTTP::getip(), "exception_type" => self::FriendlyErrorType($e->getCode()), "message" => self::saves($messagePrefix . $e->getMessage()), "filename" => self::saves($file), "line" => $e->getLine(), "trace_string" => self::saves($e->getTraceAsString()), "request_state" => self::saves(serialize($request), true)))."\n", FILE_APPEND);
 			} else {
 				$db = modules::init_db();
 				$db->doquery("INSERT INTO `error_log`(`times`, `ip`, `exception_type`, `message`, `filename`, `line`, `trace_string`, `request_state`) VALUES(UNIX_TIMESTAMP(), \"".HTTP::getip()."\", \"".self::FriendlyErrorType($e->getCode())."\", \"".self::saves($messagePrefix . $e->getMessage())."\", \"".self::saves($file)."\", \"".$e->getLine()."\", \"".self::saves($e->getTraceAsString())."\", \"".self::saves(serialize($request), true)."\")");
@@ -413,16 +416,16 @@ primary key `id`(`id`)
 							$e->getLine(),
 							nl2br(self::saves($e->getTraceAsString()))
 					), $file);
-					echo $file;
+					self::viewOnPage($file);
 				} else {
-					echo "<div style=\"text-decoration:underline;\"><div style=\"padding-top: 10px;text-transform: uppercase;\">[" . self::FriendlyErrorType($e->getCode()) . "] " . $e->getMessage() . " - " . self::saves($file) . " (" . $e->getLine() . ")</div><br />\n<b>[" . self::FriendlyErrorType($e->getCode()) . "]</b></div><br />\n<span style=\"border: 2px dotted black;\">" . nl2br(self::saves($e->getTraceAsString())) . "</span></div>";
+					self::viewOnPage("<div style=\"text-decoration:underline;\"><div style=\"padding-top: 10px;text-transform: uppercase;\">[" . self::FriendlyErrorType($e->getCode()) . "] " . $e->getMessage() . " - " . self::saves($file) . " (" . $e->getLine() . ")</div><br />\n<b>[" . self::FriendlyErrorType($e->getCode()) . "]</b></div><br />\n<span style=\"border: 2px dotted black;\">" . nl2br(self::saves($e->getTraceAsString())) . "</span></div>");
 				}
 			}
 		}
 		catch (Exception $e) {}
 	}
 	
-	private static function saves($data, $save = false) {
+	final private static function saves($data, $save = false) {
 		if(is_string($data)) {
 			if($save) {
 				$data = str_replace("\"", '\"', $data);
@@ -437,11 +440,11 @@ primary key `id`(`id`)
 		}
 	}
 	
-	public static function debugMode() {
+	final public static function debugMode() {
 		return self::$_debug;
 	}
 	
-	public static function handlePhpError($errorType = "", $errorString = "", $file = "", $line = "") {
+	final public static function handlePhpError($errorType = "", $errorString = "", $file = "", $line = "") {
 		if (!self::$_handlePhpError) {
 			return false;
 		}

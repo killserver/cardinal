@@ -25,7 +25,7 @@
 					
 				</div>
 				
-				<a href="{C_default_http_host}admincp.php/?pages=Users" class="col-sm-3">
+				[if {isUsers}==1]<a href="{C_default_http_host}admincp.php/?pages=Users" class="col-sm-3">
 					
 					<div class="xe-widget xe-counter xe-counter-blue" data-count=".num" data-from="1" data-to="{users}" data-duration="3" data-easing="false">
 						<div class="xe-icon">
@@ -37,7 +37,7 @@
 						</div>
 					</div>
 				
-				</a>
+				</a>[/if]
 				
 				<span id="cache" class="col-sm-3">
 					

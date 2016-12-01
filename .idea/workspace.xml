@@ -24,8 +24,8 @@
       <file leaf-file-name="Files.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/core/class/system/Files.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="236">
-              <caret line="91" column="7" selection-start-line="91" selection-start-column="7" selection-end-line="91" selection-end-column="7" />
+            <state relative-caret-position="304">
+              <caret line="95" column="33" selection-start-line="95" selection-start-column="33" selection-end-line="95" selection-end-column="33" />
               <folding />
             </state>
           </provider>
@@ -74,10 +74,9 @@
   </component>
   <component name="PhpWorkspaceProjectConfiguration" backward_compatibility_performed="true" />
   <component name="ProjectFrameBounds">
-    <option name="x" value="-8" />
-    <option name="y" value="-8" />
+    <option name="x" value="-7" />
     <option name="width" value="1612" />
-    <option name="height" value="876" />
+    <option name="height" value="867" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -273,16 +272,16 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1469397307920</updated>
-      <workItem from="1479839486182" duration="5154000" />
+      <workItem from="1479839486182" duration="6343000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="5154000" />
+    <option name="totallyTimeSpent" value="6343000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1612" height="876" extended-state="0" />
-    <editor active="true" />
+    <frame x="-7" y="0" width="1612" height="867" extended-state="0" />
+    <editor active="false" />
     <layout>
       <window_info id="Remote Host" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -717,8 +716,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/class/system/Files.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="236">
-          <caret line="91" column="7" selection-start-line="91" selection-start-column="7" selection-end-line="91" selection-end-column="7" />
+        <state relative-caret-position="304">
+          <caret line="95" column="33" selection-start-line="95" selection-start-column="33" selection-end-line="95" selection-end-column="33" />
           <folding />
         </state>
       </provider>

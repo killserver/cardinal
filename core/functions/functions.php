@@ -120,6 +120,14 @@ function removeBOM($string) {
 	return $string; 
 }
 
+function sortByKey(&$arr) {
+	uksort($arr, 'strnatcmp');
+}
+
+function sortByValue(&$arr) {
+	usort($arr, 'strnatcmp');
+}
+
 function vdump($var, $title = "") {
 	$backtrace = debug_backtrace();
 	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "Called: ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "").(($title) ? "<b>".$title."</b>\n\n" : '');

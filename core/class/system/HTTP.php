@@ -25,12 +25,26 @@ class HTTP {
 	}
 	
 	final public static function getip() {
-		if(getenv('HTTP_X_FORWARDED_FOR')) {
-			$ip = getenv('HTTP_X_FORWARDED_FOR');
-		} elseif(getenv('HTTP_CLIENT_IP')) {
-			$ip = getenv('HTTP_CLIENT_IP');
+		if(isset($_SERVER)) {
+			if(isset($_SERVER['HTTP_X_FORWARDED_FOR']) && !empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+				$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+			} elseif(isset($_SERVER['HTTP_CLIENT_IP']) && !empty($_SERVER['HTTP_CLIENT_IP'])) {
+				$ip = $_SERVER['HTTP_CLIENT_IP'];
+			} elseif(isset($_SERVER['REMOTE_ADDR']) && !empty($_SERVER['REMOTE_ADDR'])) {
+				$ip = $_SERVER['REMOTE_ADDR'];
+			} else {
+				$ip = false;
+			}
 		} else {
-			$ip = getenv('REMOTE_ADDR');
+			if(getenv('HTTP_X_FORWARDED_FOR')) {
+				$ip = getenv('HTTP_X_FORWARDED_FOR');
+			} elseif(getenv('HTTP_CLIENT_IP')) {
+				$ip = getenv('HTTP_CLIENT_IP');
+			} elseif(getenv('REMOTE_ADDR')) {
+				$ip = getenv('REMOTE_ADDR');
+			} else {
+				$ip = false;
+			}
 		}
 		if(strpos($ip, ",")!==false) {
 			$ips = explode(",", $ip);
@@ -43,7 +57,7 @@ class HTTP {
 	final public static function CheckIp($ip) {
 		if(is_array($ip)) {
 			return in_array(self::getip(), $ip);
-		} else if(is_string($ip)) {
+		} elseif(is_string($ip)) {
 			return self::getip()==$ip;
 		} else {
 			return false;
@@ -78,8 +92,9 @@ class HTTP {
 		$LastModified_unix = intval($LastModified_unix);
 		$LastModified = gmdate("D, d M Y H:i:s \G\M\T", $LastModified_unix);
 		$IfModifiedSince = false;
-		if(isset($_SERVER['HTTP_IF_MODIFIED_SINCE']))
+		if(isset($_SERVER['HTTP_IF_MODIFIED_SINCE'])) {
 			$IfModifiedSince = strtotime(substr($_SERVER['HTTP_IF_MODIFIED_SINCE'], 5));
+		}
 		if(!is_bool($IfModifiedSince) && $IfModifiedSince >= $LastModified_unix) {
 			header($_SERVER['SERVER_PROTOCOL'].' 304 Not Modified');
 			return false;

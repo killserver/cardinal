@@ -62,11 +62,41 @@ class Validate {
 	}
 	
 	final public static function ip($ip, $allow_private = true) {
+		if(!defined("FILTER_FLAG_NO_RES_RANGE") || !defined("FILTER_FLAG_NO_PRIV_RANGE") || !defined("FILTER_VALIDATE_IP")) {
+			return self::validIp($ip);
+		}
 		$flags = FILTER_FLAG_NO_RES_RANGE;
 		if($allow_private === false) {
 			$flags = $flags | FILTER_FLAG_NO_PRIV_RANGE;
 		}
 		return (bool) filter_var($ip, FILTER_VALIDATE_IP, $flags);
+	}
+	
+	final public static function validIp($ip) {
+		if(!ip2long($ip)) {//IPv6
+			return true;
+		}
+		if(!empty($ip) && $ip==long2ip(ip2long($ip))) {
+			// reserved IANA IPv4 addresses
+			// http://www.iana.org/assignments/ipv4-address-space
+			$reserved_ips = array(
+				array('192.0.2.0', '192.0.2.255'),
+				array('192.168.0.0', '192.168.255.255'),
+				array('255.255.255.0', '255.255.255.255')
+			);
+			$ret = true;
+			foreach($reserved_ips as $r) {
+				$min = ip2long($r[0]);
+				$max = ip2long($r[1]);
+				if((ip2long($ip)>=$min) && (ip2long($ip)<=$max)) {
+					$ret = false;
+					break;
+				}
+			}
+			return $ret;
+		} else {
+			return false;
+		}
 	}
 	
 	final public static function url($url) {

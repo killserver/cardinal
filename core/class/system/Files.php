@@ -36,20 +36,22 @@ class Files {
      * @param string $directory Directory for save file
      * @param int $chmod Charter access. If not set uses 0644
      * @param string $type Needed type. If not set can upload all files
+     * @param bool $force If file exists system delete him
+     * @param bool $copy Copy instead move file
      * @return bool|string Name uploaded file
      */
-    final public static function saveFile(array $file, $filename = "", $directory = "", $chmod = 0644, $type = "") {
+    final public static function saveFile(array $file, $filename = "", $directory = "", $chmod = 0644, $type = "", $force = false, $copy = false) {
 		if(!isset($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
 			return false;
 		}
 		if(!is_int($chmod)) {
 			$chmod = 0664;
 		}
-		if(!empty($filename)) {
+		if(empty($filename)) {
 			$filename = uniqid().$file['name'];
 		}
 		$filename = preg_replace('/\s+/u', '_', $filename);
-		if(!empty($directory)) {
+		if(empty($directory)) {
 			$directory = ROOT_PATH."uploads";
 		}
 		if(!is_dir($directory) || !is_writable(realpath($directory))) {
@@ -59,11 +61,23 @@ class Files {
 			return false;
 		}
 		$filename = realpath($directory).DS.$filename;
-		if(move_uploaded_file($file['tmp_name'], $filename)) {
-			if($chmod !== false) {
-				chmod($filename, $chmod);
+		if($force && file_exists($filename)) {
+			unlink($filename);
+		}
+		if(!$copy) {
+			if(move_uploaded_file($file['tmp_name'], $filename)) {
+				if($chmod !== false) {
+					chmod($filename, $chmod);
+				}
+				return str_replace(ROOT_PATH, "", $filename);
 			}
-			return str_replace(ROOT_PATH, "", $filename);
+		} else {
+			if(copy($file['tmp_name'], $filename)) {
+				if($chmod !== false) {
+					chmod($filename, $chmod);
+				}
+				return str_replace(ROOT_PATH, "", $filename);
+			}
 		}
 		return false;
 	}

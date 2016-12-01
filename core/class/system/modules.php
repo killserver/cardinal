@@ -62,6 +62,16 @@ class modules {
 		}
 	}
 	
+	final public static function loadModels($class) {
+		if(!class_exists($class, false)) {
+			if(file_exists(ROOT_PATH."core".DS."modules".DS."models".DS.$class.".".ROOT_EX)) {
+				include_once(ROOT_PATH."core".DS."modules".DS."models".DS.$class.".".ROOT_EX);
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	final public static function loader($class, $standard = array()) {
 		if(!class_exists($class, false)) {
 			if(file_exists(ROOT_PATH."core".DS."modules".DS."autoload".DS.$class.".".ROOT_EX)) {
@@ -282,10 +292,7 @@ class modules {
 	}
 
 	final private static function init_modules() {
-		if(defined("IS_INSTALLER") || !self::init_db()->connected()) {
-			return array();
-		}
-		if(defined("WITHOUT_DB")) {
+		if(defined("WITHOUT_DB") || defined("IS_INSTALLER") || !self::init_db()->connected()) {
 			return array();
 		}
 		$cache = self::init_cache();
@@ -349,7 +356,9 @@ class modules {
 	}
 
 	final private static function ReadXML($xml) {
-		$db = self::init_db();
+		if(!defined("WITHOUT_DB")) {
+			$db = self::init_db();
+		}
 		$files_root = array();
 		self::ReadRoot($files_root);
 		$sql = "";
@@ -394,7 +403,7 @@ class modules {
 								if(!isset($ch[$num]->add[$yt]->{"key"})) {
 									continue;
 								}
-								if(!isset(self::$columns[$table])) {
+								if(!defined("WITHOUT_DB") && !isset(self::$columns[$table])) {
 									$db->doquery("SHOW COLUMNS FROM `".$table."`", true);
 									while($row = $db->fetch_assoc()) {
 										self::$columns[$table][$row['Field']] = $row['Field'];
@@ -484,32 +493,31 @@ class modules {
 				$fileList++;
 			}
 		}
-		if(empty($sql) || $fileList==0) {
-			return "Error sql configuration";
-		}
-		if(strpos($sql, "!;")!==false) {
-			$exp = explode("!;", $sql);
-			unset($sql);
-			if(sizeof($exp)>1) {
-				for($i=0;$i<sizeof($exp);$i++) {
-					if(empty($exp[$i])) {
-						continue;
+		if(!defined("WITHOUT_DB")) {
+			if(empty($sql) || $fileList==0) {
+				return "Error sql configuration";
+			}
+			if(strpos($sql, "!;")!==false) {
+				$exp = explode("!;", $sql);
+				unset($sql);
+				if(sizeof($exp)>1) {
+					for($i=0;$i<sizeof($exp);$i++) {
+						if(empty($exp[$i])) {
+							continue;
+						}
+						$db->query($exp[$i]);
 					}
-					$db->query($exp[$i]);
+				} else {
+					$db->query(implode(";", $exp));
 				}
 			} else {
-				$db->query(implode(";", $exp));
+				$db->query($sql);
 			}
-		} else {
-			$db->query($sql);
 		}
 		return $name;
 	}
 	
 	final public static function Install($module, $file = false, $names = "") {
-		if(defined("WITHOUT_DB")) {
-			return false;
-		}
 		if($file) {
 			if(!file_exists(ROOT_PATH."core".DS."cache".DS."system".DS.$module.".tar")) {
 				return "File archive is not exists";
@@ -565,31 +573,34 @@ class modules {
 		if(empty($file)) {
 			$file = $module;
 		}
-		$db = self::init_db();
-		$db->doquery("SELECT `file` FROM `modules` WHERE `module` LIKE \"%".$module."\"", true);
-		if($db->num_rows()>0) {
-			while($files = $db->fetch_assoc()) {
-				if(!empty($files['file']) && file_exists(ROOT_PATH.$files['file'])) {
-					unlink(ROOT_PATH.$files['file']);
+		if(!defined("WITHOUT_DB")) {
+			$db = self::init_db();
+			$db->doquery("SELECT `file` FROM `modules` WHERE `module` LIKE \"%".$module."\"", true);
+			if($db->num_rows()>0) {
+				while($files = $db->fetch_assoc()) {
+					if(!empty($files['file']) && file_exists(ROOT_PATH.$files['file'])) {
+						unlink(ROOT_PATH.$files['file']);
+					}
 				}
+				$db->doquery("DELETE FROM `modules` WHERE `module` LIKE \"%".$module."\"");
 			}
-			$db->doquery("DELETE FROM `modules` WHERE `module` LIKE \"%".$module."\"");
+			if(file_exists(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $file . ".xml")) {
+				unlink(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $file . ".xml");
+			}
+			return true;
+		} else {
+			return true;
 		}
-		if(file_exists(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $file . ".xml")) {
-			unlink(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $file . ".xml");
-		}
-		return true;
 	}
 
 	final public static function UnInstall($module) {
-		if(defined("WITHOUT_DB")) {
-			return false;
-		}
 		$moduleFile = self::FindXML($module);
 		if(!file_exists(ROOT_PATH."core".DS."modules".DS."xml".DS.$moduleFile.".xml")) {
 			return self::UnInstallFile($module, $moduleFile);
 		}
-		$db = self::init_db();
+		if(!defined("WITHOUT_DB")) {
+			$db = self::init_db();
+		}
 		$files_root = array();
 		self::ReadRoot($files_root);
 		try {
@@ -676,34 +687,37 @@ class modules {
 					unlink(ROOT_PATH.$xml->files->file[$i]->attributes()->path);
 				}
 			}
-			$db->doquery("SELECT `file` FROM `modules` WHERE `module` LIKE \"%".$xml->info->attributes()->module."\"", true);
-			while($files = $db->fetch_assoc()) {
-				if(file_exists(ROOT_PATH.$files['file'])) {
-					unlink(ROOT_PATH.$files['file']);
+			
+			if(!defined("WITHOUT_DB")) {
+				$db->doquery("SELECT `file` FROM `modules` WHERE `module` LIKE \"%".$xml->info->attributes()->module."\"", true);
+				while($files = $db->fetch_assoc()) {
+					if(file_exists(ROOT_PATH.$files['file'])) {
+						unlink(ROOT_PATH.$files['file']);
+					}
 				}
-			}
-			$sql .= "DELETE FROM `modules` WHERE `module` LIKE \"%".$xml->info->attributes()->module."\";";
-			if(empty($sql)) {
-				return false;
-			}
-			if(strpos($sql, ";")!==false) {
-				$exp = explode(";", $sql);
-				unset($sql);
-				if(sizeof($exp)>1) {
-					for($i=0;$i<sizeof($exp);$i++) {
-						if(empty($exp[$i])) {
-							continue;
+				$sql .= "DELETE FROM `modules` WHERE `module` LIKE \"%".$xml->info->attributes()->module."\";";
+				if(empty($sql)) {
+					return false;
+				}
+				if(strpos($sql, ";")!==false) {
+					$exp = explode(";", $sql);
+					unset($sql);
+					if(sizeof($exp)>1) {
+						for($i=0;$i<sizeof($exp);$i++) {
+							if(empty($exp[$i])) {
+								continue;
+							}
+							$db->query($exp[$i]);
 						}
-						$db->query($exp[$i]);
+					} else {
+						$db->query(implode(";", $exp));
 					}
 				} else {
-					$db->query(implode(";", $exp));
+					$db->query($sql);
 				}
-			} else {
-				$db->query($sql);
-			}
-			if(file_exists(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $moduleFile . ".xml")) {
-				unlink(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $moduleFile . ".xml");
+				if(file_exists(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $moduleFile . ".xml")) {
+					unlink(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $moduleFile . ".xml");
+				}
 			}
 			return true;
 		} else {

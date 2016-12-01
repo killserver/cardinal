@@ -16,19 +16,21 @@ class Logs extends Core {
 		if(file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt")) {
 			unlink(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt");
 		}
-		$list = db::doquery("SELECT id FROM `error_log`", true);
-		while($l = db::fetch_assoc($list)) {
-			db::doquery("DELETE FROM `error_log` WHERE id = ".$l['id']);
+		if(!defined("WITHOUT_DB") && db::connected()) {
+			$list = db::doquery("SELECT `id` FROM `error_log`", true);
+			while($l = db::fetch_assoc($list)) {
+				db::doquery("DELETE FROM `error_log` WHERE id = ".$l['id']);
+			}
 		}
 	}
 
 	function Logs() {
 		if(isset($_GET['delete'])) {
 			$this->Delete();
-			Header("Location: ./?pages=Logs");
+			location("./?pages=Logs");
 			die();
 		}
-		if(config::Select('logs')=="file" && file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt")) {
+		if((defined("WITHOUT_DB") || config::Select('logs')==ERROR_FILE) && file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt")) {
 			$logs = file(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt");
 			$log_el = array();
 			for($i=(sizeof($logs)-1);$i>=0;$i--) {
@@ -44,7 +46,7 @@ class Logs extends Core {
 					"descr" => nl2br($log->trace_string."\n".var_export($at, true)),
 				), "logs", $log->filename.$log->line);
 			}
-		} else {
+		} elseif(!defined("WITHOUT_DB") && db::connected()) {
 			db::doquery("SELECT * FROM `error_log` ORDER BY `id` DESC", true);
 			while($log = db::fetch_assoc()) {
 				templates::assign_vars(array(

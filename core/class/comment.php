@@ -1,12 +1,12 @@
 <?php
 /*
  *
- * @version 3.0
+ * @version 5.3
  * @copyright 2014-2016 KilleR for Cardinal Engine
  * @author KilleR
  *
- * Version Engine: 3.0
- * Version File: 6
+ * Version Engine: 5.3
+ * Version File: 8
  *
  * 6.1
  * rebuild logic for comment
@@ -14,6 +14,8 @@
  * rebuild logic for comment v.2
  * 7.1
  * add support info on level user and rebuild logic parent comment
+ * 8.1
+ * rebuild full code. first step
  *
 */
 if(!defined("IS_CORE")) {
@@ -24,16 +26,22 @@ exit();
 /**
  * Class comment
  */
-final class comment {
+class comment {
 
 	/**
 	 * @var array Array all parameters for comments
      */
-	private static $param = array("u_id" => null, "type" => "news", "user_row" => array(), "levels" => 0);
+	private static $param = array("u_id" => "", "type" => "news", "user_row" => array(), "levels" => 0);
 	/**
 	 * @var int Count comments in table
      */
 	private static $counts = 0;
+	
+	private static $checkedSpam = true;
+	private static $switcherCrazy = true;
+	private static $switcherAddComm = true;
+	private static $switcherAvatar = "/images/no_avatar.png";
+	private static $switcherLink = false;
 
 	/**
 	 * comment constructor.
@@ -42,12 +50,10 @@ final class comment {
 	 * @param string $type Type comments
 	 * @param array $user_row Array sub parameters user
 	 * @param int $levels Level viewing comments
+	 * @return bool Return done setting default config comment
      */
-	public function comment($u_id, $type="news", $user_row = array(), $levels = 0) {
-		if(defined("WITHOUT_DB")) {
-			return false;
-		}
-		if(!userlevel::get("view_comments")) {
+	final public function comment($u_id, $type = "news", $user_row = array(), $levels = 0) {
+		if(!defined("WITHOUT_DB") && !userlevel::get("view_comments")) {
 			return false;
 		}
 		self::$param['u_id'] = $u_id;
@@ -57,6 +63,7 @@ final class comment {
 		if(sizeof($_POST)>3) {
 			self::add();
 		}
+		return true;
 	}
 
 	/**
@@ -66,8 +73,9 @@ final class comment {
 	 * @param string $type Type comments
 	 * @param array $user_row Array sub parameters user
 	 * @param int $levels Level viewing comments
+	 * @return bool Return done setting default config comment
      */
-	public static function set_default($u_id, $type="news", $user_row=array(), $levels = 0) {
+	final public static function set_default($u_id, $type = "news", $user_row = array(), $levels = 0) {
 		self::$param['u_id'] = $u_id;
 		self::$param['type'] = $type;
 		self::$param['user_row'] = $user_row;
@@ -75,60 +83,77 @@ final class comment {
 		if(sizeof($_POST)>3) {
 			self::add();
 		}
+		return true;
+	}
+	
+	final public static function checkSpam($check = true) {
+		self::$checkedSpam = $check;
+	}
+	
+	final public static function switchCrazy($switch = true) {
+		self::$switcherCrazy = $switch;
+	}
+	
+	final public static function switchAdded($switch = true) {
+		self::$switcherAddComm = $switch;
+	}
+	
+	final public static function switchAvatar($avatar = "") {
+		self::$switcherAvatar = $avatar;
+	}
+	
+	final public static function switchLink($link = "") {
+		self::$switcherLink = $link;
 	}
 
 	/**
 	 * Add comments in DB
-	 * @access private
      */
-	private static function add() {
-		if(!userlevel::get("add_comments")) {
+	final private static function add($check = true) {
+		if($check && !userlevel::get("add_comments")) {
 			templates::error("{L_error_level_full}", "{L_error_level}");
+			return false;
 		}
-		if(modules::get_user('id') && (modules::get_user('level')>=LEVEL_USER && modules::get_user('level')!=LEVEL_GUEST)) {
+		$postName = Arr::get($_POST, 'username', false);
+		$postMail = Arr::get($_POST, 'email', false);
+		$postParent = Arr::get($_POST, 'parent', 0);
+		$postComment = Arr::get($_POST, 'comment', false);
+		if(!$postName || !$postMail || !$postComment) {
+			return false;
+		}
+		$userId = modules::get_user('id');
+		$userName = modules::get_user('username');
+		$userAltName = modules::get_user('alt_name');
+		$userMail = modules::get_user('email');
+		$userLevel = modules::get_user('level');
+		if($userId && ($userLevel >= LEVEL_USER && $userLevel != LEVEL_GUEST)) {
 			$is_guest = false;
+			$guest = "false";
+			$mod = "yes";
+			$username = $userName;
+			$mail = $userMail;
 		} else {
 			$is_guest = true;
+			$guest = "true";
+			$mod = "no";
+			$username = Saves::SaveOld($postName);
+			$mail = Saves::SaveOld($postMail);
 		}
-		if(!$is_guest) {
-			$username = modules::get_user('username');
-		} else if(isset($_POST['username'])) {
-			$username = saves($_POST['username']);
-		} else {
-			return;
-		}
-		if(!$is_guest) {
-			$mail = modules::get_user('email');
-		} else if(isset($_POST['email'])) {
-			$mail = saves($_POST['email']);
-		}
-		$comment = saves($_POST['comment']);
 		$ip = HTTP::getip();
 		$client = getenv('HTTP_USER_AGENT');
-		if(isset($_POST['parent'])) {
-			$parent_id = saves($_POST['parent']);
+		$parent_id = Saves::SaveOld($postParent);
+		$comment = Saves::SaveOld($postComment);
+		if(self::$checkedSpam) {
+			$spam = new StopSpam();
+			if(!$spam->is_spammer(array('email' => $mail, 'ip' => $ip, 'username' => $username))) {
+				$spam = "no";
+			} else {
+				$spam = "yes";
+			}
 		} else {
-			$parent_id = 0;
-		}
-		if($is_guest) {
-			$guest = "true";
-		} else {
-			$guest = "false";
-		}
-		if(modules::get_user('id') && (modules::get_user('level')>LEVEL_USER && modules::get_user('level')!=LEVEL_GUEST)) {
-			$mod = "yes";
-		} else if(modules::get_user('level')==LEVEL_GUEST) {
-			$mod = "yes";
-		} else {
-			$mod = "no";
-		}
-		$spam = new StopSpam();
-		if(!$spam->is_spammer(array('email' => $mail, 'ip' => $ip, 'username' => $username))) {
 			$spam = "no";
-		} else {
-			$spam = "yes";
 		}
-		db::doquery("INSERT INTO comments SET `added`=\"".modules::get_user('alt_name')."\", `email`=\"".$mail."\", `type`=\"".self::$param['type']."\", `ip`=\"".$ip."\", `user_agent`=\"".$client."\", `comment`=\"".$comment."\", `u_id`=\"".self::$param['u_id']."\", `parent_id`=\"".$parent_id."\", `time` = UNIX_TIMESTAMP(), `guest`=\"".$guest."\", `mod` = \"".$mod."\", `spam` = \"".$spam."\"");
+		db::doquery("INSERT INTO `comments` SET `added` = \"".$userAltName."\", `email` = \"".$mail."\", `type` = \"".self::$param['type']."\", `ip` = \"".$ip."\", `user_agent` = \"".$client."\", `comment` = \"".$comment."\", `u_id` = \"".self::$param['u_id']."\", `parent_id` = \"".$parent_id."\", `time` = UNIX_TIMESTAMP(), `guest` = \"".$guest."\", `mod` = \"".$mod."\", `spam` = \"".$spam."\"");
 		unset($_POST);
 		location(getenv("REQUEST_URI"));
 	}
@@ -142,19 +167,21 @@ final class comment {
 	 * Preparing template for including anyway
 	 * @access public
 	 * @param int $parent Parent comment for added
-	 * @return mixed|string Completed template for including anyway
+	 * @return string Completed template for including anyway
      */
-	public static function addcomments($parent = 0) {
-		if(modules::get_user('id') && modules::get_user('level')!=LEVEL_GUEST && userlevel::get("add_comments")) {
+	final public static function addcomments($parent = 0) {
+		$userId = modules::get_user('id');
+		$userLevel = modules::get_user('level');
+		if($userId && $userLevel != LEVEL_GUEST && userlevel::get("add_comments")) {
 			$add_com = templates::load_templates("addcomments", "cp1251");
 		} else {
 			return "";
 		}
-		if(modules::get_user('id') && modules::get_user('level')!=LEVEL_GUEST) {
-			$add_com=preg_replace('#\[not-logged\](.+?)\[/not-logged\]#is', '', $add_com);
+		if($userId && $userLevel != LEVEL_GUEST) {
+			$add_com = preg_replace('#\[not-logged\](.+?)\[/not-logged\]#is', '', $add_com);
 		} else {
-			$add_com=preg_replace('#\[not-logged\]#is', '', $add_com);
-			$add_com=preg_replace('#\[/not-logged\]#is', '', $add_com);
+			$add_com = preg_replace('#\[not-logged\]#is',  '', $add_com);
+			$add_com = preg_replace('#\[/not-logged\]#is', '', $add_com);
 		}
 		$add_com = str_replace(array("{u_id}", "{parent}"), array(self::$param['u_id'], $parent), $add_com);
 		return $add_com;
@@ -164,15 +191,17 @@ final class comment {
 	 * Preparing template for including anyway without checking level for viewing
 	 * @access public
 	 * @param int $parent Parent comment for added
-	 * @return mixed|string Completed template for including anyway
+	 * @return string Completed template for including anyway
      */
-	public static function ViewAdd($parent = 0) {
+	final public static function ViewAdd($parent = 0) {
+		$userId = modules::get_user('id');
+		$userLevel = modules::get_user('level');
 		$add_com = templates::load_templates("addcomments", "cp1251");
-		if(modules::get_user('id') && modules::get_user('level')!=LEVEL_GUEST) {
-			$add_com=preg_replace('#\[not-logged\](.+?)\[/not-logged\]#is', '', $add_com);
+		if($userId && $userLevel != LEVEL_GUEST) {
+			$add_com = preg_replace('#\[not-logged\](.+?)\[/not-logged\]#is', '', $add_com);
 		} else {
-			$add_com=preg_replace('#\[not-logged\]#is', '', $add_com);
-			$add_com=preg_replace('#\[/not-logged\]#is', '', $add_com);
+			$add_com = preg_replace('#\[not-logged\]#is',  '', $add_com);
+			$add_com = preg_replace('#\[/not-logged\]#is', '', $add_com);
 		}
 		$add_com = str_replace(array("{u_id}", "{parent}"), array(self::$param['u_id'], $parent), $add_com);
 		return $add_com;
@@ -183,14 +212,16 @@ final class comment {
 	 * @access public
 	 * @param bool|true $add Add added comment in end
 	 * @param string $tpl Template for prepare viewing comments
-	 * @return mixed|string Done viewing list comments
+	 * @return string Done viewing list comments
      */
-	public static function get($add = true, $tpl = "comments") {
+	final public static function get($add = true, $tpl = "comments") {
+		$userId = modules::get_user('id');
+		$userLevel = modules::get_user('level');
 		$comments = "";
 		$file_com = templates::load_templates($tpl, "cp1251");
 		// выводим комменты
 		$msg = array();
-		if(self::$param['type']=="user") {
+		if(self::$param['type'] == "user") {
 			$type = "user";
 			$u_id = self::$param['user_row']['alt_name'];
 		} else {
@@ -210,29 +241,41 @@ final class comment {
 		$parent = 0;
 		self::$counts = $count = sizeof($msg);
 		if($count>0) {
-			$msg = self::crazysort($msg);
+			if(self::$switcherCrazy) {
+				$msg = self::crazysort($msg);
+			}
 			self::$counts = $count = sizeof($msg);
 			for($i=0;$i<$count;$i++) {
 				if(!empty($msg[$i]['avatar'])) {
 					$avatar = $msg[$i]['avatar'];
 				} else {
-					$avatar = "/images/no_avatar.png";
+					$avatar = self::$switcherAvatar;
 				}
-				$margin = $msg[$i]['level']*20;
+				$margin = (isset($msg[$i]['level']) ? $msg[$i]['level']*20 : 0);
 				if(strpos($msg[$i]['parent_id'], ".") !== false) {
 					$aParent = explode(".", $msg[$i]['parent_id']);
 					$parentId = end($aParent);
 				} else {
 					$parentId = $msg[$i]['parent_id'];
 				}
-				$comm = str_replace(array("{foto}", "{author_link}", "{author_name}", "{date}", "{comment}", "{id}", "{margin}", "{par}"), array($avatar, user_link($msg[$i]['alt_name'], $msg[$i]['added']), $msg[$i]['added'], date(S_TIME_VIEW, $msg[$i]['time']), bbcodes::colorit($msg[$i]['comment']), $msg[$i]['id'], $margin, $parentId), $file_com);
-				if(modules::get_user('id') && (modules::get_user('level')>LEVEL_USER && modules::get_user('level')!=LEVEL_GUEST) && self::$param['levels']>$msg[$i]['level']) {
-					$comm = preg_replace('#\[requoted\]#is', '', $comm);
+				$replace = array(
+					"{foto}" =>        $avatar,
+					"{author_link}" => (!self::$switcherLink ? user_link($msg[$i]['alt_name'], $msg[$i]['added']) : $msg[$i]['alt_name']),
+					"{author_name}" => $msg[$i]['added'],
+					"{date}" =>        date(S_TIME_VIEW, $msg[$i]['time']),
+					"{comment}" =>     bbcodes::colorit($msg[$i]['comment']),
+					"{id}" =>          $msg[$i]['id'],
+					"{margin}" =>      $margin,
+					"{par}" =>         $parentId,
+				);
+				$comm = str_replace(array_keys($replace), array_values($replace), $file_com);
+				if($userId && ($userLevel > LEVEL_USER && $userLevel != LEVEL_GUEST) && self::$param['levels'] > $msg[$i]['level']) {
+					$comm = preg_replace('#\[requoted\]#is',  '', $comm);
 					$comm = preg_replace('#\[/requoted\]#is', '', $comm);
 				} else {
 					$comm = preg_replace('#\[requoted\](.+?)\[/requoted\]#is', '', $comm);
 				}
-				if($msg[$i]['last_activ']>time()-300) {
+				if($msg[$i]['last_activ'] > time()-300) {
 					$comm = preg_replace('#\[online\]#is', '', $comm);
 					$comm = preg_replace('#\[/online\]#is', '', $comm);
 					$comm = preg_replace('#\[offline\](.+?)\[/offline\]#is', '', $comm);
@@ -244,7 +287,7 @@ final class comment {
 				$comments .= $comm;
 			}  
 		}
-		if($add) {
+		if($add || self::$switcherAddComm) {
 			$comments = self::addcomments().$comments;
 		}
 		$comments = str_replace(array("{u_id}", "{parent}"), array(self::$param['u_id'], $parent), $comments);
@@ -256,7 +299,7 @@ final class comment {
 	 * @access public
 	 * @return int Count comments on targeted criterion in DB
      */
-	public static function getCount() {
+	final public static function getCount() {
 		return self::$counts;
 	}
 
@@ -269,15 +312,15 @@ final class comment {
 	 * @param string $count Count comments
 	 * @return array|bool Result array parent-children
      */
-	private static function crazysort(&$comments, $parentComment = 0, $level = 0, $count = "") {
-		if(is_array($comments) && sizeof($comments)) {
+	final private static function crazysort(&$comments, $parentComment = 0, $level = 0, $count = "") {
+		if(is_array($comments) && sizeof($comments)>0) {
 			$return = array();
 			if(empty($count)){
 				$c = sizeof($comments);
 			} else {
 				$c = $count;
 			}
-			for($i=0;$i<$c;$i++){
+			for($i=0;$i<$c;$i++) {
 				if(!isset($comments[$i])) {
 					continue;
 				}
@@ -298,9 +341,10 @@ final class comment {
 					}
 				}
 			}
-		return $return;
+			return $return;
+		} else {
+			return false;
 		}
-	return false;
 	}
 
 }

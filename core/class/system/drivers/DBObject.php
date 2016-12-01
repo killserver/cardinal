@@ -34,6 +34,25 @@ class DBObject {
 			$this->{$k} = "";
 		}
 	}
+	
+	final public function Select($table, $where = "") {
+		$keys = get_object_vars($this);
+		if(sizeof($keys)==0) {
+			throw new Exception("Fields is not set");
+			die();
+		}
+		$keys = array_keys($keys);
+		$rel = db::doquery("SELECT ".implode(", ", array_map(function($data) { return "`".$data."`"; }, $keys))." FROM ".$table.(!empty($where) ? " WHERE ".$where : ""), true);
+		if(db::num_rows($rel) <= 1) {
+			return db::fetch_object($rel, $this);
+		} else {
+			$arr = array();
+			while($row = db::fetch_object($rel, $this)) {
+				$arr[] = $row;
+			}
+			return $arr;
+		}
+	}
 
     final public function Time() {
         $r = db::doquery("SELECT UNIX_TIMESTAMP() AS `time`");

@@ -34,8 +34,8 @@ class Main_Updater extends Main {
 		if($if) {
 			templates::assign_var("new_version", $vid);
 			templates::assign_var("is_new", "1");
-			$file = ROOT_PATH."core/cache/system/version_".str_replace("-", "_", $vid).".txt";
-			if(!file_exists($file)) {
+			$file = ROOT_PATH."core".DS."cache".DS."system".DS."version_".str_replace("-", "_", $vid).".txt";
+			if(!file_exists($file) && is_writable(ROOT_PATH."core".DS."cache".DS."system".DS)) {
 				$vid = parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/changelog/list.txt?'.date("d-m-Y-H"));
 				$changelog = "";
 				$list = explode("\n", $vid);

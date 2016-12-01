@@ -1,5 +1,5 @@
 <div class="col-md-12">
-	<a id="core-cardinal" class="btn btn-[if {is_download}==0]red download[/if {is_download}==0][if {is_download}==1]success install[/if {is_download}==1] btn-icon btn-icon-standalone btn-lg">
+	<a id="core-cardinal" class="btn btn-[if {is_download}==0]red download[/if {is_download}==0][if {is_download}==1]success install[/if {is_download}==1] btn-icon btn-icon-standalone btn-lg [if {is_locked}==1]locked[/if {is_locked}==1]">
 		<i class="fa-download"></i>
 		<span>[if {is_download}==0]{L_download}[/if {is_download}==0][if {is_download}==1]{L_install}[/if {is_download}==1] {L_new_versions} [{new_version}]</span>
 	</a>
@@ -108,6 +108,9 @@ function rebuild() {
 				NProgress.done();
 			});
 		}, 1000);
+	});
+	jQuery(".locked").off("click").click(function() {
+		alert("{L_install_locked}");
 	});
 }
 jQuery(document).ready(function() {
