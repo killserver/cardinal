@@ -56,7 +56,7 @@ define("UPLOAD_CM", 12000);
 define("UPLOAD_CMD", 12000);
 define("UPLOAD_ALL", 240000);
 
-define("VERSION", "5.3");
+define("VERSION", "5.4");
 define("DB_VERSION", "3.5");
 define("LEVEL_ADMIN", 3);
 define("LEVEL_MODER", 2);

@@ -1,16 +1,18 @@
 <?PHP
 /*
  *
- * @version 3.0
+ * @version 5.4
  * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 3.0
- * Version File: 0
+ * Version Engine: 5.4
+ * Version File: 1
  *
  * 0.4
  * add return header last modified in page for client
  * 0.5
  * add support one method cookie for engine
+ * 1.0
+ * add content type
  *
 */
 if(!defined("IS_CORE")) {
@@ -19,6 +21,8 @@ die();
 }
 
 class HTTP {
+	
+	private static $pathSaveMime = false;
 	
 	public function HTTP() {
 		
@@ -104,13 +108,51 @@ class HTTP {
 		return true;
 	}
 	
-	final public static function echos($echo = "") {
+	final public static function setSaveMime($path) {
+		if(file_exists($path) && is_writable($path)) {
+			self::$pathSaveMime = $path;
+		}
+	}
+	
+	final public static function setContentType($type, $charset = "") {
+		if(!self::$pathSaveMime) {
+			return false;
+		}
+		try {
+			if(strpos($type, "/")!==false) {
+				if(file_exists(self::$pathSaveMime)) {
+					$file = file_get_contents(self::$pathSaveMime);
+				} else {
+					$file = file_get_contents("https://raw.githubusercontent.com/skyzyx/mimetypes/master/mimetypes.json");
+					file_put_contents(self::$pathSaveMime, $file);
+				}
+				$json = json_decode($file, true);
+				if(!is_array($json) || !isset($json[$type])) {
+					return false;
+				} else {
+					header("Content-Type: ".$json[$type].(!empty($charset) ? "; charset=".$charset : ""), true);
+					return true;
+				}
+			} else {
+				header("Content-Type: ".$type.(!empty($charset) ? "; charset=".$charset : ""), true);
+				return true;
+			}
+			return true;
+		} catch(Exception $ex) {
+			return false;
+		}
+	}
+	
+	final public static function echos($echo = "", $die = false) {
 		if(!empty($echo)) {
 			echo $echo;
 			unset($echo);
 		}
 		if(!defined("ALL_GOOD")) {
 			define("ALL_GOOD", true);
+		}
+		if($die) {
+			die();
 		}
 	}
 	

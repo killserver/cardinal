@@ -46,6 +46,10 @@ Route::Set("messages", "messages(/<select>)")->defaults(array(
 	'select' => '-1',
 ));
 
+Route::Set("css_skin", "skin.css")->defaults(array(
+	'page' => 'skin',
+));
+
 Route::Set("cat", "cat/<alt_name>(/<page>).html")->defaults(array(
 	'page' => 'search',
 	'type' => 'cat',

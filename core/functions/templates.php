@@ -1,11 +1,11 @@
 <?php
 /*
  *
- * @version 3.0
+ * @version 5.4
  * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 3.0
- * Version File: 21
+ * Version Engine: 5.4
+ * Version File: 22
  *
  * 21.1
  * add var for js detected system time in unix format
@@ -19,6 +19,8 @@
  * add meta tags author and copyright
  * 22.4
  * add support minify js
+ * 22.5
+ * add creator forms and add rebuild vh and vw to px
  *
 */
 if(!defined("IS_CORE")) {
@@ -131,6 +133,20 @@ global $user;
 return $sRet;
 }
 
+function createForm($inputs, $to = "", $head = "") {
+	$form = "";
+	if(!empty($head)) {
+		$form .= "<h4>".$head."</h4>";
+	}
+	$form .= "<form method=\"post\"".(!empty($to) ? " action=\"".$to."\"" : "")." enctype=\"multipart/form-data\">";
+	for($i=0;$i<sizeof($inputs);$i++) {
+		$form .= "<div><label for=\"input".$i."\">".$inputs[$i]['name']."</label>".(isset($inputs[$i]['html']) && $inputs[$i]['html']=="textarea" ? "<textarea id=\"input".$i."\" name=\"inputData[".$i."]\"></textarea>" : "<input id=\"input".$i."\" type=\"".(isset($inputs[$i]['type']) ? $inputs[$i]['type'] : "text")."\" name=\"inputData[".$i."]\"".(isset($inputs[$i]['placeholder']) ? " placeholder=\"".$inputs[$i]['placeholder']."\"" : "").">")."</div>";
+	}
+	$form .= "<div><input type=\"submit\"></div>";
+	$form .= "</form>";
+	return $form;
+}
+
 function AmperOr($str) {
 	return strpos($str, "?")===false ? "?" : "&";
 }
@@ -157,6 +173,7 @@ if(!$clear) {
 /*
 <!--script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.js"></script><script type='text/javascript' src='http://simplemodal.googlecode.com/files/jquery.simplemodal.1.4.4.min.js'></script><script type="text/javascript" src="http://malsup.github.io/jquery.form.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/jqueryui.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/libs.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/jquery.jmpopups-0.5.1.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/spoiler.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/tabs.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/tabcontent.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/md-socwidget.js"></script><script type="text/javascript">setTimeout(function(){ $('.box').fadeOut('fast') },10000);  //30000 = 30 секунд</script><script type="text/javascript">	var username = "";	var default_link = "http://online-killer.com/";	jQuery(function() {		jQuery('#tabs').tabs('#tabsText > li');	});</script><script type="text/javascript" src="http://online-killer.com/js/poll.core.js"></script><script type="text/javascript">jQuery(document).ready(function(){	loadpoll();});</script><script type="text/javascript" src="http://online-killer.com/js/ajax_core.js"></script><script type="text/javascript" src="http://online-killer.com/flash-js-tagcloud-swfobject.js"></script><meta name="application-name" content="" /><meta name="msapplication-TileColor" content="#e0161d" /><meta name="msapplication-notification" content="frequency=30;polling-uri=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=1;polling-uri2=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=2;polling-uri3=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=3;polling-uri4=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=4;polling-uri5=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=5; cycle=1" /-->
 */
+	$skin = templates::get_skins();
 	$header .= '<meta name="viewport" content="'.config::Select("viewport").'" />'."\n";
 	$header .= '<meta http-equiv="imagetoolbar" content="no" />'."\n";
 	$header .= '<!-- saved from url=(0014)about:internet -->'."\n";
@@ -165,9 +182,13 @@ if(!$clear) {
 	$header .= "<script type=\"text/javascript\">\n".
 		"	var username = \"{U_username}\";\n".
 		"	var default_link = \"{C_default_http_host}\";\n".
-		"	var tskins = \"".templates::get_skins()."\";\n".
+		"	var tskins = \"".$skin."\";\n".
 		"	var SystemTime = \"".time()."\";\n".
+		(file_exists(ROOT_PATH."skins".DS.$skin.DS."skin.css" && !(!Route::Name("css_skin"))) ? "	var cssRebuildLink = \"{R_[css_skin]}\";\n" : "").
 		"</script>\n";
+	if(file_exists(ROOT_PATH."skins".DS.$skin.DS."skin.css" && !(!Route::Name("css_skin"))) {
+		$header .= '<div id="skinRebuilded"><script type="text/javascript" src="{C_default_http_host}js/skins.js" id="removedSkinRebuilded"></script></div>';
+	}
 }
 	if(isset($array['meta']['canonical'])) {
 		$header .= "<link rel=\"canonical\" href=\"".$array['meta']['canonical']."\" />\n";
@@ -176,7 +197,7 @@ if(!$clear) {
 	if(!$no_js) {
 		$header .= create_js($clear);
 	}
-	$link_rss = "rss.xml";
+	$link_rss = "";
 	if(!file_exists(ROOT_PATH."rss.xml")) {
 		$rss = Route::Name("rss");
 		if($rss) {

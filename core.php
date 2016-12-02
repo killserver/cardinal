@@ -1,11 +1,11 @@
 <?php
 /*
  *
- * @version 3.0
+ * @version 5.4
  * @copyright 2014-2016 KilleR for Cardinal Engine
  * @author KilleR
  *
- * Version Engine: 3.0
+ * Version Engine: 5.4
  * Version File: 12
  *
  * 12.1
@@ -26,6 +26,8 @@
  * add route to manifest
  * 12.9
  * add support config as static class, rebuild get info memory for usage, add support special slash on Windows OS and rebuild logic auth
+ * 12.10
+ * add actually code
  *
 */
 if(!defined("IS_CORE")) {
@@ -120,8 +122,15 @@ if(!defined("PHP_FLOAT_MAX")) {
 	define("PHP_FLOAT_MAX", 3.4e+38);
 }
 
+if(file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."core".DIRECTORY_SEPARATOR."media".DIRECTORY_SEPARATOR."definition.php")) {
+	include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."core".DIRECTORY_SEPARATOR."media".DIRECTORY_SEPARATOR."definition.php");
+}
+
 if(!defined("WITHOUT_DB") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."core".DIRECTORY_SEPARATOR."media".DIRECTORY_SEPARATOR."isFrame.lock")) {
 	define("WITHOUT_DB", true);
+}
+if(!defined("PERMISSION_PHP") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."core".DIRECTORY_SEPARATOR."media".DIRECTORY_SEPARATOR."phpINtmp.lock")) {
+	define("PERMISSION_PHP", true);
 }
 
 if(!defined("MEMORY_GET")) {
@@ -141,6 +150,7 @@ $Timer = microtime();
 
 require_once(ROOT_PATH."core".DS."functions.".ROOT_EX);
 
+HTTP::setSaveMime(ROOT_PATH."core".DS."cache".DS."system".DS."mimeList.json");
 $lang = array();
 if(file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX)) {
 	$db = new db();

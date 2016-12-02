@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 1.25.7-a4
- * @copyright 2014-2015 KilleR for Cardinal Engine
+ * @version 5.4
+ * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 1.25.7-a4
+ * Version Engine: 5.4
  * Version File: 12
  *
  * 12.1
@@ -17,6 +17,8 @@
  * add page error
  * 12.5
  * add page add post
+ * 12.6
+ * add page skin reBuilder
  *
 */
 if(!defined("IS_CORE")) {
@@ -100,6 +102,9 @@ global $manifest;
 		break;
 		case "news":
 			include_once(ROOT_PATH."core".DS."pages".DS."view.".ROOT_EX);
+		break;
+		case "skin":
+			include_once(ROOT_PATH."core".DS."pages".DS."skin.".ROOT_EX);
 		break;
 		case "main":
 			include_once(ROOT_PATH."core".DS."pages".DS."main.".ROOT_EX);

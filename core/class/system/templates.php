@@ -1,10 +1,10 @@
 <?php
 /*
  *
- * @version 4.0a
+ * @version 5.4
  * @copyright 2014-2016 KilleR for Cardinal Engine
  *
- * Version Engine: 4.0a
+ * Version Engine: 5.4
  * Version File: 4
  *
  * 3.0
@@ -680,6 +680,9 @@ final class templates {
 		
 		$tpl = preg_replace("#\{\# ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) \#\}#is", '{\\1.\\2}', $tpl);
 		$tpl = preg_replace("#\{\# ([a-zA-Z0-9\-_]+) \#\}#is", '{\\1}', $tpl);
+		if(defined("PERMISSION_PHP")) {
+			$tpl = preg_replace('#\<\?php(.*?)\?\>#isU', "", $tpl);
+		}
 		return $tpl;
 	}
 
