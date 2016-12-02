@@ -35,6 +35,7 @@ class Main_Updater extends Main {
 			templates::assign_var("new_version", $vid);
 			templates::assign_var("is_new", "1");
 			$file = ROOT_PATH."core".DS."cache".DS."system".DS."version_".str_replace("-", "_", $vid).".txt";
+			$changelog = "";
 			if(!file_exists($file) && is_writable(ROOT_PATH."core".DS."cache".DS."system".DS)) {
 				$vid = parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/changelog/list.txt?'.date("d-m-Y-H"));
 				$changelog = "";
@@ -50,7 +51,7 @@ class Main_Updater extends Main {
 					}
 				}
 				file_put_contents($file, $changelog, FILE_APPEND);
-			} else {
+			} else if(file_exists($file)) {
 				$changelog = file_get_contents($file);
 			}
 			templates::assign_var("changelog", nl2br($this->Creator(str_replace(array("{", "}"), array("&#123;", "&#125;"), htmlspecialchars($changelog)))));
