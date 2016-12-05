@@ -26,6 +26,8 @@ class userlevel {
 			$userlevels = array();
 			if(file_exists(ROOT_PATH."core".DS."media".DS."userlevels.".ROOT_EX)) {
 				include_once(ROOT_PATH."core".DS."media".DS."userlevels.".ROOT_EX);
+			} else if(file_exists(ROOT_PATH."core".DS."media".DS."userlevels.default.".ROOT_EX)) {
+				include_once(ROOT_PATH."core".DS."media".DS."userlevels.default.".ROOT_EX);
 			}
 			return $userlevels;
 		}

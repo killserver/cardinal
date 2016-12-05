@@ -177,6 +177,10 @@ class Core {
 					$adminCore = array();
 					include(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS."loader.".ROOT_EX);
 					$this->load_adminmodules = $adminCore;
+				} else if(file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS."loader.default.".ROOT_EX)) {
+					$adminCore = array();
+					include(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS."loader.default.".ROOT_EX);
+					$this->load_adminmodules = $adminCore;
 				}
 			} elseif(!cache::Exists("load_adminmodules")) {
 				$delete = ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS;

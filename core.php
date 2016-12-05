@@ -200,6 +200,8 @@ if(defined("WITHOUT_DB") || !defined("INSTALLER")) {
 	$user = $users = array();
 	if(file_exists(ROOT_PATH."core".DS."media".DS."users.".ROOT_EX)) {
 		include(ROOT_PATH."core".DS."media".DS."users.".ROOT_EX);
+	} else if(file_exists(ROOT_PATH."core".DS."media".DS."users.default.".ROOT_EX)) {
+		include(ROOT_PATH."core".DS."media".DS."users.default.".ROOT_EX);
 	}
 	if(Arr::get($_COOKIE, COOK_USER, false) && (Arr::get($_COOKIE, COOK_PASS, false) || Arr::get($_COOKIE, COOK_ADMIN_PASS, false))) {
 		if(Arr::get($_COOKIE, COOK_ADMIN_USER, false) && defined("IS_ADMIN")) {

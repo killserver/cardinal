@@ -220,6 +220,13 @@ class modules {
 					return false;
 				}
 				return self::ExecHooks($module);
+			} else if(file_exists(ROOT_PATH."core".DS."modules".DS."hooks".DS."loader.default.".ROOT_EX)) {
+				$hooksLoad = array();
+				include(ROOT_PATH."core".DS."modules".DS."hooks".DS."loader.default.".ROOT_EX);
+				if(!isset($hooksLoad[$module])) {
+					return false;
+				}
+				return self::ExecHooks($module);
 			} else {
 				return false;
 			}
@@ -264,6 +271,12 @@ class modules {
 			if(file_exists(ROOT_PATH."core".DS."modules".DS."loader.".ROOT_EX)) {
 				$modulesLoad = array();
 				include(ROOT_PATH."core".DS."modules".DS."loader.".ROOT_EX);
+				if(isset($modulesLoad[$file])) {
+					return true;
+				}
+			} else if(file_exists(ROOT_PATH."core".DS."modules".DS."loader.default.".ROOT_EX)) {
+				$modulesLoad = array();
+				include(ROOT_PATH."core".DS."modules".DS."loader.default.".ROOT_EX);
 				if(isset($modulesLoad[$file])) {
 					return true;
 				}
