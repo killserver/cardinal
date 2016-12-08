@@ -532,7 +532,7 @@ final class templates {
 		if(!empty($isset)) {
 			return $isset;
 		} else {
-			return $array[0];
+			return $array[2];
 		}
 	}
 
