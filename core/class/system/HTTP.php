@@ -109,7 +109,8 @@ class HTTP {
 	}
 	
 	final public static function setSaveMime($path) {
-		if(file_exists($path) && is_writable($path)) {
+		$base = pathinfo($path);
+		if(!is_bool($base) && isset($base['dirname']) && file_exists($base['dirname']) && is_writable($base['dirname'])) {
 			self::$pathSaveMime = $path;
 		}
 	}
@@ -119,7 +120,7 @@ class HTTP {
 			return false;
 		}
 		try {
-			if(strpos($type, "/")!==false) {
+			if(strpos($type, "/")===false) {
 				if(file_exists(self::$pathSaveMime)) {
 					$file = file_get_contents(self::$pathSaveMime);
 				} else {
@@ -141,6 +142,126 @@ class HTTP {
 		} catch(Exception $ex) {
 			return false;
 		}
+	}
+	
+	final public static function StatusHeader($code) {
+		$code = abs(int($code));
+		$StatusHeaderList = array(
+			100 => 'Continue',
+			101 => 'Switching Protocols',
+			102 => 'Processing',
+ 
+			200 => 'OK',
+			201 => 'Created',
+			202 => 'Accepted',
+			203 => 'Non-Authoritative Information',
+			204 => 'No Content',
+			205 => 'Reset Content',
+			206 => 'Partial Content',
+			207 => 'Multi-Status',
+			226 => 'IM Used',
+ 
+			300 => 'Multiple Choices',
+			301 => 'Moved Permanently',
+			302 => 'Found',
+			303 => 'See Other',
+			304 => 'Not Modified',
+			305 => 'Use Proxy',
+			306 => 'Reserved',
+			307 => 'Temporary Redirect',
+			308 => 'Permanent Redirect',
+ 
+			400 => 'Bad Request',
+			401 => 'Unauthorized',
+			402 => 'Payment Required',
+			403 => 'Forbidden',
+			404 => 'Not Found',
+			405 => 'Method Not Allowed',
+			406 => 'Not Acceptable',
+			407 => 'Proxy Authentication Required',
+			408 => 'Request Timeout',
+			409 => 'Conflict',
+			410 => 'Gone',
+			411 => 'Length Required',
+			412 => 'Precondition Failed',
+			413 => 'Request Entity Too Large',
+			414 => 'Request-URI Too Long',
+			415 => 'Unsupported Media Type',
+			416 => 'Requested Range Not Satisfiable',
+			417 => 'Expectation Failed',
+			418 => 'I\'m a teapot',
+			421 => 'Misdirected Request',
+			422 => 'Unprocessable Entity',
+			423 => 'Locked',
+			424 => 'Failed Dependency',
+			426 => 'Upgrade Required',
+			428 => 'Precondition Required',
+			429 => 'Too Many Requests',
+			431 => 'Request Header Fields Too Large',
+			451 => 'Unavailable For Legal Reasons',
+ 
+			500 => 'Internal Server Error',
+			501 => 'Not Implemented',
+			502 => 'Bad Gateway',
+			503 => 'Service Unavailable',
+			504 => 'Gateway Timeout',
+			505 => 'HTTP Version Not Supported',
+			506 => 'Variant Also Negotiates',
+			507 => 'Insufficient Storage',
+			510 => 'Not Extended',
+			511 => 'Network Authentication Required',
+		);
+		if(isset($StatusHeaderList[$code])) {
+			return $StatusHeaderList[$code];
+		} else {
+			return '';
+		}
+	}
+	
+	final public static function Location($link, $time = 0, $exit = true, $code = 302) {
+		if(defined("PHP_SAPI") && PHP_SAPI != 'cgi-fcgi') {
+			self::StatusHeader($status);
+		}
+		if($time == 0) {
+			header("Location: ".self::ClearLocation($link), true, $code);
+		} else {
+			header("Refresh: ".$time."; url=".self::ClearLocation($link), true, $code);
+		}
+		if($exit) {
+			exit();
+		}
+	}
+	
+	final public static function ClearLocation($location) {
+		$regex = '/
+			(
+				(?: [\xC2-\xDF][\x80-\xBF]        # double-byte sequences   110xxxxx 10xxxxxx
+				|   \xE0[\xA0-\xBF][\x80-\xBF]    # triple-byte sequences   1110xxxx 10xxxxxx * 2
+				|   [\xE1-\xEC][\x80-\xBF]{2}
+				|   \xED[\x80-\x9F][\x80-\xBF]
+				|   [\xEE-\xEF][\x80-\xBF]{2}
+				|   \xF0[\x90-\xBF][\x80-\xBF]{2} # four-byte sequences   11110xxx 10xxxxxx * 3
+				|   [\xF1-\xF3][\x80-\xBF]{3}
+				|   \xF4[\x80-\x8F][\x80-\xBF]{2}
+			){1,40}                              # ...one or more times
+			)/x';
+		$location = preg_replace_callback($regex, 'HTTP::sanitize_utf8_in_redirect', $location);
+		$location = preg_replace('|[^a-z0-9-~+_.?#=&;,/:%!*\[\]()@]|i', '', $location);
+		$location = self::saveUrl($location);
+		// remove %0d and %0a from location
+		return str_replace(array('%0d', '%0a', '%0D', '%0A'), "", $location);
+	}
+
+	final public static function saveUrl($string, $deleteZero = true) {
+		$string = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', "", $string);
+		if($deleteZero) {
+			$string = preg_replace( '/\\\\+0+/', '', $string );
+		}
+		return $string;
+	}
+
+	final public static function sanitize_utf8_in_redirect($matches) {
+		return urlencode($matches[0]);
 	}
 	
 	final public static function echos($echo = "", $die = false) {

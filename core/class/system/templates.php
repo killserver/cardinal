@@ -524,10 +524,10 @@ final class templates {
 	 * @return bool Return data in language or original line
      */
 	private static function lang($array) {
-		if(isset($array[2])) {
-			$isset = modules::get_lang($array[1], $array[2]);
+		if(isset($array[4])) {
+			$isset = modules::get_lang($array[2], $array[4]);
 		} else {
-			$isset = modules::get_lang($array[1]);
+			$isset = modules::get_lang($array[2]);
 		}
 		if(!empty($isset)) {
 			return $isset;
@@ -557,12 +557,12 @@ final class templates {
 	 * @return string Return reviewed language data or original line
      */
 	private static function slangf($array) {
-		if(isset($array[3])) {
-			$decode = $array[3];
-			$vLang = modules::get_lang($array[1], $array[2]);
+		if(isset($array[5])) {
+			$decode = $array[5];
+			$vLang = modules::get_lang($array[2], $array[4]);
 		} else {
-			$decode = $array[2];
-			$vLang = modules::get_lang($array[1]);
+			$decode = $array[4];
+			$vLang = modules::get_lang($array[2]);
 		}
 		if(!empty($vLang)) {
 			if(strpos(base64_decode($decode), ",") !==false) {
@@ -572,7 +572,7 @@ final class templates {
 				return sprintf($vLang, base64_decode($decode));
 			}
 		} else {
-			return "{L_".$array[1]."}";
+			return "{L_".$array[2]."}";
 		}
 	}
 
@@ -659,10 +659,13 @@ final class templates {
 		$tpl = preg_replace("#<!-- ELSEIF (.+?) -->#", "[else \\1]", $tpl);
 		$tpl = preg_replace("#<!-- ENDIF -->#", "[/if]", $tpl);
 		
-		$tpl = preg_replace("#\{% L_sprintf\(([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\],(.*?)\) %\}#", '{L_sprintf(\\1[\\2],\\3)}', $tpl);
-		$tpl = preg_replace("#\{% L_sprintf\(([a-zA-Z0-9\-_]+),(.*?)\) %\}#", '{L_sprintf(\\1,\\2)}', $tpl);
-		$tpl = preg_replace("#\{% L_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", '{L_\\1[\\2]}', $tpl);
-		$tpl = preg_replace("#\{% L_([a-zA-Z0-9\-_]+) %\}#", '{L_\\1}', $tpl);
+		$tpl = preg_replace("#\{% L_sprintf\(([\"|']|)([a-zA-Z0-9\-_]+)([\"|']|)\[([a-zA-Z0-9\-_]*?)\],(.*?)\) %\}#", '{L_sprintf(\\2[\\4],\\5)}', $tpl);
+		$tpl = preg_replace("#\{% L_sprintf\((.)(.+?)(.)\[([a-zA-Z0-9\-_]*?)\],(.*?)\) %\}#", '{L_sprintf(\\2[\\4],\\5)}', $tpl);
+		$tpl = preg_replace("#\{% L_sprintf\(([\"|']|)(.+?)([\"|']|),(.*?)\) %\}#", '{L_sprintf(\\2,\\4)}', $tpl);
+		$tpl = preg_replace("#\{% L_sprintf\((.)(.+?)(.),(.*?)\) %\}#", '{L_sprintf(\\2,\\4)}', $tpl);
+		$tpl = preg_replace("#\{% L_([\"|']|)([a-zA-Z0-9\-_]+)([\"|']|)\[([a-zA-Z0-9\-_]*?)\] %\}#", '{L_\\2[\\4]}', $tpl);
+		$tpl = preg_replace("#\{% L_([\"|']|)(.+?)([\"|']|) %\}#", '{L_\\2}', $tpl);
+		$tpl = preg_replace("#\{% L_(.)(.+?)(.) %\}#", '{L_\\2}', $tpl);
 		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", '{C_\\1[\\2]}', $tpl);
 		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+) %\}#", '{C_\\1}', $tpl);
 		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", '{U_\\1[\\2]}', $tpl);
@@ -723,10 +726,11 @@ final class templates {
 		$tpl = preg_replace("#<!-- ELSEIF (.+?) -->#", "<?php } elseif(\\1) { ?>", $tpl);
 		$tpl = preg_replace("#<!-- ENDIF -->#", "<?php } ?>", $tpl);
 		
-		$tpl = preg_replace("#\{% L_sprintf\(([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\],(.*?)\) %\}#", 'templates::slangf(array(null, \'\\1\', \'\\2\'))', $tpl);
-		$tpl = preg_replace("#\{% L_sprintf\(([a-zA-Z0-9\-_]+),(.*?)\) %\}#", 'templates::slangf(array(null, \'\\1\'))', $tpl);
-		$tpl = preg_replace("#\{% L_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", 'templates::lang(array(null, \'\\1\', \'\\2\'))', $tpl);
-		$tpl = preg_replace("#\{% L_([a-zA-Z0-9\-_]+) %\}#", 'templates::lang(array(null, \'\\1\'))', $tpl);
+		$tpl = preg_replace("#\{% L_sprintf\(([\"|']|)([a-zA-Z0-9\-_]+)([\"|']|)\[([a-zA-Z0-9\-_]*?)\],(.*?)\) %\}#", 'templates::slangf(array(null, \'\\2\', \'\\4\', \'\\5\'))', $tpl);
+		$tpl = preg_replace("#\{% L_sprintf\(([\"|']|)(.+?)([\"|']|),(.*?)\) %\}#", 'templates::slangf(array(null, \'\\2\', \'\\4\'))', $tpl);
+		$tpl = preg_replace("#\{% L_([\"|']|)([a-zA-Z0-9\-_]+)([\"|']|)\[([a-zA-Z0-9\-_]*?)\] %\}#", 'templates::lang(array(null, \'\\2\', \'\\4\'))', $tpl);
+		$tpl = preg_replace("#\{% L_([\"|']|)(.+?)([\"|']|) %\}#", 'templates::lang(array(null, \'\\2\'))', $tpl);
+		$tpl = preg_replace("#\{% L_(.)(.+?)(.) %\}#", 'templates::lang(array(null, \'\\2\'))', $tpl);
 		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", 'config::Select(\'\\1\', \'\\2\')', $tpl);
 		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+) %\}#", 'config::Select(\'\\1\')', $tpl);
 		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", 'templates::user(array(null, \'\\1\', \'\\2\'))', $tpl);
@@ -739,10 +743,14 @@ final class templates {
 		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) %\}#is", '$\\1[\'\\2\']', $tpl);
 		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+) %\}#is", '$data[\'\\1\']', $tpl);
 		
-		$tpl = preg_replace("#\{L_sprintf\(([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", '<?php echo templates::slangf(array(null, \'\\1\', \'\\2\')); ?>', $tpl);
-		$tpl = preg_replace("#\{L_sprintf\(([a-zA-Z0-9\-_]+),(.*?)\)\}#", '<?php echo templates::slangf(array(null, \'\\1\')); ?>', $tpl);
-		$tpl = preg_replace("#\{L_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", '<?php echo templates::lang(array(null, \'\\1\', \'\\2\')); ?>', $tpl);
-		$tpl = preg_replace("#\{L_([a-zA-Z0-9\-_]+)\}#", '<?php echo templates::lang(array(null, \'\\1\')); ?>', $tpl);
+		$tpl = preg_replace("#\{L_sprintf\(([\"|']|)([a-zA-Z0-9\-_]+)([\"|']|)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", '<?php echo templates::slangf(array(null, \'\\2\', \'\\4\', \'\\5\')); ?>', $tpl);
+		$tpl = preg_replace("#\{L_sprintf\((.)([a-zA-Z0-9\-_]+)(.)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", '<?php echo templates::slangf(array(null, \'\\2\', \'\\4\', \'\\5\')); ?>', $tpl);
+		$tpl = preg_replace("#\{L_sprintf\(([\"|']|)(.+?)([\"|']|),(.*?)\)\}#", '<?php echo templates::slangf(array(null, \'\\2\', \'\\4\')); ?>', $tpl);
+		$tpl = preg_replace("#\{L_sprintf\((.)(.+?)(.),(.*?)\)\}#", '<?php echo templates::slangf(array(null, \'\\2\', \'\\4\')); ?>', $tpl);
+		$tpl = preg_replace("#\{L_([\"|']|)([a-zA-Z0-9\-_]+)([\"|']|)\[([a-zA-Z0-9\-_]*?)\]\}#", '<?php echo templates::lang(array(null, \'\\2\', \'\\4\')); ?>', $tpl);
+		$tpl = preg_replace("#\{L_(.)([a-zA-Z0-9\-_]+)(.)\[([a-zA-Z0-9\-_]*?)\]\}#", '<?php echo templates::lang(array(null, \'\\2\', \'\\4\')); ?>', $tpl);
+		$tpl = preg_replace("#\{L_([\"|']|)(.+?)([\"|']|)\}#", '<?php echo templates::lang(array(null, \'\\2\')); ?>', $tpl);
+		$tpl = preg_replace("#\{L_(.)(.+?)(.)\}#", '<?php echo templates::lang(array(null, \'\\2\')); ?>', $tpl);
 		$tpl = preg_replace("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", '<?php echo config::Select(\'\\1\', \'\\2\'); ?>', $tpl);
 		$tpl = preg_replace("#\{C_([a-zA-Z0-9\-_]+)\}#", '<?php echo config::Select(\'\\1\'); ?>', $tpl);
 		$tpl = preg_replace("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", '<?php echo templates::user(array(null, \'\\1\', \'\\2\')); ?>', $tpl);
@@ -776,10 +784,14 @@ final class templates {
 		$tmp = preg_replace("~\{\#is_last\[(\"|)(.*?)(\"|)\]\}~", "\\1", $tmp);
 		$tmp = self::callback_array("#\\[(not-group)=(.+?)\\](.+?)\\[/not-group\\]#is", ("templates::group"), $tmp);
 		$tmp = self::callback_array("#\\[(group)=(.+?)\\](.+?)\\[/group\\]#is", ("templates::group"), $tmp);
-		$tmp = self::callback_array("#\{L_sprintf\(([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = self::callback_array("#\{L_sprintf\(([a-zA-Z0-9\-_]+),(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = self::callback_array("#\{L_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
-		$tmp = self::callback_array("#\{L_([a-zA-Z0-9\-_]+)\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\(([\"|']|)([a-zA-Z0-9\-_]+)([\"|']|)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\((.)([a-zA-Z0-9\-_]+)(.)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\(([\"|']|)(.+?)([\"|']|),(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\((.)(.+?)(.),(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_([\"|']|)([a-zA-Z0-9\-_]+)([\"|']|)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{L_(.)([a-zA-Z0-9\-_]+)(.)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{L_([\"|']|)(.+?)([\"|']|)\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{L_(.)(.+?)(.)\}#", ("templates::lang"), $tmp);
 		$tmp = self::callback_array("#\{LP_\[(.*?)\]\[(.*?)\](|\[(.*?)\])\}#", ("plural_form"), $tmp);
 		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tmp);
 		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tmp);
@@ -1557,10 +1569,14 @@ if(!$test) {
 	 * @return array|mixed|NUll Result completed
      */
 	public static function lcud($tmp) {
-		$tmp = self::callback_array("#\{L_sprintf\(([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = self::callback_array("#\{L_sprintf\(([a-zA-Z0-9\-_]+),(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = self::callback_array("#\{L_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
-		$tmp = self::callback_array("#\{L_([a-zA-Z0-9\-_]+)\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\(([\"|']|)([a-zA-Z0-9\-_]+)([\"|']|)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\((.)([a-zA-Z0-9\-_]+)(.)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\(([\"|']|)(.+?)([\"|']|),(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\((.)(.+?)(.),(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_([\"|']|)([a-zA-Z0-9\-_]+)([\"|']|)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{L_(.)([a-zA-Z0-9\-_]+)(.)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{L_([\"|']|)(.+?)([\"|']|)\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{L_(.)(.+?)(.)\}#", ("templates::lang"), $tmp);
 		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tmp);
 		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tmp);
 		$tmp = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tmp);

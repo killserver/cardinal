@@ -30,6 +30,37 @@ class modules {
 	private static $load_hooks = false;
 	private static $columns = array();
 	private static $access_user = array('id', 'username', 'alt_name', 'level', 'email', 'time_reg', 'last_activ', 'activ', 'avatar');
+	
+	final public static function setParam($name, $type, $func) {
+	global $manifest;
+		if(isset($manifest['applyParam']) && !isset($manifest['applyParam'][$name])) {
+			$manifest['applyParam'][$name] = array();
+			$manifest['applyParam'][$name][$type] = array();
+			$manifest['applyParam'][$name][$type][] = $func;
+			return true;
+		} else if(isset($manifest['applyParam']) && isset($manifest['applyParam'][$name]) && !isset($manifest['applyParam'][$name][$type])) {
+			$manifest['applyParam'][$name][$type] = array();
+			$manifest['applyParam'][$name][$type][] = $func;
+			return true;
+		} else if(isset($manifest['applyParam']) && isset($manifest['applyParam'][$name]) && isset($manifest['applyParam'][$name][$type])) {
+			$manifest['applyParam'][$name][$type][] = $func;
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	final public static function applyParam($param, $type, $name) {
+	global $manifest;
+		if(isset($manifest['applyParam']) && isset($manifest['applyParam'][$name]) && is_array($manifest['applyParam'][$name]) && sizeof($manifest['applyParam'][$name])>0 && isset($manifest['applyParam'][$name][$type]) && is_array($manifest['applyParam'][$name][$type]) && sizeof($manifest['applyParam'][$name][$type])>0) {
+			for($i=0;$i<sizeof($manifest['applyParam'][$name][$type]);$i++) {
+				for($z=0;$z<sizeof($param);$z++) {
+					$param[$z] = call_user_func_array($manifest['applyParam'][$name][$type][$i], array($param[$z]));
+				}
+			}
+		}
+		return $param;
+	}
 
 	final public static function get_config($get, $array = "", $default = false) {
 	global $config;
@@ -120,19 +151,15 @@ class modules {
 			$langs = self::init_lang();
 			$lang = $langs->init_lang(false);
 		}
-		if(strlen($array)>0) {
-			if(isset($lang[$get][$array])) {
-				return $lang[$get][$array];
-			} else {
-				return false;
-			}
-		} else {
-			if(isset($lang[$get])) {
-				return $lang[$get];
-			} else {
-				return false;
-			}
+		if(strlen($array)>0 && isset($lang[$get][$array])) {
+			$return = array($lang[$get][$array]);
+		} else if(isset($lang[$get])) {
+			$return = array($lang[$get]);
+		} else if(func_num_args()>0) {
+			$return = func_get_args();
 		}
+		$return = self::applyParam($return, 'after', "_e");
+		return implode("", $return);
 	}
 
 	final public static function init_templates() {
@@ -145,7 +172,13 @@ class modules {
 	}
 
 	final public static function init_lang() {
-		return new lang();
+	global $langInit;
+		if(empty($langInit)) {
+			$langInit = new lang();
+			return $langInit;
+		} else {
+			return $langInit;
+		}
 	}
 
 	final public static function init_bb() {

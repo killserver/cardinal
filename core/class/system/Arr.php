@@ -14,6 +14,10 @@ class Arr {
 		self::$array = $arr;
 	}
 	
+	final public static function allowEmpty($empty) {
+		self::$empty = $empty;
+	}
+	
 	final public static function get($arr, $key = "", $default = "") {
 		if(is_array($arr)) {
 			return call_user_func_array(__CLASS__."::getArr", func_get_args());

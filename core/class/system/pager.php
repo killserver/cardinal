@@ -52,7 +52,7 @@ final class pager {
 	}
 
 	function __construct($rpp, $count_all, $on_page, $url_page, $p_page = "/page/", $max_view = 10, $route = false) {
-		if(!is_numeric($rpp) || !is_numeric($count_all) || !is_numeric($on_page) || empty($url_page) || $on_page > 0) {
+		if(!is_numeric($rpp) || !is_numeric($count_all) || !is_numeric($on_page) || empty($url_page) || $on_page == 0) {
 			return false;
 		}
 		$this->limits = array(ceil($rpp*$on_page), $on_page);

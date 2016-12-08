@@ -39,6 +39,7 @@ final class Route {
 	private static $_params = array();
 	private static $_secret = "route";
 	private static $_config = array();
+	private static $_lang = "";
 	
 	public static function Config($get) {
 		if(is_array($get)) {
@@ -50,6 +51,10 @@ final class Route {
 			}
 		}
 		return false;
+	}
+	
+	public static function SetLang($lang) {
+		self::$_lang = $lang;
 	}
 	
 	public static function Build(array $arr, $mode = 1) {
@@ -144,6 +149,11 @@ final class Route {
 			return false;
 		}
 		return $list;
+	}
+	
+	public static function Search($route) {
+		$_routes = self::GetBuild();
+		return array_key_exists($route, $_routes);
 	}
 
 	public static function Name($route) {
@@ -290,6 +300,9 @@ final class Route {
 	}
 
 	public function Uri($params = array()) {
+		if(!empty(self::$_lang)) {
+			$params['lang'] = self::$_lang;
+		}
 		$uri = $this->_uri;
 		if(strpos($uri, '<') === false && strpos($uri, '(') === false) {
 			return $uri;

@@ -331,4 +331,14 @@ function plural_form($arr) {
 	return $n.$del.($n%10==1&&$n%100!=11?$forms[0]:($n%10>=2&&$n%10<=4&&($n%100<10||$n%100>=20)?$forms[1]:$forms[2]));
 }
 
+function _e() {
+	$ret = func_get_args();
+	$rets = modules::applyParam($ret, 'before', __FUNCTION__);
+	$ret = call_user_func_array("modules::get_lang", $rets);
+	if(is_bool($ret)) {
+		$ret = $rets;
+	}
+	return $ret;
+}
+
 ?>

@@ -25,6 +25,7 @@ class page {
 	private $position = false; // false - start; 0 - vertical; 1 - horizontal; 2 - null.
 	private $document = array("W" => 0, "H" => 0);
 	private $window = array("W" => 0, "H" => 0);
+	private $relPathName = false;
 	
 	function TransformPX($index, $value, $type) {
 		$val = $value;
@@ -50,6 +51,15 @@ class page {
 		$this->fileArr[$index] = str_replace($value, $val, $this->fileArr[$index]);
 	}
 	
+	function urls($link) {
+		for($i=0;$i<sizeof($this->fileArr);$i++) {
+			if(strpos($this->fileArr[$i], "url(")!==false && (strpos($this->fileArr[$i], "url(/")===false || strpos($this->fileArr[$i], "url('/")===false || strpos($this->fileArr[$i], "url(\"/")===false) && (strpos($this->fileArr[$i], "url(http")===false || strpos($this->fileArr[$i], "url('http")===false || strpos($this->fileArr[$i], "url(\"http")===false)) {
+				$this->fileArr[$i] = str_replace("url(", "url(".$this->relPathName, $this->fileArr);
+			}
+		}
+		return $this->fileArr;
+	}
+	
 	function __construct() {
 		HTTP::setContentType('css', config::Select("charset"));
 		HTTP::lastmod(time());
@@ -69,9 +79,12 @@ class page {
 		$this->document['W'] = $W;
 		$this->document['H'] = $H;
 		
+		$this->relPathName = config::Select("default_http_local")."skins/".templates::get_skins()."/";
+		
 		$this->fileArr = file(ROOT_PATH."skins".DS.templates::get_skins().DS."skin.css");
+		
 		if(!array_search("vh", $this->fileArr) || !array_search("vw", $this->fileArr)) {
-			HTTP::echos(implode("\n", $this->fileArr));
+			HTTP::echos(implode("\n", $this->urls($this->fileArr)));
 			die();
 		}
 		$this->fileArr = array_map("trim", $this->fileArr);
@@ -106,7 +119,7 @@ class page {
 				} 
 			} 
 		}
-		HTTP::echos(implode("\n", $this->fileArr));
+		HTTP::echos(implode("\n", $this->urls($this->fileArr)));
 		die();
 	}
 	

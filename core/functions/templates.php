@@ -184,10 +184,10 @@ if(!$clear) {
 		"	var default_link = \"{C_default_http_host}\";\n".
 		"	var tskins = \"".$skin."\";\n".
 		"	var SystemTime = \"".time()."\";\n".
-		((file_exists(ROOT_PATH."skins".DS.$skin.DS."skin.css") && !(!Route::Name("css_skin"))) ? "	var cssRebuildLink = \"{R_[css_skin]}\";\n" : "").
+		((file_exists(ROOT_PATH."skins".DS.$skin.DS."skin.css") && Route::Search("css_skin")) ? " var cssRebuildLink = \"{R_[css_skin]}\";\n" : "").
 		"</script>\n";
-	if(file_exists(ROOT_PATH."skins".DS.$skin.DS."skin.css") && !(!Route::Name("css_skin"))) {
-		$header .= '<div id="skinRebuilded"><script type="text/javascript" src="{C_default_http_host}js/skins.js" id="removedSkinRebuilded"></script></div>';
+	if(file_exists(ROOT_PATH."skins".DS.$skin.DS."skin.css") && Route::Search("css_skin")) {
+		$header .= '<div id="skinRebuilded"><script type="text/javascript" src="{C_default_http_host}js/skins.js" async="true" id="removedSkinRebuilded"></script></div>';
 	}
 }
 	if(isset($array['meta']['canonical'])) {

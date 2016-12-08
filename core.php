@@ -81,6 +81,7 @@ $manifest = array(
 	"const" => array(), //is define for modules
 	"params" => array(), //is use in call module and get/send parameters
 	"dependency_modules" => array(), //dependency logic modules and need update his
+	"applyParam" => array(),
 	"gzip" => false,
 );
 
@@ -151,6 +152,8 @@ $Timer = microtime();
 require_once(ROOT_PATH."core".DS."functions.".ROOT_EX);
 
 HTTP::setSaveMime(ROOT_PATH."core".DS."cache".DS."system".DS."mimeList.json");
+Validate::$host = config::Select("default_http_host");
+
 $lang = array();
 if(file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX)) {
 	$db = new db();

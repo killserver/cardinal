@@ -65,16 +65,9 @@ function or_mrand($min = 0, $max = 0) {
 	}
 }
 
-function location($link, $time = 0, $exit = true, $code = 0){return function_call('location', array($link, $time, $exit, $code));}
-function or_location($link, $time = 0, $exit = true, $code = 0) {
-	if($time == 0) {
-		header("Location: ".templates::view($link), true, $code);
-	} else {
-		header("Refresh: ".$time."; url=".templates::view($link), true, $code);
-	}
-	if($exit) {
-		exit();
-	}
+function location($link, $time = 0, $exit = true, $code = 302){return function_call('location', array($link, $time, $exit, $code));}
+function or_location($link, $time = 0, $exit = true, $code = 302) {
+	HTTP::Location(templates::view($link), $time, $exit, $code);
 }
 
 

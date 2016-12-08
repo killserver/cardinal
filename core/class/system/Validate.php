@@ -6,6 +6,8 @@ die();
 
 class Validate {
 	
+	public static $host = "";
+	
 	final public static function color($str) {
 		return (bool) preg_match('/^#?+[0-9a-f]{3}(?:[0-9a-f]{3})?$/iD', $str);
 	}
@@ -50,6 +52,64 @@ class Validate {
 			return (($rt === $type) || ($ext === $type));
 		} elseif(is_array($type)) {
 			return (in_array($rt, $type) || in_array($ext, $type));
+		}
+	}
+	
+	final public static function Redirect($location, $default = false) {
+		if(empty(self::$host)) {
+			return $default;
+		}
+		$location = trim($location);
+		// browsers will assume 'http' is your protocol, and will obey a redirect to a URL starting with '//'
+		if(substr($location, 0, 2) == '//') {
+			$location = 'http:' . $location;
+		}
+
+		$orLocation = $location;
+
+		// In php 5 parse_url may fail if the URL query part contains http://, bug #38143
+		$cut = false;
+		if(strpos($location, '?')!==false) {
+			$cut = strpos($location, '?');
+		}
+		$test = ($cut ? substr($location, 0, $cut) : $location);
+
+		try {
+			$lp = parse_url($test);
+		} catch(Exception $ex) {
+			return $default;
+		}
+
+		// Give up if malformed URL
+		if($lp === false) {
+			return $default;
+		}
+
+		// Allow only http and https schemes. No data:, etc.
+		if(isset($lp['scheme']) && !($lp['scheme']=='http' || $lp['scheme']=='https')) {
+			return $default;
+		}
+
+		// Reject if certain components are set but host is not. This catches urls like https:host.com for which parse_url does not set the host field.
+		if(!isset($lp['host']) && (isset($lp['scheme']) || isset($lp['user']) || isset($lp['pass']) || isset($lp['port']))) {
+			return $default;
+		}
+
+		// Reject malformed components parse_url() can return on odd inputs.
+		if((isset($lp['user']) && strpbrk($lp['user'], ':/?#@')) || (isset($lp['pass']) && strpbrk($lp['pass'], ':/?#@')) || (isset($lp['host']) && strpbrk($lp['host'], ':/?#@'))) {
+			return $default;
+		}
+
+		$parses = parse_url(self::$host);
+		$host = isset($lp['host']) ? $lp['host'] : '';
+		$allowed_hosts = array($parses['host']);
+		if(isset($lp['host']) && (!in_array($lp['host'], $allowed_hosts) && $lp['host'] != strtolower($parses['host']))) {
+			$location = $default;
+		}
+		if($orLocation == $location) {
+			return true;
+		} else {
+			return false;
 		}
 	}
 	
