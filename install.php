@@ -277,13 +277,15 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `posts` (
    `added` varchar(255) NOT NULL,
    `stat` int(11) NOT NULL,
    `active` enum('yes','no') NOT NULL DEFAULT 'no',
+   `type` varchar(255) not null default 'post',
    PRIMARY KEY `id`(`id`),
    FULLTEXT `title_name` (`title`, `alt_name`),
    FULLTEXT `category` (`cat_id`),
    FULLTEXT `idescr`(`image`, `descr`),
    FULLTEXT `added`(`added`),
    KEY `active_time`(`active`, `time`),
-   KEY `stat`(`stat`)
+   KEY `stat`(`stat`),
+   KEY `type`(`type`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 
 $SQL[] = "DROP TABLE IF EXISTS `users`;";

@@ -56,7 +56,7 @@ class page {
 		}
 		Route::RegParam("inPage", "index");
 		$pages = Route::param('pages');
-		$count = db::doquery("SELECT COUNT(`id`) AS `ct` FROM `posts` WHERE `active` = \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP()" : ""));
+		$count = db::doquery("SELECT COUNT(`id`) AS `ct` FROM `posts` WHERE `active` = \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP() AND `type` = \"post\"" : ""));
 		db::free();
 		templates::assign_var("count", $count['ct']);
 		if(isset($pages) && is_numeric($pages) && $pages > 0) {
@@ -73,7 +73,7 @@ class page {
 		foreach($pages as $id=>$page) {
 			templates::assign_vars($page, "pages", $id);
 		}
-		db::doquery("SELECT `id`, `alt_name`, `title`, `image`, `descr`, `time`, `added` FROM `posts` WHERE `active` = \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP()" : "")." ORDER BY `id` DESC ".$limits, true);
+		db::doquery("SELECT `id`, `alt_name`, `title`, `image`, `descr`, `time`, `added` FROM `posts` WHERE `active` = \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP()" : "")." AND `type` = \"post\" ORDER BY `id` DESC ".$limits, true);
 		while($row = db::fetch_assoc()) {
 			$row['short_descr'] = trim(cut(trim(bbcodes::clear_bbcode($row['descr'])), 100));
 			templates::assign_vars($row, "index", "index".$row['id']);

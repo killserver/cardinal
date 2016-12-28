@@ -129,7 +129,7 @@ if($active) {
 }
 unset($page, $class, $method, $file, $is_file);
 if(defined("DEBUG")) {
-	ini_set('display_errors',1);
+	ini_set('display_errors', 1);
 	error_reporting(E_ALL);
 }
 $Timer = microtime()-$Timer;

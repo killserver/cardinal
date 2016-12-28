@@ -19,9 +19,11 @@ function CheckCanGzip() {
 
 // ToDo: Языковую панель на это дело надо вешать!
 function GzipOut($debug = false, $exit = false) {
-global $config, $Timer, $manifest, $tplTime, $dbTime, $dbNum;
+global $config, $Timer, $manifest, $tplTime, $dbTime, $dbNum, $session;
 	if($exit) {
-		session_destroy();
+		if(isset($manifest['session_destroy']) && is_bool($manifest['session_destroy']) && $manifest['session_destroy']===true && is_bool($session)) {
+			session_destroy();
+		}
 		return;
 	}
 	$s = "";
@@ -62,13 +64,17 @@ global $config, $Timer, $manifest, $tplTime, $dbTime, $dbNum;
 		if((function_exists("ob_get_length") && ob_get_length()>0) && (isset($config["activeCache"]) && !$config["activeCache"])) {
 			ob_end_flush();
 		}
-		session_destroy();
+		if(isset($manifest['session_destroy']) && is_bool($manifest['session_destroy']) && $manifest['session_destroy']===true && is_bool($session)) {
+			session_destroy();
+		}
         die();
 	} else {
 		if(isset($config["activeCache"]) && !$config["activeCache"]) {
 			ob_end_flush();
 		}
-		session_destroy();
+		if(isset($manifest['session_destroy']) && is_bool($manifest['session_destroy']) && $manifest['session_destroy']===true && is_bool($session)) {
+			session_destroy();
+		}
 		exit();
 	}
 }

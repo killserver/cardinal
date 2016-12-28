@@ -77,7 +77,11 @@ Route::Set("default", function($uri, $page) {
 	if($uri) {
 		Route::Delete("default");
 		$par = Route::Load($page);
-		return $par['params'];
+		if(Route::Search("notFound") && (!is_array($par) || !isset($par['params']) || !is_array($par['params']) || !Route::checkEmpty($par['params']))) {
+			return Route::Get('notFound')->GetDefaults();
+		} else {
+			return $par['params'];
+		}
 	} else {
 		return array(
 			'page' => $page,

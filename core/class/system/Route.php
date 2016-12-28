@@ -240,6 +240,21 @@ final class Route {
 		return $page;
 	}
 
+	public function GetDefaults() {
+		if(!is_array($this->_defaults)) {
+			return false;
+		}
+		return $this->_defaults;
+	}
+	
+	public static function checkEmpty($arr) {
+		if(!is_array($arr)) {
+			return false;
+		}
+		$k = key($arr);
+		return (isset($arr[$k]) && !empty($arr[$k]));
+	}
+
 	public static function Load($default = "") {
 		$uri = getenv(ROUTE_GET_URL);
 		$len = strlen($uri);

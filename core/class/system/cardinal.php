@@ -96,6 +96,13 @@ class cardinal {
 		$method = (self::$ch_login['method']);
 		return $class::$method($pass);
 	}
+	
+	final public static function StartSession() {
+	global $session;
+		if(!is_bool($session)) {
+			session_start();
+		}
+	}
 
 	final protected static function amper($data) {
 		if(is_array($data)) {

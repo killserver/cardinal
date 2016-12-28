@@ -127,6 +127,14 @@ final class templates {
 			self::$skins = $config['skins_mobile'];
 		}
 	}
+	
+	public static function gzip($active = true) {
+		self::$gzip = $active;
+	}
+	
+	public static function gzipActive($active = false) {
+		self::$gzipActive = $active;
+	}
 
 	/**
 	 * Safe template from clone

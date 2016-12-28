@@ -55,6 +55,10 @@ class Validate {
 		}
 	}
 	
+	final public static function session_valid_id($session_id) {
+		return preg_match('/^[-,a-zA-Z0-9]{1,128}$/', $session_id) > 0;
+	}
+	
 	final public static function Redirect($location, $default = false) {
 		if(empty(self::$host)) {
 			return $default;

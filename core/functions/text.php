@@ -71,7 +71,7 @@ function iconv_charset($string, $pattern_size = 50){return function_call('iconv_
  * @return string Result detected charset
  */
 function or_iconv_charset($string, $pattern_size = 50) {
-	if(function_exists("mb_detect_encoding")) {
+	if(function_exists("mb_detect_encoding") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING) {
 		return mb_detect_encoding($string, array('UTF-8', 'Windows-1251', 'KOI8-R', 'ISO-8859-5'));
 	} else {
 		$first2 = substr($string, 0, 2);
@@ -148,8 +148,8 @@ function isoTOint($data) {
  * @param int $end End cut
  * @return string Part text
  */
-function nsubstr($text, $start, $end) {
-	if(function_exists("mb_substr")) {
+function nsubstr($text, $start, $end = null) {
+	if(function_exists("mb_substr") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING) {
 		return mb_substr($text, $start, $end, config::Select('charset'));
 	} elseif(function_exists("iconv_substr")) {
 		return iconv_substr($text, $start, $end, config::Select('charset'));
@@ -164,7 +164,7 @@ function nsubstr($text, $start, $end) {
  * @return int Length text
  */
 function nstrlen($text) {
-	if(function_exists("mb_strlen")) {
+	if(function_exists("mb_strlen") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING) {
 		return mb_strlen($text, config::Select('charset'));
 	} elseif(function_exists("iconv_strlen")) {
 		return iconv_strlen($text);
@@ -200,13 +200,23 @@ function del_in_file($file, $row_number) {
 }
 
 function nstrpos($text, $search, $pos = 0) {
-	if(function_exists("mb_strpos")) {
+	if(function_exists("mb_strpos") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING) {
 		return mb_strpos($text, $search, $pos, config::Select('charset'));
 	} elseif(function_exists("iconv_strpos")) {
 		return iconv_strpos($text, $search, $pos);
 	} else {
 		return strpos($text, $search, $pos);
 	}
+}
+
+function nucfirst($text, $all = false) {
+	$fc = strtouppers(nsubstr($text, 0, 1));
+	if(!$all) {
+		$fc .= nsubstr($text, 1);
+	} else {
+		$fc .= strtolowers(nsubstr($text, 1));
+	}
+	return $fc;
 }
 
 function saves($text, $db=false, $ddb=false){return function_call('saves', array($text, $db, $ddb));}
@@ -230,7 +240,7 @@ return $text;
 }
 
 function strtouppers($text) {
-	if(function_exists("mb_strtoupper")) {
+	if(function_exists("mb_strtoupper") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING) {
 		return mb_strtoupper($text, config::Select('charset'));
 	} else {
 		return strtoupper($text);
@@ -238,7 +248,7 @@ function strtouppers($text) {
 }
 
 function strtolowers($text) {
-	if(function_exists("mb_strtolower")) {
+	if(function_exists("mb_strtolower") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING) {
 		return mb_strtolower($text, config::Select('charset'));
 	} else {
 		return strtolower($text);

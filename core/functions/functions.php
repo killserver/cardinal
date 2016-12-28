@@ -39,6 +39,55 @@ global $manifest;
 	return $result;
 }
 
+if(!function_exists("RandomCompat_strlen")) {
+	function RandomCompat_strlen($binary_string) {
+		if(!is_string($binary_string)) {
+			throw new TypeError('RandomCompat_strlen() expects a string');
+		}
+		return strlen($binary_string);
+	}
+}
+
+if(!function_exists('random_bytes')) {
+    function random_bytes($bytes) {
+		if(!function_exists("mcrypt_create_iv")) {
+			throw new Exception('Mcrypt is not installed');
+		}
+        try {
+			if(is_numeric($bytes)) {
+				$bytes += 0;
+			}
+			if(is_float($bytes) && $bytes > ~PHP_INT_MAX && $bytes < PHP_INT_MAX) {
+				$bytes = (int) $bytes;
+			}
+        } catch(Exception $ex) {
+            throw new Exception('random_bytes(): $bytes must be an integer');
+        }
+        if($bytes < 1) {
+            throw new Exception('Length must be greater than 0');
+        }
+        $buf = mcrypt_create_iv($bytes, MCRYPT_DEV_URANDOM);
+		$strBuf = (defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING ? mb_strlen($buf, '8bit') : strlen($buf));
+        if($buf !== false && RandomCompat_strlen($strBuf) === $bytes) {
+            return $buf;
+        }
+        throw new Exception('Could not gather sufficient random data');
+    }
+}
+
+function getMax($max) {
+	if(function_exists('openssl_random_pseudo_bytes')) {
+	     do {
+	         $result = floor($max*(hexdec(bin2hex(openssl_random_pseudo_bytes(4)))/0xffffffff));
+	     } while($result == $max);
+	} elseif(function_exists("mt_rand")) {
+		$result = mt_rand(0, $max);
+	} else {
+		$result = rand(0, $max);
+	}
+	return $result;
+}
+
 function mrand($min = 0, $max = 0){return function_call('mrand', array($min, $max));}
 function or_mrand($min = 0, $max = 0) {
 	if($min==0 && $max==0) {
@@ -48,7 +97,7 @@ function or_mrand($min = 0, $max = 0) {
 		if(function_exists("random_int") && defined("PHP_INT_MAX")) {
 			$max = PHP_INT_MAX;
 		} else {
-			if(function_exists("mt_rand")) {
+			if(function_exists("mt_rand") && function_exists("mt_getrandmax")) {
 				$max = mt_getrandmax();
 			} else {
 				$max = getrandmax();

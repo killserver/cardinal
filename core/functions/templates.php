@@ -140,9 +140,12 @@ function createForm($inputs, $to = "", $head = "") {
 	}
 	$form .= "<form method=\"post\"".(!empty($to) ? " action=\"".$to."\"" : "")." enctype=\"multipart/form-data\">";
 	for($i=0;$i<sizeof($inputs);$i++) {
-		$form .= "<div><label for=\"input".$i."\">".$inputs[$i]['name']."</label>".(isset($inputs[$i]['html']) && $inputs[$i]['html']=="textarea" ? "<textarea id=\"input".$i."\" name=\"inputData[".$i."]\"></textarea>" : "<input id=\"input".$i."\" type=\"".(isset($inputs[$i]['type']) ? $inputs[$i]['type'] : "text")."\" name=\"inputData[".$i."]\"".(isset($inputs[$i]['placeholder']) ? " placeholder=\"".$inputs[$i]['placeholder']."\"" : "").">")."</div>";
+		if(!isset($inputs[$i])) {
+			continue;
+		}
+		$form .= "<div><label for=\"input".$i."\">".$inputs[$i]['name']."</label>".(isset($inputs[$i]['html']) && $inputs[$i]['html']=="textarea" ? "<textarea id=\"input".$i."\" name=\"inputData[".$i."]\"></textarea>" : "<input id=\"input".$i."\" type=\"".(isset($inputs[$i]['type']) ? $inputs[$i]['type'] : "text")."\" name=\"inputData[".$i."]\"".(isset($inputs[$i]['placeholder']) ? " placeholder=\"".$inputs[$i]['placeholder']."\"" : "").(isset($inputs[$i]['required']) ? " required=\"required\"" : "").">")."</div>";
 	}
-	$form .= "<div><input type=\"submit\"></div>";
+	$form .= "<div><input type=\"submit\"".(isset($inputs['submit']['value']) ? " value=\"".$inputs['submit']['value']."\"" : "")."></div>";
 	$form .= "</form>";
 	return $form;
 }

@@ -14,21 +14,23 @@ class page {
 				if(!Route::param("alt_name")) {
 					templates::error("{L_error_page}", "{L_error_level}");
 				}
-				$string = saves(Route::param("alt_name"), true);
+				$string = Saves::SaveOld(Route::param("alt_name"), true);
 				$title = "Просмотр категории \"".$string."\"";
-				$db = "SELECT {%sel%} FROM `posts` WHERE `active` = \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP()" : "")." AND (`cat_id` regexp '[[:<:]]'+(SELECT `cat_id` FROM `category` WHERE `alt_name` LIKE \"".$string."\" LIMIT 1)+'[[:>:]]') ORDER BY `id` DESC";
+				$db = "SELECT {%sel%} FROM `posts` WHERE `active` = \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP()" : "")." AND `type` = \"post\" AND (`cat_id` regexp '[[:<:]]'+(SELECT `cat_id` FROM `category` WHERE `alt_name` LIKE \"".$string."\" LIMIT 1)+'[[:>:]]') ORDER BY `id` DESC";
 			break;
 			case "search":
-				if(!isset($_POST['q']) && !isset($_GET['q'])) {
+				$postQ = Arr::get($_POST, 'q', false);
+				$getQ = Arr::get($_GET, 'q', false);
+				if(!$postQ && !$getQ) {
 					templates::error("{L_error_page}", "{L_error_level}");
 				}
-				if(isset($_POST['q'])) {
-					$string = saves($_POST['q'], true);
-				} else if(isset($_GET['q'])) {
-					$string = saves($_GET['q'], true);
+				if($postQ) {
+					$string = Saves::SaveOld($postQ, true);
+				} else if($getQ) {
+					$string = Saves::SaveOld($getQ, true);
 				}
 				$title = "Поиск \"".$string."\"";
-				$db = "SELECT {%sel%} FROM `posts` WHERE `active` = \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP()" : "")." AND MATCH(`title`, `descr`) AGAINST('+".$string."' IN BOOLEAN MODE) ORDER BY `id` DESC";
+				$db = "SELECT {%sel%} FROM `posts` WHERE `active` = \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP()" : "")." AND `type` = \"post\" AND MATCH(`title`, `descr`) AGAINST('+".$string."' IN BOOLEAN MODE) ORDER BY `id` DESC";
 			break;
 		}
 		$pages = Route::param('page');

@@ -26,7 +26,10 @@ class page {
 				$_POST = modules::change_db("add", $_POST);
 				$title = Arr::get($_POST, 'title');
 				$model->title = Saves::SaveOld($title, true);
-				$altName = Arr::get($_POST, 'alt_name');
+				$altName = Arr::get($_POST, 'alt_name', false);
+				if(!$altName) {
+					$altName = ToTranslit($title);
+				}
 				$altName = Saves::SaveOld(Saves::SaveAltName($altName), true);
 				$model->alt_name = $altName;
 				$descr = Arr::get($_POST, 'descr');
@@ -36,6 +39,7 @@ class page {
 				$model->time = "UNIX_TIMESTAMP()";
 				$model->cat_id = intval(Arr::get($_POST, 'cat', 0));
 				$model->added = modules::get_user("alt_name");
+				$model->type = "post";
 				$model->active = "yes";
 				$model->Insert();
 				$id = $model->Get("id");
@@ -72,7 +76,7 @@ class page {
 				templates::complited($tpl);
 				templates::display();
 			} else if($page=="edit") {
-				$model = new ModelDB("posts", "\"%".Route::param("sub_link")."%\"", "alt_name", "select", "like");
+				$model = new ModelDB("posts", "\"%".Route::param("sub_link")."%\" AND `type` = \"post\"", "alt_name", "select", "like");
 				$_POST = modules::change_db("add", $_POST);
 				$title = Saves::SaveOld(Arr::get($_POST, 'title'), true);
 				if($model->title != $title) {
@@ -89,6 +93,7 @@ class page {
 				if($model->descr != $descr) {
 					$model->descr = $descr;
 				}
+				$model->type = "post";
 				$model->Update();
 				$id = $model->id;
 				$image = "";
@@ -155,7 +160,7 @@ class page {
 			} else if($page == "edit") {
 				modules::use_modules("edit");
 				$sub_link = Route::param("sub_link");
-				db::doquery("SELECT * FROM `posts` WHERE `alt_name` LIKE \"".Saves::SaveOld($sub_link, true)."\"", true);
+				db::doquery("SELECT * FROM `posts` WHERE `alt_name` LIKE \"".Saves::SaveOld($sub_link, true)."\" AND `type` = \"post\"", true);
 				if(db::num_rows() == 0) {
 					templates::error("Not Found", "{L_error}");
 					return;

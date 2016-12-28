@@ -83,6 +83,7 @@ $manifest = array(
 	"dependency_modules" => array(), //dependency logic modules and need update his
 	"applyParam" => array(),
 	"gzip" => false,
+	"session_destroy" => true,
 );
 
 if(function_exists("ob_start")) {
@@ -97,8 +98,6 @@ if(function_exists("ob_implicit_flush")) {
 	ob_implicit_flush(0);
 	$manifest['gzip'] = true;
 }
-
-session_start();
 
 //define("NOT_DIE", true);
 

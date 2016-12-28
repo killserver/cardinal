@@ -217,7 +217,7 @@ class modules {
 		return $if;
 	}
 	
-	final private static function ExecHooks($module) {
+	final private static function ExecHooks($module, $param = array()) {
 		try {
 			$dir = ROOT_PATH."core".DS."modules".DS."hooks".DS;
 			if(is_dir($dir)) {
@@ -229,7 +229,7 @@ class modules {
 							if(class_exists($class)) {
 								$classes = new $class();
 								if(method_exists($classes, "init_hook")) {
-									$classes->init_hook();
+									$classes->init_hook($param);
 								}
 								unset($classes);
 							}
@@ -244,7 +244,7 @@ class modules {
 		}
 	}
 	
-	final public static function load_hooks($module) {
+	final public static function load_hooks($module, $param = array()) {
 		if(defined("WITHOUT_DB")) {
 			if(file_exists(ROOT_PATH."core".DS."modules".DS."hooks".DS."loader.".ROOT_EX)) {
 				$hooksLoad = array();
@@ -252,14 +252,14 @@ class modules {
 				if(!isset($hooksLoad[$module])) {
 					return false;
 				}
-				return self::ExecHooks($module);
+				return self::ExecHooks($module, $param);
 			} else if(file_exists(ROOT_PATH."core".DS."modules".DS."hooks".DS."loader.default.".ROOT_EX)) {
 				$hooksLoad = array();
 				include(ROOT_PATH."core".DS."modules".DS."hooks".DS."loader.default.".ROOT_EX);
 				if(!isset($hooksLoad[$module])) {
 					return false;
 				}
-				return self::ExecHooks($module);
+				return self::ExecHooks($module, $param);
 			} else {
 				return false;
 			}
@@ -281,7 +281,7 @@ class modules {
 		if(!isset(self::$load_hooks[$module])) {
 			return false;
 		}
-		return self::ExecHooks($module);
+		return self::ExecHooks($module, $param);
 	}
 	
 	final public static function load_modules($file, $load) {

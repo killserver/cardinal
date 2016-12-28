@@ -17,16 +17,31 @@ die();
 }
 
 class DBObject {
+	
+	private $loadedTable = "";
 
     final public function getArray() {
         return get_object_vars($this);
     }
 	
-	final public function loadTable($name) {
-		$row = db::doquery("SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema = '".db::$dbName."' AND table_name = '".$name."') AS `exists`");
+	final public function SetTable($table) {
+		$this->loadedTable = $table;
+	}
+	
+	final public function loadTable($name = "") {
+		if(empty($this->loadedTable) && empty($name)) {
+			throw new Exception("Table for insert is not set or empty");
+			die();
+		}
+		$row = db::doquery("SELECT EXISTS(SELECT 1 FROM `information_schema`.`tables` WHERE `table_schema` = '".db::$dbName."' AND `table_name` = '".$name."') AS `exists`");
 		if(!isset($row['exists']) || $row['exists'] != 1) {
 			throw new Exception("Table is not exists");
 			die();
+		}
+		if(empty($name)) {
+			$name = $this->loadedTable;
+		} else {
+			$this->loadedTable = $name;
 		}
 		db::doquery("SELECT * FROM `".db::$dbName."`.`".$name."` LIMIT 1", true);
 		$row = db::fetch_assoc();
@@ -35,14 +50,23 @@ class DBObject {
 		}
 	}
 	
-	final public function Select($table, $where = "") {
+	final public function Select($table = "", $where = "", $orderBy = "", $limit = "") {
+		if(empty($this->loadedTable) && empty($table)) {
+			throw new Exception("Table for insert is not set or empty");
+			die();
+		}
 		$keys = get_object_vars($this);
 		if(sizeof($keys)==0) {
 			throw new Exception("Fields is not set");
 			die();
 		}
+		if(empty($table)) {
+			$table = $this->loadedTable;
+		} else {
+			$this->loadedTable = $table;
+		}
 		$keys = array_keys($keys);
-		$rel = db::doquery("SELECT ".implode(", ", array_map(function($data) { return "`".$data."`"; }, $keys))." FROM ".$table.(!empty($where) ? " WHERE ".$where : ""), true);
+		$rel = db::doquery("SELECT ".implode(", ", array_map(function($data) { return "`".$data."`"; }, $keys))." FROM `".$table.."`".(!empty($where) ? " WHERE ".$where : "").(!empty($orderBy) ? " ORDER BY ".$orderBy : "").(!empty($limit) ? " LIMIT ".$limit : ""), true);
 		if(db::num_rows($rel) <= 1) {
 			return db::fetch_object($rel, $this);
 		} else {
@@ -59,15 +83,41 @@ class DBObject {
         return $r['time'];
     }
 
-    final public function Insert($table) {
+    final public function Insert($table = "") {
+		if(empty($this->loadedTable) && empty($table)) {
+			throw new Exception("Table for insert is not set or empty");
+			die();
+		}
+		if(empty($table)) {
+			$table = $this->loadedTable;
+		} else {
+			$this->loadedTable = $table;
+		}
         $arr = get_object_vars($this);
+		if(sizeof($arr)==0) {
+			throw new Exception("Fields is not set");
+			die();
+		}
         $key = array_keys($arr);
         $val = array_values($arr);
         return db::doquery("INSERT INTO `".$table."` (".implode(", ", array_map(function($d) { return "`".$d."`";}, $key)).") VALUES(".implode(", ", array_map(function($d) {return (strpos($d, "(")!==false&&strpos($d, ")")!==false ? $d : "'".db::escape($d)."'");}, $val)).")");
     }
 
-    final public function Update($table, $where) {
+    final public function Update($table = "", $where) {
+		if(empty($this->loadedTable) && empty($table)) {
+			throw new Exception("Table for update is not set or empty");
+			die();
+		}
+		if(empty($table)) {
+			$table = $this->loadedTable;
+		} else {
+			$this->loadedTable = $table;
+		}
         $arr = get_object_vars($this);
+		if(sizeof($arr)==0) {
+			throw new Exception("Fields is not set");
+			die();
+		}
         $key = array_keys($arr);
         $val = array_values($arr);
         return db::doquery("UPDATE `".$table."` SET ".implode(", ", array_map(function($k, $v) { return "`".$k."` = ".(strpos($v, "(")!==false&&strpos($v, ")")!==false ? $v : "'".db::escape($v)."'");}, $key, $val))." WHERE ".$where);

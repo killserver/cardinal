@@ -148,6 +148,39 @@ class Arr {
 		return self::$array;
 	}
 	
+	final public static function GetList() {
+		$elem = func_get_args();
+		$ret = false;
+		if(isset($elem[0]) && is_array($elem[0])) {
+			$arr    = $elem[0];
+			$next   = $elem[1];
+			$iStart = 1;
+		} else {
+			$arr    = self::$array;
+			$next   = $elem[0];
+			$iStart = 1;
+		}
+		for($i=$iStart;$i<(sizeof($elem)+1);$i++) {
+			if((isset($arr[$next]) && !empty($arr[$next]))) {
+				if(is_array($arr[$next])) {
+					$arr = $arr[$next];
+					if(isset($elem[$i+1])) {
+						$next = $elem[$i+1];
+					}
+				} else {
+					$ret = $arr[$next];
+					continue;
+				}
+			}
+		}
+		return $ret;
+	}
+	
+	final public static function CheckList() {
+		$ret = call_user_func_array("Arr::GetList", func_get_args());
+		return ($ret === false ? false : true);
+	}
+	
 	final public static function Separator($string = "") {
 		if(empty($string)) {
 			return self::$separ;

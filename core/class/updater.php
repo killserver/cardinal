@@ -7,7 +7,7 @@ exit();
 class updater {
 	
 	final private static function UpVersion($version) {
-		db::query("update `config` set `config_value` = \"".$version."\" WHERE `config_name` = \"db_version\"");
+		config::Update("db_version", $version);
 		cache::Delete("config");
 	}
 	
@@ -42,6 +42,10 @@ class updater {
 			break;
 			case "3.4":
 				db::query("alter table `modules` add `type` enum('admincp','site') NOT NULL DEFAULT 'site', add KEY `type` (`type`);");
+				$update = true;
+			break;
+			case "5.6":
+				db::query("alter table `posts` add `type` varchar(255) NOT NULL DEFAULT 'post', add KEY `type` (`type`);");
 				$update = true;
 			break;
 		}

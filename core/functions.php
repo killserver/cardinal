@@ -29,7 +29,9 @@ die();
 if(file_exists(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX) && file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX)) {
 	$config = array();
 	if(file_exists(ROOT_PATH."core".DS."media".DS."config.client.php")) {
-		chmod(ROOT_PATH."core".DS."media".DS."config.client.php", 0664);
+		if(is_writable(ROOT_PATH."core".DS."media".DS."config.client.php")) {
+			chmod(ROOT_PATH."core".DS."media".DS."config.client.php", 0664);
+		}
 		require_once(ROOT_PATH."core".DS."media".DS."config.client.php");
 	}
 	require_once(ROOT_PATH."core".DS."media".DS."config.global.".ROOT_EX);
@@ -44,7 +46,9 @@ if(file_exists(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX) && file_exists(
 	}
 	$config = array("charset" => "utf-8");
 	if(file_exists(ROOT_PATH."core".DS."media".DS."config.client.php")) {
-		chmod(ROOT_PATH."core".DS."media".DS."config.client.php", 0664);
+		if(is_writable(ROOT_PATH."core".DS."media".DS."config.client.php")) {
+			chmod(ROOT_PATH."core".DS."media".DS."config.client.php", 0664);
+		}
 		require_once(ROOT_PATH."core".DS."media".DS."config.client.php");
 	}
 	require_once(ROOT_PATH."core".DS."media".DS."config.global.".ROOT_EX);

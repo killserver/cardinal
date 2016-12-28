@@ -32,7 +32,7 @@ class lang {
 			return $langs;
 		}
 		if(!cache::Exists("lang_".self::$lang)) {
-			db::doquery("SELECT `orig`, `translate` FROM `lang` WHERE lang LIKE \"".self::$lang."\"", true);
+			db::doquery("SELECT `orig`, `translate` FROM `lang` WHERE `lang` LIKE \"".self::$lang."\"", true);
 			while($lang = db::fetch_assoc()) {
 				$langs[$lang['orig']] = $lang['translate'];
 			}
@@ -89,7 +89,8 @@ class lang {
 		if(isset($manifest['lang']['main']) && file_Exists(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$manifest['lang']['main'].".".ROOT_EX)) {
 			include(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$manifest['lang']['main'].".".ROOT_EX);
 			if($db) {
-				return array_merge($lang, self::lang_db());
+				$lang = array_merge($lang, self::lang_db());
+				return $lang;
 			} else {
 				return $lang;
 			}
@@ -105,7 +106,8 @@ class lang {
 				include(ROOT_PATH."core".DS."media".DS."config.lang.".ROOT_EX);
 			}
 			if(is_array($db_lang)) {
-				return array_merge($lang, $db_lang);
+				$lang = array_merge($lang, $db_lang);
+				return $lang;
 			} else {
 				return $lang;
 			}
@@ -139,24 +141,26 @@ class lang {
 		}
 	}
 
-	final public static function include_lang($page) {
+	final public static function include_lang($page, $db = true) {
 	global $lang, $user, $manifest;
 		$clang = config::Select('lang');
 		$ulang = (isset($user['lang']) && !empty($user['lang']) ? $user['lang'] : "");
 		if(!empty($ulang)) {
 			self::$lang = $ulang;
-		} else {
+		} else if(empty(self::$lang)) {
 			self::$lang = $clang;
 		}
 		if(isset($manifest['lang'][$page]) && file_Exists(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$manifest['lang'][$page].".".ROOT_EX)) {
 			include(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$manifest['lang'][$page].".".ROOT_EX);
-			return array_merge($lang, self::lang_db());
+			$lang = array_merge($lang, self::lang_db());
+			return $lang;
 		}
 		if(file_exists(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$page.".".ROOT_EX)) {
 			include(ROOT_PATH."core".DS."lang".DS.self::$lang.DS.$page.".".ROOT_EX);
-			$langs = self::lang_db();
-			if(is_array($langs)) {
-				return array_merge($lang, $langs);
+			if($db) {
+				$langs = self::lang_db();
+				$lang = array_merge($lang, $langs);
+				return $lang;
 			} else {
 				return $lang;
 			}
