@@ -30,7 +30,7 @@ class Core {
 	
 	public static function __callStatic($call, $args) {
 		$new = __METHOD__;
-		return $this->$new($name, $params);
+		return $this->$new($call, $args);
 	}
 	
 	public function __call($call, array $args) {
@@ -237,7 +237,7 @@ class Core {
 	}
 	
 	protected function Prints($echo, $print = false, $force = false) {
-	global $lang, $user, $in_page;
+	global $lang;
 		if(!userlevel::get("admin") || !isset($_COOKIE[COOK_ADMIN_USER]) || !isset($_COOKIE[COOK_ADMIN_PASS])) {
 			$ref = urlencode(str_replace(ROOT_PATH, "", cut(getenv("REQUEST_URI"), "/".ADMINCP_DIRECTORY."/")));
 			location("{C_default_http_host}".ADMINCP_DIRECTORY."/?pages=Login".(!empty($ref) ? "&ref=".$ref : ""));
@@ -253,7 +253,6 @@ class Core {
 		}
 		$dir = ROOT_PATH."core".DS."media".DS."smiles".DS;
 		if(is_dir($dir)) {
-			$files = array();
 			if($dh = dir($dir)) {
 				$i=1;
 				while(($file = $dh->read()) !== false) {

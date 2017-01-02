@@ -1,10 +1,10 @@
 <?php
 /***************************************************************************\
-| Sypex Geo                  version 2.2.0                                  |
+| Sypex Geo                  version 2.2.3                                  |
 | (c)2006-2014 zapimir       zapimir@zapimir.net       http://sypex.net/    |
 | (c)2006-2014 BINOVATOR     info@sypex.net                                 |
 |---------------------------------------------------------------------------|
-|     created: 2006.10.17 18:33              modified: 2014.05.02 23:00     |
+|     created: 2006.10.17 18:33              modified: 2014.06.20 18:57     |
 |---------------------------------------------------------------------------|
 | Sypex Geo is released under the terms of the BSD license                  |
 |   http://sypex.net/bsd_license.txt                                        |
@@ -84,8 +84,8 @@ class SxGeo {
 		}
 		if ($this->memory_mode) {
 			$this->db  = fread($this->fh, $this->db_items * $this->block_len);
-			$this->regions_db = fread($this->fh, $info['region_size']);
-			$this->cities_db  = fread($this->fh, $info['city_size']);
+			$this->regions_db = $info['region_size'] > 0 ? fread($this->fh, $info['region_size']) : '';
+			$this->cities_db  = $info['city_size'] > 0 ? fread($this->fh, $info['city_size']) : '';
 		}
 		$this->info = $info;
 		$this->info['regions_begin'] = $this->db_begin + $this->db_items * $this->block_len;
@@ -120,10 +120,10 @@ class SxGeo {
 				if ($ipn > substr($str, $offset * $this->block_len, 3)) $min = $offset;
 				else $max = $offset;
 			}
-			while ($ipn >= substr($str, $min * $this->block_len, 3) && $min++ < $max){};
+			while ($ipn >= substr($str, $min * $this->block_len, 3) && ++$min < $max){};
 		}
 		else {
-			return hexdec(bin2hex(substr($str, $min * $this->block_len + 3 , 3)));
+			$min++;
 		}
 		return hexdec(bin2hex(substr($str, $min * $this->block_len - $this->id_len, $this->id_len)));
 	}
@@ -161,7 +161,7 @@ class SxGeo {
 		}
 		else {
 			fseek($this->fh, $this->db_begin + $min * $this->block_len);
-			return $this->search_db(fread($this->fh, $len * $this->block_len), $ipn, 0, $len-1);
+			return $this->search_db(fread($this->fh, $len * $this->block_len), $ipn, 0, $len);
 		}
 	}
 
@@ -260,10 +260,18 @@ class SxGeo {
 		return $this->max_city ? $this->getCity($ip) : $this->getCountry($ip);
 	}
 	public function getCountry($ip){
-		return $this->id2iso[$this->get_num($ip)];
+		if($this->max_city) {
+			$tmp = $this->parseCity($this->get_num($ip));
+			return $tmp['country']['iso'];
+		}
+		else return $this->id2iso[$this->get_num($ip)];
 	}
 	public function getCountryId($ip){
-		return $this->get_num($ip);
+		if($this->max_city) {
+			$tmp = $this->parseCity($this->get_num($ip));
+			return $tmp['country']['id'];
+		}
+		else return $this->get_num($ip);
 	}
 	public function getCity($ip){
 		$seek = $this->get_num($ip);

@@ -1,8 +1,16 @@
 <?php
 
+/**
+ * Class JSONHelper
+ */
 class JSONHelper {
-	
-	function __construct($str) {
+
+    /**
+     * JSONHelper constructor.
+     * @param string $str Needed string for json decode
+     * @throws Exception If first parameters is not string
+     */
+    function __construct($str) {
 		if(!is_string($str)) {
 			throw new Exception('First parameter is not correct', 6);
 		}
@@ -17,23 +25,42 @@ class JSONHelper {
 			}
 		}
 	}
-	
-	final public function __debugInfo() {
+
+    /**
+     * Block var_dump and print_r
+     * @return array Empty array
+     */
+    final public function __debugInfo() {
 		return array();
 	}
-	
-	final public function __get($k) {
+
+    /**
+     * Try get element in json array
+     * @param mixed $k Needed element in json
+     * @return mixed Result element in json
+     * @throws Exception If element not found in json
+     */
+    final public function __get($k) {
 		if(!isset($this->{$k})) {
 			throw new Exception('Not Found', 6);
 		}
 		return $this->{$k};
 	}
-	
-	final public function __set($k, $v) {
+
+    /**
+     * Try set element in json
+     * @param mixed $k Key element in json
+     * @param mixed $v Value element in json
+     */
+    final public function __set($k, $v) {
 		$this->{$k} = $v;
 	}
-	
-	final public function save() {
+
+    /**
+     * Save all elements in object to string
+     * @return string This object to string
+     */
+    final public function save() {
 		return json_encode(get_object_vars($this));
 	}
 	

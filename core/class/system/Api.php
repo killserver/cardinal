@@ -4,12 +4,25 @@ echo "403 ERROR";
 die();
 }
 
+/**
+ * Class Api
+ */
 class Api {
-	
-	private static $active = false;
-	private static $params = array();
-	
-	public static function init() {
+
+    /**
+     * @var bool Activation API
+     */
+    private static $active = false;
+    /**
+     * @var array List parameters $_GET and $_POST
+     */
+    private static $params = array();
+
+    /**
+     * Initialize API
+     * @return string Return result API
+     */
+    public static function init() {
 	global $config;
 		self::$params['post'] = $_POST;
 		self::$params['get'] = $_GET;
@@ -41,8 +54,12 @@ class Api {
 			break;
 		}
 	}
-	
-	public static function config() {
+
+    /**
+     * Result get config element
+     * @return string Get config element
+     */
+    public static function config() {
 		$cfg = modules::get_config(self::$params['post']['query']);
 		if(is_bool($cfg)) {
 			return serialize(array("error" => "error api key 2", "params" => array("get" => self::$params['get'], "post" => self::$params['post'])));
@@ -50,8 +67,12 @@ class Api {
 			return serialize($cfg);
 		}
 	}
-	
-	public static function db() {
+
+    /**
+     * Result query
+     * @return string Return result query
+     */
+    public static function db() {
 		if(isset(self::$params['post']['db_all']) && self::$params['post']['db_all']=="true") {
 			db::doquery(self::$params['post']['query'], true);
 			$arr = array();
@@ -63,8 +84,12 @@ class Api {
 			return serialize(db::doquery(self::$params['post']['query']));
 		}
 	}
-	
-	public static function Install() {
+
+    /**
+     * Install modules
+     * @return string Result load module
+     */
+    public static function Install() {
 		if(!isset(self::$params['post']['is_install'])) {
 			try {
 				if(isset(self::$params['post']['is_xml'])) {
@@ -75,7 +100,6 @@ class Api {
 				$ch = curl_init(str_replace(" ", "%20", self::$params['post']['url']));
 				curl_setopt($ch, CURLOPT_TIMEOUT, 50);
 				curl_setopt($ch, CURLOPT_FILE, $fp); 
-				//curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 				curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 				curl_exec($ch); 
 				curl_close($ch);
@@ -88,21 +112,37 @@ class Api {
 			return serialize(modules::Install(self::$params['post']['name']));
 		}
 	}
-	
-	public static function post_db($url, $sql, $all = false) {
-	global $config;
-		$datas = "";
+
+    /**
+     * Send query to another API
+     * @param string $url Link another API
+     * @param string $sql Query for execute API
+     * @param bool $all Return all elements in another query API
+     * @return mixed Return result query in another API
+     */
+    public static function post_db($url, $sql, $all = false) {
 		$json = array("method" => "db", "query" => $sql, "db_all" => ($all? "true" : "false"));
 		return self::post($url, $json);
 	}
-	
-	public static function post_config($url, $cfg) {
-	global $config;
+
+    /**
+     * Element config in another API
+     * @param string $url Link another API
+     * @param string $cfg Get element config in another query API
+     * @return mixed Return result get element config in another API
+     */
+    public static function post_config($url, $cfg) {
 		$json = array("method" => "config", "query" => $cfg);
 		return self::post($url, $json);
 	}
-	
-	public static function post($url, $jsons) {
+
+    /**
+     * Send post in another API
+     * @param string $url Link to another API
+     * @param array $jsons Data for send to another API
+     * @return mixed Result another API
+     */
+    public static function post($url, $jsons) {
 	global $config;
 		$datas = "";
 		$json = array("api_key" => $config["api_key"]);

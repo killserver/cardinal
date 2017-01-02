@@ -147,10 +147,8 @@ class modules {
 
 	final public static function get_lang($get, $array = "") {
 	global $lang;
-		if(empty($lang)) {
-			$langs = self::init_lang();
-			$lang = $langs->init_lang(false);
-		}
+		$langs = self::init_lang();
+		$lang = $langs->init_lang(false);
 		if(strlen($array)>0 && isset($lang[$get][$array])) {
 			$return = array($lang[$get][$array]);
 		} else if(isset($lang[$get])) {
@@ -171,10 +169,10 @@ class modules {
 		}
 	}
 
-	final public static function init_lang() {
+	final public static function init_lang($lang = false) {
 	global $langInit;
 		if(empty($langInit)) {
-			$langInit = new lang();
+			$langInit = new lang($lang);
 			return $langInit;
 		} else {
 			return $langInit;

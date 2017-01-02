@@ -26,48 +26,110 @@ echo "403 ERROR";
 die();
 }
 
+/**
+ * Class db
+ */
 class db {
 
-	private static $qid;
-	private static $driver;
-	private static $driverGen = false;
-	private static $param = array("sql" => "", "param" => array());
-	public static $time = 0;
-	public static $num = 0;
-	public static $querys = array();
-	private static $driver_name = "";
-	public static $dbName = "";
+    /**
+     * @var mixed Resource query
+     */
+    private static $qid;
+    /**
+     * @var mixed Resource driver(connection)
+     */
+    private static $driver;
+    /**
+     * @var bool Check used generator connection
+     */
+    private static $driverGen = false;
+    /**
+     * @var array List params
+     */
+    private static $param = array("sql" => "", "param" => array());
+    /**
+     * @var int Timer for query execute
+     */
+    public static $time = 0;
+    /**
+     * @var int Counter for query in execute
+     */
+    public static $num = 0;
+    /**
+     * @var array List query's
+     */
+    public static $querys = array();
+    /**
+     * @var string Name connection drive
+     */
+    private static $driver_name = "";
+    /**
+     * @var string Database name
+     */
+    public static $dbName = "";
 
-	final public static function connected() {
+    /**
+     * Check connection for database
+     * @return bool Result connection
+     */
+    final public static function connected() {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
 		return self::$driver->connected();
 	}
 
-	final public static function check_connect($host, $user, $pass) {
+    /**
+     * Check stable connection
+     * @param string $host Host for connect
+     * @param string $user User for connect
+     * @param string $pass Password for connect
+     * @return bool Result checked stable connection
+     */
+    final public static function check_connect($host, $user, $pass) {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
 		return self::$driver->check_connect($host, $user, $pass);
 	}
 
-	final public static function escape($str) {
+    /**
+     * Save string for query
+     * @param string $str Needed string
+     * @return string Result saving
+     */
+    final public static function escape($str) {
 		return self::$driver->escape($str);
 	}
 
-	final public static function exists_db($host, $user, $pass, $db) {
+    /**
+     * Check database in connection
+     * @param string $host Host for connection
+     * @param string $user User for connection
+     * @param string $pass Password for connection
+     * @param string $db Database for connection
+     * @return bool Result checked database in connection
+     */
+    final public static function exists_db($host, $user, $pass, $db) {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
 		return self::$driver->exists_db($host, $user, $pass, $db);
 	}
 
-	final public static function changeDriver($driver) {
+    /**
+     * Force change driver for connection
+     * @param string $driver
+     */
+    final public static function changeDriver($driver) {
 		self::$driver_name = $driver;
 	}
 
-	final public static function OpenDriver() {
+    /**
+     * Start connection to database
+     * @return bool Result connection
+     */
+    final public static function OpenDriver() {
 		$driv = self::$driver_name;
 		if(!is_string($driv) || !class_exists($driv)) {
 			if(file_exists(ROOT_PATH."core".DS."cache".DS."db_lock.lock") && is_readable(ROOT_PATH."core".DS."cache".DS."db_lock.lock")) {
@@ -82,7 +144,11 @@ class db {
 		return true;
 	}
 
-	final public static function DriverList() {
+    /**
+     * Generate list exists drivers
+     * @return array List exists drivers
+     */
+    final public static function DriverList() {
 		$dir = ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS;
 		$dirs = array();
 		if(is_dir($dir)) {
@@ -107,7 +173,16 @@ class db {
 		return $drivers;
 	}
 
-	final public static function connect($host, $user, $pass, $db, $charset, $port) {
+    /**
+     * Connect to database and create resource connection
+     * @param string $host Host for connection
+     * @param string $user User for connection
+     * @param string $pass Password for connection
+     * @param string $db Database for connection
+     * @param string $charset Charset for connection
+     * @param string $port Port for connection
+     */
+    final public static function connect($host, $user, $pass, $db, $charset, $port) {
 //mysql_query ("set character_set_client='utf8'"); 
 //mysql_query ("set character_set_results='utf8'"); 
 //mysql_query ("set collation_connection='utf8_general_ci'");
@@ -120,32 +195,53 @@ class db {
 		}
 	}
 
-	function __construct() {
-		if(!defined("INSTALLER")) {
+    /**
+     * db constructor.
+     */
+    function __construct() {
+		if(!defined("INSTALLER") || (file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX) && defined("WITHOUT_DB"))) {
 			self::init();
 		}
 	}
-	
-	final public static function init() {
+
+    /**
+     * Initializatior connection
+     */
+    final public static function init() {
 		config::StandAlone();
 		self::$driver_name = config::Select('db','driver');
 		self::$dbName = config::Select('db','db');
 		self::connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'), self::$dbName, config::Select('db', 'charset'), config::Select('db', 'port'));
 	}
 
-	final private static function time() {
+    /**
+     * Creator timer for query time
+     * @return string Time with microseconds
+     */
+    final private static function time() {
 		return microtime();
 	}
 
-	final public function set_type($int = 2) {
+    /**
+     * Type error if query return error
+     * @param int $int Type error
+     */
+    final public function set_type($int = 2) {
 		self::$driver->set_type($int);
 	}
 
-	final public static function prepare($sql) {
+    /**
+     * Prepare data for execute
+     * @param $sql Needed query
+     */
+    final public static function prepare($sql) {
 		self::$param['sql'] = $sql;
 	}
 
-	final public static function param() {
+    /**
+     * List parameters for query
+     */
+    final public static function param() {
 		$params = func_get_args();
 		if(is_array($params[0])) {
 			$param = $params[0];
@@ -155,7 +251,11 @@ class db {
 		self::$param['param'] = $param;
 	}
 
-	final public static function execute() {
+    /**
+     * Execute prepared query
+     * @return bool Result query
+     */
+    final public static function execute() {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
@@ -166,8 +266,12 @@ class db {
 		unset(self::$param);
 		return self::query($sql);
 	}
-	
-	final public static function version() {
+
+    /**
+     * Return mysql version in integer
+     * @return int Mysql version in integer
+     */
+    final public static function version() {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return 0;
 		}
@@ -180,7 +284,14 @@ class db {
 		return $version;
 	}
 
-	final public static function doquery($query, $only = "", $check = false) {
+    /**
+     * Saved executor query's
+     * @param string $query Needed query
+     * @param string $only Only execute without try return array
+     * @param bool $check Only execute query and return object
+     * @return $this|bool This object or query or associative array
+     */
+    final public static function doquery($query, $only = "", $check = false) {
 	global $user;
 		$table = preg_replace("/(.*)(FROM|TABLE|UPDATE|INSERT INTO) (.+?) (.*)/", "$3", $query);
 		$badword = false;
@@ -248,12 +359,20 @@ class db {
 		}
 	}
 
-	final public static function last_id($table) {
+    /**
+     * Return last int auto_increment in table
+     * @param string $table Needed table
+     * @return string Int value last id element in table
+     */
+    final public static function last_id($table) {
 		$table = self::doquery("SHOW TABLE STATUS LIKE '".$table."'");
 		return $table['Auto_increment'];
 	}
-	
-	final private static function RePair() {
+
+    /**
+     * Try repair all tables in database
+     */
+    final private static function RePair() {
 		$db_name = config::Select('db','db');
 		$sel = self::query("SHOW FULL TABLES");
 		while($row = self::fetch_assoc($sel)) {
@@ -261,14 +380,19 @@ class db {
 		}
 	}
 
-	final public static function select_query($query) {
+    /**
+     * Try return associative array or false if exists errors
+     * @param string $query Needed query
+     * @return array|bool Return associative array or false if exists errors
+     */
+    final public static function select_query($query) {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
 		if(strpos($query, "SELECT") !== false || strpos($query, "SHOW TABLE") !== false) {
 			$qid = self::query($query);
 			$array = array();
-			while($row=self::fetch_assoc($qid)) {
+			while($row = self::fetch_assoc($qid)) {
 				$array[] = $row;
 			}
 			return $array;
@@ -277,7 +401,12 @@ class db {
 		}
 	}
 
-	final public static function query($query) {
+    /**
+     * Just execute query
+     * @param string $query Query for execute
+     * @return bool|mixed Just execute query
+     */
+    final public static function query($query) {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
@@ -290,28 +419,45 @@ class db {
 	return $return;
 	}
 
-	final public static function affected_rows() {
+    /**
+     * Return last affected rows
+     * @return bool|mixed Return last affected rows
+     */
+    final public static function affected_rows() {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
 		return self::$driver->affected_rows();
 	}
 
-	final public static function insert_id() {
+    /**
+     * Last exists id in last insert query
+     * @return bool|int Last id in last insert query
+     */
+    final public static function insert_id() {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
 		return self::$driver->insert_id();
 	}
 
-	final public static function num_fields() {
+    /**
+     * Return fields query
+     * @return bool|int Number fields in query
+     */
+    final public static function num_fields() {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
 		return self::$driver->field_count();
 	}
 
-	final public static function fetch_row($query = "") {
+    /**
+     * Return array without associative
+     * @param string $query Needed query
+     * @return bool|array Return array without associative
+     */
+    final public static function fetch_row($query = "") {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
@@ -321,7 +467,12 @@ class db {
 		return self::$driver->fetch_row($query);
 	}
 
-	final public static function fetch_array($query = "") {
+    /**
+     * Return array with associative
+     * @param string $query Needed query
+     * @return bool|array Return array with associative
+     */
+    final public static function fetch_array($query = "") {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
@@ -331,7 +482,12 @@ class db {
 		return self::$driver->fetch_array($query);
 	}
 
-	final public static function fetch_assoc($query = "") {
+    /**
+     * Return array only associative
+     * @param string $query Needed query
+     * @return bool|array Return array only associative
+     */
+    final public static function fetch_assoc($query = "") {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
@@ -341,7 +497,14 @@ class db {
 		return self::$driver->fetch_assoc($query);
 	}
 
-	final public static function fetch_object($query = "", $class_name = "", $params = array()) {
+    /**
+     * Return array only associative
+     * @param string $query Needed query
+     * @param string $class_name Class for returned
+     * @param array $params Parameters send in constructor classes
+     * @return bool|array Return object
+     */
+    final public static function fetch_object($query = "", $class_name = "", $params = array()) {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
@@ -351,7 +514,12 @@ class db {
 		return self::$driver->fetch_object($query, $class_name, $params);
 	}
 
-	final public static function num_rows($query = "") {
+    /**
+     * Return number rows in query
+     * @param string $query Needed query
+     * @return bool|int Number rows in query
+     */
+    final public static function num_rows($query = "") {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
@@ -361,7 +529,12 @@ class db {
 		return self::$driver->num_rows($query);
 	}
 
-	final public static function free($query = "") {
+    /**
+     * Free memory after execute query
+     * @param string $query Needed query
+     * @return bool|mixed Return result free or return false if error
+     */
+    final public static function free($query = "") {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
@@ -374,14 +547,22 @@ class db {
 		return self::$driver->free($query);
 	}
 
-	final public static function close() {
+    /**
+     * Closed connection
+     * @return bool Return result closing
+     */
+    final public static function close() {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
 		return self::$driver->close();
 	}
 
-	final public static function error($arr) {
+    /**
+     * Result error info
+     * @param array $arr Info of query
+     */
+    final public static function error($arr) {
 		$mysql_error = $arr['mysql_error'];
 		$mysql_error_num = $arr['mysql_error_num'];
 		$query = $arr['query'];
@@ -405,25 +586,31 @@ class db {
 		if (isset($trace[2]['function']) && $trace[2]['function'] == "doquery" ) $level = 2;*/
 		
 		$trace[$level]['file'] = str_replace(ROOT_PATH, "", $trace[$level]['file']);
-
+        $tmp = false;
 		if(self::$driver->get_type() === 1) {
-			modules::init_templates()->dir_skins("skins".DS);
-			modules::init_templates()->assign_vars(array(
+            $tmp = modules::init_templates();
+            $tmp->dir_skins("skins".DS);
+            $tmp->assign_vars(array(
 				"query" => $query,
 				"error" => $mysql_error,
 				"error_num" => $mysql_error_num,
 				"file" => $trace[$level]['file'],
 				"line" => $trace[$level]['line'],
 			));
-			echo modules::init_templates()->complited_assing_vars("mysql_error", null);
+			echo $tmp->completed_assing_vars("mysql_error", null);
 		} else {
 			echo "<center><br />".$trace[$level]['file'].":".$trace[$level]['line']."<hr />Query:<br /><textarea cols=\"40\" rows=\"5\">".$query."</textarea><hr />[".$mysql_error_num."] ".$mysql_error."<br />";
 		}
-		modules::init_templates()->__destruct();
+		if(!is_bool($tmp)) {
+            $tmp->__destruct();
+        }
 		exit();
 	}
 
-	function __destruct() {
+    /**
+     * Close connection
+     */
+    function __destruct() {
 		self::close();
 	}
 

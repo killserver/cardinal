@@ -86,11 +86,11 @@ class Users extends Core {
 		$searchIP = "";
 		if(isset($_GET['search'])) {
 			$searchIP = Arr::get($_GET, 'ip', "");
-			if(!Validate::ip($search)) {
+			if(!Validate::ip($searchIP)) {
 				$searchIP = "";
 			}
 		}
-		templates::assign_var("search_ip", $search);
+		templates::assign_var("search_ip", $searchIP);
 		db::doquery("SELECT `id`, `username`, `level`, `email`, `activ` FROM `users`".(!empty($searchIP) ? " WHERE `reg_ip` LIKE \"%".$searchIP."%\" OR `last_ip` LIKE \"%".$searchIP."%\"" : ""), true);
 		while($row = db::fetch_assoc()) {
 			$row['avatar'] = "http://www.gravatar.com/avatar/".md5(strtolower(trim($row['email'])))."?&s=103";

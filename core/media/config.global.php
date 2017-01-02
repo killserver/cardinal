@@ -56,7 +56,7 @@ define("UPLOAD_CM", 12000);
 define("UPLOAD_CMD", 12000);
 define("UPLOAD_ALL", 240000);
 
-define("VERSION", "5.5");
+define("VERSION", "5.8");
 define("DB_VERSION", "3.5");
 define("LEVEL_ADMIN", 3);
 define("LEVEL_MODER", 2);
@@ -86,9 +86,9 @@ $config = array_merge($config, array(
 	"default_http_mobyhost" => "",
 	"uses" => array(
 		"Minify" => "2.1.7",
-		"Mobile Detect" => "2.8.22",
+		"Mobile Detect" => "2.8.24",
 		"PHPMailer" => "5.1",
-		"Sypex Geo" => "2.2.0",
+		"Sypex Geo" => "2.2.3",
 		"StopSpam" => "1.0",
 		"PEAR" => "1.10.1",
 		"Archive Tar" => "1.0",

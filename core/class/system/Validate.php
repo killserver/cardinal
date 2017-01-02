@@ -4,23 +4,54 @@ echo "403 ERROR";
 die();
 }
 
+/**
+ * Class Validate
+ */
 class Validate {
-	
-	public static $host = "";
-	
-	final public static function color($str) {
+
+    /**
+     * @var string Validated host
+     */
+    public static $host = "";
+
+    /**
+     * Check color in hex
+     * @param string $str Needed color
+     * @return bool Result checking
+     */
+    final public static function color($str) {
 		return (bool) preg_match('/^#?+[0-9a-f]{3}(?:[0-9a-f]{3})?$/iD', $str);
 	}
-	
-	final public static function matches($array, $field, $match) {
-		return ($array[$field] === $array[$match]);
+
+    /**
+     * Check element in array equals value and type
+     * @param array $array Needed array
+     * @param string $field Check fields in array
+     * @param string $match Check fields in array
+     * @return bool Result checking
+     */
+    final public static function matches($array, $field, $match) {
+		return (isset($array[$field]) && isset($array[$match])) && ($array[$field] === $array[$match]);
 	}
-	
-	final public static function range($number, $min, $max) {
+
+    /**
+     * Check if number range inside min or max
+     * @param int $number Needed check number
+     * @param int $min Need minimal value
+     * @param int $max Need maximal value
+     * @return bool Result checking
+     */
+    final public static function range($number, $min, $max) {
 		return ($number >= $min && $number <= $max);
 	}
-	
-	final public static function CheckType($val, $type) {
+
+    /**
+     * Check element of type
+     * @param mixed $val Needed element for checking
+     * @param string $type Type for checking
+     * @return bool Result checking
+     */
+    final public static function CheckType($val, $type) {
 		$types = gettype($val);
 		if(self::equals($types, $type)) {
 			return true;
@@ -28,17 +59,33 @@ class Validate {
 			return false;
 		}
 	}
-	
-	final public static function numeric($str) {
+
+    /**
+     * Check element if numeric
+     * @param mixed $str Needed numeric
+     * @return bool Result checking
+     */
+    final public static function numeric($str) {
 		$arr = array_values(localeconv());
 		return (bool) preg_match('/^-?+(?=.*[0-9])[0-9]*+'.preg_quote($arr[0]).'?+[0-9]*+$/D', (string) $str);
 	}
-	
-	final public static function date($str) {
+
+    /**
+     * Checking if element date
+     * @param string $str Needed string
+     * @return bool Result checking
+     */
+    final public static function date($str) {
 		return (strtotime($str) !== false);
 	}
-	
-	final public static function typeFile($file, $type) {
+
+    /**
+     * Checking file
+     * @param array $file Array $_FILES
+     * @param string $type Checked type upload file
+     * @return bool Result checking
+     */
+    final public static function typeFile($file, $type) {
 		if(!is_array($file) || !isset($file['type']) || !isset($file['error']) || $file['error'] != 0) {
 			return false;
 		}
@@ -54,12 +101,23 @@ class Validate {
 			return (in_array($rt, $type) || in_array($ext, $type));
 		}
 	}
-	
-	final public static function session_valid_id($session_id) {
+
+    /**
+     * Checking ID session
+     * @param string $session_id Session ID
+     * @return bool Result checking
+     */
+    final public static function session_valid_id($session_id) {
 		return preg_match('/^[-,a-zA-Z0-9]{1,128}$/', $session_id) > 0;
 	}
-	
-	final public static function Redirect($location, $default = false) {
+
+    /**
+     * Checking redirect equals local domain
+     * @param string $location Location for checking
+     * @param bool $default If return error try return default
+     * @return bool Result checking
+     */
+    final public static function Redirect($location, $default = false) {
 		if(empty(self::$host)) {
 			return $default;
 		}
@@ -116,16 +174,28 @@ class Validate {
 			return false;
 		}
 	}
-	
-	final public static function phone($number, $lengths = "") {
-		if(!is_array($lengths)) {
+
+    /**
+     * Checking phone
+     * @param string $number Needed number for checking
+     * @param array $lengths Set needed length number
+     * @return bool Result checking
+     */
+    final public static function phone($number, $lengths = array()) {
+		if(!is_array($lengths) && sizeof($lengths)==0) {
 			$lengths = array(7, 10, 11);
 		}
 		$number = preg_replace('/\D+/', '', $number);
 		return in_array(strlen($number), $lengths);
 	}
-	
-	final public static function ip($ip, $allow_private = true) {
+
+    /**
+     * Checking IP address
+     * @param string $ip Needed string for find IP address
+     * @param bool $allow_private Allow private range
+     * @return bool Result checking
+     */
+    final public static function ip($ip, $allow_private = true) {
 		if(!defined("FILTER_FLAG_NO_RES_RANGE") || !defined("FILTER_FLAG_NO_PRIV_RANGE") || !defined("FILTER_VALIDATE_IP")) {
 			return self::validIp($ip);
 		}
@@ -135,8 +205,13 @@ class Validate {
 		}
 		return (bool) filter_var($ip, FILTER_VALIDATE_IP, $flags);
 	}
-	
-	final public static function validIp($ip) {
+
+    /**
+     * Validate IP address(old version)
+     * @param string $ip Checking IP
+     * @return bool Result checking
+     */
+    final public static function validIp($ip) {
 		if(!ip2long($ip)) {//IPv6
 			return true;
 		}
@@ -162,8 +237,13 @@ class Validate {
 			return false;
 		}
 	}
-	
-	final public static function url($url) {
+
+    /**
+     * Needed link
+     * @param string $url Checking link
+     * @return bool Result checking
+     */
+    final public static function url($url) {
 		// Based on http://www.apps.ietf.org/rfc/rfc1738.html#sec-5
 		if(!preg_match('~^[-a-z0-9+.]++://(?:[-a-z0-9$_.+!*\'(),;?&=%]++(?::[-a-z0-9$_.+!*\'(),;?&=%]++)?@)?(?:\d{1,3}+(?:\.\d{1,3}+){3}+|((?!-)[-a-z0-9]{1,63}+(?<!-)(?:\.(?!-)[-a-z0-9]{1,63}+(?<!-)){0,126}+))(?::\d{1,5}+)?(?:/.*)?$~iDx', $url, $matches)) {
 			return false;
@@ -177,8 +257,14 @@ class Validate {
 		$tld = ltrim(substr($matches[1], (int) strrpos($matches[1], '.')), '.');
 		return ctype_alpha($tld[0]);
 	}
-	
-	final public static function email($email, $strict = false) {
+
+    /**
+     * Checking email address
+     * @param string $email Needed checking email
+     * @param bool $strict Check structure
+     * @return bool Result checking
+     */
+    final public static function email($email, $strict = false) {
 		if($strict === true) {
 			$qtext = '[^\\x0d\\x22\\x5c\\x80-\\xff]';
 			$dtext = '[^\\x0d\\x5b-\\x5d\\x80-\\xff]';
@@ -197,24 +283,52 @@ class Validate {
 
 		return (bool) preg_match($expression, (string) $email);
 	}
-	
-	final public static function email_domain($email) {
+
+    /**
+     * Check email if used address exists on domain
+     * @param string $email Checking email address
+     * @return bool Result checking
+     */
+    final public static function email_domain($email) {
 		return (bool) checkdnsrr(preg_replace('/^[^@]++@/', '', $email), 'MX');
 	}
-	
-	final public static function equals($value, $required) {
+
+    /**
+     * Check two elements on equals
+     * @param mixed $value First element for checking
+     * @param mixed $required Second element for checking
+     * @return bool Result checking
+     */
+    final public static function equals($value, $required) {
 		return ($value === $required);
 	}
-	
-	final public static function min_length($value, $length) {
+
+    /**
+     * Checking if length in string not min or equal length
+     * @param string $value Element for checking
+     * @param int $length Min length
+     * @return bool Result checking
+     */
+    final public static function min_length($value, $length) {
 		return strlen($value) >= $length;
 	}
 
-	final public static function max_length($value, $length) {
+    /**
+     * Checking if length in string not max or equal length
+     * @param string $value Element for checking
+     * @param int $length Max length
+     * @return bool Result checking
+     */
+    final public static function max_length($value, $length) {
 		return strlen($value) <= $length;
 	}
-	
-	final public static function not_empty($value) {
+
+    /**
+     * Checking on empty
+     * @param mixed $value Needed value
+     * @return bool Result checking
+     */
+    final public static function not_empty($value) {
 		if(is_object($value) && $value instanceof ArrayObject) {
 			$value = $value->getArrayCopy();
 		}

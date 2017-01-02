@@ -22,11 +22,24 @@ echo "403 ERROR";
 die();
 }
 
+/**
+ * Class lang
+ */
 class lang {
 
-	private static $lang = "ru";
+    /**
+     * @var bool|string Set language
+     */
+    private static $lang = "ru";
+    /**
+     * @var bool|mixed|string Set default language
+     */
+    private static $defaultLang = "ru";
 
-	final public static function lang_db() {
+    /**
+     * @return array|bool|string Initialize language in database
+     */
+    final public static function lang_db() {
 		$langs = array();
 		if(defined("WITHOUT_DB") || !db::connected()) {
 			return $langs;
@@ -43,8 +56,15 @@ class lang {
 		}
 	return $langs;
 	}
-	
-	final public static function Update($lang, $orig, $translate) {
+
+    /**
+     * Update element in database
+     * @param string $lang Needed language
+     * @param string $orig Original word
+     * @param string $translate To translate word
+     * @return bool Result change element in database
+     */
+    final public static function Update($lang, $orig, $translate) {
 		if(defined("WITHOUT_DB")) {
 			return false;
 		}
@@ -62,26 +82,52 @@ class lang {
 		}
 	}
 
-	public function __construct() {
+    /**
+     * lang constructor.
+     * @param bool $lang Set needed language
+     */
+    public function __construct($lang = false) {
 	global $user;
-		$clang = config::Select('lang');
-		$ulang = (isset($user['lang']) && !empty($user['lang']) ? $user['lang'] : "");
-		if(!empty($ulang)) {
-			self::$lang = $ulang;
-		} elseif(!empty($clang)) {
-			self::$lang = $clang;
+		if(is_bool($lang) && $lang === false) {
+			$clang = config::Select('lang');
+			$ulang = (isset($user['lang']) && !empty($user['lang']) ? $user['lang'] : "");
+			if(!empty($ulang)) {
+				self::$defaultLang = self::$lang = $ulang;
+			} elseif(!empty($clang)) {
+				self::$defaultLang = self::$lang = $clang;
+			}
+		} else {
+			self::$lang = $lang;
+			$clang = config::Select('lang');
+			$ulang = (isset($user['lang']) && !empty($user['lang']) ? $user['lang'] : "");
+			if(!empty($ulang)) {
+				self::$defaultLang = $ulang;
+			} elseif(!empty($clang)) {
+				self::$defaultLang = $clang;
+			}
 		}
 	}
 
-	final public static function set_lang($langs) {
+    /**
+     * @param string $langs Set needed language
+     */
+    final public static function set_lang($langs) {
 		self::$lang = $langs;
 	}
-	
-	final public static function get_lg() {
+
+    /**
+     * @return bool|string Return set language
+     */
+    final public static function get_lg() {
 		return self::$lang;
 	}
 
-	final public static function init_lang($db = true) {
+    /**
+     * Initialize language panel
+     * @param bool $db Used language in database
+     * @return array|string Try get all data in selected language
+     */
+    final public static function init_lang($db = true) {
 	global $lang, $manifest;
 		if(!is_array($lang) || sizeof($lang)==0) {
 			$lang = array();
@@ -111,12 +157,33 @@ class lang {
 			} else {
 				return $lang;
 			}
+		} elseif(file_exists(ROOT_PATH."core".DS."lang".DS.self::$defaultLang.DS."main.".ROOT_EX)) {
+			include(ROOT_PATH."core".DS."lang".DS.self::$defaultLang.DS."main.".ROOT_EX);
+			if($db) {
+				$db_lang = self::lang_db();
+			} else {
+				$db_lang = array();
+			}
+			if(file_exists(ROOT_PATH."core".DS."media".DS."config.lang.".ROOT_EX)) {
+				include(ROOT_PATH."core".DS."media".DS."config.lang.".ROOT_EX);
+			}
+			if(is_array($db_lang)) {
+				return array_merge($lang, $db_lang);
+			} else {
+				return $lang;
+			}
 		} else {
 			return "false";
 		}
 	}
-	
-	final public static function get_lang($name, $sub = "") {
+
+    /**
+     * Try get language in language panel
+     * @param string $name Needed language
+     * @param string $sub Needed sub language
+     * @return string Result returned language
+     */
+    final public static function get_lang($name, $sub = "") {
 	global $lang;
 		if(!empty($sub) && isset($lang[$name][$sub])) {
 			return $lang[$name][$sub];
@@ -126,8 +193,15 @@ class lang {
 			return "";
 		}
 	}
-	
-	final public static function setLang($name, $val, $sub = "") {
+
+    /**
+     * Try set language in language panel
+     * @param string $name Needed language
+     * @param string $val Value language
+     * @param string $sub Needed sub language
+     * @return bool Result setting language
+     */
+    final public static function setLang($name, $val, $sub = "") {
 	global $lang;
 		if(!empty($sub)) {
 			if(!isset($lang[$name])) {
@@ -141,7 +215,13 @@ class lang {
 		}
 	}
 
-	final public static function include_lang($page, $db = true) {
+    /**
+     * Include file language
+     * @param string $page Needed file in language panel
+     * @param bool $db Use database after include file
+     * @return array|string Language panel
+     */
+    final public static function include_lang($page, $db = true) {
 	global $lang, $user, $manifest;
 		$clang = config::Select('lang');
 		$ulang = (isset($user['lang']) && !empty($user['lang']) ? $user['lang'] : "");
@@ -164,18 +244,41 @@ class lang {
 			} else {
 				return $lang;
 			}
+		} elseif(file_exists(ROOT_PATH."core".DS."lang".DS.self::$defaultLang.DS.$page.".".ROOT_EX)) {
+			include(ROOT_PATH."core".DS."lang".DS.self::$defaultLang.DS.$page.".".ROOT_EX);
+			$langs = self::lang_db();
+			if(is_array($langs)) {
+				$lang = array_merge($lang, $langs);
+				return $lang;
+			} else {
+				return $lang;
+			}
 		}
 	}
-	
-	public function __get($val) {
+
+    /**
+     * Try get element language as object
+     * @param string $val Get element in language panel
+     * @return mixed Element in language panel
+     */
+    public function __get($val) {
 		return self::get_lang($val);
 	}
-	
-	public function __set($name, $val) {
+
+    /**
+     * Try set element language as object
+     * @param string $name Name element in language panel
+     * @param string $val Value element in language panel
+     * @return bool Result setting language
+     */
+    public function __set($name, $val) {
 		return self::setLang($name, $val);
 	}
 
-	function __destruct() {
+    /**
+     * Destructor this class as object
+     */
+    function __destruct() {
 		unset($this);
 	}
 

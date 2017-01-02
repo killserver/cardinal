@@ -86,12 +86,13 @@ $active = false;
 $load = true;
 $obj = "";
 if(config::Select("activeCache")) {
+    function cacheWalk(&$v, $k) { $v = ($k."-".$v); }
 	$par = Route::param();
-	array_walk($par, function(&$v, $k) { $v = ($k."-".$v); });
+	array_walk($par, "cacheWalk");
 	$url = implode("=", $par);
 	$md5 = md5($url);
 	$par = $_GET;
-	array_walk($par, function(&$v, $k) { $v = ($k."-".$v); });
+	array_walk($par, "cacheWalk");
 	$url = implode("=", $par);
 	$md5 = md5($md5.$url);
 	if(!file_exists(ROOT_PATH."core".DS."cache".DS."page".DS.$md5.".txt")) {

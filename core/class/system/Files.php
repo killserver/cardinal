@@ -4,6 +4,10 @@ echo "403 ERROR";
 die();
 }
 
+/**
+ * Class Files
+ * Class for working with files
+ */
 class Files {
 
     /**

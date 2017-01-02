@@ -24,17 +24,17 @@ $in_page = "Main";
 templates::dir_skins(ADMINCP_DIRECTORY."/temp/".config::Select('skins','admincp'));
 templates::set_skins("");
 
-
-spl_autoload_register(function($class) {
-global $in_page;
-	if(strpos($class, "/")===false&&strpos($class, "\\")===false&&file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS.$class.DS.$class.".class.".ROOT_EX)) {
-		include_once(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS.$class.DS.$class.".class.".ROOT_EX);
-	} else if(strpos($class, "_")===false) {
-		$in_page = "Errors";
-		include_once(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Errors".DS."Errors.class.".ROOT_EX);
-		new Errors();
-	}
-});
+function cardinalAutoloadAdmin($class) {
+    global $in_page;
+    if(strpos($class, "/")===false&&strpos($class, "\\")===false&&file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS.$class.DS.$class.".class.".ROOT_EX)) {
+        include_once(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS.$class.DS.$class.".class.".ROOT_EX);
+    } else if(strpos($class, "_")===false) {
+        $in_page = "Errors";
+        include_once(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Errors".DS."Errors.class.".ROOT_EX);
+        new Errors();
+    }
+}
+spl_autoload_register("cardinalAutoloadAdmin");
 if(isset($_GET['pages'])) {
 	$view = htmlspecialchars(strip_tags($_GET['pages']));
 	$view = ucfirst($view);
@@ -51,8 +51,13 @@ if(class_exists($view)) {
 	$load = true;
 	$obj = "";
 	if(config::Select("activeCache")) {
+        if(!function_exists("cacheWalk")) {
+            function cacheWalk(&$v, $k) {
+                $v = ($k . "-" . $v);
+            }
+        }
 		$par = $_GET;
-		array_walk($par, function(&$v, $k) { $v = ($k."-".$v); });
+		array_walk($par, "cacheWalk");
 		$url = implode("=", $par);
 		$md5 = md5($url);
 		if(!file_exists(ROOT_PATH."core".DS."cache".DS."page".DS."admin_".$md5.".txt")) {

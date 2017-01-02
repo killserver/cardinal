@@ -27,11 +27,13 @@ class cardinal {
 		if(defined("INSTALLER")) {
 			return false;
 		}
-		if(isset($_SERVER['HTTP_USER_AGENT']) && !$this->robots(getenv("HTTP_USER_AGENT"))) {
-			define("IS_BOT", false);
-		} else {
-			define("IS_BOT", true);
-		}
+		if(!defined("IS_BOT")) {
+            if (isset($_SERVER['HTTP_USER_AGENT']) && !$this->robots(getenv("HTTP_USER_AGENT"))) {
+                define("IS_BOT", false);
+            } else {
+                define("IS_BOT", true);
+            }
+        }
 		$otime = config::Select("cardinal_time");
 		if($otime <= time()-12*60*60) {
 			include_dir(ROOT_PATH."core".DS."modules".DS."cron".DS, ".".ROOT_EX);

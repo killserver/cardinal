@@ -4,6 +4,9 @@ echo "403 ERROR";
 die();
 }
 
+/**
+ * Class Saves
+ */
 class Saves {
 
     /**

@@ -96,20 +96,21 @@ if(file_exists(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX) && file_exists(
 	}
 }
 
-spl_autoload_register(function($class) {
-	if(stripos(ini_get('include_path'), $class)!==false && class_exists($class, false)) {
-		return false;
-	}
-	if(file_exists(ROOT_PATH."core".DS."modules".DS."autoload".DS.$class.".".ROOT_EX)) {
-		include_once(ROOT_PATH."core".DS."modules".DS."autoload".DS.$class.".".ROOT_EX);
-	} elseif(file_exists(ROOT_PATH."core".DS."class".DS.$class.".".ROOT_EX)) {
-		include_once(ROOT_PATH."core".DS."class".DS.$class.".".ROOT_EX);
-	} elseif(file_exists(ROOT_PATH."core".DS."class".DS."system".DS.$class.".".ROOT_EX)) {
-		include_once(ROOT_PATH."core".DS."class".DS."system".DS.$class.".".ROOT_EX);
-	} elseif(file_exists(ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS.$class.".".ROOT_EX)) {
-		include_once(ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS.$class.".".ROOT_EX);
-	}
-});
+function cardinalAutoload($class) {
+    if(stripos(ini_get('include_path'), $class)!==false && class_exists($class, false)) {
+        return false;
+    }
+    if(file_exists(ROOT_PATH."core".DS."modules".DS."autoload".DS.$class.".".ROOT_EX)) {
+        include_once(ROOT_PATH."core".DS."modules".DS."autoload".DS.$class.".".ROOT_EX);
+    } elseif(file_exists(ROOT_PATH."core".DS."class".DS.$class.".".ROOT_EX)) {
+        include_once(ROOT_PATH."core".DS."class".DS.$class.".".ROOT_EX);
+    } elseif(file_exists(ROOT_PATH."core".DS."class".DS."system".DS.$class.".".ROOT_EX)) {
+        include_once(ROOT_PATH."core".DS."class".DS."system".DS.$class.".".ROOT_EX);
+    } elseif(file_exists(ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS.$class.".".ROOT_EX)) {
+        include_once(ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS.$class.".".ROOT_EX);
+    }
+}
+spl_autoload_register("cardinalAutoload");
 
 set_error_handler(array('Error', 'handlePhpError'));
 set_exception_handler(array('Error', 'handleException'));

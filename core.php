@@ -169,9 +169,8 @@ if(!defined("WITHOUT_DB")) {
 		updater::update(DB_VERSION, "");
 	}
 }
-$langs = new lang();
-$lang = $langs->init_lang();
-unset($langs);
+$langInit = new lang();
+$lang = $langInit->init_lang();
 if(!defined("WITHOUT_DB")) {
 	defines::add("CRON_TIME", config::Select("cardinal_time"));
 	defines::init();
@@ -219,7 +218,7 @@ if(defined("WITHOUT_DB") || !defined("INSTALLER")) {
 			$password = Saves::SaveOld(Arr::get($_COOKIE, COOK_PASS));
 		}
 		if(!cache::Exists("user_".$username)) {
-			if(defined("WITHOUT_DB")) {
+			if(defined("WITHOUT_DB") && (!isset($db) && !is_bool($db))) {
 				if(file_exists(ROOT_PATH."core".DS."media".DS."users.".ROOT_EX)) {
 					if(isset($users[$username]) && isset($users[$username]['username']) && isset($users[$username][$where]) && $users[$username][$where] == $password) {
 						$user = $users[$username];
