@@ -31,6 +31,19 @@ class modules {
 	private static $columns = array();
 	private static $access_user = array('id', 'username', 'alt_name', 'level', 'email', 'time_reg', 'last_activ', 'activ', 'avatar');
 	
+	final public static function checkObject($obj, $name, $checkParent = false) {
+		if(gettype($name)!="string") {
+			throw new Exception("Error set #2 parameter");
+		}
+		if($checkParent === true && is_object($obj) && get_parent_class($obj)===$name) {
+			return true;
+		} else if(is_object($obj) && get_class($obj)===$name) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 	final public static function setParam($name, $type, $func) {
 	global $manifest;
 		if(isset($manifest['applyParam']) && !isset($manifest['applyParam'][$name])) {
@@ -93,14 +106,28 @@ class modules {
 		}
 	}
 	
-	final public static function loadModels($class) {
+	final public static function loadModels($class, $autoload = false) {
 		if(!class_exists($class, false)) {
 			if(file_exists(ROOT_PATH."core".DS."modules".DS."models".DS.$class.".".ROOT_EX)) {
 				include_once(ROOT_PATH."core".DS."modules".DS."models".DS.$class.".".ROOT_EX);
-				return true;
+				if(is_bool($autoload) && $autoload === false) {
+					return true;
+				} else {
+					if(class_exists($class, false)) {
+						return new $class();
+					} else {
+						throw new Exception("Error loading model");
+						return false;
+					}
+				}
 			}
 		}
-		return false;
+		if(class_exists($class, false)) {
+			return new $class();
+		} else {
+			throw new Exception("Error loading model");
+			return false;
+		}
 	}
 	
 	final public static function loader($class, $standard = array()) {

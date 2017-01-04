@@ -181,6 +181,9 @@ if(!defined("WITHOUT_DB")) {
 if(function_exists("mb_internal_encoding") && mb_internal_encoding($config['charset'])) {
 	mb_internal_encoding($config['charset']);
 }
+if(function_exists("mb_regex_encoding") && mb_regex_encoding($config['charset'])) {
+	mb_regex_encoding($config['charset']);
+}
 if(isset($config['date_timezone'])) {
 	date_default_timezone_set($config['date_timezone']);
 }
@@ -218,7 +221,7 @@ if(defined("WITHOUT_DB") || !defined("INSTALLER")) {
 			$password = Saves::SaveOld(Arr::get($_COOKIE, COOK_PASS));
 		}
 		if(!cache::Exists("user_".$username)) {
-			if(defined("WITHOUT_DB") && (!isset($db) && !is_bool($db))) {
+			if(defined("WITHOUT_DB") && (!isset($db) || !is_bool($db))) {
 				if(file_exists(ROOT_PATH."core".DS."media".DS."users.".ROOT_EX)) {
 					if(isset($users[$username]) && isset($users[$username]['username']) && isset($users[$username][$where]) && $users[$username][$where] == $password) {
 						$user = $users[$username];

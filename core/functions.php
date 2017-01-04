@@ -53,10 +53,12 @@ if(file_exists(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX) && file_exists(
 	}
 	require_once(ROOT_PATH."core".DS."media".DS."config.global.".ROOT_EX);
 	if(defined("WITHOUT_DB")) {
-		define("COOK_USER", "username_123456");
-		define("COOK_PASS", "password_123456");
-		define("COOK_ADMIN_USER", "admin_username_123456");
-		define("COOK_ADMIN_PASS", "admin_password_123456");
+		$host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua");
+		$hostMD5 = substr(md5($host), 0, 6);
+		define("COOK_USER", "username_".$hostMD5);
+		define("COOK_PASS", "password_".$hostMD5);
+		define("COOK_ADMIN_USER", "admin_username_".$hostMD5);
+		define("COOK_ADMIN_PASS", "admin_password_".$hostMD5);
 		if(file_exists(ROOT_PATH."core".DS."media".DS."config.default.".ROOT_EX)) {
 			require_once(ROOT_PATH."core".DS."media".DS."config.default.".ROOT_EX);
 			if(defined("VERSION")) {
@@ -69,8 +71,8 @@ if(file_exists(ROOT_PATH."core".DS."media".DS."config.".ROOT_EX) && file_exists(
 			}
 			$config = array_merge($config, array(
 				"default_http_local" => $link,
-				"default_http_hostname" => (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua"),
-				"default_http_host" => $protocol."://".(isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua").$link,
+				"default_http_hostname" => $host,
+				"default_http_host" => $protocol."://".$host.$link,
 			));
 			unset($link);
 		}

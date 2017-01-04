@@ -21,8 +21,22 @@ class DBObject {
 	private $loadedTable = "";
 
     final public function getArray() {
-        return get_object_vars($this);
+		$ret = get_object_vars($this);
+		if(isset($ret['loadedTable'])) {
+			unset($ret['loadedTable']);
+		}
+        return $ret;
     }
+	
+	final public function getFirst() {
+		$ret = get_object_vars($this);
+		if(isset($ret['loadedTable'])) {
+			unset($ret['loadedTable']);
+		}
+		$ret = array_keys($ret);
+		$first = current($ret);
+		return $first;
+	}
 	
 	final public function SetTable($table) {
 		$this->loadedTable = $table;
@@ -56,6 +70,10 @@ class DBObject {
 			die();
 		}
 		$keys = get_object_vars($this);
+		if(isset($keys["loadedTable"])) {
+			unset($keys["loadedTable"]);
+		}
+		$keys = array_keys($keys);
 		if(sizeof($keys)==0) {
 			throw new Exception("Fields is not set");
 			die();
@@ -65,13 +83,12 @@ class DBObject {
 		} else {
 			$this->loadedTable = $table;
 		}
-		$keys = array_keys($keys);
-		$rel = db::doquery("SELECT ".implode(", ", array_map(function($data) { return "`".$data."`"; }, $keys))." FROM `".$table.."`".(!empty($where) ? " WHERE ".$where : "").(!empty($orderBy) ? " ORDER BY ".$orderBy : "").(!empty($limit) ? " LIMIT ".$limit : ""), true);
+		$rel = db::doquery("SELECT ".implode(", ", array_map(function($data) { return "`".$data."`"; }, $keys))." FROM `".$table."`".(!empty($where) ? " WHERE ".$where : "").(!empty($orderBy) ? " ORDER BY ".$orderBy : "").(!empty($limit) ? " LIMIT ".$limit : ""), true);
 		if(db::num_rows($rel) <= 1) {
-			return db::fetch_object($rel, $this);
+			return db::fetch_object($rel, get_class($this));
 		} else {
 			$arr = array();
-			while($row = db::fetch_object($rel, $this)) {
+			while($row = db::fetch_object($rel, get_class($this))) {
 				$arr[] = $row;
 			}
 			return $arr;
@@ -88,15 +105,18 @@ class DBObject {
 			throw new Exception("Table for insert is not set or empty");
 			die();
 		}
+        $arr = get_object_vars($this);
+		if(isset($arr["loadedTable"])) {
+			unset($arr["loadedTable"]);
+		}
+		if(sizeof($arr)==0) {
+			throw new Exception("Fields is not set");
+			die();
+		}
 		if(empty($table)) {
 			$table = $this->loadedTable;
 		} else {
 			$this->loadedTable = $table;
-		}
-        $arr = get_object_vars($this);
-		if(sizeof($arr)==0) {
-			throw new Exception("Fields is not set");
-			die();
 		}
         $key = array_keys($arr);
         $val = array_values($arr);
@@ -108,15 +128,18 @@ class DBObject {
 			throw new Exception("Table for update is not set or empty");
 			die();
 		}
+        $arr = get_object_vars($this);
+		if(isset($arr["loadedTable"])) {
+			unset($arr["loadedTable"]);
+		}
+		if(sizeof($arr)==0) {
+			throw new Exception("Fields is not set");
+			die();
+		}
 		if(empty($table)) {
 			$table = $this->loadedTable;
 		} else {
 			$this->loadedTable = $table;
-		}
-        $arr = get_object_vars($this);
-		if(sizeof($arr)==0) {
-			throw new Exception("Fields is not set");
-			die();
 		}
         $key = array_keys($arr);
         $val = array_values($arr);

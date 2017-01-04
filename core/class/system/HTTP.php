@@ -145,7 +145,7 @@ class HTTP {
 	}
 	
 	final public static function StatusHeader($code) {
-		$code = abs(int($code));
+		$code = abs(intval($code));
 		$StatusHeaderList = array(
 			100 => 'Continue',
 			101 => 'Switching Protocols',
