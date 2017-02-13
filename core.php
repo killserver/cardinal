@@ -129,6 +129,9 @@ if(file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."core".DIRECTORY_SEPARATOR.
 if(!defined("WITHOUT_DB") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."core".DIRECTORY_SEPARATOR."media".DIRECTORY_SEPARATOR."isFrame.lock")) {
 	define("WITHOUT_DB", true);
 }
+if(!defined("ERROR_VIEW") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."core".DIRECTORY_SEPARATOR."media".DIRECTORY_SEPARATOR."error.lock")) {
+	define("ERROR_VIEW", true);
+}
 if(!defined("PERMISSION_PHP") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."core".DIRECTORY_SEPARATOR."media".DIRECTORY_SEPARATOR."phpINtmp.lock")) {
 	define("PERMISSION_PHP", true);
 }
@@ -194,6 +197,8 @@ $config_templates = array(
 	"skins_mobile" => modules::get_config('skins', 'mobile'),
 );
 
+cardinal::InstallFirst();
+
 if(defined("WITHOUT_DB") || !defined("INSTALLER")) {
 	if(!defined("WITHOUT_DB") && !defined("IS_CRON_FILE") && isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], $config['default_http_hostname'])===false) {
 		header("HTTP/1.1 301 Moved Permanently");
@@ -222,7 +227,7 @@ if(defined("WITHOUT_DB") || !defined("INSTALLER")) {
 		}
 		if(!cache::Exists("user_".$username)) {
 			if(defined("WITHOUT_DB") && (!isset($db) || !is_bool($db))) {
-				if(file_exists(ROOT_PATH."core".DS."media".DS."users.".ROOT_EX)) {
+				if(file_exists(ROOT_PATH."core".DS."media".DS."users.".ROOT_EX) || file_exists(ROOT_PATH."core".DS."media".DS."users.default.".ROOT_EX)) {
 					if(isset($users[$username]) && isset($users[$username]['username']) && isset($users[$username][$where]) && $users[$username][$where] == $password) {
 						$user = $users[$username];
 						cache::Set("user_".$username, $user);

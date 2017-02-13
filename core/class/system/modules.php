@@ -114,16 +114,27 @@ class modules {
 					return true;
 				} else {
 					if(class_exists($class, false)) {
-						return new $class();
+						$ret = new $class();
+						if(method_exists($ret, "init_model")) {
+							$ret->init_model($autoload);
+						}
+						return $ret;
 					} else {
 						throw new Exception("Error loading model");
 						return false;
 					}
 				}
+			} else {
+				throw new Exception("Error loading model. File not found");
+				return false;
 			}
 		}
 		if(class_exists($class, false)) {
-			return new $class();
+			$ret = new $class();
+			if(method_exists($ret, "init_model")) {
+				$ret->init_model($autoload);
+			}
+			return $ret;
 		} else {
 			throw new Exception("Error loading model");
 			return false;
@@ -235,9 +246,9 @@ class modules {
 	
 	final public static function CheckVersion($old, $new) {
 		if(self::get_config("speed_update")) {
-			$if = ($old)>($new);
+			$if = ($old)<($new);
 		} else {
-			$if = intval(str_replace(".", "", $old))>intval(str_replace(".", "", $new));
+			$if = intval(str_replace(".", "", $old))<intval(str_replace(".", "", $new));
 		}
 		return $if;
 	}
@@ -598,6 +609,7 @@ class modules {
 				$list = $tar_object->listContent();
 				if(is_array($list) && sizeof($list)>0) {
 					$tar_object->extractModify(ROOT_PATH, ucfirst($names)."/");
+					cardinal::RegAction("Распаковка модуля \"".$module."\"");
 				}
 			} catch(Exception $ex) {
 				return "Error unzip file";
@@ -658,6 +670,7 @@ class modules {
 			if(file_exists(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $file . ".xml")) {
 				unlink(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $file . ".xml");
 			}
+			cardinal::RegAction("Удаление файлов модуля \"".$file."\"");
 			return true;
 		} else {
 			return true;
@@ -790,6 +803,7 @@ class modules {
 					unlink(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $moduleFile . ".xml");
 				}
 			}
+			cardinal::RegAction("Удаление файлов модуля \"".$moduleFile."\"");
 			return true;
 		} else {
 			return self::UnInstallFile($module, $moduleFile);
@@ -862,7 +876,6 @@ class modules {
 	}
 	
 	final public static function CheckNewVersion($module) {
-		$version = (string) $xml->info->version;
 		if(defined("WITHOUT_DB")) {
 			return false;
 		}
@@ -874,7 +887,8 @@ class modules {
 		} catch(Exception $ex) {
 			return false;
 		}
-		$file = new Parser(SERVER_MODULES."shop/search/api/".$module."/yaml");
+		$version = (string) $xml->info->version;
+		$file = new Parser(SERVER_MODULES."shop/search/api/".$module."/yaml?CV=".VERSION."&MV=".$version);
 		$file->header();
 		$file->header_array();
 		$file->init();
@@ -884,7 +898,7 @@ class modules {
 		if(strpos($hr['Content-Type'], "application/x-yaml")===false || $hr['code']!=200) {
 			return false;
 		}
-		$arr = Spyc::YAMLLoadString($file);
+		$arr = Spyc::YAMLLoadString($file->getHtml());
 		if(self::CheckVersion($version, $arr['Version'])) {
 			return true;
 		} else {

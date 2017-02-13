@@ -22,7 +22,7 @@ class base extends modules {
 	private static $menu = array();
 
 	function __construct() {
-		$this->manifest_log('load_modules', 'blocks');
+		$this->manifest_log('load_modules', array('base', __FILE__));
 		if(!defined("WITHOUT_DB")) {
 			$this->blocks();
 		}

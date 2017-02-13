@@ -6,7 +6,7 @@ class page {
 		$search = others_video($name);
 		$limit = config::Select("related");
 		$view = str_replace("\"", "\\\"", Saves::SaveOld($name." ".$descr));
-		db::doquery("SELECT `id`, `alt_name`, `title`, `image`, `descr`, (MATCH(`title`, `descr`) AGAINST(\"".$view."\")) AS `status` FROM `posts` WHERE `id` != ".$id." AND MATCH(`title`, `descr`) AGAINST(\"".$view."\") AND `type` = \"post\" ORDER BY `status` DESC LIMIT ".$limit, true);
+		db::doquery("SELECT `id`, `alt_name`, `title`, `image`, `descr`, (MATCH(`title`, `descr`) AGAINST(\"".$view."\")) AS `status` FROM `posts` WHERE `id` != ".$id." AND MATCH(`title`, `descr`) AGAINST(\"".$view."\") AND `type` LIKE \"post\" ORDER BY `status` DESC LIMIT ".$limit, true);
 		while($row = db::fetch_assoc()) {
 			$short_descr = bbcodes::clear_bbcode($row['descr']);
 			$short_descr = trim($short_descr);
@@ -30,7 +30,7 @@ class page {
 		}
 		$repl = ToTranslit($link);
 		if(!cache::Exists($repl)) {
-			$model = new ModelDB("posts", "\"%".$link."%\" AND `type` = \"post\"", "alt_name", "select", "like", array("id", "title", "image", "descr", "time", "added", "cat_id"));
+			$model = new ModelDB("posts", "\"%".$link."%\" AND `type` LIKE \"post\"", "alt_name", "select", "like", array("id", "title", "image", "descr", "time", "added", "cat_id"));
 			if($model->loaded()) {
 				cache::Set($repl, ($model));
 			} else {
@@ -73,7 +73,11 @@ class page {
 			}
 		}
 		$descr = $model->descr;
-		$short_descr = trim(cut(trim(bbcodes::clear_bbcode($descr)), 100));
+		$short_descr = bbcodes::clear_bbcode($descr);
+		$short_descr = strip_tags($short_descr);
+		$short_descr = trim($short_descr);
+		$short_descr = cut($short_descr, 100);
+		$short_descr = trim($short_descr);
 		$descr = bbcodes::colorit($descr);
 		$comment = new comment($model->id);
 		$commCout = $comment->getCount();
@@ -81,21 +85,15 @@ class page {
 		$addcomments = $comment->addcomments();
 		templates::assign_vars(array("title" => $model->title, "alt_name" => $link, "added" => $model->added, "alt_name" => $link, "full-story" => $descr, "action" => "fullnews", "comments" => $comments, "addcomments" => $addcomments, "cat_name" => (isset($category[$model->cat_id]) ? $category[$model->cat_id]['name'] : ""), "cat_altname" => (isset($category[$model->cat_id]) ? $category[$model->cat_id]['alt_name'] : ""), "commCout" => $commCout));
 		$tpl = templates::complited_assing_vars("fullstory");
-		templates::complited($tpl, array("title" => $model->title, "meta" => array(
-					"ogpr" => array(
-						"og:image" => "{C_default_http_host}".$model->image,
-						"og:site_name" => "{L_sitename}",
-						"og:url" => "{C_default_http_host}".$model->alt_name,
-						"og:title" => $model->title,
-						"og:description" => $short_descr,
-						"og:type" => "website",
-					),
-					"link" => array(
-						"image_src" => "{C_default_http_host}".$model->image,
-					),
-					"keywords" => implode(",", $tags->__getAll("tag")),
-					"description" => $short_descr,
-				)));
+		addSeo("title", $model->title);
+		addSeo("description", $short_descr);
+		addSeo("image", $model->image);
+		addSeo("keywords", implode(",", (method_exists($tags, "loaded") && $tags->loaded() ? $tags->__getAll("tag") : array())));
+		addSeo("url", "{R_[news][view=".$model->alt_name."]}");
+		$titles = array();
+		$titles['title'] = $model->title;
+		$titles = array_merge($titles, releaseSeo(array(), true));
+		templates::complited($tmp, $titles);
 		unset($tags, $model, $link);
 		templates::display();
 	}

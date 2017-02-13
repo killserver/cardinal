@@ -15,21 +15,24 @@ class page {
 					templates::error("{L_error_page}", "{L_error_level}");
 				}
 				$string = Saves::SaveOld(Route::param("alt_name"), true);
-				$title = "Просмотр категории \"".$string."\"";
+				$title = "{L_view_cat} \"".$string."\"";
 				$db = "SELECT {%sel%} FROM `posts` WHERE `active` = \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP()" : "")." AND `type` = \"post\" AND (`cat_id` regexp '[[:<:]]'+(SELECT `cat_id` FROM `category` WHERE `alt_name` LIKE \"".$string."\" LIMIT 1)+'[[:>:]]') ORDER BY `id` DESC";
 			break;
 			case "search":
 				$postQ = Arr::get($_POST, 'q', false);
 				$getQ = Arr::get($_GET, 'q', false);
-				if(!$postQ && !$getQ) {
+				$routeQ = Route::param("searchWord");
+				if(!$postQ && !$getQ && !$routeQ) {
 					templates::error("{L_error_page}", "{L_error_level}");
 				}
 				if($postQ) {
 					$string = Saves::SaveOld($postQ, true);
 				} else if($getQ) {
 					$string = Saves::SaveOld($getQ, true);
+				} else if($routeQ) {
+					$string = Saves::SaveOld($routeQ, true);
 				}
-				$title = "Поиск \"".$string."\"";
+				$title = "{L_search} \"".$string."\"";
 				$db = "SELECT {%sel%} FROM `posts` WHERE `active` = \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP()" : "")." AND `type` = \"post\" AND MATCH(`title`, `descr`) AGAINST('+".$string."' IN BOOLEAN MODE) ORDER BY `id` DESC";
 			break;
 		}
@@ -57,18 +60,13 @@ class page {
 			templates::assign_vars($row, "index", "index".$row['id']);
 		}
 		$tmp = templates::complited_assing_vars("index");
-		templates::complited($tmp, array("title" => $title, "meta" => array(
-					"ogpr" => array(
-						"og:image" => "{C_default_http_host}logo.jpg?1",
-						"og:site_name" => "{L_sitename}",
-						"og:url" => "{C_default_http_host}",
-						"og:title" => $title,
-						"og:type" => "website",
-					),
-					"link" => array(
-						"image_src" => "{C_default_http_host}logo.jpg?1",
-					),
-				)));
+		addSeo("url", "{R_[search][searchWord=".urlencode($string)."]}");
+		addSeo("title", str_replace("\"", "'", $title));
+		addSeo("description", str_replace("\"", "'", $title));
+		$titles = array();
+		$titles['title'] = $title;
+		$titles = array_merge($titles, releaseSeo(array(), true));
+		templates::complited($tmp, $titles);
 		templates::display();
 	}
 	

@@ -60,6 +60,7 @@ class Login extends Core {
 				} else {
 					$row = array("pass" => "cardinal", "level" => LEVEL_ADMIN);
 				}
+				cardinal::RegAction("Авторизация в админ-панели. Пользователь \"".$given_username."\"");
 				$resp['accessGranted'] = true;
 				HTTP::set_cookie('is_admin_login', 1, false, false);
 				HTTP::set_cookie('failed-attempts', 0, time()+(5*60), false);
@@ -72,6 +73,7 @@ class Login extends Core {
 					HTTP::set_cookie(COOK_PASS, $row['pass']);
 				}
 			} else {
+				cardinal::RegAction("Провальная попытка авторизации в админ-панели. Пользователь \"".$given_username."\"");
 				// Failed Attempts
 				$fa = Arr::get($_COOKIE, 'failed-attempts', 0);
 				$fa++;

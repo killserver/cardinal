@@ -21,7 +21,10 @@ function ReadPlugins($dir, $page, $include=true) {
 	}
 }
 $in_page = "Main";
-templates::dir_skins(ADMINCP_DIRECTORY."/temp/".config::Select('skins','admincp'));
+$skin = config::Select('skins','admincp');
+$skin = (!is_string($skin) ? "xenon" : $skin);
+config::Set("skins", "admincp", $skin);
+templates::dir_skins(ADMINCP_DIRECTORY."/temp/".$skin);
 templates::set_skins("");
 
 function cardinalAutoloadAdmin($class) {

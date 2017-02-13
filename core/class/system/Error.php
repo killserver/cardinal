@@ -392,37 +392,102 @@ CREATE TABLE `error_log` (
 primary key `id`(`id`)
 ) ENGINE=MyISAM;
 */
-
+			$db = false;
 			if(defined("WITHOUT_DB") || config::Select('logs')==ERROR_FILE) {
-				if(is_writable(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt"))
-				file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt", json_encode(array("times" => time(), "ip" => HTTP::getip(), "exception_type" => self::FriendlyErrorType($e->getCode()), "message" => self::saves($messagePrefix . $e->getMessage()), "filename" => self::saves($file), "line" => $e->getLine(), "trace_string" => self::saves($e->getTraceAsString()), "request_state" => self::saves(serialize($request), true)))."\n", FILE_APPEND);
+				if(is_writable(ROOT_PATH."core".DS."cache".DS."system".DS)) {
+					file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt", json_encode(array("times" => time(), "ip" => HTTP::getip(), "exception_type" => self::FriendlyErrorType($e->getCode()), "message" => self::saves($messagePrefix . $e->getMessage()), "filename" => self::saves($file), "line" => $e->getLine(), "trace_string" => self::saves($e->getTraceAsString()), "request_state" => self::saves(serialize($request), true)))."\n", FILE_APPEND);
+				}
 			} else {
 				$db = modules::init_db();
 				$db->doquery("INSERT INTO `error_log`(`times`, `ip`, `exception_type`, `message`, `filename`, `line`, `trace_string`, `request_state`) VALUES(UNIX_TIMESTAMP(), \"".HTTP::getip()."\", \"".self::FriendlyErrorType($e->getCode())."\", \"".self::saves($messagePrefix . $e->getMessage())."\", \"".self::saves($file)."\", \"".$e->getLine()."\", \"".self::saves($e->getTraceAsString())."\", \"".self::saves(serialize($request), true)."\")");
 			}
 			if(self::$_echo) {
-				if(file_exists(ROOT_PATH."skins".DS."phpError.tpl")) {
-					$file = file_get_contents(ROOT_PATH."skins".DS."phpError.tpl");
-					$file = str_replace(array(
-							"{code}",
-							"{message}",
-							"{file}",
-							"{line}",
-							"{trace}"
-					), array(
-							self::FriendlyErrorType($e->getCode()),
-							$e->getMessage(),
-							self::saves($file),
-							$e->getLine(),
-							nl2br(self::saves($e->getTraceAsString()))
-					), $file);
-					self::viewOnPage($file);
+				if(!defined("ERROR_VIEW")) {
+					self::viewOnPage("<div style=\"text-decoration:underline;\"><div style=\"padding-top: 10px;text-transform: uppercase;\"><h1>Error!</h1> <b>[" . self::FriendlyErrorType($e->getCode()) . "]</b> level error. Error code <h2 style=\"display:inline-block;\">(" . self::NextId($db) . ")</h2>. Please, report developer</div></div>");
 				} else {
-					self::viewOnPage("<div style=\"text-decoration:underline;\"><div style=\"padding-top: 10px;text-transform: uppercase;\">[" . self::FriendlyErrorType($e->getCode()) . "] " . $e->getMessage() . " - " . self::saves($file) . " (" . $e->getLine() . ")</div><br />\n<b>[" . self::FriendlyErrorType($e->getCode()) . "]</b></div><br />\n<span style=\"border: 2px dotted black;\">" . nl2br(self::saves($e->getTraceAsString())) . "</span></div>");
+					if(file_exists(ROOT_PATH."skins".DS."phpError.tpl")) {
+						$file = file_get_contents(ROOT_PATH."skins".DS."phpError.tpl");
+						$file = str_replace(array(
+								"{code}",
+								"{message}",
+								"{file}",
+								"{line}",
+								"{trace}"
+						), array(
+								self::FriendlyErrorType($e->getCode()),
+								$e->getMessage(),
+								self::saves($file),
+								$e->getLine(),
+								nl2br(self::saves($e->getTraceAsString()))
+						), $file);
+						self::viewOnPage($file);
+					} else {
+						self::viewOnPage("<div style=\"text-decoration:underline;\"><div style=\"padding-top: 10px;text-transform: uppercase;\">[" . self::FriendlyErrorType($e->getCode()) . "] " . $e->getMessage() . " - " . self::saves($file) . " (" . $e->getLine() . ")</div><br />\n<b>[" . self::FriendlyErrorType($e->getCode()) . "]</b></div><br />\n<span style=\"border: 2px dotted black;\">" . nl2br(self::saves(self::getExceptionTraceAsString($e))) . "</span></div>");
+					}
 				}
 			}
+			die();
 		}
 		catch (Exception $e) {}
+	}
+	
+	final private static function NextId($db = false) {
+		if(defined("WITHOUT_DB") || config::Select('logs')==ERROR_FILE) {
+			if(!file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt") || !is_readable(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt")) {
+				return 0;
+			}
+			$handle = fopen(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt", "rb");
+			$id = 1;
+			while(($c = fgetc($handle))!==false) {
+				if($c==="\n") {
+					$id++;
+				}
+			}
+			fclose($handle);
+		} else {
+			try {
+				$id = $db->last_id("error_log");
+			} catch(Exception $ex) {
+				$id = 0;
+			}
+		}
+		return $id;
+	}
+	
+	final private static function getExceptionTraceAsString($exception) {
+		$rtn = "";
+		$count = 0;
+		foreach ($exception->getTrace() as $frame) {
+			$args = "";
+			if(isset($frame['args'])) {
+				$args = array();
+				foreach($frame['args'] as $arg) {
+					if(is_string($arg)) {
+						$args[] = "'" . $arg . "'";
+					} elseif(is_array($arg)) {
+						$args[] = "Array";
+					} elseif(is_null($arg)) {
+						$args[] = 'NULL';
+					} elseif(is_bool($arg)) {
+						$args[] = ($arg) ? "true" : "false";
+					} elseif(is_object($arg)) {
+						$args[] = get_class($arg);
+					} elseif(is_resource($arg)) {
+						$args[] = get_resource_type($arg);
+					} else {
+						$args[] = $arg;
+					}
+				}
+				$args = join(", ", $args);
+			}
+			$rtn .= sprintf("#%s %s(%s): %s%s(%s)\n", $count,
+			//~$frame['file'],
+			isset($frame['file']) ? $frame['file'] : '',
+			//~$frame['line'],
+			isset($frame['line']) ? $frame['line'] : '',isset($frame['class']) ? $frame['class'] . '->' : '', $frame['function'], $args );
+			$count++;
+		}
+		return $rtn;
 	}
 	
 	final private static function saves($data, $save = false) {

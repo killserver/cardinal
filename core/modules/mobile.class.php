@@ -54,7 +54,7 @@ class mobile extends modules {
 			} elseif($moby && getenv('SERVER_NAME')!=$mobyHost) {
 				$this->location($mobyLink, 0, true, 301);
 			}
-		} else {
+		} elseif($mobyActive) {
 			if(!isset($_COOKIE['moby']) && $moby) {
 				HTTP::set_cookie("moby", "true");
 				define("MOBILE", true);

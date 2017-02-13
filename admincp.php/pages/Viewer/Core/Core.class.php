@@ -184,7 +184,7 @@ class Core {
 				}
 			} elseif(!cache::Exists("load_adminmodules")) {
 				$delete = ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS;
-				db::doquery("SELECT `file` FROM `modules` WHERE `activ` = \"yes\" AND `type` = \"admincp\"", true);
+				db::doquery("SELECT `file` FROM `modules` WHERE `activ` LIKE \"yes\" AND `type` LIKE \"admincp\"", true);
 				$this->load_adminmodules = array();
 				while($row = db::fetch_assoc()) {
 					$this->load_adminmodules[str_replace($delete, "", $row['file'])] = true;

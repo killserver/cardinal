@@ -60,6 +60,7 @@ class cache {
 				$data = self::$connect->get($data);
 				return $data['time'];
 			} elseif(self::$type == CACHE_FILE) {
+				clearstatcache();
 				return filemtime(ROOT_PATH."core".DS."cache".DS.$data.".txt");
 			} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 				return ftp_mdtm(self::$connect, self::$conn_path.$data.".txt");
@@ -85,6 +86,7 @@ class cache {
 				$data = self::$connect->get($data);
 				return $data['data'];
 			} elseif(self::$type == CACHE_FILE) {
+				clearstatcache();
 				if(file_exists(ROOT_PATH."core".DS."cache".DS.$data.".txt")) {
 					return unserialize(file_get_contents(ROOT_PATH."core".DS."cache".DS.$data.".txt"));
 				} else {
@@ -120,6 +122,7 @@ class cache {
 				return false;
 			}
 		} elseif(self::$type == CACHE_FILE) {
+			clearstatcache();
 			return file_exists(ROOT_PATH."core".DS."cache".DS.$data.".txt");
 		} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 			return (ftp_size(self::$connect, self::$conn_path.$data.".txt")>0);
@@ -140,6 +143,7 @@ class cache {
 		if(self::$type == CACHE_MEMCACHE || self::$type == CACHE_MEMCACHED) {
 			return self::$connect->set($name, array("time" => time(), "data" => $val), MEMCACHE_COMPRESSED, self::$live_time);
 		} elseif(self::$type == CACHE_FILE) {
+			clearstatcache();
 			return file_put_contents(ROOT_PATH."core".DS."cache".DS.$name.".txt", serialize($val));
 		} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 			return file_put_contents(self::$conn_link.$name.".txt", serialize($val), 0, stream_context_create(array('ftp' => array('overwrite' => true))));
@@ -157,6 +161,7 @@ class cache {
 			if(self::$type == CACHE_MEMCACHE || self::$type == CACHE_MEMCACHED) {
 				return self::$connect->delete($name);
 			} else if(self::$type == CACHE_FILE && file_exists(ROOT_PATH."core".DS."cache".DS.$name.".txt") && !is_dir(ROOT_PATH.'core'.DS.'cache'.DS.$name.".txt")) {
+				clearstatcache();
 				return unlink(ROOT_PATH."core".DS."cache".DS.$name.".txt");
 			} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 				return ftp_delete(self::$connect, self::$conn_path.$name.".txt");
@@ -206,6 +211,7 @@ class cache {
 				$cache_areas = array($cache_areas);
 			}
 		}
+		clearstatcache();
 		$fdir = opendir(ROOT_PATH.'core'.DS.'cache');
 		while($file = readdir($fdir)) {
 			if($file != '.' && $file != '..' && $file != '.htaccess' && $file != 'index.'.ROOT_EX && !is_dir(ROOT_PATH.'core'.DS.'cache'.DS.$file)) {

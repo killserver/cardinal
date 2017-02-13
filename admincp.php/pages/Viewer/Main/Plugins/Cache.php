@@ -34,11 +34,27 @@ class Main_Cache extends Main {
 					unlink($path.$files[$i]);
 				}
 			}
+			$path = ROOT_PATH."core".DS."cache".DS."system".DS;
+			$files = read_dir($path);
+			for($i=0;$i<sizeof($files);$i++) {
+				if($files[$i] != "index.php" && $files[$i] != "index.html") {
+					unlink($path.$files[$i]);
+				}
+			}
 			echo "Done";
 			die();
 		}
 		$size = 0;
 		$path = ROOT_PATH."core".DS."cache".DS;
+		$files = read_dir($path);
+		for($i=0;$i<sizeof($files);$i++) {
+			if($files[$i] == "index.php" || $files[$i] == "index.html") {
+				unset($files[$i]);
+			} else {
+				$size += filesize($path.$files[$i]);
+			}
+		}
+		$path = ROOT_PATH."core".DS."cache".DS."system".DS;
 		$files = read_dir($path);
 		for($i=0;$i<sizeof($files);$i++) {
 			if($files[$i] == "index.php" || $files[$i] == "index.html") {

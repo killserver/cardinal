@@ -40,6 +40,7 @@ final class Route {
 	private static $_secret = "route";
 	private static $_config = array();
 	private static $_lang = "";
+	private static $_loaded = "";
 	
 	public static function Config($get) {
 		if(is_array($get)) {
@@ -258,11 +259,11 @@ final class Route {
 	public static function Load($default = "") {
 		$uri = getenv(ROUTE_GET_URL);
 		$len = strlen($uri);
-		if(strpos($uri, "?")!==false) {
-			$len = strpos($uri, "?")-1;
-		}
 		if(strpos($uri, "&")!==false) {
 			$len = strpos($uri, "&")-1;
+		}
+		if(strpos($uri, "?")!==false) {
+			$len = strpos($uri, "?")-1;
 		}
 		$uri = substr($uri, 1, $len);
 		if(!isset($GLOBALS[self::$_secret])) {
@@ -274,6 +275,7 @@ final class Route {
 			$params = "";
 			foreach($routes as $name => $route) {
 				if($params = $route->Matches($uri, $default)) {
+					self::$_loaded = $uri;
 					self::$_params = $params;
 					return array('params' => $params, 'route' => $route);
 				}
@@ -282,6 +284,10 @@ final class Route {
 		$param = array('page' => $default, 'method' => '');
 		self::$_params = $param;
 		return array('params' => $param, 'route' => "");
+	}
+	
+	public static function getLoaded() {
+		return self::$_loaded;
 	}
 	
 	public static function Delete($name) {

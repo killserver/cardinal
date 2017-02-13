@@ -11,6 +11,23 @@ class Settings extends Core {
 	protected static $func = array();
 	
 	private function Save() {
+		$error_type = Arr::get($_POST, 'error_type', config::Select('error_type'));
+		$speed_update = Arr::get($_POST, 'speed_update', "0");
+		$default_http_local = Arr::get($_POST, 'PATH', config::Select("default_http_local"));
+		$default_http_hostname = Arr::get($_POST, 'SERVER', config::Select("default_http_hostname"));
+		$default_http_host = Arr::get($_POST, 'PATH', config::Select("default_http_host"));
+		$default_http_mobyhost = Arr::get($_POST, 'mobyhost', config::Select("default_http_mobyhost"));
+		$cache_type = Arr::get($_POST, 'cache_type', "CACHE_FILE");
+		$cache_host = Arr::get($_POST, 'cache_host', config::Select("cache", "host"));
+		$cache_port = Arr::get($_POST, 'cache_port', config::Select("cache", "port"));
+		$cache_user = Arr::get($_POST, 'cache_user', config::Select("cache", "user"));
+		$cache_pass = Arr::get($_POST, 'cache_pass', config::Select("cache", "pass"));
+		$cache_path = Arr::get($_POST, 'cache_path', config::Select("cache", "path"));
+		$activeCache = Arr::get($_POST, 'activeCache', "0");
+		$viewport = Arr::get($_POST, 'viewport', config::Select("viewport"));
+		$ParsePHP = Arr::get($_POST, 'ParsePHP', "0");
+		$sitename = Arr::get($_POST, 'sitename', lang::get_lang('sitename'));
+		$description = Arr::get($_POST, 'description', lang::get_lang('description'));
 		$config = '<?php
 		if(!defined("IS_CORE")) {
 		echo "403 ERROR";
@@ -33,25 +50,25 @@ class Settings extends Core {
 
 		$config = array_merge($config, array(
 			"api_key" => "'.config::Select("api_key").'",
-			"logs" => '.saves($_POST['error_type'], true).',
-			"speed_update" => '.(isset($_POST['speed_update']) && $_POST['speed_update']=="1" ? "true" : "false").',
+			"logs" => '.saves($error_type, true).',
+			"speed_update" => '.($speed_update=="1" ? "true" : "false").',
 			"hosting" => true,
-			"default_http_local" => "'.str_replace("http://".$_SERVER['HTTP_HOST'], "", $_POST['PATH']).'",
-			"default_http_hostname" => "'.saves($_POST['SERVER'], true).'",
-			"default_http_host" => $protocol."://'.saves(str_replace(array("http", "https", "://"), "", $_POST['PATH']), true).'",
-			"default_http_mobyhost" => "'.saves(str_replace(array("http", "https", "://"), "", $_POST['mobyhost']), true).'",
+			"default_http_local" => "'.str_replace(array("http://".$_SERVER['HTTP_HOST'], "https://".$_SERVER['HTTP_HOST']), "", $default_http_local).'",
+			"default_http_hostname" => "'.saves($default_http_hostname, true).'",
+			"default_http_host" => $protocol."://'.saves(str_replace(array("https", "http", "://"), "", $default_http_host), true).'",
+			"default_http_mobyhost" => "'.saves(str_replace(array("http", "https", "://"), "", $default_http_mobyhost), true).'",
 			"lang" => "ru",
 			"cache" => array(
-				"type" => '.saves($_POST['cache_type'], true).',
-				"server" => "'.saves($_POST['cache_host'], true).'",
-				"port" => '.saves($_POST['cache_port'], true).',
-				"login" => "'.saves($_POST['cache_user'], true).'",
-				"pass" => "'.saves($_POST['cache_pass'], true).'",
-				"path" => "'.saves($_POST['cache_path'], true).'",
+				"type" => '.saves($cache_type, true).',
+				"server" => "'.saves($cache_host, true).'",
+				"port" => '.saves($cache_port, true).',
+				"login" => "'.saves($cache_user, true).'",
+				"pass" => "'.saves($cache_pass, true).'",
+				"path" => "'.saves($cache_path, true).'",
 			),
-			"viewport" => "'.saves($_POST['viewport'], true).'",
-			"activeCache" => '.(isset($_POST['activeCache']) && $_POST['activeCache']=="1" ? "true" : "false").',
-			"ParsePHP" => '.(isset($_POST['ParsePHP']) && $_POST['ParsePHP']=="1" ? "true" : "false").','.$this->Saves($_POST).'
+			"viewport" => "'.saves($viewport, true).'",
+			"activeCache" => '.($activeCache=="1" ? "true" : "false").',
+			"ParsePHP" => '.($ParsePHP=="1" ? "true" : "false").','.$this->Saves($_POST).'
 			"lang" => "ru",
 			"charset" => "utf-8",
 		));
@@ -68,8 +85,8 @@ class Settings extends Core {
 		}
 
 		$lang = array_merge($lang, array(
-			"sitename" => "'.saves($_POST['sitename'], true).'",
-			"s_description" => "'.saves($_POST['description'], true).'",
+			"sitename" => "'.saves($sitename, true).'",
+			"s_description" => "'.saves($description, true).'",
 		));
 
 		?>';
@@ -78,6 +95,7 @@ class Settings extends Core {
 			unlink(ROOT_PATH."core".DS."media".DS."config.lang.php");
 		}
 		file_put_contents(ROOT_PATH."core".DS."media".DS."config.lang.php", $lang);
+		cardinal::RegAction("Внесение изменений в настройки сайта");
 		setcookie("SaveDone", "1", time()+10);
 		location("./?pages=Settings");
 	}

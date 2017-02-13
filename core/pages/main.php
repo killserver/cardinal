@@ -21,42 +21,29 @@ exit();
 class page {
 	
 	function view() {
+		$page = Route::param('pages');
+		if($page>1) {
+			$link = "{R_[main][pages=".$page."]}";
+		} else {
+			$link = "";
+		}
 		$tmp = templates::complited_assing_vars("index");
-		$ogpr = array(
-			"og:site_name" => "{L_sitename}",
-			"og:url" => "{C_default_http_host}",
-			"og:title" => "{L_sitename}",
-			"og:description" => "{L_s_description}",
-			"og:type" => "website",
-		);
-		if(file_exists(ROOT_PATH."logo.jpg")) {
-			$ogpr = array_merge($ogpr, array(
-				"og:image" => "{C_default_http_host}logo.jpg?".time(),
-			));
-		}
-		$meta = array(
-			"ogpr" => $ogpr,
-			"description" => "{L_s_description}",
-		);
-		if(file_exists(ROOT_PATH."logo.jpg")) {
-			$meta = array_merge($meta, array(
-				"link" => array(
-					"image_src" => "{C_default_http_host}logo.jpg?".time(),
-				),
-			));
-		}
-		templates::complited($tmp, array("title" => lang::get_lang('sitename'), "meta" => $meta));
+		addSeo("link", $link);
+		$title = array();
+		$title['title'] = lang::get_lang('sitename');
+		$title = array_merge($title, releaseSeo(array(), true));
+		templates::complited($tmp, $title);
 		templates::display();
 	}
 
     function __construct() {
-		if(defined("WITHOUT_DB")) {
+		if(defined("WITHOUT_DB") || !db::connected()) {
 			$this->view();
 			return false;
 		}
 		Route::RegParam("inPage", "index");
 		$pages = Route::param('pages');
-		$count = db::doquery("SELECT COUNT(`id`) AS `ct` FROM `posts` WHERE `active` = \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP() AND `type` = \"post\"" : ""));
+		$count = db::doquery("SELECT COUNT(`id`) AS `ct` FROM `posts` WHERE `active` LIKE \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP() AND `type` LIKE \"post\"" : ""));
 		db::free();
 		templates::assign_var("count", $count['ct']);
 		if(isset($pages) && is_numeric($pages) && $pages > 0) {
@@ -69,11 +56,14 @@ class page {
 		$pg = new pager($start, $count['ct'], $limit, "main", "pages", 10, true);
 		$pages = $pg->get();
 		$limits = $pg->limit();
+		$prevLink = $pg->prevLink();
+		$nextLink = $pg->nextLink();
 		unset($pg);
+		templates::assign_vars(array("prevLink" => $prevLink, "nextLink" => $nextLink));
 		foreach($pages as $id=>$page) {
 			templates::assign_vars($page, "pages", $id);
 		}
-		db::doquery("SELECT `id`, `alt_name`, `title`, `image`, `descr`, `time`, `added` FROM `posts` WHERE `active` = \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP()" : "")." AND `type` = \"post\" ORDER BY `id` DESC ".$limits, true);
+		db::doquery("SELECT `id`, `alt_name`, `title`, `image`, `descr`, `time`, `added` FROM `posts` WHERE `active` LIKE \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP()" : "")." AND `type` LIKE \"post\" ORDER BY `id` DESC ".$limits, true);
 		while($row = db::fetch_assoc()) {
 			$row['short_descr'] = trim(cut(trim(bbcodes::clear_bbcode($row['descr'])), 100));
 			templates::assign_vars($row, "index", "index".$row['id']);

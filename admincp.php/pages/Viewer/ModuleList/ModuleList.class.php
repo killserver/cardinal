@@ -122,12 +122,14 @@ class ModuleList extends Core {
 			return;
 		}
 		if(isset($_GET['unactive']) && is_string($_GET['unactive'])) {
+			cardinal::RegAction("Отключение модуля ".$_GET['unactive']);
 			db::doquery("UPDATE `modules` SET `activ` = \"no\" WHERE `module` = \"".saves($_GET['unactive'], true)."\"");
 			cache::Delete("load_modules");
 			location("{C_default_http_host}".ADMINCP_DIRECTORY."/?pages=ModuleList");
 			return;
 		}
 		if(isset($_GET['active']) && is_string($_GET['active'])) {
+			cardinal::RegAction("Включение модуля ".$_GET['active']);
 			db::doquery("UPDATE `modules` SET `activ` = \"yes\" WHERE `module` = \"".saves($_GET['active'], true)."\"");
 			cache::Delete("load_modules");
 			location("{C_default_http_host}".ADMINCP_DIRECTORY."/?pages=ModuleList");

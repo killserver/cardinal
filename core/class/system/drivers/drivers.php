@@ -31,7 +31,7 @@ interface drivers {
 	public function fetch_row($query);
 	public function fetch_array($query);
 	public function fetch_assoc($query);
-	public function fetch_object($query, $class_name, $params);
+	public function fetch_object($query, $class_name, $params = array());
 	public function escape($str);
 	public function num_rows($query);
 	public function free($query);

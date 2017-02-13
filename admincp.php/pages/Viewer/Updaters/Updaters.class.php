@@ -51,6 +51,7 @@ class Updaters extends Core {
 			$prs = new Parser("https://codeload.github.com/killserver/cardinal/tar.gz/trunk?".time());
 			$prs->timeout(30);
 			file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."lastest.tar.gz", $prs->get());
+			cardinal::RegAction("Скачивание свежей версии движка");
 			HTTP::echos("1");
 			return;
 		}
@@ -70,6 +71,7 @@ class Updaters extends Core {
 			if(!is_array($list) || sizeof($list)==0) {
 				header("HTTP/1.0 404 Not Found");
 			}
+			cardinal::RegAction("Обновление движка");
 			$tr = $tar_object->extractModify(ROOT_PATH, "cardinal-trunk/");
 			if($tr === true) {
 				unlink(ROOT_PATH."core".DS."cache".DS."system".DS."lastest.tar.gz");

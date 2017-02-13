@@ -115,6 +115,21 @@ class QueryBuilder extends db {
 		return $row;
 	}
 	
+	final public function resultObjectAll($object) {
+		$list = array();
+		while($row = $this->fetch_object($this->queryBuilder, $object)) {
+			$list[] = $row;
+		}
+		$this->free($this->queryBuilder);
+		return $list;
+	}
+	
+	final public function resultObject($object) {
+		$row = $this->fetch_object($this->queryBuilder, $object);
+		$this->free($this->queryBuilder);
+		return $row;
+	}
+	
 	final public function resultNumAll() {
 		$list = array();
 		while($row = $this->fetch_row($this->queryBuilder)) {

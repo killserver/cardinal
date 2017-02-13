@@ -47,12 +47,76 @@ class config {
 		}
 		return $configs;
 	}
+	
+	final private static function initWithoutDB($action = "read", $name = "", $val = "", $valS = "", $valTh = "") {
+	global $configWDB;
+		if(!isset($configWDB) || !is_array($configWDB)) {
+			$configWDB = array();
+		}
+		$file = ROOT_PATH."core".DS."cache".DS."system".DS."configWithoutDB.txt";
+		if($action == "read" && !empty($name) && file_exists($file) && is_readable($file)) {
+			$file = file_get_contents($file);
+			$configWDB = unserialize($file);
+		} elseif($action=="edit") {
+			if(!(!empty($name) && ((file_exists($file) && is_readable($file)) || is_writable($file)))) {
+				return false;
+			}
+			if(file_exists($file) && is_readable($file)) {
+				$file = file_get_contents($file);
+				$configWDB = unserialize($file);
+			}
+			if(!empty($valTh)) {
+				$configWDB[$name][$val][$valS] = $valTh;
+			} elseif(!empty($valS)) {
+				$configWDB[$name][$val] = $valS;
+			} else {
+				$configWDB[$name] = $val;
+			}
+			if(file_exists($file)) {
+				unlink($file);
+			}
+			if(is_writable($file)) {
+				file_put_contents($file, serialize($configWDB));
+			}
+			return true;
+		} elseif($action=="delete") {
+			if(!(!empty($name) && ((file_exists($file) && is_readable($file)) || is_writable($file)))) {
+				return false;
+			}
+			if((!isset($configWDB[$name]) || !isset($configWDB[$name][$val])) && file_exists($file) && is_readable($file)) {
+				$file = file_get_contents($file);
+				$configWDB = unserialize($file);
+			}
+			$update = false;
+			if(!empty($val) && !empty($valS) && isset($configWDB[$name][$val])) {
+				unset($configWDB[$name][$val][$valS]);
+				$update = true;
+			} elseif(!empty($val) && isset($configWDB[$name][$val])) {
+				unset($configWDB[$name][$val]);
+				$update = true;
+			} elseif(isset($configWDB[$name])) {
+				unset($configWDB[$name]);
+				$update = true;
+			}
+			if($update) {
+				if(file_exists($file)) {
+					unlink($file);
+				}
+				if(is_writable($file)) {
+					file_put_contents($file, serialize($configWDB));
+				}
+			}
+			return true;
+		}
+		return $configWDB;
+	}
 
 	final public static function init() {
 	global $config;
 		if(defined("WITHOUT_DB") || !db::connected()) {
-			self::$config = $config;
-			return $config;
+			$cfg = self::initWithoutDB();
+			self::$config = array_merge($config, $cfg);
+			return self::$config;
 		}
 		self::$config = array();
 		if(!cache::Exists("config")) {
@@ -130,9 +194,31 @@ class config {
 		}
 	}
 
+	final public static function Del() {
+		if(func_num_args() == 0 || func_num_args() > 2) {
+			return false;
+		}
+		$list = func_get_args();
+		if(isset($list[1]) && !empty($list[1]) && isset($list[2]) && !empty($list[2]) && isset(self::$config[$list[0]]) && isset(self::$config[$list[0]][$list[1]]) && isset(self::$config[$list[0]][$list[1]][$list[2]])) {
+			unset(self::$config[$list[0]][$list[1]][$list[2]]);
+			self::initWithoutDB("delete", $list[0], $list[1], $list[2]);
+			return true;
+		} else if(isset($list[1]) && !empty($list[1]) && isset(self::$config[$list[0]]) && isset(self::$config[$list[0]][$list[1]])) {
+			unset(self::$config[$list[0]][$list[1]]);
+			self::initWithoutDB("delete", $list[0], $list[1]);
+			return true;
+		} else if(isset(self::$config[$list[0]])) {
+			unset(self::$config[$list[0]]);
+			self::initWithoutDB("delete", $list[0]);
+			return true;
+		} else {
+			return self::$default;
+		}
+	}
+
 	final public static function Update($name, $data = "") {
 		if(defined("WITHOUT_DB")) {
-			return false;
+			return self::initWithoutDB("edit", $name, $data);
 		}
 		db::doquery("REPLACE INTO `config` SET `config_value` = \"".$data."\", `config_name` = \"".$name."\"");
 		cache::Delete("config");

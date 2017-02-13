@@ -51,14 +51,13 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 	 * @var string
 	 **/
 	protected $dbError = '';
-	
+
 	/**
 	 * Constructor
 	 * Extend options with required fields
 	 *
-	 * @return void
 	 * @author Dmitry (dio) Levashov
-	 **/
+	 */
 	public function __construct() {
 		$opts = array(
 			'host'          => 'localhost',
@@ -70,7 +69,8 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 			'files_table'   => 'elfinder_file',
 			'tmbPath'       => '',
 			'tmpPath'       => '',
-			'rootCssClass'  => 'elfinder-navbar-root-sql'
+			'rootCssClass'  => 'elfinder-navbar-root-sql',
+			'noSessionCache' => array('hasdirs')
 		);
 		$this->options = array_merge($this->options, $opts);
 		$this->options['mimeDetect'] = 'internal';
@@ -100,7 +100,7 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 		
 		
 		$this->db = new mysqli($this->options['host'], $this->options['user'], $this->options['pass'], $this->options['db'], $this->options['port'], $this->options['socket']);
-		if ($this->db->connect_error || @mysqli_connect_error()) {
+		if ($this->db->connect_error || mysqli_connect_error()) {
 			return false;
 		}
 		
@@ -137,12 +137,15 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 
 		if (($tmp = $this->options['tmpPath'])) {
 			if (!file_exists($tmp)) {
-				if (@mkdir($tmp)) {
-					@chmod($tmp, $this->options['tmbPathMode']);
+				if (mkdir($tmp)) {
+					chmod($tmp, $this->options['tmbPathMode']);
 				}
 			}
 			
 			$this->tmpPath = is_dir($tmp) && is_writable($tmp) ? $tmp : false;
+		}
+		if (!$this->tmpPath && ($tmp = elFinder::getStaticVar('commonTempPath'))) {
+			$this->tmpPath = $tmp;
 		}
 		
 		if (!$this->tmpPath && $this->tmbPath && $this->tmbPathWritable) {
@@ -204,7 +207,7 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 	 * @author Dmitry (dio) Levashov
 	 **/
 	protected function make($path, $name, $mime) {
-		$sql = 'INSERT INTO %s (`parent_id`, `name`, `size`, `mtime`, `mime`, `content`, `read`, `write`) VALUES ("%s", "%s", 0, %d, "%s", "", "%d", "%d")';
+		$sql = 'INSERT INTO %s (`parent_id`, `name`, `size`, `mtime`, `mime`, `content`, `read`, `write`) VALUES (\'%s\', \'%s\', 0, %d, \'%s\', \'\', \'%d\', \'%d\')';
 		$sql = sprintf($sql, $this->tbf, $path, $this->db->real_escape_string($name), time(), $mime, $this->defaults['read'], $this->defaults['write']);
 		// echo $sql;
 		return $this->query($sql) && $this->db->affected_rows > 0;
@@ -218,7 +221,7 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 	 * Cache dir contents
 	 *
 	 * @param  string  $path  dir path
-	 * @return void
+	 * @return string
 	 * @author Dmitry Levashov
 	 **/
 	protected function cacheDir($path) {
@@ -226,14 +229,13 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 
 		$sql = 'SELECT f.id, f.parent_id, f.name, f.size, f.mtime AS ts, f.mime, f.read, f.write, f.locked, f.hidden, f.width, f.height, IF(ch.id, 1, 0) AS dirs 
 				FROM '.$this->tbf.' AS f 
-				LEFT JOIN '.$this->tbf.' AS ch ON ch.parent_id=f.id AND ch.mime="directory"
-				WHERE f.parent_id="'.$path.'"
+				LEFT JOIN '.$this->tbf.' AS ch ON ch.parent_id=f.id AND ch.mime=\'directory\'
+				WHERE f.parent_id=\''.$path.'\'
 				GROUP BY f.id';
 				
 		$res = $this->query($sql);
 		if ($res) {
 			while ($row = $res->fetch_assoc()) {
-				// debug($row);
 				$id = $row['id'];
 				if ($row['parent_id']) {
 					$row['phash'] = $this->encode($row['parent_id']);
@@ -242,6 +244,7 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 				if ($row['mime'] == 'directory') {
 					unset($row['width']);
 					unset($row['height']);
+					$row['size'] = 0;
 				} else {
 					unset($row['dirs']);
 				}
@@ -309,8 +312,10 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 	 **/
 	protected function doSearch($path, $q, $mimes) {
 		$dirs = array();
+		$timeout = $this->options['searchTimeout']? $this->searchStart + $this->options['searchTimeout'] : 0;
+		
 		if ($path != $this->root) {
-			$inpath = array(intval($path));
+			$dirs = $inpath = array(intval($path));
 			while($inpath) {
 				$in = '('.join(',', $inpath).')';
 				$inpath = array();
@@ -332,14 +337,14 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 			$whrs = array();
 			foreach($mimes as $mime) {
 				if (strpos($mime, '/') === false) {
-					$whrs[] = sprintf('f.mime LIKE "%s/%%"', $this->db->real_escape_string($mime));
+					$whrs[] = sprintf('f.mime LIKE \'%s/%%\'', $this->db->real_escape_string($mime));
 				} else {
-					$whrs[] = sprintf('f.mime = "%s"', $this->db->real_escape_string($mime));
+					$whrs[] = sprintf('f.mime = \'%s\'', $this->db->real_escape_string($mime));
 				}
 			}
 			$whr = join(' OR ', $whrs);
 		} else {
-			$whr = sprintf('f.name RLIKE "%s"', $this->db->real_escape_string($q));
+			$whr = sprintf('f.name RLIKE \'%s\'', $this->db->real_escape_string($q));
 		}
 		if ($dirs) {
 			$whr = '(' . $whr . ') AND (`parent_id` IN (' . join(',', $dirs) . '))';
@@ -353,6 +358,11 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 		
 		if (($res = $this->query($sql))) {
 			while ($row = $res->fetch_assoc()) {
+				if ($timeout && $timeout < time()) {
+					$this->setError(elFinder::ERROR_SEARCH_TIMEOUT, $this->path($this->encode($path)));
+					break;
+				}
+				
 				if (!$this->mimeAccepted($row['mime'], $mimes)) {
 					continue;
 				}
@@ -360,6 +370,7 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 				if ($row['parent_id']) {
 					$row['phash'] = $this->encode($row['parent_id']);
 				} 
+				$row['path'] = $this->_path($id);
 
 				if ($row['mime'] == 'directory') {
 					unset($row['width']);
@@ -391,7 +402,7 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 	 * @author Dmitry (dio) Levashov
 	 **/
 	protected function _dirname($path) {
-		return ($stat = $this->stat($path)) ? ($stat['phash'] ? $this->decode($stat['phash']) : $this->root) : false;
+		return ($stat = $this->stat($path)) ? (!empty($stat['phash']) ? $this->decode($stat['phash']) : $this->root) : false;
 	}
 
 	/**
@@ -414,7 +425,7 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 	 * @author Dmitry (dio) Levashov
 	 **/
 	protected function _joinPath($dir, $name) {
-		$sql = 'SELECT id FROM '.$this->tbf.' WHERE parent_id="'.$dir.'" AND name="'.$this->db->real_escape_string($name).'"';
+		$sql = 'SELECT id FROM '.$this->tbf.' WHERE parent_id=\''.$dir.'\' AND name=\''.$this->db->real_escape_string($name).'\'';
 
 		if (($res = $this->query($sql)) && ($r = $res->fetch_assoc())) {
 			$this->updateCache($r['id'], $this->_stat($r['id']));
@@ -515,8 +526,8 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 		$sql = 'SELECT f.id, f.parent_id, f.name, f.size, f.mtime AS ts, f.mime, f.read, f.write, f.locked, f.hidden, f.width, f.height, IF(ch.id, 1, 0) AS dirs
 				FROM '.$this->tbf.' AS f 
 				LEFT JOIN '.$this->tbf.' AS p ON p.id=f.parent_id
-				LEFT JOIN '.$this->tbf.' AS ch ON ch.parent_id=f.id AND ch.mime="directory"
-				WHERE f.id="'.$path.'"
+				LEFT JOIN '.$this->tbf.' AS ch ON ch.parent_id=f.id AND ch.mime=\'directory\'
+				WHERE f.id=\''.$path.'\'
 				GROUP BY f.id';
 
 		$res = $this->query($sql);
@@ -529,6 +540,7 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 			if ($stat['mime'] == 'directory') {
 				unset($stat['width']);
 				unset($stat['height']);
+				$stat['size'] = 0;
 			} else {
 				unset($stat['dirs']);
 			}
@@ -589,12 +601,12 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 	 **/
 	protected function _fopen($path, $mode='rb') {
 		$fp = $this->tmbPath
-			? @fopen($this->getTempFile($path), 'w+')
-			: @tmpfile();
+			? fopen($this->getTempFile($path), 'w+')
+			: tmpfile();
 		
 		
 		if ($fp) {
-			if (($res = $this->query('SELECT content FROM '.$this->tbf.' WHERE id="'.$path.'"'))
+			if (($res = $this->query('SELECT content FROM '.$this->tbf.' WHERE id=\''.$path.'\''))
 			&& ($r = $res->fetch_assoc())) {
 				fwrite($fp, $r['content']);
 				rewind($fp);
@@ -606,18 +618,19 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 		
 		return false;
 	}
-	
+
 	/**
 	 * Close opened file
 	 *
-	 * @param  resource  $fp  file pointer
+	 * @param  resource $fp file pointer
+	 * @param string $path
 	 * @return bool
 	 * @author Dmitry (dio) Levashov
-	 **/
+	 */
 	protected function _fclose($fp, $path='') {
-		@fclose($fp);
+		fclose($fp);
 		if ($path) {
-			@unlink($this->getTempFile($path));
+			unlink($this->getTempFile($path));
 		}
 	}
 	
@@ -646,15 +659,16 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 	protected function _mkfile($path, $name) {
 		return $this->make($path, $name, 'text/plain') ? $this->_joinPath($path, $name) : false;
 	}
-	
+
 	/**
 	 * Create symlink. FTP driver does not support symlinks.
 	 *
-	 * @param  string  $target  link target
-	 * @param  string  $path    symlink path
+	 * @param  string $target link target
+	 * @param  string $path symlink path
+	 * @param string $name
 	 * @return bool
 	 * @author Dmitry (dio) Levashov
-	 **/
+	 */
 	protected function _symlink($target, $path, $name) {
 		return false;
 	}
@@ -674,23 +688,24 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 
 		$sql = $id > 0
 			? sprintf('REPLACE INTO %s (id, parent_id, name, content, size, mtime, mime, width, height, `read`, `write`, `locked`, `hidden`) (SELECT %d, %d, name, content, size, mtime, mime, width, height, `read`, `write`, `locked`, `hidden` FROM %s WHERE id=%d)', $this->tbf, $id, $this->_dirname($id), $this->tbf, $source)
-			: sprintf('INSERT INTO %s (parent_id, name, content, size, mtime, mime, width, height, `read`, `write`, `locked`, `hidden`) SELECT %d, "%s", content, size, %d, mime, width, height, `read`, `write`, `locked`, `hidden` FROM %s WHERE id=%d', $this->tbf, $targetDir, $this->db->real_escape_string($name), time(), $this->tbf, $source);
+			: sprintf('INSERT INTO %s (parent_id, name, content, size, mtime, mime, width, height, `read`, `write`, `locked`, `hidden`) SELECT %d, \'%s\', content, size, %d, mime, width, height, `read`, `write`, `locked`, `hidden` FROM %s WHERE id=%d', $this->tbf, $targetDir, $this->db->real_escape_string($name), time(), $this->tbf, $source);
 
 		return $this->query($sql);
 	}
-	
+
 	/**
 	 * Move file into another parent dir.
 	 * Return new file path or false.
 	 *
-	 * @param  string  $source  source file path
-	 * @param  string  $target  target dir path
-	 * @param  string  $name    file name
-	 * @return string|bool
+	 * @param  string $source source file path
+	 * @param $targetDir
+	 * @param  string $name file name
+	 * @return bool|string
+	 * @internal param string $target target dir path
 	 * @author Dmitry (dio) Levashov
-	 **/
+	 */
 	protected function _move($source, $targetDir, $name) {
-		$sql = 'UPDATE %s SET parent_id=%d, name="%s" WHERE id=%d LIMIT 1';
+		$sql = 'UPDATE %s SET parent_id=%d, name=\'%s\' WHERE id=%d LIMIT 1';
 		$sql = sprintf($sql, $this->tbf, $targetDir, $this->db->real_escape_string($name), $source);
 		return $this->query($sql) && $this->db->affected_rows > 0 ? $source : false;
 	}
@@ -703,7 +718,7 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 	 * @author Dmitry (dio) Levashov
 	 **/
 	protected function _unlink($path) {
-		return $this->query(sprintf('DELETE FROM %s WHERE id=%d AND mime!="directory" LIMIT 1', $this->tbf, $path)) && $this->db->affected_rows;
+		return $this->query(sprintf('DELETE FROM %s WHERE id=%d AND mime!=\'directory\' LIMIT 1', $this->tbf, $path)) && $this->db->affected_rows;
 	}
 
 	/**
@@ -714,17 +729,18 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 	 * @author Dmitry (dio) Levashov
 	 **/
 	protected function _rmdir($path) {
-		return $this->query(sprintf('DELETE FROM %s WHERE id=%d AND mime="directory" LIMIT 1', $this->tbf, $path)) && $this->db->affected_rows;
+		return $this->query(sprintf('DELETE FROM %s WHERE id=%d AND mime=\'directory\' LIMIT 1', $this->tbf, $path)) && $this->db->affected_rows;
 	}
-	
+
 	/**
 	 * undocumented function
 	 *
-	 * @return void
+	 * @param $path
+	 * @param $fp
 	 * @author Dmitry Levashov
-	 **/
+	 */
 	protected function _setContent($path, $fp) {
-		rewind($fp);
+		elFinder::rewind($fp);
 		$fstat = fstat($fp);
 		$size = $fstat['size'];
 		
@@ -750,7 +766,7 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 		$h = !empty($stat['height']) ? $stat['height'] : 0;
 		
 		$id = $this->_joinPath($dir, $name);
-		rewind($fp);
+		elFinder::rewind($fp);
 		$stat = fstat($fp);
 		$size = $stat['size'];
 		
@@ -765,8 +781,8 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 				chmod($tmpfile, 0644);
 				
 				$sql = $id > 0
-					? 'REPLACE INTO %s (id, parent_id, name, content, size, mtime, mime, width, height) VALUES ('.$id.', %d, "%s", LOAD_FILE("%s"), %d, %d, "%s", %d, %d)'
-					: 'INSERT INTO %s (parent_id, name, content, size, mtime, mime, width, height) VALUES (%d, "%s", LOAD_FILE("%s"), %d, %d, "%s", %d, %d)';
+					? 'REPLACE INTO %s (id, parent_id, name, content, size, mtime, mime, width, height) VALUES ('.$id.', %d, \'%s\', LOAD_FILE(\'%s\'), %d, %d, \'%s\', %d, %d)'
+					: 'INSERT INTO %s (parent_id, name, content, size, mtime, mime, width, height) VALUES (%d, \'%s\', LOAD_FILE(\'%s\'), %d, %d, \'%s\', %d, %d)';
 				$sql = sprintf($sql, $this->tbf, $dir, $this->db->real_escape_string($name), $this->loadFilePath($tmpfile), $size, time(), $mime, $w, $h);
 
 				$res = $this->query($sql);
@@ -780,14 +796,14 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 
 		
 		$content = '';
-		rewind($fp);
+		elFinder::rewind($fp);
 		while (!feof($fp)) {
 			$content .= fread($fp, 8192);
 		}
 		
 		$sql = $id > 0
-			? 'REPLACE INTO %s (id, parent_id, name, content, size, mtime, mime, width, height) VALUES ('.$id.', %d, "%s", "%s", %d, %d, "%s", %d, %d)'
-			: 'INSERT INTO %s (parent_id, name, content, size, mtime, mime, width, height) VALUES (%d, "%s", "%s", %d, %d, "%s", %d, %d)';
+			? 'REPLACE INTO %s (id, parent_id, name, content, size, mtime, mime, width, height) VALUES ('.$id.', %d, \'%s\', \'%s\', %d, %d, \'%s\', %d, %d)'
+			: 'INSERT INTO %s (parent_id, name, content, size, mtime, mime, width, height) VALUES (%d, \'%s\', \'%s\', %d, %d, \'%s\', %d, %d)';
 		$sql = sprintf($sql, $this->tbf, $dir, $this->db->real_escape_string($name), $this->db->real_escape_string($content), $size, time(), $mime, $w, $h);
 		
 		unset($content);
@@ -819,7 +835,7 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 	 * @author Dmitry (dio) Levashov
 	 **/
 	protected function _filePutContents($path, $content) {
-		return $this->query(sprintf('UPDATE %s SET content="%s", size=%d, mtime=%d WHERE id=%d LIMIT 1', $this->tbf, $this->db->real_escape_string($content), strlen($content), time(), $path));
+		return $this->query(sprintf('UPDATE %s SET content=\'%s\', size=%d, mtime=%d WHERE id=%d LIMIT 1', $this->tbf, $this->db->real_escape_string($content), strlen($content), time(), $path));
 	}
 
 	/**
@@ -834,8 +850,10 @@ class elFinderVolumeMySQL extends elFinderVolumeDriver {
 	/**
 	 * chmod implementation
 	 *
+	 * @param string $path
+	 * @param string $mode
 	 * @return bool
-	 **/
+	 */
 	protected function _chmod($path, $mode) {
 		return false;
 	}

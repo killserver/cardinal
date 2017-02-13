@@ -15,6 +15,7 @@ class Users extends Core {
 		} else {
 			$activ = "no";
 		}
+		cardinal::RegAction("Добавление нового пользователя \"".$name."\"");
 		db::doquery("INSERT INTO `users` SET `username` = \"".$name."\", `alt_name` = \"".ToTranslit($name)."\", `pass` = \"".$pass."\", `admin_pass` = \"".$admin_pass."\", `email` = \"".$email."\", `light` = \"".$password."\", `level` = \"".$level."\", `activ` = \"".$activ."\", `time_reg` = UNIX_TIMESTAMP()");
 		location("./?pages=Users");
 		return;
@@ -33,6 +34,7 @@ class Users extends Core {
 		} else {
 			$activ = "no";
 		}
+		cardinal::RegAction("Обновление данных пользователя \"".$name."\"");
 		db::doquery("UPDATE `users` SET `username` = \"".$name."\", `alt_name` = \"".ToTranslit($name)."\", `pass` = \"".$pass."\", `admin_pass` = \"".$admin_pass."\", `email` = \"".$email."\", `light` = \"".$password."\", `level` = \"".$level."\", `activ` = \"".$activ."\" WHERE `id` = ".$id);
 		location("./?pages=Users");
 		return;
@@ -61,6 +63,7 @@ class Users extends Core {
 				templates::error("Не возможно удалить аккаунт из которого Вы работаете!");
 				return;
 			}
+			cardinal::RegAction("Удаление пользователя с ИД \"".intval($_GET['id'])."\"");
 			db::doquery("DELETE FROM `users` WHERE `id` = ".intval($_GET['id']));
 			location("./?pages=Users");
 			return;

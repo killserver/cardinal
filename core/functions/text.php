@@ -148,7 +148,10 @@ function isoTOint($data) {
  * @param int $end End cut
  * @return string Part text
  */
-function nsubstr($text, $start, $end = null) {
+function nsubstr($text, $start, $end = "") {
+	if(empty($end)) {
+		$end = nstrlen($text);
+	}
 	if(function_exists("mb_substr") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING) {
 		return mb_substr($text, $start, $end, config::Select('charset'));
 	} elseif(function_exists("iconv_substr")) {

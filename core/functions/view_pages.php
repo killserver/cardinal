@@ -92,6 +92,9 @@ global $manifest;
 		case "reg":
 			include_once(ROOT_PATH."core".DS."pages".DS."reg.".ROOT_EX);
 		break;
+		case "manifest":
+			include_once(ROOT_PATH."core".DS."pages".DS."manifest.".ROOT_EX);
+		break;
 		case "add":
 		case "edit":
 		case "post":
@@ -105,6 +108,9 @@ global $manifest;
 		break;
 		case "skin":
 			include_once(ROOT_PATH."core".DS."pages".DS."skin.".ROOT_EX);
+		break;
+		case "search":
+			include_once(ROOT_PATH."core".DS."pages".DS."search.".ROOT_EX);
 		break;
 		case "main":
 			include_once(ROOT_PATH."core".DS."pages".DS."main.".ROOT_EX);

@@ -14,9 +14,6 @@ return array(
     // custom source example
     'general' => array(
 		$min_documentRoot . '/js/jquery.js',
+		$min_documentRoot . '/js/jquery-migrate-3.0.0.min.js',
     ),
-
-    /*'admin' => array(
-     	$min_documentRoot . '/engine/skins/javascripts/application.js', 
-    ),*/
 );

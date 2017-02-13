@@ -12,6 +12,7 @@ $config = array_merge($config, array(
 		"pass" => "",
 		"db" => "",
 		"charset" => "utf8",
+		"driver" => "db_mysqli",
 	),
 ));
 

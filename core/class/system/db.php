@@ -138,6 +138,7 @@ class db {
 				self::$driverGen = true;
 				$driv = self::DriverList();
 				$driv = $driv[array_rand($driv)];
+				self::$driver_name = $driv;
 			}
 		}
 		self::$driver = new $driv();
@@ -189,7 +190,7 @@ class db {
 		$open = self::OpenDriver();
 		if($open) {
 			self::$driver->connect($host, $user, $pass, $db, $charset, $port);
-			if(self::connected() && self::$driverGen && !file_exists(ROOT_PATH."core".DS."cache".DS."db_lock.lock") && is_writable(ROOT_PATH."core".DS."cache".DS."db_lock.lock") && !empty(self::$driver_name)) {
+			if(self::connected() && self::$driverGen && !file_exists(ROOT_PATH."core".DS."cache".DS."db_lock.lock") && is_writable(ROOT_PATH."core".DS."cache".DS) && !empty(self::$driver_name)) {
 				file_put_contents(ROOT_PATH."core".DS."cache".DS."db_lock.lock", self::$driver_name);
 			}
 		}
@@ -198,8 +199,8 @@ class db {
     /**
      * db constructor.
      */
-    function __construct() {
-		if(!defined("INSTALLER") || (file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX) && defined("WITHOUT_DB"))) {
+    function __construct($withoutInit = false) {
+		if(!$withoutInit && (!defined("INSTALLER") || (file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX) && defined("WITHOUT_DB")))) {
 			self::init();
 		}
 	}
@@ -211,7 +212,14 @@ class db {
 		config::StandAlone();
 		self::$driver_name = config::Select('db','driver');
 		self::$dbName = config::Select('db','db');
-		self::connect(config::Select('db','host'), config::Select('db','user'), config::Select('db','pass'), self::$dbName, config::Select('db', 'charset'), config::Select('db', 'port'));
+		$host = config::Select('db','host');
+		$user = config::Select('db','user');
+		$pass = config::Select('db','pass');
+		$chst = config::Select('db', 'charset');
+		$port = config::Select('db', 'port');
+		if(is_string($host) && is_string($user) && is_string($pass) && is_string($chst) && is_string($port)) {
+			self::connect($host, $user, $pass, self::$dbName, $chst, $port);
+		}
 	}
 
     /**
@@ -511,7 +519,11 @@ class db {
 		if(empty($query)) {
 			$query = self::$qid;
 		}
-		return self::$driver->fetch_object($query, $class_name, $params);
+		if(sizeof($params)>0) {
+			return self::$driver->fetch_object($query, $class_name, $params);
+		} else {
+			return self::$driver->fetch_object($query, $class_name);
+		}
 	}
 
     /**

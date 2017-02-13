@@ -50,7 +50,9 @@ class Main_Updater extends Main {
 						$changelog .= parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/changelog/'.$list[$i].'.txt')."\n\n\n\n";
 					}
 				}
-				file_put_contents($file, $changelog, FILE_APPEND);
+				if(is_writable($file)) {
+					file_put_contents($file, $changelog, FILE_APPEND);
+				}
 			} else if(file_exists($file)) {
 				$changelog = file_get_contents($file);
 			}

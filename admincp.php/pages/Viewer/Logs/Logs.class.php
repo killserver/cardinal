@@ -13,6 +13,7 @@
 class Logs extends Core {
 	
 	function Delete() {
+		cardinal::RegAction("Очистка логов ошибок");
 		if(file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt")) {
 			unlink(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt");
 		}

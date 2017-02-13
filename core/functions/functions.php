@@ -114,6 +114,23 @@ function or_mrand($min = 0, $max = 0) {
 	}
 }
 
+function in_array_strpos($str, $arr, $rebuild = false) {
+	$ret = false;
+	$arr = array_values($arr);
+	for($i=0;$i<sizeof($arr);$i++) {
+		if($rebuild) {
+			$res = strpos($arr[$i], $str)!==false;
+		} else {
+			$res = strpos($str, $arr[$i])!==false;
+		}
+		if($res) {
+			$ret = true;
+			break;
+		}
+	}
+	return $ret;
+}
+
 function location($link, $time = 0, $exit = true, $code = 302){return function_call('location', array($link, $time, $exit, $code));}
 function or_location($link, $time = 0, $exit = true, $code = 302) {
 	HTTP::Location(templates::view($link), $time, $exit, $code);
@@ -134,13 +151,13 @@ function or_search_file($file, $dir = "") {
 	}
 }
 
-function read_dir($dir, $type = "all") {
+function read_dir($dir, $type = "all", $addDir = false) {
 	$files = array();
 	if(is_dir($dir)) {
 		if($dh = dir($dir)) {
 			while(($file = $dh->read()) !== false) {
-				if(is_file($dir.$file) && ($type=="all" || strpos($file, $type)!==false)) {
-					$files[] = $file;
+				if(($type=="dir" || is_file($dir.$file)) && (($type=="dir" || $type=="all") || strpos($file, $type)!==false) && $file!="." && $file!="..") {
+					$files[] = ($addDir ? $dir : "").$file;
 				}
 			}
 		$dh->close();
@@ -153,6 +170,10 @@ if(!function_exists("boolval")) {
 	function boolval($val) {
 		return (bool) $val;
 	}
+}
+	
+function random_color() {
+	return str_pad( dechex( mt_rand( 0, 100 ) ), 2, '0', STR_PAD_LEFT);
 }
 
 function removeBOM($string) { 
@@ -170,10 +191,19 @@ function sortByValue(&$arr) {
 	usort($arr, 'strnatcmp');
 }
 
-function vdump($var, $title = "") {
+function vdump() {
+	$list = func_get_args();
+	$last = end($list);
+	if(is_string($last)) {
+		$title = $last;
+		$last = key($list);
+		unset($list[$last]);
+	} else {
+		$title = "";
+	}
 	$backtrace = debug_backtrace();
-	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "Called: ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "").(($title) ? "<b>".$title."</b>\n\n" : '');
-	var_dump($var);
+	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "Called: ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "").(!empty($title) ? "<b>".$title."</b>\n\n" : '');
+	call_user_func_array("var_dump", $list);
 	echo '</pre>';
 }
 

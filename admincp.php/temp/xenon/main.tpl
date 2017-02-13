@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-	<meta charset="utf-8">
+	<meta charset="{C_charset}">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<meta name="description" content="Cardinal Admin Panel" />
 	<meta name="author" content="KilleR" />
+	<base href="{C_default_http_host}{D_ADMINCP_DIRECTORY}" />
 	
 	<title>Xenon - Compose Message</title>
 
@@ -216,21 +217,21 @@
 					
 					<!-- logo -->
 					<div class="logo">
-						<a href="{C_default_http_host}admincp.php/?pages=main" class="logo-expanded">
+						<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}?pages=main" class="logo-expanded">
 							<img src="assets/xenon/images/logo@2x.png" width="80" alt="" />
 						</a>
 						
-						<a href="{C_default_http_host}admincp.php/?pages=main" class="logo-collapsed">
+						<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}?pages=main" class="logo-collapsed">
 							<img src="assets/xenon/images/logo-collapsed@2x.png" width="40" alt="" />
 						</a>
 					</div>
 					
 					<!-- This will toggle the mobile menu and will be visible only on mobile devices -->
 					<div class="mobile-menu-toggle visible-xs">
-						<a href="#" data-toggle="user-info-menu">
+						<!--a href="#" data-toggle="user-info-menu">
 							<i class="fa-bell-o"></i>
 							<span class="badge badge-success">7</span>
-						</a>
+						</a-->
 						
 						<a href="#" data-toggle="mobile-menu">
 							<i class="fa-bars"></i>
@@ -250,7 +251,7 @@
 					<!-- add class "multiple-expanded" to allow multiple submenus to open -->
 					<!-- class "auto-inherit-active-class" will automatically add "active" class for parent elements who are marked already with class "active" -->
 						<li>
-							<a href="{C_default_http_host}admincp.php/?pages=main">
+							<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}?pages=main">
 								<i class="linecons-cog"></i>
 								<span class="title">Main</span>
 							</a>
@@ -263,7 +264,7 @@
 							</a>
 							<ul>[/foreachif {menu.type_st}=="start"]
 								<li[foreachif {menu.is_now}==1] class="active"[/foreachif][foreachif {menu.type_st}=="start"] style="display:none;"[/foreachif {menu.type_st}=="start"]>
-									<a href="{menu.link}">
+									<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}{menu.link}">
 										<span class="title">{menu.value}</span>
 									</a>
 								</li>
@@ -302,8 +303,8 @@
 									[foreach block=unmoders]<li class="active
 									[foreachif {unmoders.errors}==0]notification-success[/foreachif]
 									[foreachif {unmoders.errors}>=1]notification-danger[/foreachif]">
-										[foreachif {unmoders.errors}==0]<a href="/admincp.php/?pages=Videos&mod=edit&edit={unmoders.name_id}">[/foreachif]
-										[foreachif {unmoders.errors}>=1]<a href="/admincp.php/?pages=Videos&mod=errors">[/foreachif]
+										[foreachif {unmoders.errors}==0]<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}?pages=Videos&mod=edit&edit={unmoders.name_id}">[/foreachif]
+										[foreachif {unmoders.errors}>=1]<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}?pages=Videos&mod=errors">[/foreachif]
 											[foreachif {unmoders.errors}>=1]<i class="fa-trash"></i>[/foreachif]
 											[foreachif {unmoders.errors}==0]<i class="fa-play-circle-o"></i>[/foreachif]
 											<span class="line"><strong>{unmoders.name}</strong></span>
@@ -339,13 +340,13 @@
 						
 						<ul class="dropdown-menu user-profile-menu list-unstyled">
 							<li>
-								<a href="{C_default_http_host}admincp.php/?pages=Settings">
+								<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}?pages=Settings">
 									<i class="fa-wrench"></i>
 									Settings
 								</a>
 							</li>
 							<li class="last">
-								<a href="{C_default_http_host}admincp.php/?pages=Login&out">
+								<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}?pages=Login&out">
 									<i class="fa-lock"></i>
 									Logout
 								</a>
@@ -462,7 +463,6 @@
 					Cookies.set('current-skin', skin);
 				});
 				jQuery('body').attr('class', jQuery('body').attr('class').replace(/skin-[a-z]+/i, '')).addClass(Cookies.get('current-skin') ? (' skin-'+Cookies.get('current-skin')) : '');
-				console.log(Cookies.get('current-skin'));
 			});
 	</script>
 	

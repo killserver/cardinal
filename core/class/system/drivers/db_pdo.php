@@ -132,8 +132,12 @@ class db_pdo extends DriverParam implements drivers {
 	public function fetch_assoc($query) {
 		return $query->fetch(PDO::FETCH_ASSOC);
 	}
-	public function fetch_object($query, $class_name, $params) {
-		return $query->fetchObject($class_name);
+	public function fetch_object($query, $class_name, $params = array()) {
+		if(is_array($params) && sizeof($params)>0) {
+			return $query->fetchObject($class_name, $params);
+		} else {
+			return $query->fetchObject($class_name);
+		}
 	}
 	public function num_rows($query) {
 		return $query->rowCount();

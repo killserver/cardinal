@@ -133,6 +133,95 @@ global $user;
 return $sRet;
 }
 
+function addSeo($name, $val, $type = "main") {
+global $seoBlock;
+	if(!isset($seoBlock[$type]) || !is_array($seoBlock[$type])) {
+		$seoBlock[$type] = array();
+	}
+	$seoBlock[$type][$name] = $val;
+}
+
+function releaseSeo($meta = array(), $return = false, $clear = true) {
+global $seoBlock;
+	$title = (isset($meta['title']) ? $meta['title'] : (isset($seoBlock['ogp']['title']) ? $seoBlock['ogp']['title'] : (isset($seoBlock['og']['title']) ? $seoBlock['og']['title'] : (isset($seoBlock['main']['title']) ? $seoBlock['main']['title'] : "{L_sitename}"))));
+	$description = (isset($meta['description']) ? $meta['description'] : (isset($seoBlock['ogp']['description']) ? $seoBlock['ogp']['description'] : (isset($seoBlock['og']['description']) ? $seoBlock['og']['description'] : "{L_s_description}")));
+	$imageCheck = (isset($seoBlock['ogp']['image']) && (file_exists(ROOT_PATH.$seoBlock['ogp']['image']) || file_exists($seoBlock['ogp']['image']) || file_exists(config::Select("default_http_host").$seoBlock['ogp']['image']))) || (isset($seoBlock['main']['image_src']) && (file_exists(ROOT_PATH.$seoBlock['main']['image_src']) || file_exists($seoBlock['main']['image_src']) || file_exists(config::Select("default_http_host").$seoBlock['main']['image_src']))) || file_exists(ROOT_PATH."logo.jpg");
+	$type = (isset($seoBlock['ogp']['type']) ? $seoBlock['ogp']['type'] : (isset($seoBlock['og']['type']) ? $seoBlock['og']['type'] : "website"));
+	$link = (isset($meta['canonicalLink']) ? $meta['canonicalLink'] : (isset($meta['link']) ? $meta['link'] : (isset($seoBlock['og']['link']) ? $seoBlock['og']['link'] : (isset($seoBlock['ogp']['link']) ? $seoBlock['ogp']['link'] : (isset($seoBlock['main']['canonical']) ? $seoBlock['main']['canonical'] : (isset($seoBlock['main']['link']) ? $seoBlock['main']['link'] : (isset($seoBlock['main']['url']) ? $seoBlock['main']['url'] : "")))))));
+	$keywords = (isset($meta['keywords']) ? $meta['keywords'] : (isset($seoBlock['ogp']['keywords']) ? $seoBlock['ogp']['keywords'] : (isset($seoBlock['og']['keywords']) ? $seoBlock['og']['keywords'] : (isset($seoBlock['main']['keywords']) ? $seoBlock['main']['keywords'] : ""))));
+	if($imageCheck) {
+		if(isset($seoBlock['ogp']['image'])) {
+			$cLink = substr($seoBlock['ogp']['image'], 0, 1);
+			$imageLink = (strpos($cLink, "/")!==false ? "{C_default_http_host}".$seoBlock['ogp']['image'] : (strpos($seoBlock['ogp']['image'], "http")!==false ? $seoBlock['ogp']['image'] : ""));
+		} else if(isset($seoBlock['og']['image'])) {
+			$cLink = substr($seoBlock['og']['image'], 0, 1);
+			$imageLink = (strpos($cLink, "/")!==false ? "{C_default_http_host}".$seoBlock['og']['image'] : (strpos($seoBlock['og']['image'], "http")!==false ? $seoBlock['og']['image'] : ""));
+		} else if(isset($seoBlock['main']['image'])) {
+			$cLink = substr($seoBlock['main']['image'], 0, 1);
+			$imageLink = (strpos($cLink, "/")!==false ? "{C_default_http_host}".$seoBlock['main']['image'] : (strpos($seoBlock['main']['image'], "http")!==false ? $seoBlock['main']['image'] : ""));
+		} else if(isset($seoBlock['main']['image_src'])) {
+			$cLink = substr($seoBlock['main']['image_src'], 0, 1);
+			$imageLink = (strpos($cLink, "/")!==false ? "{C_default_http_host}".$seoBlock['main']['image_src'] : (strpos($seoBlock['main']['image_src'], "http")!==false ? $seoBlock['main']['image_src'] : ""));
+		} else if(file_exists(ROOT_PATH."logo.jpg")) {
+			$imageLink = "{C_default_http_host}logo.jpg";
+		} else {
+			$imageCheck = false;
+		}
+	}
+	$ogpr = array(
+		"og:site_name" => "{L_sitename}",
+		"og:url" => "{C_default_http_host}".$link,
+		"og:title" => $title,
+		"og:description" => $description,
+		"og:type" => $type,
+	);
+	if($imageCheck && !empty($imageLink)) {
+		$ogpr = array_merge($ogpr, array(
+			"og:image" => $imageLink."?".time(),
+		));
+	}
+	$og = array(
+		"title" => $title,
+		"description" => $description,
+	);
+	if($imageCheck && !empty($imageLink)) {
+		$og = array_merge($og, array(
+			"image" => $imageLink."?".time(),
+		));
+	}
+	$meta = array(
+		"og" => $og,
+		"ogpr" => $ogpr,
+		"title" => $title,
+		"description" => $description,
+	);
+	if(!empty($keywords)) {
+		$meta = array_merge($meta, array(
+			"keywords" => $keywords,
+		));
+	}
+	$meta = array_merge($meta, array(
+		"link" => array(
+			"canonical" => "{C_default_http_host}".$link,
+		),
+	));
+	if($imageCheck && !empty($imageLink)) {
+		$meta = array_merge($meta, array(
+			"link" => array(
+				"image_src" => $imageLink."?".time(),
+			),
+		));
+	}
+	if($clear) {
+		unset($seoBlock);
+	}
+	if($return) {
+		return array("meta" => $meta);
+	} else {
+		templates::change_head(array("meta" => $meta));
+	}
+}
+
 function createForm($inputs, $to = "", $head = "") {
 	$form = "";
 	if(!empty($head)) {
@@ -143,7 +232,7 @@ function createForm($inputs, $to = "", $head = "") {
 		if(!isset($inputs[$i])) {
 			continue;
 		}
-		$form .= "<div><label for=\"input".$i."\">".$inputs[$i]['name']."</label>".(isset($inputs[$i]['html']) && $inputs[$i]['html']=="textarea" ? "<textarea id=\"input".$i."\" name=\"inputData[".$i."]\"></textarea>" : "<input id=\"input".$i."\" type=\"".(isset($inputs[$i]['type']) ? $inputs[$i]['type'] : "text")."\" name=\"inputData[".$i."]\"".(isset($inputs[$i]['placeholder']) ? " placeholder=\"".$inputs[$i]['placeholder']."\"" : "").(isset($inputs[$i]['required']) ? " required=\"required\"" : "").">")."</div>";
+		$form .= "<div>".(isset($inputs[$i]['name']) ? "<label for=\"input".$i."\">".$inputs[$i]['name']."</label>" : "").(isset($inputs[$i]['html']) && $inputs[$i]['html']=="textarea" ? "<textarea id=\"input".$i."\" name=\"inputData[".$i."]\"".(isset($inputs[$i]['attr']) ? " ".$inputs[$i]['attr'] : "")."></textarea>" : "<input id=\"input".$i."\" type=\"".(isset($inputs[$i]['type']) ? $inputs[$i]['type'] : "text")."\" name=\"inputData[".$i."]\"".(isset($inputs[$i]['placeholder']) ? " placeholder=\"".$inputs[$i]['placeholder']."\"" : "").(isset($inputs[$i]['required']) ? " required=\"required\"" : "")."".(isset($inputs[$i]['attr']) ? " ".$inputs[$i]['attr'] : "").">")."</div>";
 	}
 	$form .= "<div><input type=\"submit\"".(isset($inputs['submit']['value']) ? " value=\"".$inputs['submit']['value']."\"" : "")."></div>";
 	$form .= "</form>";
@@ -177,6 +266,12 @@ if(!$clear) {
 <!--script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.js"></script><script type='text/javascript' src='http://simplemodal.googlecode.com/files/jquery.simplemodal.1.4.4.min.js'></script><script type="text/javascript" src="http://malsup.github.io/jquery.form.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/jqueryui.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/libs.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/jquery.jmpopups-0.5.1.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/spoiler.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/tabs.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/tabcontent.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/md-socwidget.js"></script><script type="text/javascript">setTimeout(function(){ $('.box').fadeOut('fast') },10000);  //30000 = 30 секунд</script><script type="text/javascript">	var username = "";	var default_link = "http://online-killer.com/";	jQuery(function() {		jQuery('#tabs').tabs('#tabsText > li');	});</script><script type="text/javascript" src="http://online-killer.com/js/poll.core.js"></script><script type="text/javascript">jQuery(document).ready(function(){	loadpoll();});</script><script type="text/javascript" src="http://online-killer.com/js/ajax_core.js"></script><script type="text/javascript" src="http://online-killer.com/flash-js-tagcloud-swfobject.js"></script><meta name="application-name" content="" /><meta name="msapplication-TileColor" content="#e0161d" /><meta name="msapplication-notification" content="frequency=30;polling-uri=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=1;polling-uri2=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=2;polling-uri3=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=3;polling-uri4=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=4;polling-uri5=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=5; cycle=1" /-->
 */
 	$skin = templates::get_skins();
+	$param = array();
+	$dprm = Route::param();
+	foreach($dprm as $k => $v) {
+		$param[] = "\"".$k."\":\"".$v."\"";
+	}
+	unset($dprm);
 	$header .= '<meta name="viewport" content="'.config::Select("viewport").'" />'."\n";
 	$header .= '<meta http-equiv="imagetoolbar" content="no" />'."\n";
 	$header .= '<!-- saved from url=(0014)about:internet -->'."\n";
@@ -187,6 +282,8 @@ if(!$clear) {
 		"	var default_link = \"{C_default_http_host}\";\n".
 		"	var tskins = \"".$skin."\";\n".
 		"	var SystemTime = \"".time()."\";\n".
+		"	var loadedPage = \"".Route::getLoaded()."\";\n".
+		"	var loadedParam = {".implode(",", $param)."};\n".
 		((file_exists(ROOT_PATH."skins".DS.$skin.DS."skin.css") && Route::Search("css_skin")) ? " var cssRebuildLink = \"{R_[css_skin]}\";\n" : "").
 		"</script>\n";
 	if(file_exists(ROOT_PATH."skins".DS.$skin.DS."skin.css") && Route::Search("css_skin")) {

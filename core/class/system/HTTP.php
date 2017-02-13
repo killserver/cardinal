@@ -115,19 +115,36 @@ class HTTP {
 		}
 	}
 	
+	final public static function getContentTypes() {
+		if(!self::$pathSaveMime) {
+			return array();
+		}
+		try {
+			if(file_exists(self::$pathSaveMime)) {
+				$file = file_get_contents(self::$pathSaveMime);
+			} else {
+				$file = file_get_contents("https://raw.githubusercontent.com/skyzyx/mimetypes/master/mimetypes.json");
+				$path = explode(DS, self::$pathSaveMime);
+				$endPath = end($path);
+				$path = str_replace($endPath, "", self::$pathSaveMime);
+				if(is_writable($path)) {
+					file_put_contents(self::$pathSaveMime, $file);
+				}
+			}
+			$json = json_decode($file, true);
+			return $json;
+		} catch(Exception $ex) {
+			return array();
+		}
+	}
+	
 	final public static function setContentType($type, $charset = "") {
 		if(!self::$pathSaveMime) {
 			return false;
 		}
 		try {
 			if(strpos($type, "/")===false) {
-				if(file_exists(self::$pathSaveMime)) {
-					$file = file_get_contents(self::$pathSaveMime);
-				} else {
-					$file = file_get_contents("https://raw.githubusercontent.com/skyzyx/mimetypes/master/mimetypes.json");
-					file_put_contents(self::$pathSaveMime, $file);
-				}
-				$json = json_decode($file, true);
+				$json = self::getContentTypes();
 				if(!is_array($json) || !isset($json[$type])) {
 					return false;
 				} else {
@@ -220,7 +237,7 @@ class HTTP {
 	
 	final public static function Location($link, $time = 0, $exit = true, $code = 302) {
 		if(defined("PHP_SAPI") && PHP_SAPI != 'cgi-fcgi') {
-			self::StatusHeader($status);
+			self::StatusHeader($code);
 		}
 		if($time == 0) {
 			header("Location: ".self::ClearLocation($link), true, $code);
@@ -265,6 +282,7 @@ class HTTP {
 	}
 	
 	final public static function echos($echo = "", $die = false) {
+		$echo = cardinal::callbacks("echo", $echo, "call");
 		if(!empty($echo)) {
 			echo $echo;
 			unset($echo);

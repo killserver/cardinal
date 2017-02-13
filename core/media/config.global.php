@@ -56,7 +56,7 @@ define("UPLOAD_CM", 12000);
 define("UPLOAD_CMD", 12000);
 define("UPLOAD_ALL", 240000);
 
-define("VERSION", "5.9");
+define("VERSION", "6.0");
 define("DB_VERSION", "3.5");
 define("LEVEL_ADMIN", 3);
 define("LEVEL_MODER", 2);
@@ -87,12 +87,12 @@ $config = array_merge($config, array(
 	"uses" => array(
 		"Minify" => "2.1.7",
 		"Mobile Detect" => "2.8.24",
-		"PHPMailer" => "5.1",
+		"PHPMailer" => "5.2.22",
 		"Sypex Geo" => "2.2.3",
 		"StopSpam" => "1.0",
 		"PEAR" => "1.10.1",
 		"Archive Tar" => "1.0",
-		"elFinder" => "2.0",
+		"elFinder" => "2.1",
 		"Spyc" => "1.0",
 	),
 ));

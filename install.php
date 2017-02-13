@@ -51,7 +51,7 @@ Route::Config(array(
 	"rewrite" => config::Select("rewrite"),
 	"default_http_host" => config::Select("default_http_host"),
 ));
-if((isset($_SERVER['PATH_INFO']) && strpos($_SERVER['PATH_INFO'], "install/done")!==false) || isset($_GET['done'])) {
+if((isset($_SERVER[ROUTE_GET_URL]) && strpos($_SERVER[ROUTE_GET_URL], "install/done")!==false) || isset($_GET['done'])) {
 	templates::assign_vars(array("page" => "4"));
 	echo templates::view(templates::complited_assing_vars("install", null, ""));
 	die();
@@ -113,12 +113,12 @@ function create_pass_install($pass) {
 	return sha1($pass);
 }
 
-$db_host = saves($_POST['db_host'], true);
-$db_port = saves($_POST['db_port'], true);
-$db_user = saves($_POST['db_user'], true);
-$db_pass = saves($_POST['db_pass'], true);
-$db_db = saves($_POST['db_db'], true);
-$db_driver = saves($_POST['db_driver'], true);
+$db_host = Saves::SaveOld(Arr::get($_POST, 'db_host'), true);
+$db_port = Saves::SaveOld(Arr::get($_POST, 'db_port'), true);
+$db_user = Saves::SaveOld(Arr::get($_POST, 'db_user'), true);
+$db_pass = Saves::SaveOld(Arr::get($_POST, 'db_pass'), true);
+$db_db = Saves::SaveOld(Arr::get($_POST, 'db_db'), true);
+$db_driver = Saves::SaveOld(Arr::get($_POST, 'db_driver'), true);
 
 db::changeDriver($db_driver);
 db::OpenDriver();
@@ -362,14 +362,14 @@ $last = db::last_id("users");
 if(!empty($last)) {
 	$insert['new_id'] = "id = ".$last;
 }
-$insert['username'] = "username = \"".Saves::SaveOld($_POST['user_name'], true)."\"";
-$insert['alt_name'] = "alt_name = \"".ToTranslit(Saves::SaveOld($_POST['user_name'], true))."\"";
-$insert['pass'] = "pass = \"".create_pass(Saves::SaveOld($_POST['user_pass'], true))."\"";
+$insert['username'] = "username = \"".Saves::SaveOld(Arr::get($_POST, 'user_name'), true)."\"";
+$insert['alt_name'] = "alt_name = \"".ToTranslit(Saves::SaveOld(Arr::get($_POST, 'user_name'), true))."\"";
+$insert['pass'] = "pass = \"".create_pass(Saves::SaveOld(Arr::get($_POST, 'user_pass'), true))."\"";
 define("IS_ADMIN_PASS", true);
-$insert['admin_pass'] = "admin_pass = \"".cardinal::create_pass(Saves::SaveOld($_POST['user_pass'], true))."\"";
-$insert['light'] = "light = \"".Saves::SaveOld($_POST['user_pass'], true)."\"";
+$insert['admin_pass'] = "admin_pass = \"".cardinal::create_pass(Saves::SaveOld(Arr::get($_POST, 'user_pass'), true))."\"";
+$insert['light'] = "light = \"".Saves::SaveOld(Arr::get($_POST, 'user_pass'), true)."\"";
 $insert['level'] = "level = \"".LEVEL_ADMIN."\"";
-$insert['email'] = "email = \"".Saves::SaveOld($_POST['user_email'], true)."\"";
+$insert['email'] = "email = \"".Saves::SaveOld(Arr::get($_POST, 'user_email'), true)."\"";
 $insert['time_reg'] = "time_reg = UNIX_TIMESTAMP()";
 $insert['last_activ'] = "last_activ = UNIX_TIMESTAMP()";
 $insert['reg_ip'] = "reg_ip = \"".HTTP::getip()."\"";
@@ -407,13 +407,13 @@ if(file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX)) {
 }
 file_put_contents(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX, $db_config);
 
-$path = str_replace("http://", "", $_POST['PATH']);
+$path = str_replace("http://", "", Arr::get($_POST, 'PATH'));
 if(substr($path, -1)=="/") {
 	$host = nsubstr($path, 0, nstrlen($path)-1);
 } else {
 	$host = $path;
 }
-$path = str_replace("http://".$_SERVER['HTTP_HOST'], "", $_POST['PATH']);
+$path = str_replace("http://".$_SERVER['HTTP_HOST'], "", Arr::get($_POST, 'PATH'));
 $config = '<?php
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
@@ -436,19 +436,19 @@ if(isset($_SERVER[\'HTTPS\']) && $_SERVER[\'HTTPS\']!=\'off\') {
 $config = array_merge($config, array(
 	"api_key" => "'.rand(1000000000, 9999999999).'",
 	"speed_update" => false,
-	"logs" => '.Saves::SaveOld($_POST['error_type'], true).',
+	"logs" => '.Saves::SaveOld(Arr::get($_POST, 'error_type'), true).',
 	"hosting" => true,
 	"default_http_local" => "'.$path.'",
-	"default_http_hostname" => "'.Saves::SaveOld($_POST['SERVER'], true).'",
+	"default_http_hostname" => "'.Saves::SaveOld(Arr::get($_POST, 'SERVER'), true).'",
 	"default_http_host" => $protocol."://'.Saves::SaveOld($host, true).'/",
 	"lang" => "ru",
 	"cache" => array(
-		"type" => '.Saves::SaveOld($_POST['cache_type'], true).',
-		"server" => "'.Saves::SaveOld($_POST['cache_host'], true).'",
-		"port" => '.Saves::SaveOld($_POST['cache_port'], true).',
-		"login" => "'.Saves::SaveOld($_POST['cache_user'], true).'",
-		"pass" => "'.Saves::SaveOld($_POST['cache_pass'], true).'",
-		"path" => "'.Saves::SaveOld($_POST['cache_path'], true).'",
+		"type" => '.Saves::SaveOld(Arr::get($_POST, 'cache_type'), true).',
+		"server" => "'.Saves::SaveOld(Arr::get($_POST, 'cache_host'), true).'",
+		"port" => '.Saves::SaveOld(Arr::get($_POST, 'cache_port'), true).',
+		"login" => "'.Saves::SaveOld(Arr::get($_POST, 'cache_user'), true).'",
+		"pass" => "'.Saves::SaveOld(Arr::get($_POST, 'cache_pass'), true).'",
+		"path" => "'.Saves::SaveOld(Arr::get($_POST, 'cache_path'), true).'",
 	),
 	"lang" => "ru",
 	"charset" => "utf-8",
@@ -467,8 +467,8 @@ die();
 }
 
 $lang = array_merge($lang, array(
-	"sitename" => "'.Saves::SaveOld($_POST['sitename'], true).'",
-	"s_description" => "'.Saves::SaveOld($_POST['description'], true).'",
+	"sitename" => "'.Saves::SaveOld(Arr::get($_POST, 'sitename'), true).'",
+	"s_description" => "'.Saves::SaveOld(Arr::get($_POST, 'description'), true).'",
 ));
 
 ?>';

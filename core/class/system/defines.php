@@ -20,6 +20,14 @@ class defines {
 		}
 	}
 	
+	public static function all() {
+		$all = modules::manifest_get('define');
+		if(!is_array($all)) {
+			return array();
+		}
+		return $all;
+	}
+	
 	public static function add($name, $val) {
 		modules::manifest_set(array('define', $name), $val);
 	}

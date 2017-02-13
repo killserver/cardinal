@@ -116,9 +116,12 @@ final class pager {
 				$end = $max_view;
 				$nav_prefix = "...";
 				if($rpp>0) {
-					if($rpp>6) {
-						$start = $rpp - 4;
-						$end = $start + 8;
+					if(($rpp/2)>=$max_view/2) {
+						$start = $rpp - $max_view;
+						if($start<=0) {
+							$start = 1;
+						}
+						$end = $start + ($max_view*2);
 						if($end>=$enpages_count) {
 							$start = $enpages_count - 9;
 							$end = $enpages_count - 1;
@@ -205,6 +208,7 @@ final class pager {
 					$c_link++;
 				} else {
 					$this->pages[$c_link]['is_link'] = 0;
+					$this->pages[$c_link]['now'] = 1;
 					$this->pages[$c_link]['title'] = "".$enpages_count;
 					$c_link++;
 				}

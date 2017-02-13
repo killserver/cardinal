@@ -112,7 +112,17 @@ function cardinalAutoload($class) {
         include_once(ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS.$class.".".ROOT_EX);
     }
 }
-spl_autoload_register("cardinalAutoload");
+if(version_compare(PHP_VERSION, '5.1.2', '>=')) {
+	if (version_compare(PHP_VERSION, '5.3.0', '>=')) {
+		spl_autoload_register('cardinalAutoload', true, true);
+	} else {
+		spl_autoload_register('cardinalAutoload');
+	}
+} else {
+	function __autoload($class) {
+		cardinalAutoload($class);
+	}
+}
 
 set_error_handler(array('Error', 'handlePhpError'));
 set_exception_handler(array('Error', 'handleException'));

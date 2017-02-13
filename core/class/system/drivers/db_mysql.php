@@ -129,7 +129,7 @@ class db_mysql extends DriverParam implements drivers {
 	public function fetch_assoc($query) {
 		return mysql_fetch_assoc($query);
 	}
-	public function fetch_object($query, $class_name, $params) {
+	public function fetch_object($query, $class_name, $params = array()) {
 		if(is_array($params) && sizeof($params)>0) {
 			return mysql_fetch_object($query, $class_name, $params);
 		} else {

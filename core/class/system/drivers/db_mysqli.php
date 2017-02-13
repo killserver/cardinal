@@ -141,7 +141,7 @@ class db_mysqli extends DriverParam implements drivers {
 	public function fetch_assoc($query) {
 		return $query->fetch_assoc();
 	}
-	public function fetch_object($query, $class_name, $params) {
+	public function fetch_object($query, $class_name, $params = array()) {
 		if(is_array($params) && sizeof($params)>0) {
 			return $query->fetch_object($class_name, $params);
 		} else {

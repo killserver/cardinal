@@ -9,49 +9,49 @@ die();
  */
 class Validate {
 
-    /**
-     * @var string Validated host
-     */
-    public static $host = "";
+	/**
+	 * @var string Validated host
+	 */
+	public static $host = "";
 
-    /**
-     * Check color in hex
-     * @param string $str Needed color
-     * @return bool Result checking
-     */
-    final public static function color($str) {
+	/**
+	 * Check color in hex
+	 * @param string $str Needed color
+	 * @return bool Result checking
+	 */
+	final public static function color($str) {
 		return (bool) preg_match('/^#?+[0-9a-f]{3}(?:[0-9a-f]{3})?$/iD', $str);
 	}
 
-    /**
-     * Check element in array equals value and type
-     * @param array $array Needed array
-     * @param string $field Check fields in array
-     * @param string $match Check fields in array
-     * @return bool Result checking
-     */
-    final public static function matches($array, $field, $match) {
+	/**
+	 * Check element in array equals value and type
+	 * @param array $array Needed array
+	 * @param string $field Check fields in array
+	 * @param string $match Check fields in array
+	 * @return bool Result checking
+	 */
+	final public static function matches($array, $field, $match) {
 		return (isset($array[$field]) && isset($array[$match])) && ($array[$field] === $array[$match]);
 	}
 
-    /**
-     * Check if number range inside min or max
-     * @param int $number Needed check number
-     * @param int $min Need minimal value
-     * @param int $max Need maximal value
-     * @return bool Result checking
-     */
-    final public static function range($number, $min, $max) {
+	/**
+	 * Check if number range inside min or max
+	 * @param int $number Needed check number
+	 * @param int $min Need minimal value
+	 * @param int $max Need maximal value
+	 * @return bool Result checking
+	 */
+	final public static function range($number, $min, $max) {
 		return ($number >= $min && $number <= $max);
 	}
 
-    /**
-     * Check element of type
-     * @param mixed $val Needed element for checking
-     * @param string $type Type for checking
-     * @return bool Result checking
-     */
-    final public static function CheckType($val, $type) {
+	/**
+	 * Check element of type
+	 * @param mixed $val Needed element for checking
+	 * @param string $type Type for checking
+	 * @return bool Result checking
+	 */
+	final public static function CheckType($val, $type) {
 		$types = gettype($val);
 		if(self::equals($types, $type)) {
 			return true;
@@ -60,36 +60,36 @@ class Validate {
 		}
 	}
 
-    /**
-     * Check element if numeric
-     * @param mixed $str Needed numeric
-     * @return bool Result checking
-     */
-    final public static function numeric($str) {
+	/**
+	 * Check element if numeric
+	 * @param mixed $str Needed numeric
+	 * @return bool Result checking
+	 */
+	final public static function numeric($str) {
 		$arr = array_values(localeconv());
 		return (bool) preg_match('/^-?+(?=.*[0-9])[0-9]*+'.preg_quote($arr[0]).'?+[0-9]*+$/D', (string) $str);
 	}
 
-    /**
-     * Checking if element date
-     * @param string $str Needed string
-     * @return bool Result checking
-     */
-    final public static function date($str) {
+	/**
+	 * Checking if element date
+	 * @param string $str Needed string
+	 * @return bool Result checking
+	 */
+	final public static function date($str) {
 		return (strtotime($str) !== false);
 	}
 
-    /**
-     * Checking file
-     * @param array $file Array $_FILES
-     * @param string $type Checked type upload file
-     * @return bool Result checking
-     */
-    final public static function typeFile($file, $type) {
-		if(!is_array($file) || !isset($file['type']) || !isset($file['error']) || $file['error'] != 0) {
+	/**
+	 * Checking file
+	 * @param array $file Array $_FILES
+	 * @param string $type Checked type upload file
+	 * @return bool Result checking
+	 */
+	final public static function typeFile($file, $type) {
+		if(!is_array($file) || !isset($file['type']) || (isset($file['error']) && $file['error'] != 0)) {
 			return false;
 		}
-		if(!isset($file['error']) || !isset($file['name']) || !isset($file['type']) || !isset($file['tmp_name']) || !isset($file['size'])) {
+		if((isset($file['error']) && $file['error'] != 0) || !isset($file['name']) || !isset($file['type']) || !isset($file['tmp_name']) || !isset($file['size'])) {
 			return false;
 		}
 		$exp = explode("/", $file['type']);
@@ -102,22 +102,22 @@ class Validate {
 		}
 	}
 
-    /**
-     * Checking ID session
-     * @param string $session_id Session ID
-     * @return bool Result checking
-     */
-    final public static function session_valid_id($session_id) {
+	/**
+	 * Checking ID session
+	 * @param string $session_id Session ID
+	 * @return bool Result checking
+	 */
+	final public static function session_valid_id($session_id) {
 		return preg_match('/^[-,a-zA-Z0-9]{1,128}$/', $session_id) > 0;
 	}
 
-    /**
-     * Checking redirect equals local domain
-     * @param string $location Location for checking
-     * @param bool $default If return error try return default
-     * @return bool Result checking
-     */
-    final public static function Redirect($location, $default = false) {
+	/**
+	 * Checking redirect equals local domain
+	 * @param string $location Location for checking
+	 * @param bool $default If return error try return default
+	 * @return bool Result checking
+	 */
+	final public static function Redirect($location, $default = false) {
 		if(empty(self::$host)) {
 			return $default;
 		}
@@ -175,13 +175,13 @@ class Validate {
 		}
 	}
 
-    /**
-     * Checking phone
-     * @param string $number Needed number for checking
-     * @param array $lengths Set needed length number
-     * @return bool Result checking
-     */
-    final public static function phone($number, $lengths = array()) {
+	/**
+	 * Checking phone
+	 * @param string $number Needed number for checking
+	 * @param array $lengths Set needed length number
+	 * @return bool Result checking
+	 */
+	final public static function phone($number, $lengths = array()) {
 		if(!is_array($lengths) && sizeof($lengths)==0) {
 			$lengths = array(7, 10, 11);
 		}
@@ -189,13 +189,13 @@ class Validate {
 		return in_array(strlen($number), $lengths);
 	}
 
-    /**
-     * Checking IP address
-     * @param string $ip Needed string for find IP address
-     * @param bool $allow_private Allow private range
-     * @return bool Result checking
-     */
-    final public static function ip($ip, $allow_private = true) {
+	/**
+	 * Checking IP address
+	 * @param string $ip Needed string for find IP address
+	 * @param bool $allow_private Allow private range
+	 * @return bool Result checking
+	 */
+	final public static function ip($ip, $allow_private = true) {
 		if(!defined("FILTER_FLAG_NO_RES_RANGE") || !defined("FILTER_FLAG_NO_PRIV_RANGE") || !defined("FILTER_VALIDATE_IP")) {
 			return self::validIp($ip);
 		}
@@ -206,12 +206,12 @@ class Validate {
 		return (bool) filter_var($ip, FILTER_VALIDATE_IP, $flags);
 	}
 
-    /**
-     * Validate IP address(old version)
-     * @param string $ip Checking IP
-     * @return bool Result checking
-     */
-    final public static function validIp($ip) {
+	/**
+	 * Validate IP address(old version)
+	 * @param string $ip Checking IP
+	 * @return bool Result checking
+	 */
+	final public static function validIp($ip) {
 		if(!ip2long($ip)) {//IPv6
 			return true;
 		}
@@ -238,12 +238,12 @@ class Validate {
 		}
 	}
 
-    /**
-     * Needed link
-     * @param string $url Checking link
-     * @return bool Result checking
-     */
-    final public static function url($url) {
+	/**
+	 * Needed link
+	 * @param string $url Checking link
+	 * @return bool Result checking
+	 */
+	final public static function url($url) {
 		// Based on http://www.apps.ietf.org/rfc/rfc1738.html#sec-5
 		if(!preg_match('~^[-a-z0-9+.]++://(?:[-a-z0-9$_.+!*\'(),;?&=%]++(?::[-a-z0-9$_.+!*\'(),;?&=%]++)?@)?(?:\d{1,3}+(?:\.\d{1,3}+){3}+|((?!-)[-a-z0-9]{1,63}+(?<!-)(?:\.(?!-)[-a-z0-9]{1,63}+(?<!-)){0,126}+))(?::\d{1,5}+)?(?:/.*)?$~iDx', $url, $matches)) {
 			return false;
@@ -258,13 +258,13 @@ class Validate {
 		return ctype_alpha($tld[0]);
 	}
 
-    /**
-     * Checking email address
-     * @param string $email Needed checking email
-     * @param bool $strict Check structure
-     * @return bool Result checking
-     */
-    final public static function email($email, $strict = false) {
+	/**
+	 * Checking email address
+	 * @param string $email Needed checking email
+	 * @param bool $strict Check structure
+	 * @return bool Result checking
+	 */
+	final public static function email($email, $strict = false) {
 		if($strict === true) {
 			$qtext = '[^\\x0d\\x22\\x5c\\x80-\\xff]';
 			$dtext = '[^\\x0d\\x5b-\\x5d\\x80-\\xff]';
@@ -284,51 +284,51 @@ class Validate {
 		return (bool) preg_match($expression, (string) $email);
 	}
 
-    /**
-     * Check email if used address exists on domain
-     * @param string $email Checking email address
-     * @return bool Result checking
-     */
-    final public static function email_domain($email) {
+	/**
+	 * Check email if used address exists on domain
+	 * @param string $email Checking email address
+	 * @return bool Result checking
+	 */
+	final public static function email_domain($email) {
 		return (bool) checkdnsrr(preg_replace('/^[^@]++@/', '', $email), 'MX');
 	}
 
-    /**
-     * Check two elements on equals
-     * @param mixed $value First element for checking
-     * @param mixed $required Second element for checking
-     * @return bool Result checking
-     */
-    final public static function equals($value, $required) {
+	/**
+	 * Check two elements on equals
+	 * @param mixed $value First element for checking
+	 * @param mixed $required Second element for checking
+	 * @return bool Result checking
+	 */
+	final public static function equals($value, $required) {
 		return ($value === $required);
 	}
 
-    /**
-     * Checking if length in string not min or equal length
-     * @param string $value Element for checking
-     * @param int $length Min length
-     * @return bool Result checking
-     */
-    final public static function min_length($value, $length) {
+	/**
+	 * Checking if length in string not min or equal length
+	 * @param string $value Element for checking
+	 * @param int $length Min length
+	 * @return bool Result checking
+	 */
+	final public static function min_length($value, $length) {
 		return strlen($value) >= $length;
 	}
 
-    /**
-     * Checking if length in string not max or equal length
-     * @param string $value Element for checking
-     * @param int $length Max length
-     * @return bool Result checking
-     */
-    final public static function max_length($value, $length) {
+	/**
+	 * Checking if length in string not max or equal length
+	 * @param string $value Element for checking
+	 * @param int $length Max length
+	 * @return bool Result checking
+	 */
+	final public static function max_length($value, $length) {
 		return strlen($value) <= $length;
 	}
 
-    /**
-     * Checking on empty
-     * @param mixed $value Needed value
-     * @return bool Result checking
-     */
-    final public static function not_empty($value) {
+	/**
+	 * Checking on empty
+	 * @param mixed $value Needed value
+	 * @return bool Result checking
+	 */
+	final public static function not_empty($value) {
 		if(is_object($value) && $value instanceof ArrayObject) {
 			$value = $value->getArrayCopy();
 		}
@@ -337,6 +337,252 @@ class Validate {
 		}
 		$null = array(null, false, '', array());
 		return (!in_array($value, $null, true));
+	}
+
+	/**
+	 * Validates a number according to Luhn check algorithm
+	 *
+	 * This function checks given number according Luhn check
+	 * algorithm. It is published on several places. See links for details.
+	 *
+	 * @param string $number number to check
+	 *
+	 * @link http://www.webopedia.com/TERM/L/Luhn_formula.html
+	 * @link http://www.merriampark.com/anatomycc.htm
+	 * @link http://hysteria.sk/prielom/prielom-12.html#3 (Slovak language)
+	 * @link http://www.speech.cs.cmu.edu/~sburke/pub/luhn_lib.html (Perl lib)
+	 *
+	 * @return bool    TRUE if number is valid, FALSE otherwise
+	 * @access public
+	 * @static
+	 */
+	final public static function CreditCardLuhn($number) {
+		$len_number = strlen($number);
+		$sum = 0;
+		for($k=$len_number%2;$k<$len_number;$k+=2) {
+			if((intval($number[$k]) * 2) > 9) {
+				$sum += (intval($number[$k])*2)-9;
+			} else {
+				$sum += intval($number[$k])*2;
+			}
+		}
+		for($k =($len_number%2)^1;$k<$len_number;$k +=2) {
+			$sum += intval($number[$k]);
+		}
+		return ($sum % 10) ? false : true;
+	}
+	
+	/**
+	 * Validates a credit card number
+	 *
+	 * If a type is passed, the card will be checked against it.
+	 * This method only checks the number locally. No banks or payment
+	 * gateways are involved.
+	 * This method doesn't guarantee that the card is legitimate. It merely
+	 * checks the card number passes a mathematical algorithm.
+	 *
+	 * @param string $creditCard number (spaces and dashes tolerated)
+	 * @param string $cardType   type/brand of card (case insensitive)
+	 *               "MasterCard", "Visa", "AMEX", "AmericanExpress",
+	 *               "American Express", "Diners", "DinersClub", "Diners Club",
+	 *               "CarteBlanche", "Carte Blanche", "Discover", "JCB",
+	 *               "EnRoute", "Eurocard", "Eurocard/MasterCard".
+	 *
+	 * @return bool   TRUE if number is valid, FALSE otherwise
+	 * @access public
+	 * @static
+	 * @see Luhn()
+	 */
+	final public static function CreditCardNumber($creditCard, $cardType = "") {
+		$cc = str_replace(array('-', ' '), '', $creditCard);
+		if((($len = strlen($cc)) < 13) || (strspn($cc, '0123456789') != $len)) {
+			return false;
+		}
+		// Only apply the Luhn algorithm for cards other than enRoute
+		// So check if we have a enRoute card now
+		if((strlen($cc) != 15) || ((substr($cc, 0, 4) != '2014') &&  (substr($cc, 0, 4) != '2149'))) {
+			if(!self::CreditCardLuhn($cc)) {
+				return false;
+			}
+		}
+		if(is_string($cardType)) {
+			return self::CreditCardType($cc, $cardType);
+		}
+		return true;
+	}
+
+	/**
+	 * Validates the credit card number against a type
+	 *
+	 * This method only checks for the type marker. It doesn't
+	 * validate the card number. Some card "brands" share the same
+	 * numbering system, so checking the card type against any of the
+	 * sister brand will return the same result.
+	 *
+	 * For instance, if a $card is a MasterCard, type($card, 'EuroCard')
+	 * will also return true.
+	 *
+	 * @param string $creditCard number (spaces and dashes tolerated)
+	 * @param string $cardType   type/brand of card (case insensitive)
+	 *               "MasterCard", "Visa", "AMEX", "AmericanExpress",
+	 *               "American Express", "Diners", "DinersClub", "Diners Club",
+	 *               "CarteBlanche", "Carte Blanche", "Discover", "JCB",
+	 *               "EnRoute", "Eurocard", "Eurocard/MasterCard".
+	 *
+	 * @return bool   TRUE is type matches, FALSE otherwise
+	 * @access public
+	 * @static
+	 * @link http://www.beachnet.com/~hstiles/cardtype.html
+	 */
+	final public static function CreditCardType($creditCard, $cardType) {
+		switch(strtoupper($cardType)) {
+			case 'MASTERCARD':
+			case 'EUROCARD':
+			case 'EUROCARD/MASTERCARD':
+				$regex = '^(5[1-5]\d{4}|677189)\d{10}$|^2(?:2(?:2[1-9]|[3-9]\d)|[3-6]\d\d|7(?:[01]\d|20))\d{12}';
+				break;
+			case 'VISA':
+				$regex = '4([0-9]{12}|[0-9]{15})';
+				break;
+			case 'AMEX':
+			case 'AMERICANEXPRESS':
+			case 'AMERICAN EXPRESS':
+				$regex = '3[47][0-9]{13}';
+				break;
+			case 'DINERS':
+			case 'DINERSCLUB':
+			case 'DINERS CLUB':
+			case 'CARTEBLANCHE':
+			case 'CARTE BLANCHE':
+				$regex = '3(0[0-5][0-9]{11}|[68][0-9]{12})';
+				break;
+			case 'DISCOVER':
+				$regex = '6011[0-9]{12}';
+				break;
+			case 'JCB':
+				$regex = '(3[0-9]{15}|(2131|1800)[0-9]{11})';
+				break;
+			case 'ENROUTE':
+				$regex = '2(014|149)[0-9]{11}';
+				break;
+			default:
+				return false;
+		}
+		$regex = '/^' . $regex . '$/';
+		$cc = str_replace(array('-', ' '), '', $creditCard);
+		return (bool)preg_match($regex, $cc);
+	}
+
+	/**
+	 * Validates a card verification value format
+	 *
+	 * This method only checks for the format. It doesn't
+	 * validate that the value is the one on the card.
+	 *
+	 * CVV is also known as
+	 *  - CVV2 Card Validation Value 2 (Visa)
+	 *  - CVC  Card Validation Code (MasterCard)
+	 *  - CID  Card Identification (American Express and Discover)
+	 *  - CIN  Card Identification Number
+	 *  - CSC  Card Security Code
+	 *
+	 * Important information regarding CVV:
+	 *    If you happen to have to store credit card information, you must
+	 *    NOT retain the CVV after transaction is complete. Usually this
+	 *    means you cannot store it in a database, not even in an encrypted
+	 *    form.
+	 *
+	 * This method returns FALSE for card types that don't support CVV.
+	 *
+	 * @param string $cvv      value to verify
+	 * @param string $cardType type/brand of card (case insensitive)
+	 *               "MasterCard", "Visa", "AMEX", "AmericanExpress",
+	 *               "American Express", "Discover", "Eurocard/MasterCard",
+	 *               "Eurocard"
+	 *
+	 * @return bool   TRUE if format is correct, FALSE otherwise
+	 * @access public
+	 * @static
+	 */
+	final public static function CreditCardTypeCvv($cvv, $cardType) {
+		switch(strtoupper($cardType)) {
+			case 'MASTERCARD':
+			case 'EUROCARD':
+			case 'EUROCARD/MASTERCARD':
+			case 'VISA':
+			case 'DISCOVER':
+				$digits = 3;
+			break;
+			case 'AMEX':
+			case 'AMERICANEXPRESS':
+			case 'AMERICAN EXPRESS':
+				$digits = 4;
+			break;
+			default:
+				return false;
+		}
+		if((strlen($cvv) == $digits) && (strspn($cvv, '0123456789') == $digits)) {
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Validates a car registration number
+	 *
+	 * @param string $reg the registration number
+	 *
+	 * @return bool
+	 * @see http://pl.wikipedia.org/wiki/Polskie_tablice_rejestracyjne
+	 */
+	final public static function carReg($reg) {
+		$pregs = array(
+			// 2 letter district
+			"[a-z]{2}\d{5}",
+			"[a-z]{2}\d{4}[a-z]{1}",
+			"[a-z]{2}\d{3}[a-z]{2}",
+			"[a-z]{2}\d{1}[a-z]{1}\d{3}",
+			"[a-z]{2}\d{1}[a-z]{2}\d{2}",
+			// 3 letter district
+			"[a-z]{3}[a-z]{1}\d{3}",
+			"[a-z]{3}\d{2}[a-z]{2}",
+			"[a-z]{3}\d{1}[a-z]{1}\d{2}",
+			"[a-z]{3}\d{2}[a-z]{1}\d{1}",
+			"[a-z]{3}\d{1}[a-z]{2}\d{1}",
+			"[a-z]{3}[a-z]{2}\d{2}",
+			"[a-z]{3}\d{5}",
+			"[a-z]{3}\d{4}[a-z]{1}",
+			"[a-z]{3}\d{3}[a-z]{2}",
+			"[a-z]{3}[a-z]{1}\d{2}[a-z]{1}",
+			"[a-z]{3}[a-z]{1}\d{1}[a-z]{2}",
+			// bikes
+			"[a-z]{2}\d{4}",
+			"[a-z]{2}\d{3}[a-z]{1}",
+			"[a-z]{3}[a-z]{1}\d{3}", // deprecated
+			// temporaty
+			"[a-z]{1}\d{1}\d{4}",
+			"[a-z]{1}\d{1}\d{3}B",
+			// individual
+			"[a-z]{1}\d{1}[a-z]{3}[a-z0-9]{0,2}",
+			// classic
+			"[a-z]{2}\d{2}[a-z]{1}",
+			"[a-z]{2}\d{3}",
+			"[a-z]{3}\d{1}[a-z]{1}",
+			"[a-z]{3}\d{2}",
+			"[a-z]{3}[a-z]{1}\d{1}",
+			// diplomatic
+			"W\d{6}",
+			// military
+			"U[abcdegijk]\d{4,5}T?",
+			// special services
+			"H[apmwkbcsn][a-z][a-z]{1}\d{3}",
+			"H[apmwkbcsn][a-z]\d{2}[a-z]{2}");
+		foreach($pregs as $preg) {
+			if(preg_match('/^'.$preg.'$/i', $reg)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 }

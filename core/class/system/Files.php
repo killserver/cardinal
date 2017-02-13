@@ -17,10 +17,10 @@ class Files {
      * @return bool Check necessary type file
      */
     final private static function typeFile($file, $type) {
-		if(!is_array($file) || !isset($file['type']) || !isset($file['error']) || $file['error'] != 0) {
+		if(!is_array($file) || !isset($file['type']) || (isset($file['error']) && $file['error'] != 0)) {
 			return false;
 		}
-		if(!isset($file['error']) || !isset($file['name']) || !isset($file['type']) || !isset($file['tmp_name']) || !isset($file['size'])) {
+		if((isset($file['error']) && $file['error'] != 0) || !isset($file['name']) || !isset($file['type']) || !isset($file['tmp_name']) || !isset($file['size'])) {
 			return false;
 		}
 		$exp = explode("/", $file['type']);
@@ -31,6 +31,25 @@ class Files {
 		} elseif(is_array($type)) {
 			return (in_array($rt, $type) || in_array($ext, $type));
 		}
+	}
+	
+	final public static function checkType($file, $types) {
+		if(is_string($types) || is_array($types)) {
+			throw new Exception("Error checking type");
+		}
+		if(is_string($types)) {
+			$types = array($types);
+		} else if(is_Array($types)) {
+			$types = array_values($types);
+		}
+		$ret = true;
+		for($i=0;$i<sizeof($types);$i++) {
+			if(!self::typeFile($file, $types[$i])) {
+				$ret = false;
+				break;
+			}
+		}
+		return $ret;
 	}
 
     /**
@@ -93,11 +112,17 @@ class Files {
      */
     final public static function reArrayFiles(&$file_post) {
 		$file_ary = array();
+		$first = current($file_post);
+		if(!isset($file_post['name']) && is_numeric($first)) {
+			return $file_post;
+		}
 		$file_count = count($file_post['name']);
 		$file_keys = array_keys($file_post);
 		for($i=0;$i<$file_count;$i++) {
 			foreach($file_keys as $key) {
-				$file_ary[$i][$key] = $file_post[$key][$i];
+				$fik = array_keys($file_post[$key]);
+				$fiv = array_values($file_post[$key]);
+				$file_ary[$fik[$i]][$key] = $file_post[$key][$fik[$i]];
 			}
 		}
 		return $file_ary;
