@@ -68,7 +68,7 @@ $config = array_merge($config, array(
 	"gzip_output" => true,
 	"js_min" => true,
 	
-	"viewport" => "width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=1",
+	"viewport" => "width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=yes",
 	
 	"skins" => array(
 		"skins" => "main",
@@ -81,11 +81,12 @@ $config = array_merge($config, array(
 	'lang' => "ru",
 	"charset" => "utf-8",
 
+	"manifestCache" => false,
 	"ParsePHP" => true,
 	"rewrite" => true,
-	"guest_level" => "0",
+	"guest_level" => LEVEL_GUEST,
 	"db" => array(
-		"driver" => "mysql",
+		"driver" => "db_mysqli",
 	),
 	"related" => 5,
 ));

@@ -253,7 +253,7 @@
 						<li>
 							<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}?pages=main">
 								<i class="linecons-cog"></i>
-								<span class="title">Main</span>
+								<span class="title">{L_"Main admin"}</span>
 							</a>
 						</li>
 						[foreach block=menu]

@@ -17,6 +17,8 @@ class Api {
      * @var array List parameters $_GET and $_POST
      */
     private static $params = array();
+	
+	private static $apiKey = "";
 
     /**
      * Initialize API
@@ -49,10 +51,17 @@ class Api {
 			case "install":
 				return self::Install();
 			break;
+			case "user":
+				return self::user();
+			break;
 			default:
 				return serialize(array("error" => "error api key 3", "params" => array("get" => self::$params['get'], "post" => self::$params['post'])));
 			break;
 		}
+	}
+	
+	public static function setApiKey($api) {
+		self::$apiKey = $api;
 	}
 
     /**
@@ -65,6 +74,15 @@ class Api {
 			return serialize(array("error" => "error api key 2", "params" => array("get" => self::$params['get'], "post" => self::$params['post'])));
 		} else {
 			return serialize($cfg);
+		}
+	}
+	
+	public static function user() {
+		$user = unserialize(self::$params['post']['user']);
+		if(!User::reg("", $user['username'], $user['pass'], $user['email'], LEVEL_USER, "yes", true)) {
+			return serialize(array("error" => "error api reg user", "params" => array("get" => self::$params['get'], "post" => self::$params['post'])));
+		} else {
+			return serialize("done");
 		}
 	}
 
@@ -135,6 +153,11 @@ class Api {
 		$json = array("method" => "config", "query" => $cfg);
 		return self::post($url, $json);
 	}
+	
+    public static function post_user($url, $user) {
+		$json = array("method" => "user", "user" => $user);
+		return self::post($url, $json);
+	}
 
     /**
      * Send post in another API
@@ -145,7 +168,7 @@ class Api {
     public static function post($url, $jsons) {
 	global $config;
 		$datas = "";
-		$json = array("api_key" => $config["api_key"]);
+		$json = array("api_key" => (!empty(self::$apiKey) ? self::$apiKey : $config["api_key"]));
 		$json = array_merge($json, $jsons);
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_URL, $url);

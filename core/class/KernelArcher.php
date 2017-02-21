@@ -121,7 +121,7 @@ class KernelArcher {
 			$files = $this->rebuildData($files);
 			if(!empty($files) && ($model->getAttribute($k, "type")=="file" || $model->getAttribute($k, "type")=="fileArray")) {
 				$type = $files;
-				if(isset($type['name']) && is_array($type['name'])) {
+				if((!isset($type['error']) || is_array($type['error'])) && (!isset($type['name']) || is_array($type['name']))) {
 					$viewI = 1;
 					$type = Files::reArrayFiles($type);
 					$types = array();
@@ -142,13 +142,11 @@ class KernelArcher {
 			} else {
 				$type = $v;
 			}
-			$remove = false;
 			if(!is_string($type)) {
 				$type = serialize($type);
-				$remove = true;
 			}
 			$type = trim($type);
-			if(!$remove && Validate::not_empty($type)) {
+			if(Validate::not_empty($type)) {
 				$model->{$k} = $type;
 			} else {
 				unset($model->{$k});
@@ -279,7 +277,7 @@ class KernelArcher {
 			$files = $this->rebuildData($files);
 			if(!empty($files) && ($models->getAttribute($k, "type")=="file" || $models->getAttribute($k, "type")=="fileArray")) {
 				$type = $files;
-				if((isset($type['error']) && is_array($type['error'])) && (!isset($type['name']) || is_array($type['name']))) {
+				if((!isset($type['error']) || is_array($type['error'])) && (!isset($type['name']) || is_array($type['name']))) {
 					$viewI = 1;
 					$type = Files::reArrayFiles($type);
 					$types = array();
@@ -300,13 +298,11 @@ class KernelArcher {
 			} else {
 				$type = $v;
 			}
-			$remove = false;
 			if(!is_string($type)) {
 				$type = serialize($type);
-				$remove = true;
 			}
 			$type = trim($type);
-			if(!$remove && Validate::not_empty($type)) {
+			if(Validate::not_empty($type)) {
 				$model->{$k} = $type;
 			} else {
 				unset($model->{$k});

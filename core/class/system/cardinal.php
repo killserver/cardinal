@@ -176,7 +176,13 @@ class cardinal {
 		$symbols["special_symbols"] = '!?~@#-_+<>[]{}';
 		$characters = explode(",", $characters);
 		foreach($characters as $key => $value) {
-			$used_symbols .= $symbols[$value];
+			if(isset($symbols[$value])) {
+				$used_symbols .= $symbols[$value];
+			}
+		}
+		if(empty($used_symbols)) {
+			throw new Exception("Error generate password");
+			die();
 		}
 		$symbols_length = strlen($used_symbols) - 1;
 		for($p=0;$p<$count;$p++) {
@@ -188,6 +194,22 @@ class cardinal {
 			$passwords[] = $pass;
 		}
 		return $passwords;
+	}
+	
+	final public static function GenApiKey() {
+		if(!file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."apiKey.safe") || !is_readable(ROOT_PATH."core".DS."cache".DS."system".DS."apiKey.safe")) {
+			$rand = rand(9, 20);
+			$api_key = self::randomPassword($rand, 1, "numbers");
+			if(is_array($api_key) && sizeof($api_key)>0) {
+				$api_key = current($api_key);
+			}
+			if(is_writable(ROOT_PATH."core".DS."cache".DS."system".DS)) {
+				file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."apiKey.safe", $api_key);
+			}
+		} else {
+			$api_key = file_get_contents(ROOT_PATH."core".DS."cache".DS."system".DS."apiKey.safe");
+		}
+		return $api_key;
 	}
 	
 	final public static function InstallFirst() {

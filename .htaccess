@@ -36,7 +36,7 @@ Options -Indexes
 	</FilesMatch>
 
 	# Force no caching for dynamic files
-	<FilesMatch "\.(php|cgi|pl|htm)$">
+	<FilesMatch "\.(php|cgi|pl|htm|manifest)$">
 		ExpiresActive Off
 	</FilesMatch>
 </ifModule>
@@ -57,7 +57,7 @@ Options -Indexes
 	</FilesMatch>
 
 	# Force no caching for dynamic files
-	<FilesMatch "\.(php|cgi|pl|htm)$">
+	<FilesMatch "\.(php|cgi|pl|htm|manifest)$">
 		Header set Cache-Control "private, no-cache, no-store, proxy-revalidate, no-transform"
 		Header set Pragma "no-cache"
 	</FilesMatch>

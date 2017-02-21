@@ -444,9 +444,11 @@ primary key `id`(`id`)
 				}
 			}
 			fclose($handle);
+			$id = $id-1;
 		} else {
 			try {
 				$id = $db->last_id("error_log");
+				$id = $id-1;
 			} catch(Exception $ex) {
 				$id = 0;
 			}
@@ -484,7 +486,7 @@ primary key `id`(`id`)
 			//~$frame['file'],
 			isset($frame['file']) ? $frame['file'] : '',
 			//~$frame['line'],
-			isset($frame['line']) ? $frame['line'] : '',isset($frame['class']) ? $frame['class'] . '->' : '', $frame['function'], $args );
+			isset($frame['line']) ? $frame['line'] : '', isset($frame['class']) ? $frame['class'] . '->' : '', $frame['function'], $args );
 			$count++;
 		}
 		return $rtn;

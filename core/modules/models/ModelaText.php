@@ -3,6 +3,7 @@
 class ModelaText extends DBObject {
 	
 	public $aId;
+	public $lang;
 	public $page;
 	public $text;
 	

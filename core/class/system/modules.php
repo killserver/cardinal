@@ -187,9 +187,9 @@ class modules {
 	global $lang;
 		$langs = self::init_lang();
 		$lang = $langs->init_lang(false);
-		if(strlen($array)>0 && isset($lang[$get][$array])) {
+		if(strlen($array)>0 && is_array($lang) && isset($lang[$get][$array])) {
 			$return = array($lang[$get][$array]);
-		} else if(isset($lang[$get])) {
+		} else if(isset($lang[$get]) && is_array($lang)) {
 			$return = array($lang[$get]);
 		} else if(func_num_args()>0) {
 			$return = func_get_args();

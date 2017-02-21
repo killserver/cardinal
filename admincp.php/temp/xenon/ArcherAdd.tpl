@@ -17,7 +17,9 @@
 	</div>
 </div>
 <script type="text/javascript">
+var i = 1;
 function addInputFile(name) {
-	jQuery("span#inputForFile").append('<input class="form-control" type="file" name="'+name+'[]" placeholder="{L_"Выберите"} {L_"файл"}">');
+	jQuery("span#inputForFile").append('<input class="form-control" type="file" multiple="multiple" name="'+name+'[]" placeholder="{L_"Выберите"} {L_"файл"}">');
+	i++;
 }
 </script>

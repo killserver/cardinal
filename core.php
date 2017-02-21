@@ -122,25 +122,25 @@ if(!defined("PHP_FLOAT_MAX")) {
 	define("PHP_FLOAT_MAX", 3.4e+38);
 }
 
-if(file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."core".DIRECTORY_SEPARATOR."media".DIRECTORY_SEPARATOR."definition.php")) {
-	include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."core".DIRECTORY_SEPARATOR."media".DIRECTORY_SEPARATOR."definition.php");
+if(!defined("DS")) {
+	define("DS", DIRECTORY_SEPARATOR);
+}
+if(file_exists(dirname(__FILE__).DS."core".DS."media".DS."definition.php")) {
+	include_once(dirname(__FILE__).DS."core".DS."media".DS."definition.php");
 }
 
-if(!defined("WITHOUT_DB") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."core".DIRECTORY_SEPARATOR."media".DIRECTORY_SEPARATOR."isFrame.lock")) {
+if(!defined("WITHOUT_DB") && file_exists(dirname(__FILE__).DS."core".DS."media".DS."isFrame.lock")) {
 	define("WITHOUT_DB", true);
 }
-if(!defined("ERROR_VIEW") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."core".DIRECTORY_SEPARATOR."media".DIRECTORY_SEPARATOR."error.lock")) {
+if(!defined("ERROR_VIEW") && file_exists(dirname(__FILE__).DS."core".DS."media".DS."error.lock")) {
 	define("ERROR_VIEW", true);
 }
-if(!defined("PERMISSION_PHP") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."core".DIRECTORY_SEPARATOR."media".DIRECTORY_SEPARATOR."phpINtmp.lock")) {
+if(!defined("PERMISSION_PHP") && file_exists(dirname(__FILE__).DS."core".DS."media".DS."phpINtmp.lock")) {
 	define("PERMISSION_PHP", true);
 }
 
 if(!defined("MEMORY_GET")) {
 	define("MEMORY_GET", memory_get_usage());
-}
-if(!defined("DS")) {
-	define("DS", DIRECTORY_SEPARATOR);
 }
 if(!defined("ROOT_PATH")) {
 	define("ROOT_PATH", dirname(__FILE__).DS);
@@ -205,70 +205,8 @@ if(defined("WITHOUT_DB") || !defined("INSTALLER")) {
 		header("Location: http://".$config['default_http_hostname'].$_SERVER['REQUEST_URI']);
 	die();
 	}
-
-	$user = $users = array();
-	if(file_exists(ROOT_PATH."core".DS."media".DS."users.".ROOT_EX)) {
-		include(ROOT_PATH."core".DS."media".DS."users.".ROOT_EX);
-	} else if(file_exists(ROOT_PATH."core".DS."media".DS."users.default.".ROOT_EX)) {
-		include(ROOT_PATH."core".DS."media".DS."users.default.".ROOT_EX);
-	}
-	if(Arr::get($_COOKIE, COOK_USER, false) && (Arr::get($_COOKIE, COOK_PASS, false) || Arr::get($_COOKIE, COOK_ADMIN_PASS, false))) {
-		if(Arr::get($_COOKIE, COOK_ADMIN_USER, false) && defined("IS_ADMIN")) {
-			$username = Saves::SaveOld(Arr::get($_COOKIE, COOK_ADMIN_USER));
-		} else {
-			$username = Saves::SaveOld(Arr::get($_COOKIE, COOK_USER));
-		}
-		if(Arr::get($_COOKIE, COOK_ADMIN_PASS, false) && defined("IS_ADMIN")) {
-			$where = "admin_pass";
-			$password = Saves::SaveOld(Arr::get($_COOKIE, COOK_ADMIN_PASS));
-		} else {
-			$where = "pass";
-			$password = Saves::SaveOld(Arr::get($_COOKIE, COOK_PASS));
-		}
-		if(!cache::Exists("user_".$username)) {
-			if(defined("WITHOUT_DB") && (!isset($db) || !is_bool($db))) {
-				if(file_exists(ROOT_PATH."core".DS."media".DS."users.".ROOT_EX) || file_exists(ROOT_PATH."core".DS."media".DS."users.default.".ROOT_EX)) {
-					if(isset($users[$username]) && isset($users[$username]['username']) && isset($users[$username][$where]) && $users[$username][$where] == $password) {
-						$user = $users[$username];
-						cache::Set("user_".$username, $user);
-						define("IS_AUTH", true);
-					} else {
-						cache::Delete("user_".$username);
-						HTTP::set_cookie(COOK_USER, null, true);
-						HTTP::set_cookie(COOK_PASS, null, true);
-					}
-				}
-			} else {
-				db::doquery("SELECT * FROM `users` WHERE `username` LIKE \"".$username."\" AND `".$where."` LIKE \"".$password."\"", true);
-				if(db::num_rows()==0) {
-					cache::Delete("user_".$username);
-					HTTP::set_cookie(COOK_USER, null, true);
-					HTTP::set_cookie(COOK_PASS, null, true);
-				} else {
-					$user = db::fetch_array();
-					cache::Set("user_".$username, $user);
-					db::doquery("UPDATE `users` SET `last_activ` = UNIX_TIMESTAMP(), `last_ip` = \"".HTTP::getip()."\" WHERE `id` = ".$user['id']);
-					define("IS_AUTH", true);
-				}
-			}
-		} else if(cache::Exists("user_".$username)) {
-			$password = $admin_password = "";
-			if(Arr::get($_COOKIE, COOK_PASS, false)) {
-				$password = Saves::SaveOld(Arr::get($_COOKIE, COOK_PASS));
-			}
-			if(Arr::get($_COOKIE, COOK_ADMIN_PASS, false)) {
-				$admin_password = Saves::SaveOld(Arr::get($_COOKIE, COOK_ADMIN_PASS));
-			}
-			$user = cache::Get("user_".$username);
-			if($user['pass'] != $password && $user['admin_pass'] != $admin_password) {
-				cache::Delete("user_".$username);
-				HTTP::set_cookie(COOK_USER, null, true);
-				HTTP::set_cookie(COOK_PASS, null, true);
-			}
-		}
-	} else {
-		$user['level'] = LEVEL_GUEST;
-	}
+	User::PathUsers(ROOT_PATH."core".DS."cache".DS."system".DS);
+	User::load();
 }
 
 $templates = new templates($config_templates);

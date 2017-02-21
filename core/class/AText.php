@@ -3,6 +3,7 @@
 class AText {
 	
 	private $uri = "";
+	private $lang = "";
 	private $text = array();
 	
 	function __construct() {
@@ -10,7 +11,7 @@ class AText {
 			return $this;
 		}
 		if(file_exists(ROOT_PATH."core".DS."cache".DS."system".DS) && is_writable(ROOT_PATH."core".DS."cache".DS."system".DS) && !file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."aText.lock")) {
-			db::query("CREATE TABLE IF NOT EXISTS `aText` ( `aId` int not null auto_increment, `page` varchar(255) not null, `text` longtext not null, primary key `id`(`aId`), fulltext `page`(`page`), fulltext `text`(`text`(200)) ) ENGINE=MyISAM;");
+			db::query("CREATE TABLE IF NOT EXISTS `aText` ( `aId` int not null auto_increment, `lang` varchar(255) not null, `page` varchar(255) not null, `text` longtext not null, primary key `id`(`aId`), fulltext `page`(`page`), fulltext `lang`(`lang`), fulltext `text`(`text`(200)) ) ENGINE=MyISAM;");
 			file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."aText.lock", "");
 		}
 		$this->uri = str_replace(array($_SERVER['PHP_SELF']."?", $_SERVER['PHP_SELF']."/"), "", $_SERVER['REQUEST_URI']);
@@ -21,6 +22,11 @@ class AText {
 					unset($page[1]);
 				}
 				$this->uri = implode("", $page);
+				if(preg_match("#^([a-zA-Z0-9]+){2}(/?)#", $this->uri, $match)) {
+					if(isset($match[1])) {
+						$this->lang = $match[1];
+					}
+				}
 			}
 		}
 	}
@@ -30,7 +36,7 @@ class AText {
 			return false;
 		}
 		if(file_exists(ROOT_PATH."core".DS."cache".DS."system".DS) && is_writable(ROOT_PATH."core".DS."cache".DS."system".DS) && !file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."aText.lock")) {
-			db::query("CREATE TABLE IF NOT EXISTS `aText` ( `aId` int not null auto_increment, `page` varchar(255) not null, `text` longtext not null, primary key `id`(`aId`), fulltext `page`(`page`), fulltext `text`(`text`(200)) ) ENGINE=MyISAM;");
+			db::query("CREATE TABLE IF NOT EXISTS `aText` ( `aId` int not null auto_increment, `lang` varchar(255) not null, `page` varchar(255) not null, `text` longtext not null, primary key `id`(`aId`), fulltext `page`(`page`), fulltext `lang`(`lang`), fulltext `text`(`text`(200)) ) ENGINE=MyISAM;");
 			file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."aText.lock", "");
 			return true;
 		} else if(file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."aText.lock")) {
@@ -42,13 +48,13 @@ class AText {
 	
 	private function cacheSave($data = array()) {
 		$files = array();
-		if(file_exists(ROOT_PATH."core".DS."cache".DS."AText.txt") && is_readable(ROOT_PATH."core".DS."cache".DS."AText.txt")) {
-			$files = file_get_contents(ROOT_PATH."core".DS."cache".DS."AText.txt");
+		if(file_exists(ROOT_PATH."core".DS."cache".DS."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt") && is_readable(ROOT_PATH."core".DS."cache".DS."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt")) {
+			$files = file_get_contents(ROOT_PATH."core".DS."cache".DS."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt");
 			$files = unserialize($files);
 		}
 		$data = array_merge($files, $data);
 		if(file_exists(ROOT_PATH."core".DS."cache".DS) && is_writable(ROOT_PATH."core".DS."cache".DS)) {
-			file_put_contents(ROOT_PATH."core".DS."cache".DS."AText.txt", serialize($data));
+			file_put_contents(ROOT_PATH."core".DS."cache".DS."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt", serialize($data));
 			return true;
 		} else {
 			return false;
@@ -56,8 +62,8 @@ class AText {
 	}
 	
 	private function cacheExist() {
-		if(file_exists(ROOT_PATH."core".DS."cache".DS."AText.txt") && is_readable(ROOT_PATH."core".DS."cache".DS."AText.txt")) {
-			$file = file_get_contents(ROOT_PATH."core".DS."cache".DS."AText.txt");
+		if(file_exists(ROOT_PATH."core".DS."cache".DS."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt") && is_readable(ROOT_PATH."core".DS."cache".DS."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt")) {
+			$file = file_get_contents(ROOT_PATH."core".DS."cache".DS."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt");
 			$file = unserialize($file);
 			if(isset($file[$this->uri])) {
 				return true;
@@ -70,8 +76,8 @@ class AText {
 	}
 	
 	private function cacheRead() {
-		if(file_exists(ROOT_PATH."core".DS."cache".DS."AText.txt") && is_readable(ROOT_PATH."core".DS."cache".DS."AText.txt")) {
-			$file = file_get_contents(ROOT_PATH."core".DS."cache".DS."AText.txt");
+		if(file_exists(ROOT_PATH."core".DS."cache".DS."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt") && is_readable(ROOT_PATH."core".DS."cache".DS."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt")) {
+			$file = file_get_contents(ROOT_PATH."core".DS."cache".DS."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt");
 			$file = unserialize($file);
 			if(isset($file[$this->uri])) {
 				return unserialize($file[$this->uri]);
@@ -85,7 +91,7 @@ class AText {
 	
 	function get() {
 		if(!$this->cacheExist($this->uri)) {
-			db::doquery("SELECT `text` FROM `aText` WHERE `page` LIKE \"".$this->uri."%\" LIMIT 1", true);
+			db::doquery("SELECT `text` FROM `aText` WHERE".(!empty($this->lang) ? "`lang` LIKE \"".$this->lang."\" AND " : "")."`page` LIKE \"".$this->uri."%\" LIMIT 1", true);
 			if(db::num_rows()==1) {
 				$row = db::fetch_assoc();
 				if(isset($row['text'])) {

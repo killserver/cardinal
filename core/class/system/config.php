@@ -53,12 +53,13 @@ class config {
 		if(!isset($configWDB) || !is_array($configWDB)) {
 			$configWDB = array();
 		}
-		$file = ROOT_PATH."core".DS."cache".DS."system".DS."configWithoutDB.txt";
+		$dir = ROOT_PATH."core".DS."cache".DS."system".DS;
+		$file = $dir."configWithoutDB.txt";
 		if($action == "read" && !empty($name) && file_exists($file) && is_readable($file)) {
 			$file = file_get_contents($file);
 			$configWDB = unserialize($file);
 		} elseif($action=="edit") {
-			if(!(!empty($name) && ((file_exists($file) && is_readable($file)) || is_writable($file)))) {
+			if(!(!empty($name) && ((file_exists($file) && is_readable($file)) || is_writable($dir)))) {
 				return false;
 			}
 			if(file_exists($file) && is_readable($file)) {
@@ -75,12 +76,12 @@ class config {
 			if(file_exists($file)) {
 				unlink($file);
 			}
-			if(is_writable($file)) {
+			if(is_writable($dir)) {
 				file_put_contents($file, serialize($configWDB));
 			}
 			return true;
 		} elseif($action=="delete") {
-			if(!(!empty($name) && ((file_exists($file) && is_readable($file)) || is_writable($file)))) {
+			if(!(!empty($name) && ((file_exists($file) && is_readable($file)) || is_writable($dir)))) {
 				return false;
 			}
 			if((!isset($configWDB[$name]) || !isset($configWDB[$name][$val])) && file_exists($file) && is_readable($file)) {
@@ -102,7 +103,7 @@ class config {
 				if(file_exists($file)) {
 					unlink($file);
 				}
-				if(is_writable($file)) {
+				if(is_writable($dir)) {
 					file_put_contents($file, serialize($configWDB));
 				}
 			}

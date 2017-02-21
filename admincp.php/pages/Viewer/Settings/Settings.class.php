@@ -34,11 +34,21 @@ class Settings extends Core {
 		die();
 		}
 		
-		define("COOK_USER", "'.COOK_USER.'");
-		define("COOK_PASS", "'.COOK_PASS.'");
-		define("COOK_ADMIN_USER", "'.COOK_ADMIN_USER.'");
-		define("COOK_ADMIN_PASS", "'.COOK_ADMIN_PASS.'");
-		define("START_VERSION", "'.(defined("START_VERSION") ? START_VERSION : "3.1").'");
+		if(!defined("COOK_USER")) {
+			define("COOK_USER", "'.COOK_USER.'");
+		}
+		if(!defined("COOK_PASS")) {
+			define("COOK_PASS", "'.COOK_PASS.'");
+		}
+		if(!defined("COOK_ADMIN_USER")) {
+			define("COOK_ADMIN_USER", "'.COOK_ADMIN_USER.'");
+		}
+		if(!defined("COOK_ADMIN_PASS")) {
+			define("COOK_ADMIN_PASS", "'.COOK_ADMIN_PASS.'");
+		}
+		if(!defined("START_VERSION")) {
+			define("START_VERSION", "'.(defined("START_VERSION") ? START_VERSION : "3.1").'");
+		}
 
 		if(isset($_SERVER[\'HTTPS\']) && $_SERVER[\'HTTPS\']!=\'off\') {
 			$protocol = "https";
@@ -50,23 +60,23 @@ class Settings extends Core {
 
 		$config = array_merge($config, array(
 			"api_key" => "'.config::Select("api_key").'",
-			"logs" => '.saves($error_type, true).',
+			"logs" => '.Saves::SaveOld($error_type, true).',
 			"speed_update" => '.($speed_update=="1" ? "true" : "false").',
 			"hosting" => true,
 			"default_http_local" => "'.str_replace(array("http://".$_SERVER['HTTP_HOST'], "https://".$_SERVER['HTTP_HOST']), "", $default_http_local).'",
-			"default_http_hostname" => "'.saves($default_http_hostname, true).'",
-			"default_http_host" => $protocol."://'.saves(str_replace(array("https", "http", "://"), "", $default_http_host), true).'",
-			"default_http_mobyhost" => "'.saves(str_replace(array("http", "https", "://"), "", $default_http_mobyhost), true).'",
+			"default_http_hostname" => "'.Saves::SaveOld($default_http_hostname, true).'",
+			"default_http_host" => $protocol."://'.Saves::SaveOld(str_replace(array("https", "http", "://"), "", $default_http_host), true).'",
+			"default_http_mobyhost" => "'.Saves::SaveOld(str_replace(array("http", "https", "://"), "", $default_http_mobyhost), true).'",
 			"lang" => "ru",
 			"cache" => array(
-				"type" => '.saves($cache_type, true).',
-				"server" => "'.saves($cache_host, true).'",
-				"port" => '.saves($cache_port, true).',
-				"login" => "'.saves($cache_user, true).'",
-				"pass" => "'.saves($cache_pass, true).'",
-				"path" => "'.saves($cache_path, true).'",
+				"type" => '.Saves::SaveOld($cache_type, true).',
+				"server" => "'.Saves::SaveOld($cache_host, true).'",
+				"port" => '.Saves::SaveOld($cache_port, true).',
+				"login" => "'.Saves::SaveOld($cache_user, true).'",
+				"pass" => "'.Saves::SaveOld($cache_pass, true).'",
+				"path" => "'.Saves::SaveOld($cache_path, true).'",
 			),
-			"viewport" => "'.saves($viewport, true).'",
+			"viewport" => "'.Saves::SaveOld($viewport, true).'",
 			"activeCache" => '.($activeCache=="1" ? "true" : "false").',
 			"ParsePHP" => '.($ParsePHP=="1" ? "true" : "false").','.$this->Saves($_POST).'
 			"lang" => "ru",
@@ -85,8 +95,8 @@ class Settings extends Core {
 		}
 
 		$lang = array_merge($lang, array(
-			"sitename" => "'.saves($sitename, true).'",
-			"s_description" => "'.saves($description, true).'",
+			"sitename" => "'.Saves::SaveOld($sitename, true).'",
+			"s_description" => "'.Saves::SaveOld($description, true).'",
 		));
 
 		?>';

@@ -29,7 +29,6 @@ die();
 class page {
 
 	function __construct() {
-	global $user;
 		if(defined("WITHOUT_DB")) {
 			return false;
 		}
@@ -40,37 +39,29 @@ class page {
 			$referer = "{C_default_http_local}";
 		}
 		if(isset($_GET['out'])) {
-			if(!isset($user['username'])) {
+			if(!User::checkLogin()) {
 				location($referer);
-				exit();
+				return false;
 			}
-			HTTP::set_cookie(COOK_USER, "", true);
-			HTTP::set_cookie(COOK_PASS, "", true);
+			User::logout();
 			location($referer);
 		} else {
-			if(isset($user['username'])) {
+			if(User::checkLogin()) {
 				location($referer, 3, false);
 				templates::error("{L_login[authorized]}");
-				return;
+				return false;
 			}
 			$name = Saves::SaveOld(Arr::get($_POST, 'login_name'));
 			$pass = Saves::SaveOld(Arr::get($_POST, 'login_password'));
-			$sql = db::doquery("SELECT `id`, `pass`, `light` FROM `users` WHERE `username` LIKE \"".$name."\" AND (`light` LIKE \"".$pass."\" OR `pass` LIKE \"".create_pass($pass)."\")", true);
-			$num = db::num_rows($sql);
-			if($num == 0) {
+			$login = User::login($name, $pass);
+			if($login===1) {
 				location($referer, 3, false);
 				templates::error("{L_login[notFound]}");
-				exit();
-			}
-			$row = db::fetch_array($sql);
-			if($row['pass'] != create_pass($pass) && $row['light'] != $pass) {
+				return false;
+			} else if($login===2) {
 				location($referer, 3, false);
 				templates::error("{L_login[notCorrect]}");
-				return;
-			} else {
-				HTTP::set_cookie("id", $row['id']);
-				HTTP::set_cookie(COOK_USER, $name);
-				HTTP::set_cookie(COOK_PASS, $row['pass']);
+				return false;
 			}
 			location($referer, 3, false);
 			templates::error("{L_login[correct]}");
