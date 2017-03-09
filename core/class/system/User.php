@@ -18,7 +18,42 @@ class User {
 		}
 	}
 	
+	final public static function OneLogin() {
+		if(!config::Select("oneLogin")) {
+			return false;
+		}
+		$file = self::$path.sha1(md5(HTTP::getip())).".txt";
+		if(!file_exists($file)) {
+			$arr = array();
+			if(Arr::get($_COOKIE, COOK_USER, false)) {
+				$arr = array_merge($arr, array(COOK_USER => $_COOKIE[COOK_USER]));
+			}
+			if(Arr::get($_COOKIE, COOK_PASS, false)) {
+				$arr = array_merge($arr, array(COOK_PASS => $_COOKIE[COOK_PASS]));
+			}
+			if(Arr::get($_COOKIE, COOK_ADMIN_USER, false)) {
+				$arr = array_merge($arr, array(COOK_ADMIN_USER => $_COOKIE[COOK_ADMIN_USER]));
+			}
+			if(Arr::get($_COOKIE, COOK_ADMIN_PASS, false)) {
+				$arr = array_merge($arr, array(COOK_ADMIN_PASS => $_COOKIE[COOK_ADMIN_PASS]));
+			}
+			if(sizeof($arr)>0) {
+				file_put_contents($file, serialize($arr));
+			}
+		} else {
+			$auth = file_get_contents($file);
+			$auth = unserialize($auth);
+			foreach($auth as $k => $v) {
+				if(!Arr::get($_COOKIE, $k, false)) {
+					HTTP::set_cookie($k, $v);
+				}
+			}
+		}
+		return true;
+	}
+	
 	final public static function load() {
+	global $user, $users;
 		$user = $users = array();
 		$userLoad = false;
 		if(file_exists(ROOT_PATH."core".DS."media".DS."users.".ROOT_EX)) {

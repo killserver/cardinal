@@ -35,10 +35,7 @@ class mobile extends modules {
 	}
 
 	function __construct() {
-	global $mobileDetect;
-		if(!is_object($mobileDetect)) {
-			$mobileDetect = new Mobile_Detect();
-		}
+		$mobileDetect = $this->init_mobileDetect();
 		$moby = ($mobileDetect->isMobile() || $mobileDetect->isTablet());
 		$mobyActive = $this->get_config("mobyActive");
 		$host = $this->get_config("default_http_hostname");

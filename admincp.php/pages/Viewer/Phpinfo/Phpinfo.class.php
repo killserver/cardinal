@@ -2,7 +2,7 @@
 
 class Phpinfo extends Core {
 	
-	public function Phpinfo() {
+	public function __construct() {
 		ob_start();
 		phpinfo();
 		$pinfo = ob_get_contents();

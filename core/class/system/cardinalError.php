@@ -4,14 +4,14 @@ echo "403 ERROR";
 die();
 }
 
-class Error {
+class cardinalError {
 
 	protected static $_handlePhpError = true;
 	protected static $_debug = false;
 	private static $_debugHandler = false;
 	public static $_echo = true;
 
-	final function Error() {
+	final function __construct() {
 		
 	}
 	
@@ -349,7 +349,7 @@ class Error {
 		echo $data;
 	}
 	
-	final public static function handleException(Exception $e) {
+	final public static function handleException($e) {
 		self::logException($e);
 	}
 	
@@ -369,7 +369,37 @@ class Error {
 		catch(Exception $e) {return false;}
 	}
 	
-	final public static function logException(Exception $e, $rollbackTransactions = true, $messagePrefix = '') {
+	final public static function getip() {
+		if(isset($_SERVER)) {
+			if(isset($_SERVER['HTTP_X_FORWARDED_FOR']) && !empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+				$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+			} elseif(isset($_SERVER['HTTP_CLIENT_IP']) && !empty($_SERVER['HTTP_CLIENT_IP'])) {
+				$ip = $_SERVER['HTTP_CLIENT_IP'];
+			} elseif(isset($_SERVER['REMOTE_ADDR']) && !empty($_SERVER['REMOTE_ADDR'])) {
+				$ip = $_SERVER['REMOTE_ADDR'];
+			} else {
+				$ip = false;
+			}
+		} else {
+			if(getenv('HTTP_X_FORWARDED_FOR')) {
+				$ip = getenv('HTTP_X_FORWARDED_FOR');
+			} elseif(getenv('HTTP_CLIENT_IP')) {
+				$ip = getenv('HTTP_CLIENT_IP');
+			} elseif(getenv('REMOTE_ADDR')) {
+				$ip = getenv('REMOTE_ADDR');
+			} else {
+				$ip = false;
+			}
+		}
+		if(strpos($ip, ",")!==false) {
+			$ips = explode(",", $ip);
+			$ip = current($ips);
+			unset($ips);
+		}
+	return $ip;
+	}
+	
+	final public static function logException($e, $rollbackTransactions = true, $messagePrefix = '') {
 		try {
 			$file = str_replace(ROOT_PATH, "", $e->getFile());
 			$request = array(
@@ -395,11 +425,11 @@ primary key `id`(`id`)
 			$db = false;
 			if(defined("WITHOUT_DB") || config::Select('logs')==ERROR_FILE) {
 				if(is_writable(ROOT_PATH."core".DS."cache".DS."system".DS)) {
-					file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt", json_encode(array("times" => time(), "ip" => HTTP::getip(), "exception_type" => self::FriendlyErrorType($e->getCode()), "message" => self::saves($messagePrefix . $e->getMessage()), "filename" => self::saves($file), "line" => $e->getLine(), "trace_string" => self::saves($e->getTraceAsString()), "request_state" => self::saves(serialize($request), true)))."\n", FILE_APPEND);
+					file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt", json_encode(array("times" => time(), "ip" => self::getip(), "exception_type" => self::FriendlyErrorType($e->getCode()), "message" => self::saves($messagePrefix . $e->getMessage()), "filename" => self::saves($file), "line" => $e->getLine(), "trace_string" => self::saves($e->getTraceAsString()), "request_state" => self::saves(serialize($request), true)))."\n", FILE_APPEND);
 				}
 			} else {
 				$db = modules::init_db();
-				$db->doquery("INSERT INTO `error_log`(`times`, `ip`, `exception_type`, `message`, `filename`, `line`, `trace_string`, `request_state`) VALUES(UNIX_TIMESTAMP(), \"".HTTP::getip()."\", \"".self::FriendlyErrorType($e->getCode())."\", \"".self::saves($messagePrefix . $e->getMessage())."\", \"".self::saves($file)."\", \"".$e->getLine()."\", \"".self::saves($e->getTraceAsString())."\", \"".self::saves(serialize($request), true)."\")");
+				$db->doquery("INSERT INTO `error_log`(`times`, `ip`, `exception_type`, `message`, `filename`, `line`, `trace_string`, `request_state`) VALUES(UNIX_TIMESTAMP(), \"".self::getip()."\", \"".self::FriendlyErrorType($e->getCode())."\", \"".self::saves($messagePrefix . $e->getMessage())."\", \"".self::saves($file)."\", \"".$e->getLine()."\", \"".self::saves($e->getTraceAsString())."\", \"".self::saves(serialize($request), true)."\")");
 			}
 			if(self::$_echo) {
 				if(!defined("ERROR_VIEW")) {

@@ -88,6 +88,8 @@ class templates {
 	 * @var int
      */
 	public static $time = 0;
+	
+	private static $isChangeHead = false;
 
 	/**
 	 * templates constructor.
@@ -672,12 +674,12 @@ class templates {
 		$tpl = preg_replace("#<!-- ENDIF (.+?) -->#", "[/if \\1]", $tpl);
 		
 		$tpl = preg_replace("#\{% L_sprintf\(([\"|']|)([a-zA-Z0-9\-_]+)(\\1)\[([a-zA-Z0-9\-_]*?)\],(.*?)\) %\}#", '{L_sprintf(\\2[\\4],\\5)}', $tpl);
-		$tpl = preg_replace("#\{% L_sprintf\((.)(.+?)(.)\[([a-zA-Z0-9\-_]*?)\],(.*?)\) %\}#", '{L_sprintf(\\2[\\4],\\5)}', $tpl);
+		$tpl = preg_replace("#\{% L_sprintf\(()(.+?)()\[([a-zA-Z0-9\-_]*?)\],(.*?)\) %\}#", '{L_sprintf(\\2[\\4],\\5)}', $tpl);
 		$tpl = preg_replace("#\{% L_sprintf\(([\"|']|)(.+?)(\\1),(.*?)\) %\}#", '{L_sprintf(\\2,\\4)}', $tpl);
-		$tpl = preg_replace("#\{% L_sprintf\((.)(.+?)(.),(.*?)\) %\}#", '{L_sprintf(\\2,\\4)}', $tpl);
+		$tpl = preg_replace("#\{% L_sprintf\(()(.+?)(),(.*?)\) %\}#", '{L_sprintf(\\2,\\4)}', $tpl);
 		$tpl = preg_replace("#\{% L_([\"|']|)([a-zA-Z0-9\-_]+)([\"|']|)\[([a-zA-Z0-9\-_]*?)\] %\}#", '{L_\\2[\\4]}', $tpl);
 		$tpl = preg_replace("#\{% L_([\"|']|)(.+?)(\\1) %\}#", '{L_\\2}', $tpl);
-		$tpl = preg_replace("#\{% L_(.)(.+?)(.) %\}#", '{L_\\2}', $tpl);
+		$tpl = preg_replace("#\{% L_()(.+?)() %\}#", '{L_\\2}', $tpl);
 		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", '{C_\\1[\\2]}', $tpl);
 		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+) %\}#", '{C_\\1}', $tpl);
 		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", '{U_\\1[\\2]}', $tpl);
@@ -734,12 +736,14 @@ class templates {
     final private static function checkMobile($array) {
 		if(strpos($array[1], "|")!==false) {
 			$exp = explode("|", $array[1]);
-			$size = sizeof($exp);
-			$start = 1;
-			for($i=0;$i<$size;$i++) {
-				$start += self::checkMobileExec($exp[$i]);
+			$ret = false;
+			for($i=0;$i<sizeof($exp);$i++) {
+				if(self::checkMobileExec($exp[$i])>0) {
+					$ret = true;
+					break;
+				}
 			}
-			if($start==$size) {
+			if($ret) {
 				return "true";
 			} else {
 				return "false";
@@ -815,7 +819,7 @@ class templates {
 		$tpl = preg_replace("#\{% L_sprintf\(([\"|']|)(.+?)([\"|']|),(.*?)\) %\}#", 'templates::slangf(array(null, \'\', \'\\2\', \'\', \'\\4\'))', $tpl);
 		$tpl = preg_replace("#\{% L_([\"|']|)([a-zA-Z0-9\-_]+)([\"|']|)\[([a-zA-Z0-9\-_]*?)\] %\}#", 'templates::lang(array(null, \'\', \'\\2\', \'\', \'\\4\'))', $tpl);
 		$tpl = preg_replace("#\{% L_([\"|']|)(.+?)([\"|']|) %\}#", 'templates::lang(array(null, \'\', \'\\2\'))', $tpl);
-		$tpl = preg_replace("#\{% L_(.)(.+?)(.) %\}#", 'templates::lang(array(null, \'\', \'\\2\', \'\'))', $tpl);
+		$tpl = preg_replace("#\{% L_()(.+?)() %\}#", 'templates::lang(array(null, \'\', \'\\2\', \'\'))', $tpl);
 		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", 'config::Select(\'\\1\', \'\\2\')', $tpl);
 		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+) %\}#", 'config::Select(\'\\1\')', $tpl);
 		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", 'templates::user(array(null, \'\\1\', \'\\2\'))', $tpl);
@@ -830,13 +834,14 @@ class templates {
 		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+) %\}#is", '$data[\'\\1\']', $tpl);
 		
 		$tpl = preg_replace("#\{L_sprintf\(([\"|']|)([a-zA-Z0-9\-_]+)(\\1)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", '<?php echo templates::slangf(array(null, \'\', \'\\2\', \'\', \'\\4\', \'\\5\')); ?>', $tpl);
-		$tpl = preg_replace("#\{L_sprintf\((.)([a-zA-Z0-9\-_]+)(.)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", '<?php echo templates::slangf(array(null, \'\', \'\\2\', \'\', \'\\4\', \'\\5\')); ?>', $tpl);
+		$tpl = preg_replace("#\{L_sprintf\(()([a-zA-Z0-9\-_]+)()\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", '<?php echo templates::slangf(array(null, \'\', \'\\2\', \'\', \'\\4\', \'\\5\')); ?>', $tpl);
 		$tpl = preg_replace("#\{L_sprintf\(([\"|']|)(.+?)(\\1),(.*?)\)\}#", '<?php echo templates::slangf(array(null, \'\', \'\\2\', \'\', \'\\4\')); ?>', $tpl);
-		$tpl = preg_replace("#\{L_sprintf\((.)(.+?)(.),(.*?)\)\}#", '<?php echo templates::slangf(array(null, \'\', \'\\2\', \'\', \'\\4\')); ?>', $tpl);
+		$tpl = preg_replace("#\{L_sprintf\(()(.+?)(),(.*?)\)\}#", '<?php echo templates::slangf(array(null, \'\', \'\\2\', \'\', \'\\4\')); ?>', $tpl);
 		$tpl = preg_replace("#\{L_([\"|']|)([a-zA-Z0-9\-_]+)(\\1)\[([a-zA-Z0-9\-_]*?)\]\}#", '<?php echo templates::lang(array(null, \'\', \'\\2\', \'\', \'\\4\')); ?>', $tpl);
-		$tpl = preg_replace("#\{L_(.)([a-zA-Z0-9\-_]+)(.)\[([a-zA-Z0-9\-_]*?)\]\}#", '<?php echo templates::lang(array(null, \'\', \'\\2\', \'\', \'\\4\')); ?>', $tpl);
+		$tpl = preg_replace("#\{L_()([a-zA-Z0-9\-_]+)()\[([a-zA-Z0-9\-_]*?)\]\}#", '<?php echo templates::lang(array(null, \'\', \'\\2\', \'\', \'\\4\')); ?>', $tpl);
+		$tpl = preg_replace("#\{L_()([a-zA-Z0-9\-_]+)()\[(.*?)\]\}#", '<?php echo templates::lang(array(null, \'\', \'\\2\', \'\', \'\\4\')); ?>', $tpl);
 		$tpl = preg_replace("#\{L_([\"|']|)(.+?)(\\1)\}#", '<?php echo templates::lang(array(null, \'\', \'\\2\')); ?>', $tpl);
-		$tpl = preg_replace("#\{L_(.)(.+?)(.)\}#", '<?php echo templates::lang(array(null, \'\', \'\\2\')); ?>', $tpl);
+		$tpl = preg_replace("#\{L_()(.+?)()\}#", '<?php echo templates::lang(array(null, \'\', \'\\2\')); ?>', $tpl);
 		$tpl = preg_replace("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", '<?php echo config::Select(\'\\1\', \'\\2\'); ?>', $tpl);
 		$tpl = preg_replace("#\{C_([a-zA-Z0-9\-_]+)\}#", '<?php echo config::Select(\'\\1\'); ?>', $tpl);
 		$tpl = preg_replace("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", '<?php echo templates::user(array(null, \'\\1\', \'\\2\')); ?>', $tpl);
@@ -872,13 +877,14 @@ class templates {
 		$tmp = self::callback_array("#\\[(not-group)=(.+?)\\](.+?)\\[/not-group\\]#is", ("templates::group"), $tmp);
 		$tmp = self::callback_array("#\\[(group)=(.+?)\\](.+?)\\[/group\\]#is", ("templates::group"), $tmp);
 		$tmp = self::callback_array("#\{L_sprintf\(([\"|']|)([a-zA-Z0-9\-_]+)(\\1)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = self::callback_array("#\{L_sprintf\((.)([a-zA-Z0-9\-_]+)(.)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\(()([a-zA-Z0-9\-_]+)()\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
 		$tmp = self::callback_array("#\{L_sprintf\(([\"|']|)(.+?)(\\1),(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = self::callback_array("#\{L_sprintf\((.)(.+?)(.),(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\(()(.+?)(),(.*?)\)\}#", ("templates::slangf"), $tmp);
 		$tmp = self::callback_array("#\{L_([\"|']|)([a-zA-Z0-9\-_]+)(\\1)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
-		$tmp = self::callback_array("#\{L_(.)([a-zA-Z0-9\-_]+)(.)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{L_()([a-zA-Z0-9\-_]+)()\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{L_()([a-zA-Z0-9\-_]+)()\[(.*?)\]\}#", ("templates::lang"), $tmp);
 		$tmp = self::callback_array("#\{L_([\"|']|)(.+?)(\\1)\}#", ("templates::lang"), $tmp);
-		$tmp = self::callback_array("#\{L_(.)(.+?)(.)\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{L_()(.+?)()\}#", ("templates::lang"), $tmp);
 		$tmp = self::callback_array("#\{LP_\[(.*?)\]\[(.*?)\](|\[(.*?)\])\}#", ("plural_form"), $tmp);
 		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tmp);
 		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tmp);
@@ -1440,18 +1446,7 @@ if(!$test) {
 			}
 		}
 		
-		$tpl = self::callback_array('#\[for ([0-9]+) to ([0-9]+)(| step=([0-9]+))\](.+?)\[/for\]#is', function($data) {
-			$step = 1;
-			if(!empty($data[4]) && is_numeric($data[4]) && $data[4]>0) {
-				$step = intval($data[4]);
-			}
-			$tpl = $data[5];
-			$sub = "";
-			for($i=$data[1];$i<=$data[2];$i=$i+$step) {
-				$sub .= str_replace("{id}", $i, $tpl);
-			}
-			return $sub;
-		}, $tpl);
+		$tpl = self::callback_array('#\[for ([0-9]+) to ([0-9]+)(| step=([0-9]+))\](.+?)\[/for\]#is', ("templates::fors"), $tpl);
 		$tpl = self::callback_array("#\\[ajax\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/ajax\\]#i", ("templates::ajax"), $tpl);
 		$tpl = self::callback_array("#\\[ajax\\]([\s\S]*?)\\[/ajax\\]#i", ("templates::ajax"), $tpl);
 		$tpl = self::callback_array("#\\[ajax_click\\]([\s\S]*?)\\[/ajax_click\\]#i", ("templates::ajax_click"), $tpl);
@@ -1477,6 +1472,19 @@ if(!$test) {
 			$tpl = str_replace("[clear]", "", $tpl);
 		}
 		return $tpl;
+	}
+	
+	final private static function fors($data) {
+		$step = 1;
+		if(!empty($data[4]) && is_numeric($data[4]) && $data[4]>0) {
+			$step = intval($data[4]);
+		}
+		$tpl = $data[5];
+		$sub = "";
+		for($i=$data[1];$i<=$data[2];$i=$i+$step) {
+			$sub .= str_replace("{id}", $i, $tpl);
+		}
+		return $sub;
 	}
 	
 	final public static function loadObject($obj) {
@@ -1619,7 +1627,7 @@ if(!$test) {
 	global $manifest;
 		$time = self::time();
 		if(!is_array($header)) {
-			self::$header = array(
+			$header = array(
 				"title" => $header,
 				"meta" => array(
 					"og" => array(
@@ -1633,8 +1641,14 @@ if(!$test) {
 					"description" => "{L_s_description}",
 				),
 			);
-		} else {
+		}
+		if(!is_array(self::$header)) {
+			self::$header = array();
+		}
+		if(!self::$isChangeHead) {
 			self::$header = array_merge(self::$header, $header);
+		} else {
+			self::$header = array_merge($header, self::$header);
 		}
 		$manifest['mod_page'][HTTP::getip()]['title'] = self::$header['title'];
 		modules::manifest_set(array('mod_page', HTTP::getip(), 'title'), self::$header['title']);
@@ -1657,6 +1671,7 @@ if(!$test) {
 	 * @param string $header Necessary title
      */
 	final public static function change_head($header) {
+		self::$isChangeHead = true;
 		if(!is_array($header)) {
 			self::$header = array("title" => $header);
 		} else {
@@ -1672,13 +1687,14 @@ if(!$test) {
      */
 	final public static function lcud($tmp) {
 		$tmp = self::callback_array("#\{L_sprintf\(([\"|']|)([a-zA-Z0-9\-_]+)(\\1)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = self::callback_array("#\{L_sprintf\((.)([a-zA-Z0-9\-_]+)(.)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\(()([a-zA-Z0-9\-_]+)()\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
 		$tmp = self::callback_array("#\{L_sprintf\(([\"|']|)(.+?)(\\1),(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = self::callback_array("#\{L_sprintf\((.)(.+?)(.),(.*?)\)\}#", ("templates::slangf"), $tmp);
+		$tmp = self::callback_array("#\{L_sprintf\(()(.+?)(),(.*?)\)\}#", ("templates::slangf"), $tmp);
 		$tmp = self::callback_array("#\{L_([\"|']|)([a-zA-Z0-9\-_]+)(\\1)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
-		$tmp = self::callback_array("#\{L_(.)([a-zA-Z0-9\-_]+)(.)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{L_()([a-zA-Z0-9\-_]+)()\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{L_()([a-zA-Z0-9\-_]+)()\[(.*?)\]\}#", ("templates::lang"), $tmp);
 		$tmp = self::callback_array("#\{L_([\"|']|)(.+?)(\\1)\}#", ("templates::lang"), $tmp);
-		$tmp = self::callback_array("#\{L_(.)(.+?)(.)\}#", ("templates::lang"), $tmp);
+		$tmp = self::callback_array("#\{L_()(.+?)()\}#", ("templates::lang"), $tmp);
 		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tmp);
 		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tmp);
 		$tmp = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tmp);
@@ -1702,7 +1718,9 @@ if(!$test) {
 		$h = self::$tmp;
 		self::$tmp = "";
 		$h = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $h);
-		$h = self::linkToHeader($h);
+		if(config::Select("manifestCache")) {
+			$h = self::linkToHeader($h);
+		}
 		return self::ecomp($h);
 	}
 
@@ -1773,7 +1791,7 @@ if(!$test) {
 		preg_match_all('/(<textarea[^>]*?>.*?<\/textarea>)/si', $html, $textarea);
 		$i=0;
 		while(preg_match('/(<pre[^>]*?>.*?<\/pre>)/si', $html)) {
-			$html = preg_replace('/(<script[^>]*?>.*?<\/script>)/si', '#pre'.$i.'#', $html, 1);
+			$html = preg_replace('/(<pre[^>]*?>.*?<\/pre>)/si', '#pre'.$i.'#', $html, 1);
 			$i++;
 		}
 		$i=0;

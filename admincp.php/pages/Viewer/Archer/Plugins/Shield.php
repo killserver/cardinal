@@ -2,7 +2,7 @@
 
 class Archer_Shield {
 	
-	public function Archer_Shield() {
+	public function __construct() {
 		KernelArcher::callback("Shield", "TraceOn", array(&$this, "Headers"));
 	}
 	

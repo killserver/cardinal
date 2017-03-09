@@ -197,6 +197,14 @@ class modules {
 		$return = self::applyParam($return, 'after', "_e");
 		return implode("", $return);
 	}
+	
+	final public static function init_mobileDetect() {
+	global $mobileDetect;
+		if(!is_object($mobileDetect)) {
+			$mobileDetect = new Mobile_Detect();
+		}
+		return $mobileDetect;
+	}
 
 	final public static function init_templates() {
 	global $templates;
@@ -565,7 +573,7 @@ class modules {
 				if(isset($xml->install[$i]->tpl)) {
 					$param['tpl'] = $xml->install[$i]->tpl;
 				}
-				$sql .= "INSERT INTO `modules` SET ".implode(", ", array_map(function($k, $v) { return "`".$k."` = \"".$v."\""; }, array_keys($param), array_values($param)))."!;";
+				$sql .= "INSERT INTO `modules` SET ".implode(", ", array_map("self::insertModule", array_keys($param), array_values($param)))."!;";
 			}
 			// register all files for module
 			$fileList = 0;
@@ -597,6 +605,10 @@ class modules {
 			}
 		}
 		return $name;
+	}
+	
+	final private static function insertModule($k, $v) {
+		return "`".$k."` = \"".$v."\"";
 	}
 	
 	final public static function Install($module, $file = false, $names = "") {
@@ -892,13 +904,13 @@ class modules {
 		$file->header();
 		$file->header_array();
 		$file->init();
-		$file = $file->get();
-		$hr = $file->getHeaders();
+		$files = $file->get();
+		$hr = $files->getHeaders();
 		$file = (string) ($file);
 		if(strpos($hr['Content-Type'], "application/x-yaml")===false || $hr['code']!=200) {
 			return false;
 		}
-		$arr = Spyc::YAMLLoadString($file->getHtml());
+		$arr = Spyc::YAMLLoadString($files->getHtml());
 		if(self::CheckVersion($version, $arr['Version'])) {
 			return true;
 		} else {

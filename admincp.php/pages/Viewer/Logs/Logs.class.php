@@ -25,7 +25,7 @@ class Logs extends Core {
 		}
 	}
 
-	function Logs() {
+	function __construct() {
 		if(isset($_GET['delete'])) {
 			$this->Delete();
 			location("./?pages=Logs");
@@ -39,7 +39,7 @@ class Logs extends Core {
 				$at = unserialize(str_replace('\\"', "\"", htmlspecialchars_decode($log->request_state)));
 				templates::assign_vars(array(
 					"time" => date("d-m-Y H:i:s", $log->times),
-					"errorno" => Error::FriendlyErrorType($log->exception_type),
+					"errorno" => cardinalError::FriendlyErrorType($log->exception_type),
 					"error" => htmlspecialchars($log->message),
 					"path" => htmlspecialchars($log->filename),
 					"line" => $log->line,
@@ -52,7 +52,7 @@ class Logs extends Core {
 			while($log = db::fetch_assoc()) {
 				templates::assign_vars(array(
 					"time" => date("d-m-Y H:i:s", $log['times']),
-					"errorno" => Error::FriendlyErrorType($log['exception_type']),
+					"errorno" => cardinalError::FriendlyErrorType($log['exception_type']),
 					"error" => htmlspecialchars($log['message']),
 					"path" => htmlspecialchars($log['filename']),
 					"line" => $log['line'],

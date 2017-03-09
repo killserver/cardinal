@@ -18,11 +18,73 @@ class Arr {
 		self::$empty = $empty;
 	}
 	
-	final public static function get($arr, $key = "", $default = "") {
-		if(is_array($arr)) {
-			return call_user_func_array(__CLASS__."::getArr", func_get_args());
+	final public static function getByKey($arr, $keys = array()) {
+		$list = func_get_args();
+		if(sizeof($keys)>0) {
+			return call_user_func_array(__CLASS__."::getByKeyArr", $list);
 		} else {
-			return call_user_func_array(__CLASS__."::getSelf", func_get_args());
+			return call_user_func_array(__CLASS__."::getByKeySelf", $list);
+		}
+	}
+	
+	final public static function getByKeyArr() {
+		$arr = func_get_args();
+		$arrK = $arr[0];
+		$arrKF = array_keys($arrK);
+		$arrF = $arr[1];
+		$ret = false;
+		for($i=0;$i<sizeof($arrKF);$i++) {
+			for($z=0;$z<sizeof($arrF);$z++) {
+				if(stripos($arrKF[$i], $arrF[$z]) !== false) {
+					$ret = $arrK[$arrKF[$i]];
+					$newSearch = array_slice($arrF, $z+1, sizeof($arrF)+1);
+					if(is_array($ret) && sizeof($newSearch)>0) {
+						$ret = self::getByKeyArr($ret, $newSearch);
+					}
+				}
+				if(!empty($ret)) {
+					break;
+				}
+			}
+			if(!empty($ret)) {
+				break;
+			}
+		}
+		return $ret;
+	}
+	
+	final public static function getByKeySelf() {
+		$arr = func_get_args();
+		$arrK = self::$array;
+		$arrKF = array_keys($arrK);
+		$arrF = $arr[0];
+		$ret = false;
+		for($i=0;$i<sizeof($arrKF);$i++) {
+			for($z=0;$z<sizeof($arrF);$z++) {
+				if(stripos($arrKF[$i], $arrF[$z]) !== false) {
+					$ret = $arrK[$arrKF[$i]];
+					$newSearch = array_slice($arrF, $z+1, sizeof($arrF)+1);
+					if(is_array($ret) && sizeof($newSearch)>0) {
+						$ret = self::getByKeyArr($ret, $newSearch);
+					}
+				}
+				if(!empty($ret)) {
+					break;
+				}
+			}
+			if(!empty($ret)) {
+				break;
+			}
+		}
+		return $ret;
+	}
+	
+	final public static function get($arr, $key = "", $default = "") {
+		$list = func_get_args();
+		if(is_array($arr)) {
+			return call_user_func_array(__CLASS__."::getArr", $list);
+		} else {
+			return call_user_func_array(__CLASS__."::getSelf", $list);
 		}
 	}
 	
@@ -43,10 +105,11 @@ class Arr {
 	}
 	
 	final public static function found($arr, $keys = "", $default = "") {
+		$list = func_get_args();
 		if(is_array($arr)) {
-			return call_user_func_array(__CLASS__."::foundArr", func_get_args());
+			return call_user_func_array(__CLASS__."::foundArr", $list);
 		} else {
-			return call_user_func_array(__CLASS__."::foundSelf", func_get_args());
+			return call_user_func_array(__CLASS__."::foundSelf", $list);
 		}
 	}
 	
@@ -75,10 +138,11 @@ class Arr {
 	}
 	
 	final public static function push($arr, $mixed = "") {
+		$list = func_get_args();
 		if(is_array($arr)) {
-			return call_user_func_array(__CLASS__."::pushArr", func_get_args());
+			return call_user_func_array(__CLASS__."::pushArr", $list);
 		} else {
-			return call_user_func_array(__CLASS__."::pushSelf", func_get_args());
+			return call_user_func_array(__CLASS__."::pushSelf", $list);
 		}
 	}
 	
@@ -115,10 +179,11 @@ class Arr {
 	}
 	
 	final public static function map($array, $callback = "") {
+		$list = func_get_args();
 		if(is_array($array)) {
-			return call_user_func_array(__CLASS__."::mapArr", func_get_args());
+			return call_user_func_array(__CLASS__."::mapArr", $list);
 		} else {
-			return call_user_func_array(__CLASS__."::mapSelf", func_get_args());
+			return call_user_func_array(__CLASS__."::mapSelf", $list);
 		}
 	}
 	
@@ -177,7 +242,8 @@ class Arr {
 	}
 	
 	final public static function CheckList() {
-		$ret = call_user_func_array("Arr::GetList", func_get_args());
+		$list = func_get_args();
+		$ret = call_user_func_array("Arr::GetList", $list);
 		return ($ret === false ? false : true);
 	}
 	

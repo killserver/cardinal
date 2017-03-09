@@ -24,7 +24,7 @@ class HTTP {
 	
 	private static $pathSaveMime = false;
 	
-	public function HTTP() {
+	public function __construct() {
 		
 	}
 	

@@ -25,7 +25,7 @@ class cardinal {
 	private static $backToView = array();
 	private static $ch_login = array("class" => "cardinal", "method" => "or_create_pass");
 	
-	public function cardinal() {
+	public function __construct() {
 		if(!defined("IS_BOT")) {
             if (isset($_SERVER['HTTP_USER_AGENT']) && !$this->robots(getenv("HTTP_USER_AGENT"))) {
                 define("IS_BOT", false);
@@ -95,7 +95,7 @@ class cardinal {
 	final public static function create_pass($pass) {
 		$class = (self::$ch_login['class']);
 		$method = (self::$ch_login['method']);
-		return $class::$method($pass);
+		return call_user_func_array(array(&$class, $method), array($pass));
 	}
 	
 	final public static function StartSession() {
@@ -278,7 +278,7 @@ class cardinal {
 						unset($read[$i]);
 					}
 				}
-				file_put_contents($file, implode("\n", $read));
+				file_put_contents($file, implode("\n", $read)."\n");
 			}
 			file_put_contents($file, serialize(array("lIp" => $ip, "lTime" => time(), "lAction" => Saves::SaveOld($action, true)))."\n", FILE_APPEND);
 		}

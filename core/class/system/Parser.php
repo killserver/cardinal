@@ -105,7 +105,7 @@ class Parser {
 	 * @param string $url Url for parser
 	 * @return Parser
      */
-	function Parser($url = "") {
+	function __construct($url = "") {
 		if(!empty($url)) {
 			$this->url = $url;
 		}
@@ -363,7 +363,12 @@ class Parser {
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		}
-		if(!config::Select("hosting") || $this->forceReferrer) {
+		if(class_exists("config") && method_exists("config", "Select")) {
+			if(!config::Select("hosting") || $this->forceReferrer) {
+				curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
+				curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+			}
+		} else if($this->forceReferrer) {
 			curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 		}

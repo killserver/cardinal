@@ -125,6 +125,20 @@ if(!defined("PHP_FLOAT_MAX")) {
 if(!defined("DS")) {
 	define("DS", DIRECTORY_SEPARATOR);
 }
+if(!defined("DS_DB")) {
+	if(strtoupper(substr(PHP_OS, 0, 3))==='WIN') {
+		define("DS_DB", DS.DS);
+	} else {
+		define("DS_DB", DS);
+	}
+}
+if(!defined("PHP_WIN")) {
+	if(strtoupper(substr(PHP_OS, 0, 3))==='WIN') {
+		define("PHP_WIN", true);
+	} else {
+		define("PHP_WIN", false);
+	}
+}
 if(file_exists(dirname(__FILE__).DS."core".DS."media".DS."definition.php")) {
 	include_once(dirname(__FILE__).DS."core".DS."media".DS."definition.php");
 }
@@ -217,5 +231,11 @@ header("X-Content-Type-Options: SAMEORIGIN");
 header("X-XSS-Protection: 1; mode=block");
 header('Cache-Control: max-age');
 header("Cardinal: ".cardinal::SaveCardinal(VERSION));
-header_remove('x-powered-by');
+ini_set("pcre.backtrack_limit", 1200000);
+ini_set("pcre.recursion_limit", 1200000);
+if(function_exists("header_remove")) {
+	header_remove('x-powered-by');
+} else {
+	header('X-Powered-By:');
+}
 ?>

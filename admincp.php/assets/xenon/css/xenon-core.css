@@ -844,6 +844,7 @@ body {
 }
 .sidebar-menu .main-menu a > i + span {
   padding-right: 10px;
+  max-width: 78%;
 }
 .sidebar-menu .main-menu a > span {
   display: inline-block;

@@ -54,16 +54,16 @@ class config {
 			$configWDB = array();
 		}
 		$dir = ROOT_PATH."core".DS."cache".DS."system".DS;
-		$file = $dir."configWithoutDB.txt";
-		if($action == "read" && !empty($name) && file_exists($file) && is_readable($file)) {
-			$file = file_get_contents($file);
+		$filePATH = $dir."configWithoutDB.txt";
+		if($action == "read" && !empty($name) && file_exists($filePATH) && is_readable($filePATH)) {
+			$file = file_get_contents($filePATH);
 			$configWDB = unserialize($file);
 		} elseif($action=="edit") {
-			if(!(!empty($name) && ((file_exists($file) && is_readable($file)) || is_writable($dir)))) {
+			if(!(!empty($name) && ((file_exists($filePATH) && is_readable($filePATH)) || is_writable($dir)))) {
 				return false;
 			}
-			if(file_exists($file) && is_readable($file)) {
-				$file = file_get_contents($file);
+			if(file_exists($filePATH) && is_readable($filePATH)) {
+				$file = file_get_contents($filePATH);
 				$configWDB = unserialize($file);
 			}
 			if(!empty($valTh)) {
@@ -73,19 +73,19 @@ class config {
 			} else {
 				$configWDB[$name] = $val;
 			}
-			if(file_exists($file)) {
-				unlink($file);
+			if(file_exists($filePATH)) {
+				unlink($filePATH);
 			}
 			if(is_writable($dir)) {
-				file_put_contents($file, serialize($configWDB));
+				file_put_contents($filePATH, serialize($configWDB));
 			}
 			return true;
 		} elseif($action=="delete") {
-			if(!(!empty($name) && ((file_exists($file) && is_readable($file)) || is_writable($dir)))) {
+			if(!(!empty($name) && ((file_exists($filePATH) && is_readable($filePATH)) || is_writable($dir)))) {
 				return false;
 			}
-			if((!isset($configWDB[$name]) || !isset($configWDB[$name][$val])) && file_exists($file) && is_readable($file)) {
-				$file = file_get_contents($file);
+			if((!isset($configWDB[$name]) || !isset($configWDB[$name][$val])) && file_exists($filePATH) && is_readable($filePATH)) {
+				$file = file_get_contents($filePATH);
 				$configWDB = unserialize($file);
 			}
 			$update = false;
@@ -100,11 +100,11 @@ class config {
 				$update = true;
 			}
 			if($update) {
-				if(file_exists($file)) {
-					unlink($file);
+				if(file_exists($filePATH)) {
+					unlink($filePATH);
 				}
 				if(is_writable($dir)) {
-					file_put_contents($file, serialize($configWDB));
+					file_put_contents($filePATH, serialize($configWDB));
 				}
 			}
 			return true;

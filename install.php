@@ -42,8 +42,10 @@ if(strpos($_SERVER['REQUEST_URI'], "index.".ROOT_EX)!==false) {
 	$exp = explode("install", $_SERVER['REQUEST_URI']);
 }
 config::Set("default_http_local", $exp[0]);
+templates::assign_var("isRewrite", false);
 if(isset($_POST['rewrite'])) {
 	config::Set("rewrite", false);
+	templates::assign_var("isRewrite", true);
 	unset($_POST['rewrite']);
 }
 lang::include_lang("install");
@@ -261,9 +263,11 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `modules` (
   FULLTEXT KEY `file` (`file`),
   KEY `type` (`type`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
-$SQL[] = "INSERT INTO `modules` SET `module` = 'base', `activ` = 'yes', `file` = 'core".DS."modules".DS."base.class.".ROOT_EX."';";
-$SQL[] = "INSERT INTO `modules` SET `module` = 'changelog', `activ` = 'yes', `file` = 'core".DS."modules".DS."changelog.class.".ROOT_EX."';";
-$SQL[] = "INSERT INTO `modules` SET `module` = 'mobile_detect', `activ` = 'yes', `file` = 'core".DS."modules".DS."mobile.class.".ROOT_EX."';";
+$SQL[] = "INSERT INTO `modules` SET `module` = 'base', `activ` = 'yes', `file` = 'core".DS_DB."modules".DS_DB."base.class.".ROOT_EX."';";
+$SQL[] = "INSERT INTO `modules` SET `module` = 'changelog', `activ` = 'yes', `file` = 'core".DS_DB."modules".DS_DB."changelog.class.".ROOT_EX."';";
+$SQL[] = "INSERT INTO `modules` SET `module` = 'mobile_detect', `activ` = 'yes', `file` = 'core".DS_DB."modules".DS_DB."mobile.class.".ROOT_EX."';";
+$SQL[] = "INSERT INTO `modules` SET `module` = 'SEOBlock', `activ` = 'yes', `file` = 'core".DS_DB."modules".DS_DB."SEOBlock.class.".ROOT_EX."';";
+$SQL[] = "INSERT INTO `modules` SET `module` = 'DataTables', `activ` = 'yes', `file` = '".ADMINCP_DIRECTORY.DS_DB."pages".DS_DB."Viewer".DS_DB."Core".DS_DB."Plugins".DS_DB."CoreDataTables.".ROOT_EX."', `type` = 'admincp';";
 
 $SQL[] = "DROP TABLE IF EXISTS `posts`;";
 $SQL[] = "CREATE TABLE IF NOT EXISTS `posts` (
@@ -354,6 +358,7 @@ $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `acc
 $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (3, 'Модератор', 'ADMIN', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
 $SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (4, 'Администратор', 'ADMIN', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
 
+$SQL[] = "SET FOREIGN_KEY_CHECKS = 1;";
 
 
 db::connect($db_host, $db_user, $db_pass, $db_db, "utf8", $db_port);

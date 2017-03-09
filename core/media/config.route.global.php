@@ -75,7 +75,7 @@ Route::Set("main", "page/<pages>.html")->defaults(array(
           'page' => 'main',
 ));
 
-Route::Set("default", function($uri, $page) {
+function routeDefault($uri, $page) {
 	if($uri && preg_match("#^(?:page/(?P<page>[^/.,;?\n]++).html)?$#uD", $uri, $all)) {
 		$ret = array(
 			'page'  => 'main',
@@ -96,4 +96,5 @@ Route::Set("default", function($uri, $page) {
 			'page' => $page,
 		);
 	}
-});
+}
+Route::Set("default", "routeDefault");

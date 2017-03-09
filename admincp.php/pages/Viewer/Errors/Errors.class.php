@@ -1,8 +1,8 @@
 <?php
 
-final class Errors extends Core {
+class Errors extends Core {
 	
-	public function Errors() {
+	public function __construct() {
 		$this->Prints("404");
 	}
 	

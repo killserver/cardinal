@@ -28,10 +28,6 @@ die();
 
 require_once(ROOT_PATH."core".DS."loadConfig.".ROOT_EX);
 
-set_error_handler(array('Error', 'handlePhpError'));
-set_exception_handler(array('Error', 'handleException'));
-register_shutdown_function(array('Error', 'handleFatalError'));
-
 function require_dir($dir = "", $modules = "", $mod = false) {include_dir($dir, $modules, $mod);}
 
 function include_dir($dir = "", $modules = "", $mod = false) {

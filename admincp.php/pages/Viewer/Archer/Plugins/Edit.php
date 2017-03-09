@@ -2,7 +2,7 @@
 
 class Archer_Edit {
 	
-	public function Archer_Edit() {
+	public function __construct() {
 		KernelArcher::callback("Add", "TraceOn", array(&$this, "Headers"));
 		KernelArcher::callback("Edit", "TraceOn", array(&$this, "Headers"));
 	}

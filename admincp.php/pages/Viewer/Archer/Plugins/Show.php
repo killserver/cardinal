@@ -2,7 +2,7 @@
 
 class Archer_Show {
 	
-	public function Archer_Show() {
+	public function __construct() {
 		KernelArcher::callback("Show", array(&$this, "Shows"));
 	}
 	

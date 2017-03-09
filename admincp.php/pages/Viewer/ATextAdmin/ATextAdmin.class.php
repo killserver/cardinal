@@ -92,7 +92,7 @@ die();
 				$model = $model->Select();
 				templates::assign_var("typePage", "Edit&viewId=".$viewId);
 				$descr = unserialize($model->text);
-				$descr = array_map(function($k, $d) { return '<div class="row"><div class="col-sm-11"><textarea id="editor'.($k+1).'" name="descr[]">'.$d.'</textarea></div><div class="col-sm-1"><a href="#" class="btn btn-red" onclick="return removed(this);">{L_delete}</a></div></div>'; }, array_keys($descr), array_values($descr));
+				$descr = array_map(array(&$this, "buildDescr"), array_keys($descr), array_values($descr));
 				$model->textarea = implode("", $descr);
 				$data = $model->getArray();
 				templates::assign_vars($data);
@@ -130,6 +130,10 @@ die();
 				}
 				$this->Prints("aTextMain");
 			break;
+		}
+		
+		function buildDescr($k, $d) {
+			return '<div class="row"><div class="col-sm-11"><textarea id="editor'.($k+1).'" name="descr[]">'.$d.'</textarea></div><div class="col-sm-1"><a href="#" class="btn btn-red" onclick="return removed(this);">{L_delete}</a></div></div>';
 		}
 	}
 	

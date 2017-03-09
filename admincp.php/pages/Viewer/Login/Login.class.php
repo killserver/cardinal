@@ -21,7 +21,7 @@ die();
 
 class Login extends Core {
 
-	function Login() {
+	function __construct() {
 	global $user, $users;
 		if(isset($_GET['out'])) {
 			HTTP::set_cookie(COOK_ADMIN_USER, "", true);

@@ -7,7 +7,7 @@ class Main_Cache extends Main {
 		return $size ? round($size/pow(1024, ($i = floor(log($size, 1024)))), 2).$filesizename[$i] : '0 '.$filesizename[0];
 	}
 	
-	public function Main_Cache() {
+	public function __construct() {
 		if(isset($_GET['clear']) && isset($_GET['tmp'])) {
 			$path = ROOT_PATH."core".DS."cache".DS."tmp".DS;
 			$files = read_dir($path);

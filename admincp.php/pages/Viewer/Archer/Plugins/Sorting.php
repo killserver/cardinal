@@ -2,7 +2,7 @@
 
 class Archer_Sorting {
 	
-	public function Archer_Sorting() {
+	public function __construct() {
 		KernelArcher::callback("Sorting", "TraceOn", array(&$this, "Headers"));
 	}
 	

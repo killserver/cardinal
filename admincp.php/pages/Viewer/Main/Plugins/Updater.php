@@ -24,7 +24,7 @@ class Main_Updater extends Main {
 		return $text;
 	}
 
-	public function Main_Updater() {
+	public function __construct() {
 		$vid = parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/version.txt?'.date("d-m-Y-H"));
 		if(config::Select("speed_update")) {
 			$if = ($vid)>(VERSION);

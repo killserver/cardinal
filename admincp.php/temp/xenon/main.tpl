@@ -7,7 +7,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<meta name="description" content="Cardinal Admin Panel" />
 	<meta name="author" content="KilleR" />
-	<base href="{C_default_http_host}{D_ADMINCP_DIRECTORY}" />
+	<!--base href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/" /-->
 	
 	<title>Xenon - Compose Message</title>
 
@@ -251,7 +251,7 @@
 					<!-- add class "multiple-expanded" to allow multiple submenus to open -->
 					<!-- class "auto-inherit-active-class" will automatically add "active" class for parent elements who are marked already with class "active" -->
 						<li>
-							<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}?pages=main">
+							<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=main">
 								<i class="linecons-cog"></i>
 								<span class="title">{L_"Main admin"}</span>
 							</a>
@@ -264,7 +264,7 @@
 							</a>
 							<ul>[/foreachif {menu.type_st}=="start"]
 								<li[foreachif {menu.is_now}==1] class="active"[/foreachif][foreachif {menu.type_st}=="start"] style="display:none;"[/foreachif {menu.type_st}=="start"]>
-									<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}{menu.link}">
+									<a href="{menu.link}">
 										<span class="title">{menu.value}</span>
 									</a>
 								</li>
@@ -325,7 +325,7 @@
 					
 				</ul>
 				
-				<center style="display:inline-block;margin:10px auto;text-align:center;width:50%;font-size:30px;">Version: {D_VERSION}</center>
+				<center style="display:inline-block;margin:10px auto;text-align:center;width:50%;font-size:30px;">{L_"Version"}: {D_VERSION}</center>
 				
 				<!-- Right links for user info navbar -->
 				<ul class="user-info-menu right-links list-inline list-unstyled">
@@ -340,15 +340,15 @@
 						
 						<ul class="dropdown-menu user-profile-menu list-unstyled">
 							<li>
-								<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}?pages=Settings">
+								<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Settings">
 									<i class="fa-wrench"></i>
-									Settings
+									{L_"Settings"}
 								</a>
 							</li>
 							<li class="last">
-								<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}?pages=Login&out">
+								<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Login&out">
 									<i class="fa-lock"></i>
-									Logout
+									{L_"Logout"}
 								</a>
 							</li>
 						</ul>

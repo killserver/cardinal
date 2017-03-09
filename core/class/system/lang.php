@@ -133,12 +133,29 @@ class lang {
 		return self::$lang;
 	}
 	
+	final private static function hex2bin($hexstr) {
+		$n = strlen($hexstr);
+		$sbin = "";
+		$i = 0;
+		while($i<$n) {
+			$a = substr($hexstr, $i, 2);
+			$c = pack("H*", $a);
+			if($i==0) {
+				$sbin = $c;
+			} else {
+				$sbin .= $c;
+			}
+			$i+=2;
+		}
+		return $sbin;
+	}
+	
 	final private static function merge($lang, $orig = "", $tr = "", $type = "get") {
 		if($type=="edit") {
 			$fileLang = array();
 			if(file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."lang".$lang.".db") && is_readable(ROOT_PATH."core".DS."cache".DS."system".DS."lang".$lang.".db")) {
 				$file = file_get_contents(ROOT_PATH."core".DS."cache".DS."system".DS."lang".$lang.".db");
-				$fileLang = unserialize(hex2bin($file));
+				$fileLang = unserialize(self::hex2bin($file));
 			}
 			$fileLang = array_merge($fileLang, array($orig => $tr));
 			if(is_writable(ROOT_PATH."core".DS."cache".DS."system".DS)) {
@@ -151,7 +168,7 @@ class lang {
 			$fileLang = array();
 			if(file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."lang".$lang.".db") && is_readable(ROOT_PATH."core".DS."cache".DS."system".DS."lang".$lang.".db")) {
 				$file = file_get_contents(ROOT_PATH."core".DS."cache".DS."system".DS."lang".$lang.".db");
-				$fileLang = unserialize(hex2bin($file));
+				$fileLang = unserialize(self::hex2bin($file));
 			}
 			return $fileLang;
 		} else if($type=="check") {
@@ -160,14 +177,14 @@ class lang {
 			$fileLang = array();
 			if(file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."lang".$lang.".db") && is_readable(ROOT_PATH."core".DS."cache".DS."system".DS."lang".$lang.".db")) {
 				$file = file_get_contents(ROOT_PATH."core".DS."cache".DS."system".DS."lang".$lang.".db");
-				$fileLang = unserialize(hex2bin($file));
+				$fileLang = unserialize(self::hex2bin($file));
 			}
 			return array_merge($orig, $fileLang);
 		} else if($type=="del") {
 			$fileLang = array();
 			if(file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."lang".$lang.".db") && is_readable(ROOT_PATH."core".DS."cache".DS."system".DS."lang".$lang.".db")) {
 				$file = file_get_contents(ROOT_PATH."core".DS."cache".DS."system".DS."lang".$lang.".db");
-				$fileLang = unserialize(hex2bin($file));
+				$fileLang = unserialize(self::hex2bin($file));
 			}
 			if(isset($fileLang[$orig])) {
 				unset($fileLang[$orig]);

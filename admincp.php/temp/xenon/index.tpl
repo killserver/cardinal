@@ -19,7 +19,7 @@
 						</div>
 						<div class="xe-label">
 							<strong class="num">{uptime_value}%</strong>
-							<span>Server uptime</span>
+							<span>{L_"Server uptime"}</span>
 						</div>
 					</div>
 					
@@ -33,7 +33,7 @@
 						</div>
 						<div class="xe-label">
 							<strong class="num">{users}</strong>
-							<span>Users Total</span>
+							<span>{L_"Users Total"}</span>
 						</div>
 					</div>
 				
@@ -47,7 +47,7 @@
 						</div>
 						<div class="xe-label">
 							<strong class="num">{Cache}</strong>
-							<span>Cache Data</span>
+							<span>{L_"Cache Data"}</span>
 						</div>
 					</div>
 				
@@ -61,7 +61,7 @@
 						</div>
 						<div class="xe-label">
 							<strong class="num">{CachePHP}</strong>
-							<span>Cache Templates</span>
+							<span>{L_"Cache Templates"}</span>
 						</div>
 					</div>
 				
@@ -84,12 +84,12 @@
 jQuery(document).ready(function() {
 	jQuery("#cache").click(function() {
 		jQuery.post("./?pages=Main&clear&cache", function(data) {
-			toastr.info(data, "Clear Cache Data");
+			toastr.info(data, "{L_"Clear Cache Data"}");
 		});
 	});
 	jQuery("#cachephp").click(function() {
 		jQuery.post("./?pages=Main&clear&tmp", function(data) {
-			toastr.info(data, "Clear Cache Templates");
+			toastr.info(data, "{L_"Clear Cache Templates"}");
 		});
 	});
 });

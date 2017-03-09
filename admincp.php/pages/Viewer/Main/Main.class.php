@@ -2,7 +2,7 @@
 
 class Main extends Core {
 
-	public function Main() {
+	public function __construct() {
 		$this->Prints("index");
 	}
 

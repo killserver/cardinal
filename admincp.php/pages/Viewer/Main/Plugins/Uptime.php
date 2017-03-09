@@ -2,7 +2,7 @@
 
 class Main_Uptime extends Main {
 
-	public function Main_Uptime() {
+	public function __construct() {
 		$count = 0;
 		$value = 0;
 		$uptimerobot_id = config::Select("uptime", "uptimerobot_id");

@@ -2,9 +2,12 @@
 class Manifest {
 	
 	function __construct() {
-		$list = read_dir(ROOT_PATH."uploads".DS."manifest".DS);
+		$file = ROOT_PATH."uploads".DS."manifest".DS;
+		$list = read_dir($file);
 		for($i=0;$i<sizeof($list);$i++) {
-			unlink($list[$i]);
+			if($list[$i]!=".htaccess" || $list[$i]!="index.html" || $list[$i]!="index.php") {
+				unlink($file.$list[$i]);
+			}
 		}
 	}
 	

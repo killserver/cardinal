@@ -115,7 +115,7 @@ class db_mysql extends DriverParam implements drivers {
 		return mysql_insert_id($this->mc);
 	}
 	public function escape($str) {
-		return mysql_escape_string($str);
+		return "'".mysql_escape_string($str)."'";
 	}
 	public function num_fields() {
 		return mysql_num_fields($this->mc);

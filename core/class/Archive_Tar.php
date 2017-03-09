@@ -32,7 +32,7 @@ class Archive_Tar extends PEAR {
     var $_temp_tarname = '';
     var $_ignore_regexp = '';
     var $error_object = null;
-    function Archive_Tar($p_tarname, $p_compress = null) {
+    function __construct($p_tarname, $p_compress = null) {
         if(version_compare(PHP_VERSION, '5.0.0', '<')) {
             $this->PEAR();
         }

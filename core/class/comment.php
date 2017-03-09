@@ -52,7 +52,7 @@ class comment {
 	 * @param int $levels Level viewing comments
 	 * @return bool Return done setting default config comment
      */
-	final public function comment($u_id, $type = "news", $user_row = array(), $levels = 0) {
+	final public function __construct($u_id, $type = "news", $user_row = array(), $levels = 0) {
 		if(!defined("WITHOUT_DB") && !userlevel::get("view_comments")) {
 			return false;
 		}

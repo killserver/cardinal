@@ -37,7 +37,17 @@ function cardinalAutoloadAdmin($class) {
         new Errors();
     }
 }
-spl_autoload_register("cardinalAutoloadAdmin");
+if(version_compare(PHP_VERSION, '5.1.2', '>=')) {
+	if (version_compare(PHP_VERSION, '5.3.0', '>=')) {
+		spl_autoload_register('cardinalAutoloadAdmin', true, false);
+	} else {
+		spl_autoload_register('cardinalAutoloadAdmin');
+	}
+} else {
+	function __autoload($class) {
+		cardinalAutoloadAdmin($class);
+	}
+}
 if(isset($_GET['pages'])) {
 	$view = htmlspecialchars(strip_tags($_GET['pages']));
 	$view = ucfirst($view);
@@ -71,7 +81,7 @@ if(class_exists($view)) {
 	}
 	if($load) {
 		if(method_exists(''.$view, 'start')) {
-			$view::start();
+			call_user_func(array(&$view, "start"));
 			defines::init();
 		}
 		new $view();

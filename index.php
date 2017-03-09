@@ -144,7 +144,7 @@ for($i=0;$i<sizeof($list);$i++) {
 	unset($GLOBALS[$list[$i]]);
 }
 if(defined("DEBUG_ACTIVATED")) {
-	Error::Debug(null, true);
+	cardinalError::Debug(null, true);
 }
 GzipOut($gzip, $gActive);
 HTTP::echos();

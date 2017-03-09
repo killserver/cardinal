@@ -290,10 +290,9 @@ class DBObject {
 		} else {
 			$this->loadedTable = $name;
 		}
-		db::doquery("SELECT * FROM `".db::$dbName."`.`".$name."` LIMIT 1", true);
-		$row = db::fetch_assoc();
+		$row = db::select_query("SHOW COLUMNS FROM `".db::$dbName."`.`".$name."`");
 		foreach($row as $k => $v) {
-			$this->{$k} = "";
+			$this->{$v['Field']} = "";
 		}
 	}
 	
@@ -378,8 +377,16 @@ class DBObject {
 		}
         $key = array_keys($arr);
         $val = array_values($arr);
-        return db::doquery("INSERT INTO `".$table."` (".implode(", ", array_map(function($d) { return "`".$d."`";}, $key)).") VALUES(".implode(", ", array_map(function($d) {return (strpos($d, "(")!==false&&strpos($d, ")")!==false ? $d : "".str_replace("\\\\u", "\\u", db::escape($d))."");}, $val)).")");
+        return db::doquery("INSERT INTO `".$table."` (".implode(", ", array_map(array(&$this, "buildKeyIn"), $key)).") VALUES(".implode(", ", array_map(array(&$this, "buildValueIn"), $val)).")");
     }
+	
+	final private function buildKeyIn($d) {
+		return "`".$d."`";
+	}
+	
+	final private function buildValueIn($d) {
+		return (strpos($d, "(")!==false&&strpos($d, ")")!==false ? $d : "".str_replace("\\\\u", "\\u", db::escape($d))."");
+	}
 
     final public function Update($table = "", $where = "", $orderBy = "", $limit = "") {
 		if(empty($this->loadedTable) && empty($table)) {
@@ -412,8 +419,12 @@ class DBObject {
 		$limit = $this->ReleaseLimit($limit);
         $key = array_keys($arr);
         $val = array_values($arr);
-        return db::doquery("UPDATE `".$table."` SET ".implode(", ", array_map(function($k, $v) { return "`".$k."` = ".(strpos($v, "(")!==false&&strpos($v, ")")!==false ? $v : "".str_replace("\\\\u", "\\u", db::escape($v))."");}, $key, $val)).$where.$orderBy.$limit);
+        return db::doquery("UPDATE `".$table."` SET ".implode(", ", array_map(array(&$this, "buildUpdateKV"), $key, $val)).$where.$orderBy.$limit);
     }
+	
+	final private function buildUpdateKV($k, $v) {
+		return "`".$k."` = ".(strpos($v, "(")!==false&&strpos($v, ")")!==false ? $v : "".str_replace("\\\\u", "\\u", db::escape($v))."");
+	}
 
     final public function Deletes($table = "", $where = "", $orderBy = "", $limit = "") {
 		if(empty($this->loadedTable) && empty($table)) {

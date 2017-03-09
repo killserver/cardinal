@@ -2,7 +2,7 @@
 
 class Main_Users extends Main {
 
-	public function Main_Users() {
+	public function __construct() {
 	global $users;
 		if(defined("WITHOUT_DB")) {
 			templates::assign_var("isUsers", "0");

@@ -397,7 +397,7 @@ class db {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
-		if(strpos($query, "SELECT") !== false || strpos($query, "SHOW TABLE") !== false) {
+		if(strpos($query, "SELECT") !== false || strpos($query, "SHOW TABLE") !== false || strpos($query, "SHOW COLUMNS") !== false) {
 			$qid = self::query($query);
 			$array = array();
 			while($row = self::fetch_assoc($qid)) {

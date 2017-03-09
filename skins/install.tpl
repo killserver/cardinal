@@ -20,6 +20,7 @@
 [/if]
 [if {page}==2]
 <form method="post" action="{C_default_http_local}{R_[install_first][file=install.php;page=install;method=change;is_file=true;line=3]}">
+[if {isRewrite}==1]<input type="hidden" name="rewrite" value="1">[/if {isRewrite}==1]
 <div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;padding:18px;background:rgb(255,230,196);color:#4C289E;">
 	[if {is_stop}==0]<div style="text-align:center;font-weight:bold;">Все необходимые права доступа и требуемое программное обезпечение установлено, можно продолжать установку!</div>[/if {is_stop}==0]
 	[if {is_stop}==1]<div style="text-align:center;font-weight:bold;">Установите требуемые права доступа к папкам или проверьте наличие необходимого программного обезпечения для продолжения установки!</div>[/if {is_stop}==1]
@@ -37,6 +38,7 @@
 [/if]
 [if {page}==3]
 <form method="post" id="Form" action="{C_default_http_local}{R_[install_first][file=install.php;page=install;method=change;is_file=true;line=4]}" onsubmit="return check();">
+[if {isRewrite}==1]<input type="hidden" name="rewrite" value="1">[/if {isRewrite}==1]
 <div style="border:1px solid #000000;border-radius:10px;box-shadow:0px 4px 10px #000;background:rgb(255,230,196);text-align:center;font-weight:bold;padding:7px;margin:0px auto 10px;width:50%;color:#f00;font-size:18px;">Убедитесь, что все необходимые драйверы баз данных установленны!</div>
 <span style="float:left;">
 	<span style="width:400px;border:1px solid #000;display:block;padding:10px;">

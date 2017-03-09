@@ -221,6 +221,25 @@ function sortByValue(&$arr) {
 	usort($arr, 'strnatcmp');
 }
 
+if(!function_exists("hex2bin")) {
+	function hex2bin($hexstr) {
+		$n = strlen($hexstr);
+		$sbin = "";
+		$i = 0;
+		while($i<$n) {
+			$a = substr($hexstr, $i, 2);
+			$c = pack("H*",$a);
+			if($i==0) {
+				$sbin = $c;
+			} else {
+				$sbin .= $c;
+			}
+			$i+=2;
+		}
+		return $sbin;
+	}
+}
+
 function vdump() {
 	$list = func_get_args();
 	$last = end($list);

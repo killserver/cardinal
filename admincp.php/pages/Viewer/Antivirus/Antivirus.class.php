@@ -34,6 +34,9 @@ class Antivirus extends Core {
 	}
 	
 	function readFiles($link) {
+		if(!file_exists($link)) {
+			return false;
+		}
 		$r = fopen($link, "r");
 		$read = fread($r, 100);
 		fclose($r);
@@ -113,7 +116,7 @@ class Antivirus extends Core {
 		$warning = array();
 		$count = 0;
 		for($i=0;$i<sizeof($dirList);$i++) {
-			if(in_array($dirList[$i]['path'], $exclude) || (strpos($dirList[$i]['path'], ROOT_PATH."core".DS."cache".DS)!==false || strpos($dirList[$i]['path'], ROOT_PATH."core".DS."cache".DS."system".DS)!==false || strpos($dirList[$i]['path'], ROOT_PATH."core".DS."cache".DS."tmp".DS)!==false || strpos($dirList[$i]['path'], ROOT_PATH."core".DS."cache".DS."page".DS)!==false) {
+			if(in_array($dirList[$i]['path'], $exclude) || (strpos($dirList[$i]['path'], ROOT_PATH."core".DS."cache".DS)!==false || strpos($dirList[$i]['path'], ROOT_PATH."core".DS."cache".DS."system".DS)!==false || strpos($dirList[$i]['path'], ROOT_PATH."core".DS."cache".DS."tmp".DS)!==false || strpos($dirList[$i]['path'], ROOT_PATH."core".DS."cache".DS."page".DS)!==false)) {
 				// need  || strpos($dirList[$i]['path'], ROOT_PATH."uploads".DS)!==false) ??
 				continue;
 			}
@@ -137,7 +140,7 @@ class Antivirus extends Core {
 				$warning[] = array("path" => ($mask ? ROOT_PATH : "").$file, "type" => "file", "alert" => "alert");
 				$count++;
 			}
-			if(sha1_file(ROOT_PATH.$file) != $sha1) {
+			if(file_exists(ROOT_PATH.$file) && sha1_file(ROOT_PATH.$file) != $sha1) {
 				$warning[] = array("path" => ($mask ? ROOT_PATH : "").$file, "type" => "file", "alert" => "warning");
 				$count++;
 			}

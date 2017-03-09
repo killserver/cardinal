@@ -15,6 +15,9 @@ class JSONHelper {
 			throw new Exception('First parameter is not correct', 6);
 		}
 		$str = json_decode($str, true);
+		if(null === $result) {
+			throw new Exception(json_last_error(), 6);
+		}
 		$list = get_object_vars($this);
 		if(sizeof($list)==0) {
 			$list = $str;

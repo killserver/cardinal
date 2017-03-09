@@ -25,7 +25,7 @@ class cache {
 	private static $conn_link = null;
 	private static $conn_path = null;
 
-	final public function cache() {
+	final public function __construct() {
 	global $config;
 		if(defined("INSTALLER")) {
 			return false;

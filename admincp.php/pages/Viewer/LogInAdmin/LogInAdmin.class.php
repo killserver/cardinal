@@ -23,7 +23,10 @@ class LogInAdmin extends Core {
 			$file = file($file);
 			$file = array_map("trim", $file);
 			for($i=0;$i<sizeof($file);$i++) {
-				templates::assign_vars(unserialize($file[$i]), "logs", "logs".$i);
+				$file[$i] = unserialize($file[$i]);
+				$file[$i]['lAction'] = str_replace("\\\"", "\"", $file[$i]['lAction']);
+				$file[$i]['lId'] = ($i+1);
+				templates::assign_vars($file[$i], "logs", "logs".$i);
 			}
 		}
 		$this->Prints("LogInAdmin");
