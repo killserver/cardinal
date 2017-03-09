@@ -18,8 +18,12 @@ echo "403 ERROR";
 die();
 }
 
-define("BLOCK", 4*1024);
-define("API_URL", "http://online-killer.pp.ua/api.php");
+if(!defined("BLOCK")) {
+	define("BLOCK", 4*1024);
+}
+if(!defined("API_URL")) {
+	define("API_URL", "http://online-killer.pp.ua/api.php");
+}
 if(!defined("ROUTE_GET_URL")) {
 	define("ROUTE_GET_URL", "PATH_INFO");
 }

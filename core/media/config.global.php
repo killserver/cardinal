@@ -21,48 +21,118 @@ die();
 }
 
 // Cache
-define("CACHE_MEMCACHE", 1);
-define("CACHE_MEMCACHED", 2);
-define("CACHE_FILE", 3);
-define("CACHE_FTP", 4);
-define("CACHE_XCACHE", 5);
-define("CACHE_REDIS", 6);
-define("CACHE_NONE", 0);
+if(!defined("CACHE_MEMCACHE")) {
+	define("CACHE_MEMCACHE", 1);
+}
+if(!defined("CACHE_MEMCACHED")) {
+	define("CACHE_MEMCACHED", 2);
+}
+if(!defined("CACHE_FILE")) {
+	define("CACHE_FILE", 3);
+}
+if(!defined("CACHE_FTP")) {
+	define("CACHE_FTP", 4);
+}
+if(!defined("CACHE_XCACHE")) {
+	define("CACHE_XCACHE", 5);
+}
+if(!defined("CACHE_REDIS")) {
+	define("CACHE_REDIS", 6);
+}
+if(!defined("CACHE_NONE")) {
+	define("CACHE_NONE", 0);
+}
 
 // Error
-define("ERROR_FILE", 0);
-define("ERROR_DB", 1);
+if(!defined("ERROR_FILE")) {
+	define("ERROR_FILE", 0);
+}
+if(!defined("ERROR_DB")) {
+	define("ERROR_DB", 1);
+}
 
 // Debug
-define("DEBUG_MEMORY", 1);
-define("DEBUG_TIME", 2);
-define("DEBUG_FILES", 3);
-define("DEBUG_INCLUDE", 4);
-define("DEBUG_DB", 5);
-define("DEBUG_TEMPLATE", 6);
-define("DEBUG_FILE", 12);
-define("DEBUG_CORE", 24);
-define("DEBUG_DBTEMP", 30);
-define("DEBUG_ALL", 720);
+if(!defined("DEBUG_MEMORY")) {
+	define("DEBUG_MEMORY", 1);
+}
+if(!defined("DEBUG_TIME")) {
+	define("DEBUG_TIME", 2);
+}
+if(!defined("DEBUG_FILES")) {
+	define("DEBUG_FILES", 3);
+}
+if(!defined("DEBUG_INCLUDE")) {
+	define("DEBUG_INCLUDE", 4);
+}
+if(!defined("DEBUG_DB")) {
+	define("DEBUG_DB", 5);
+}
+if(!defined("DEBUG_TEMPLATE")) {
+	define("DEBUG_TEMPLATE", 6);
+}
+if(!defined("DEBUG_FILE")) {
+	define("DEBUG_FILE", 12);
+}
+if(!defined("DEBUG_CORE")) {
+	define("DEBUG_CORE", 24);
+}
+if(!defined("DEBUG_DBTEMP")) {
+	define("DEBUG_DBTEMP", 30);
+}
+if(!defined("DEBUG_ALL")) {
+	define("DEBUG_ALL", 720);
+}
 
 // Upload
-define("UPLOAD_CORE", 10);
-define("UPLOAD_FTP", 20);
-define("UPLOAD_MYSQL", 30);
-define("UPLOAD_DROPBOX", 40);
-define("UPLOAD_CF", 200);
-define("UPLOAD_CFM", 6000);
-define("UPLOAD_CM", 12000);
-define("UPLOAD_CMD", 12000);
-define("UPLOAD_ALL", 240000);
+if(!defined("UPLOAD_CORE")) {
+	define("UPLOAD_CORE", 10);
+}
+if(!defined("UPLOAD_FTP")) {
+	define("UPLOAD_FTP", 20);
+}
+if(!defined("UPLOAD_MYSQL")) {
+	define("UPLOAD_MYSQL", 30);
+}
+if(!defined("UPLOAD_DROPBOX")) {
+	define("UPLOAD_DROPBOX", 40);
+}
+if(!defined("UPLOAD_CF")) {
+	define("UPLOAD_CF", 200);
+}
+if(!defined("UPLOAD_CFM")) {
+	define("UPLOAD_CFM", 6000);
+}
+if(!defined("UPLOAD_CM")) {
+	define("UPLOAD_CM", 12000);
+}
+if(!defined("UPLOAD_CMD")) {
+	define("UPLOAD_CMD", 12000);
+}
+if(!defined("UPLOAD_ALL")) {
+	define("UPLOAD_ALL", 240000);
+}
 
-define("VERSION", "6.1");
-define("DB_VERSION", "3.5");
-define("LEVEL_ADMIN", 3);
-define("LEVEL_MODER", 2);
-define("LEVEL_USER", 1);
-define("LEVEL_GUEST", 0);
-define("S_TIME_VIEW", "d-m-Y H:i:s");
+if(!defined("VERSION")) {
+	define("VERSION", "6.2");
+}
+if(!defined("DB_VERSION")) {
+	define("DB_VERSION", "3.5");
+}
+if(!defined("LEVEL_ADMIN")) {
+	define("LEVEL_ADMIN", 3);
+}
+if(!defined("LEVEL_MODER")) {
+	define("LEVEL_MODER", 2);
+}
+if(!defined("LEVEL_USER")) {
+	define("LEVEL_USER", 1);
+}
+if(!defined("LEVEL_GUEST")) {
+	define("LEVEL_GUEST", 0);
+}
+if(!defined("S_TIME_VIEW")) {
+	define("S_TIME_VIEW", "d-m-Y H:i:s");
+}
 
 // Shop
 if(!defined("SERVER_MODULES")) {

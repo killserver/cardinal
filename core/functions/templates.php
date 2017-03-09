@@ -60,7 +60,7 @@ global $user;
 		$dirs = read_dir(ROOT_PATH."core".DS."modules".DS."js".DS, ".".ROOT_EX);
 		sort($dirs);
 		for($i=0;$i<sizeof($dirs);$i++) {
-			if(file_exists(ROOT_PATH."core".DS."modules".DS."js".DS.$dirs[$i])) {
+			if(file_exists(ROOT_PATH."core".DS."modules".DS."js".DS.$dirs[$i]) && $dirs[$i]!="index.php") {
 				include_once(ROOT_PATH."core".DS."modules".DS."js".DS.$dirs[$i]);
 			}
 		}
@@ -73,7 +73,7 @@ global $user;
 		$dirs = read_dir(ROOT_PATH."core".DS."modules".DS."css".DS, ".".ROOT_EX);
 		sort($dirs);
 		for($i=0;$i<sizeof($dirs);$i++) {
-			if(file_exists(ROOT_PATH."core".DS."modules".DS."css".DS.$dirs[$i])) {
+			if(file_exists(ROOT_PATH."core".DS."modules".DS."css".DS.$dirs[$i]) && $dirs[$i]!="index.php") {
 				include_once(ROOT_PATH."core".DS."modules".DS."css".DS.$dirs[$i]);
 			}
 		}
