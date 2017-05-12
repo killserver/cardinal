@@ -49,8 +49,11 @@ class db_pdo extends DriverParam implements drivers {
 	}
 	public function connect($host, $user, $pass, $db, $charset, $port) {
 		if (!class_exists('PDO')) {
-			HTTP::echos();
-			echo ('Server database PDO not support PHP');
+			if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
+				HTTP::echos('Server database PDO not support PHP');
+			} else {
+				echo ('Server database PDO not support PHP');
+			}
 			die();
 		}
 		try {
@@ -61,7 +64,9 @@ class db_pdo extends DriverParam implements drivers {
 			$this->mc->query("SET CHARACTER SET '".$charset."'");
 			$parseInt = intval($this->mc->errorCode());
 			if(!empty($parseInt)) {
-				HTTP::echos();
+				if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
+					HTTP::echos();
+				}
 				switch($this->mc->errorCode()) {
 					case 1044:
 					case 1045:
@@ -88,7 +93,11 @@ class db_pdo extends DriverParam implements drivers {
 			$this->connecten = true;
 			$this->mc->setAttribute(PDO::ATTR_AUTOCOMMIT, 0);
 		} catch(Exception $e) {
-			Error::handlePhpError($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
+			if(class_exists("cardinalError")) {
+				cardinalError::handlePhpError($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
+			} else {
+				throw new Exception($e);
+			}
 			exit();
 		}
 	}

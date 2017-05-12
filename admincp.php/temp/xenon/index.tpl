@@ -1,7 +1,7 @@
 
 			<div class="row">
 				
-				[if {is_new}==1]<a href="{C_default_http_host}admincp.php/?pages=Updaters" class="col-sm-3">
+				[if {is_new}==1]<a href="{C_default_http_host}admincp.php/?pages=Updaters" class="col-sd-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-xs-12">
 					<div class="xe-widget xe-counter xe-counter-red">
 					<div class="xe-icon"><i class="linecons-params"></i></div>
 					<div class="xe-label">
@@ -9,9 +9,9 @@
 						<span>{L_new_version}</span>
 					</div>
 					</div>
-				</a>[/if]
+				</a>[/if {is_new}==1]
 			
-				<div class="col-sm-3"[if {uptime_visible}==false] style="display:none;"[/if {uptime_visible}==false]>
+				<div class="col-sd-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-xs-12"[if {uptime_visible}==false] style="display:none;"[/if {uptime_visible}==false]>
 					
 					<div class="xe-widget xe-counter" data-count=".num" data-from="0" data-to="{uptime_value}" data-suffix="%" data-duration="2">
 						<div class="xe-icon">
@@ -25,9 +25,9 @@
 					
 				</div>
 				
-				[if {isUsers}==1]<a href="{C_default_http_host}admincp.php/?pages=Users" class="col-sm-3">
+				[if {isUsers}==1]<a href="{C_default_http_host}admincp.php/?pages=Users" class="col-sd-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-xs-12">
 					
-					<div class="xe-widget xe-counter xe-counter-blue" data-count=".num" data-from="1" data-to="{users}" data-duration="3" data-easing="false">
+					<div class="xe-widget xe-counter xe-counter-blue" data-count=".num" data-from="0" data-to="{users}" data-duration="3" data-easing="false">
 						<div class="xe-icon">
 							<i class="linecons-user"></i>
 						</div>
@@ -37,11 +37,11 @@
 						</div>
 					</div>
 				
-				</a>[/if]
+				</a>[/if {isUsers}==1]
 				
-				<span id="cache" class="col-sm-3">
+				<span id="cache" class="col-sd-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-xs-12">
 					
-					<div class="xe-widget xe-counter xe-counter-purple" data-count=".num" data-from="1" data-to="{Cache}" data-duration="3" data-easing="false">
+					<div class="xe-widget xe-counter xe-counter-purple" data-count=".num" data-from="0" data-to="{CacheSize}" data-suffix="{CacheSizeS}" data-duration="3" data-easing="false">
 						<div class="xe-icon">
 							<i class="linecons-inbox"></i>
 						</div>
@@ -53,9 +53,9 @@
 				
 				</span>
 				
-				<span id="cachephp" class="col-sm-3">
+				<span id="cachephp" class="col-sd-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-xs-12">
 					
-					<div class="xe-widget xe-counter xe-counter-purple" data-count=".num" data-from="1" data-to="{CachePHP}" data-duration="3" data-easing="false">
+					<div class="xe-widget xe-counter xe-counter-purple" data-count=".num" data-from="0" data-to="{CachePHPSize}" data-suffix="{CachePHPSizeS}" data-duration="3" data-easing="false">
 						<div class="xe-icon">
 							<i class="linecons-inbox"></i>
 						</div>
@@ -66,6 +66,19 @@
 					</div>
 				
 				</span>
+				
+				[if {is_messagesAdmin}==1]
+				<div class="col-sm-12">
+					<div class="panel panel-default">
+						<div class="panel-title">{L_"Рекомендации от"}&nbsp;<b>Cardinal Engine</b></div>
+						<div class="panel-body">
+							<div class="scrollable" data-max-height="200">
+								{messagesAdmin}
+							</div>
+						</div>
+					</div>
+				</div>
+				[/if]
 				
 				[if {is_new}==1]
 				<div class="col-sm-12">

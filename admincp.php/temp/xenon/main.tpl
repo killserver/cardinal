@@ -209,7 +209,7 @@
 		<!-- Add "fixed" class to make the sidebar fixed always to the browser viewport. -->
 		<!-- Adding class "toggle-others" will keep only one menu item open at a time. -->
 		<!-- Adding class "collapsed" collapse sidebar root elements and show only icons. -->
-		<div class="sidebar-menu toggle-others fixed[if {C_FullMenu}!=1] collapsed[/if {C_FullMenu}!=1]">
+		<div class="sidebar-menu toggle-others fixed[if {C_FullMenu}!=1&&{M_[mobile]}==false] collapsed[/if {C_FullMenu}!=1&&{M_[mobile]}==false]">
 			
 			<div class="sidebar-menu-inner">	
 				
@@ -227,7 +227,7 @@
 					</div>
 					
 					<!-- This will toggle the mobile menu and will be visible only on mobile devices -->
-					<div class="mobile-menu-toggle visible-xs">
+					<div class="mobile-menu-toggle visible-xs visible-sm">
 						<!--a href="#" data-toggle="user-info-menu">
 							<i class="fa-bell-o"></i>
 							<span class="badge badge-success">7</span>
@@ -474,10 +474,10 @@
 	<script src="assets/xenon/js/bootstrap.min.js?1"></script>
 	<script src="assets/xenon/js/TweenMax.min.js?1"></script>
 	<script src="assets/xenon/js/resizeable.js?1"></script>
-	<script src="assets/xenon/js/joinable.js?1"></script>
+	<script src="assets/xenon/js/joinable.js?2"></script>
 	<script src="assets/xenon/js/xenon-api.js?1"></script>
 	<script src="assets/xenon/js/xenon-toggles.js?1"></script>
-	<script src="assets/xenon/js/ckeditor/ckeditor.js"></script>
+	<script src="assets/xenon/js/ckeditor/ckeditor.js?1"></script>
 	<script src="assets/xenon/js/ckeditor/adapters/jquery.js"></script>
 	{js_list}
 

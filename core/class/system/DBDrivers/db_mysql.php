@@ -58,13 +58,18 @@ class db_mysql extends DriverParam implements drivers {
 	}
 	public function connect($host, $user, $pass, $db, $charset, $port) {
 		if(!function_exists('mysql_connect')) {
-			HTTP::echos();
-			echo ('Server database MySQL not support PHP');
+			if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
+				HTTP::echos('Server database MySQL not support PHP');
+			} else {
+				echo ('Server database MySQL not support PHP');
+			}
 			die();
 		}
 		try {
 			if(!@$this->mc = mysql_connect($host, $user, $pass)) {
-				HTTP::echos();
+				if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
+					HTTP::echos();
+				}
 				switch(mysql_errno($this->mc)) {
 					case 1044:
 					case 1045:
@@ -90,7 +95,11 @@ class db_mysql extends DriverParam implements drivers {
 			$this->query("SET CHARACTER SET '".$charset."'");
 			$this->connecten = true;
 		} catch(Exception $e) {
-			Error::handlePhpError($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
+			if(class_exists("cardinalError")) {
+				cardinalError::handlePhpError($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
+			} else {
+				throw new Exception($e);
+			}
 			exit();
 		}
 	}

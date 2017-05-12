@@ -142,7 +142,7 @@ class KernelArcher {
 			} else {
 				$type = $v;
 			}
-			if(!is_string($type)) {
+			if(!is_string($type) && !is_numeric($type)) {
 				$type = serialize($type);
 			}
 			$type = trim($type);
@@ -168,11 +168,11 @@ class KernelArcher {
 		$model->Insert();
 		if(!empty($objTemplate)) {
 			if(isset($_GET['type'])) {
-				location("{C_default_http_local}{D_ADMINCP_DIRECTORY}?pages=Archer&type=".Saves::SaveOld($_GET['type']), 3, false);
+				location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']), 3, false);
 			}
 			$this->UnlimitedBladeWorks($objTemplate, $template, $load);
 		} else if(isset($_GET['type'])) {
-			location("{C_default_http_local}{D_ADMINCP_DIRECTORY}?pages=Archer&type=".Saves::SaveOld($_GET['type']));
+			location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']));
 		}
 	}
 	
@@ -298,7 +298,7 @@ class KernelArcher {
 			} else {
 				$type = $v;
 			}
-			if(!is_string($type)) {
+			if(!is_string($type) && !is_numeric($type)) {
 				$type = serialize($type);
 			}
 			$type = trim($type);
@@ -324,11 +324,11 @@ class KernelArcher {
 		$model->Update();
 		if(!empty($objTemplate)) {
 			if(isset($_GET['type'])) {
-				location("{C_default_http_local}{D_ADMINCP_DIRECTORY}?pages=Archer&type=".Saves::SaveOld($_GET['type']), 3, false);
+				location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']), 3, false);
 			}
 			$this->UnlimitedBladeWorks($objTemplate, $template, $load);
 		} else if(isset($_GET['type'])) {
-			location("{C_default_http_local}{D_ADMINCP_DIRECTORY}?pages=Archer&type=".Saves::SaveOld($_GET['type']));
+			location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']));
 		}
 	}
 	
@@ -411,11 +411,14 @@ class KernelArcher {
 			$models = $model;
 		}
 		$del = $this->callArr($model, "TakeDelete", array($model, $models));
-		if(isset($del['model'])) {
+		if(is_array($del) && isset($del['model'])) {
 			$model = $del['model'];
 		}
-		if(isset($del['models'])) {
+		if(is_array($del) && isset($del['models'])) {
 			$models = $del['models'];
+		}
+		if(is_object($del)) {
+			$models = $del;
 		}
 		$models = $models->getArray();
 		$first = current($models);
@@ -450,11 +453,11 @@ class KernelArcher {
 		$list = $model->Deletes();
 		if(!empty($objTemplate)) {
 			if(isset($_GET['type'])) {
-				location("{C_default_http_local}{D_ADMINCP_DIRECTORY}?pages=Archer&type=".Saves::SaveOld($_GET['type']), 3, false);
+				location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']), 3, false);
 			}
 			$this->UnlimitedBladeWorks($objTemplate, $template, $load);
 		} else if(isset($_GET['type'])) {
-			location("{C_default_http_local}{D_ADMINCP_DIRECTORY}?pages=Archer&type=".Saves::SaveOld($_GET['type']));
+			location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']));
 		}
 	}
 	
@@ -581,35 +584,35 @@ class KernelArcher {
 		call_user_func_array("templates::assign_var", array($arr['name'], $arr['value']));
 	}
 	
-	function Viewing($type, $name, $val, $default = "", $block = false) {
+	public static function Viewing($type, $name, $val, $default = "", $block = false) {
 		$retType = "";
 		switch($type) {
 			case "int":
 			case "bigint":
-				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"numeric\" name=\"".$name."\" placeholder=\"{L_\"Введите&nbsp;".$name."\"}\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"numeric\" name=\"".$name."\" placeholder=\"".(defined("ADMINCP_DIRECTORY") ? "{L_\"" : "")."Введите&nbsp;".$name.(defined("ADMINCP_DIRECTORY") ? "\"}" : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
 			break;
 			case "enum":
 				$enum = explode(",", $val);
 				$enum = array_map("trim", $enum);
-				$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " disabled=\"disabled\"" : "")."><option value=\"\">{L_\"Выберите\"}&nbsp;{L_".$name."}</option>";
+				$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " disabled=\"disabled\"" : "")."><option value=\"\">".(defined("ADMINCP_DIRECTORY") ? "{L_\"" : "")."Выберите".(defined("ADMINCP_DIRECTORY") ? "\"}" : "")."&nbsp;".(defined("ADMINCP_DIRECTORY") ? "{L_\"" : "").$name."}</option>";
 				for($i=0;$i<sizeof($enum);$i++) {
-					$retType .= "<option value=\"{L_\"".htmlspecialchars($enum[$i])."\"}\"".(!empty($default) && $default==$enum[$i] ? " selected=\"selected\"" : "").">{L_\"".htmlspecialchars($enum[$i])."\"}</option>";
+					$retType .= "<option value=\"".(defined("ADMINCP_DIRECTORY") ? "{L_\"" : "").htmlspecialchars($enum[$i]).(defined("ADMINCP_DIRECTORY") ? "\"}" : "")."\"".(!empty($default) && $default==$enum[$i] ? " selected=\"selected\"" : "").">".(defined("ADMINCP_DIRECTORY") ? "{L_\"" : "").htmlspecialchars($enum[$i]).(defined("ADMINCP_DIRECTORY") ? "\"}" : "")."</option>";
 				}
 				$retType .= "</select>";
 			break;
 			case "array":
 				$enum = array_map("trim", $val);
-				$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " disabled=\"disabled\"" : "")."><option value=\"\">{L_\"Выберите\"}&nbsp;{L_".$name."}</option>";
+				$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " disabled=\"disabled\"" : "")."><option value=\"\">".(defined("ADMINCP_DIRECTORY") ? "{L_\"" : "")."Выберите".(defined("ADMINCP_DIRECTORY") ? "\"}" : "")."&nbsp;{L_".$name."}</option>";
 				for($i=0;$i<sizeof($enum);$i++) {
-					$retType .= "<option value=\"{L_\"".htmlspecialchars($enum[$i])."\"}\"".(!empty($default) && $default==$enum[$i] ? " selected=\"selected\"" : "").">{L_\"".htmlspecialchars($enum[$i])."\"}</option>";
+					$retType .= "<option value=\"".(defined("ADMINCP_DIRECTORY") ? "{L_\"" : "").htmlspecialchars($enum[$i])."".(defined("ADMINCP_DIRECTORY") ? "\"}" : "")."\"".(!empty($default) && $default==$enum[$i] ? " selected=\"selected\"" : "").">".(defined("ADMINCP_DIRECTORY") ? "{L_\"" : "").htmlspecialchars($enum[$i])."".(defined("ADMINCP_DIRECTORY") ? "\"}" : "")."</option>";
 				}
 				$retType .= "</select>";
 			break;
 			case "varchar":
-				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"text\" name=\"".$name."\" placeholder=\"{L_\"Введите\"}&nbsp;{L_".$name."}\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"text\" name=\"".$name."\" placeholder=\"".(defined("ADMINCP_DIRECTORY") ? "{L_\"" : "")."Введите".(defined("ADMINCP_DIRECTORY") ? "\"}" : "")."&nbsp;{L_".$name."}\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
 			break;
 			case "file":
-				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"file\" name=\"".$name."\" placeholder=\"{L_\"Выберите\"}&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"{C_default_http_local}".$val."\" target=\"_blank\">{L_\"просмотреть\"}</a>" : "")."<br>";
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"file\" name=\"".$name."\" placeholder=\"".(defined("ADMINCP_DIRECTORY") ? "{L_\"" : "")."Выберите".(defined("ADMINCP_DIRECTORY") ? "\"}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"{C_default_http_local}".$val."\" target=\"_blank\">".(defined("ADMINCP_DIRECTORY") ? "{L_\"" : "")."просмотреть".(defined("ADMINCP_DIRECTORY") ? "\"}" : "")."</a>" : "")."<br>";
 			break;
 			case "image":
 				$retType = (!empty($val) ? "<img src=\"{C_default_http_local}".$val."\" srcset=\"{C_default_http_local}".$val." 2x\" width=\"100%\">" : "")."<br>";
@@ -619,9 +622,9 @@ class KernelArcher {
 				$enum = array_map("trim", $enum);
 				$retType = "<span id=\"inputForFile\">";
 				for($i=0;$i<sizeof($enum);$i++) {
-					$retType .= "<input class=\"form-control\" type=\"file\" name=\"".$name."[".$i."]\" placeholder=\"{L_\"Выберите\"}&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"{C_default_http_local}".$enum[$i]."\" target=\"_blank\">{L_\"просмотреть\"}</a>" : "")."<br>";
+					$retType .= "<input class=\"form-control\" type=\"file\" name=\"".$name."[".$i."]\" placeholder=\"".(defined("ADMINCP_DIRECTORY") ? "{L_\"" : "")."Выберите".(defined("ADMINCP_DIRECTORY") ? "\"}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"{C_default_http_local}".$enum[$i]."\" target=\"_blank\">".(defined("ADMINCP_DIRECTORY") ? "{L_\"" : "")."просмотреть".(defined("ADMINCP_DIRECTORY") ? "\"}" : "")."</a>" : "")."<br>";
 				}
-				$retType .= "</span><br><a href=\"javascript:addInputFile('".$name."')\">{L_\"Добавить\"}</a>";
+				$retType .= "</span><br><a href=\"javascript:addInputFile('".$name."')\">".(defined("ADMINCP_DIRECTORY") ? "{L_\"" : "")."Добавить".(defined("ADMINCP_DIRECTORY") ? "\"}" : "")."</a>";
 			break;
 			case "imageArray":
 				$enum = explode(",", $val);
@@ -635,7 +638,7 @@ class KernelArcher {
 			case "mediumtext":
 			case "text":
 			case "longtext":
-				$retType = "<textarea id=\"".$name."\" name=\"".$name."\" placeholder=\"{L_\"Введите\"}&nbsp;{L_".$name."}\" class=\"form-control ckeditor\" rows=\"10\"".($block ? " disabled=\"disabled\"" : "").">".htmlspecialchars($val)."</textarea>";
+				$retType = "<textarea id=\"".$name."\" name=\"".$name."\" placeholder=\"".(defined("ADMINCP_DIRECTORY") ? "{L_\"" : "")."Введите".(defined("ADMINCP_DIRECTORY") ? "\"}" : "")."&nbsp;{L_".$name."}\" class=\"form-control ckeditor\" rows=\"10\"".($block ? " disabled=\"disabled\"" : "").">".htmlspecialchars($val)."</textarea>";
 			break;
 		}
 		if(is_array($val) && !isset($val['type'])) {
@@ -643,7 +646,7 @@ class KernelArcher {
 			$enum = array_map("trim", $enum);
 			$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " disabled=\"disabled\"" : "")."><option value=\"\">{L_\"Выберите\"}&nbsp;{L_".$name."}</option>";
 			for($i=0;$i<sizeof($enum);$i++) {
-				$retType .= "<option value=\"{L_\"".htmlspecialchars($enum[$i])."\"}\"".(!empty($default) && $default==$enum[$i] ? " selected=\"selected\"" : "").">{L_\"".htmlspecialchars($enum[$i])."\"}</option>";
+				$retType .= "<option value=\"".(defined("ADMINCP_DIRECTORY") ? "{L_\"" : "").htmlspecialchars($enum[$i])."".(defined("ADMINCP_DIRECTORY") ? "\"}" : "")."\"".(!empty($default) && $default==$enum[$i] ? " selected=\"selected\"" : "").">".(defined("ADMINCP_DIRECTORY") ? "{L_\"" : "").htmlspecialchars($enum[$i])."".(defined("ADMINCP_DIRECTORY") ? "\"}" : "")."</option>";
 			}
 			$retType .= "</select>";
 		} else if(is_array($val) && isset($val['type'])) {

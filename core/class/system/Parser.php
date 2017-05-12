@@ -105,7 +105,7 @@ class Parser {
 	 * @param string $url Url for parser
 	 * @return Parser
      */
-	function __construct($url = "") {
+	final public function __construct($url = "") {
 		if(!empty($url)) {
 			$this->url = $url;
 		}
@@ -117,7 +117,7 @@ class Parser {
 	 * @param array $post Send post data
 	 * @return $this Parser
      */
-	final function post($post = array()) {
+	final public function post($post = array()) {
 		if(is_array($post) && sizeof($post)>0) {
 			$this->post = array_merge($this->post, $post);
 		}
@@ -130,7 +130,7 @@ class Parser {
 	 * @param string $coopath Cookie path
 	 * @return $this Parser
      */
-	final function cookie($coo = true, $coopath = "") {
+	final public function cookie($coo = true, $coopath = "") {
 		if(empty($coopath)) {
 			$coopath = rand(0, getrandmax());
 		}
@@ -144,7 +144,7 @@ class Parser {
 	 * @param $agent UserAgent
 	 * @return $this Parser
      */
-	final function agent($agent) {
+	final public function agent($agent) {
 		$this->agent = $agent;
 		return $this;
 	}
@@ -154,7 +154,7 @@ class Parser {
 	 * @param bool|true $forceReferrer Switch referrer
 	 * @return $this Parser
      */
-	final function forceReferer($forceReferrer = true) {
+	final public function forceReferer($forceReferrer = true) {
 		$this->forceReferrer = $forceReferrer;
 		return $this;
 	}
@@ -164,7 +164,7 @@ class Parser {
 	 * @param $referer Needed link
 	 * @return $this Parser
      */
-	final function referer($referer) {
+	final public function referer($referer) {
 		$this->referrer = $referer;
 		return $this;
 	}
@@ -174,7 +174,7 @@ class Parser {
 	 * @param $proxy IP proxy
 	 * @return $this Parser
      */
-	final function proxy($proxy) {
+	final public function proxy($proxy) {
 		$this->proxy = $proxy;
 		return $this;
 	}
@@ -184,7 +184,7 @@ class Parser {
 	 * @param $url Link
 	 * @return $this Parser
      */
-	final function url($url) {
+	final public function url($url) {
 		$this->url = $url;
 		return $this;
 	}
@@ -195,7 +195,7 @@ class Parser {
 	 * @param bool|true $display_errors Activation view errors
 	 * @return $this Parser
      */
-	final function error($error = true, $display_errors = true) {
+	final public function error($error = true, $display_errors = true) {
 		$this->error = $error;
 		$this->display_errors = $display_errors;
 		return $this;
@@ -206,7 +206,7 @@ class Parser {
 	 * @param bool|true $header Activation parsing header
 	 * @return $this Parser
      */
-	final function header($header = true) {
+	final public function header($header = true) {
 		$this->header = $header;
 		return $this;
 	}
@@ -216,7 +216,7 @@ class Parser {
 	 * @param array $h Array headers
 	 * @return $this Parser
      */
-	final function headers($h = array()) {
+	final public function headers($h = array()) {
 		$this->headerList = array_merge($this->headerList, $h);
 		return $this;
 	}
@@ -226,7 +226,7 @@ class Parser {
 	 * @param bool|true $header_array Switch headers
 	 * @return $this Parser
      */
-	final function header_array($header_array = true) {
+	final public function header_array($header_array = true) {
 		$this->header_array = $header_array;
 		return $this;
 	}
@@ -236,7 +236,7 @@ class Parser {
 	 * @param bool|true $headerClear Switch clear headers
 	 * @return $this Parser
      */
-	final function headerClear($headerClear = true) {
+	final public function headerClear($headerClear = true) {
 		$this->header_clear = $headerClear;
 		return $this;
 	}
@@ -246,7 +246,7 @@ class Parser {
 	 * @param bool|true $gzip Switch gzip
 	 * @return $this Parser
      */
-	final function gzip($gzip = true) {
+	final public function gzip($gzip = true) {
 		$this->gzip = $gzip;
 		return $this;
 	}
@@ -256,7 +256,7 @@ class Parser {
 	 * @param bool|true $init Switch initialization
 	 * @return $this Parser
      */
-	final function init($init = true) {
+	final public function init($init = true) {
 		$this->init = $init;
 		return $this;
 	}
@@ -266,7 +266,7 @@ class Parser {
 	 * @param $timeout Time in seconds
 	 * @return $this Parser
      */
-	final function timeout($timeout) {
+	final public function timeout($timeout) {
 		$this->timeout = $timeout;
 		return $this;
 	}
@@ -275,7 +275,7 @@ class Parser {
 	 * Get header list
 	 * @return array Array headers
      */
-	final function getHeaders() {
+	final public function getHeaders() {
 		return $this->headers;
 	}
 
@@ -283,7 +283,7 @@ class Parser {
 	 * Get error list
 	 * @return array Get errors
      */
-	final function getErrors() {
+	final public function getErrors() {
 		return $this->errors;
 	}
 
@@ -301,7 +301,7 @@ class Parser {
 	 * @param string $url Need link and start, or initialization parsing
 	 * @return array|bool|string|$this Result parsing
      */
-	final function get($url = "") {
+	final public function get($url = "") {
 		if(empty($url)) {
 			$url = $this->url;
 		}
@@ -316,8 +316,8 @@ class Parser {
 	//curl_setopt($ch, CURLOPT_FAILONERROR, 1);
 	//Устанавливаем значение referer - адрес последней активной страницы
 		if(is_bool($this->cookie) && $this->cookie && !empty($this->cookie_path)) {
-			curl_setopt($ch, CURLOPT_COOKIEJAR, ROOT_PATH."core".DS."cache".DS.$this->cookie_path.".txt");
-			curl_setopt($ch, CURLOPT_COOKIEFILE, ROOT_PATH."core".DS."cache".DS.$this->cookie_path.".txt");
+			curl_setopt($ch, CURLOPT_COOKIEJAR, (defined("ROOT_PATH") ? ROOT_PATH."core".DS."cache".DS.$this->cookie_path.".txt" : $this->cookie_path));
+			curl_setopt($ch, CURLOPT_COOKIEFILE, (defined("ROOT_PATH") ? ROOT_PATH."core".DS."cache".DS.$this->cookie_path.".txt" : $this->cookie_path));
 		}
 		if(!is_bool($this->cookie) && !empty($this->cookie)) {
 			if(is_array($this->cookie)) {
@@ -348,11 +348,11 @@ class Parser {
 		if(is_array($this->post) && sizeof($this->post)>0) {
 			$post = array();
 			foreach($this->post as $k => $v) {
-				if(!empty($k) && !empty($v)) {
+				if($k != NULL && $v != NULL) {
 					$post[] = $k."=".$v;
-				} else if(!empty($k)) {
+				} else if($k != NULL) {
 					$post[] = $k."=";
-				} else if(!empty($v)) {
+				} else if($v != NULL) {
 					$post[] = $v;
 				}
 			}
@@ -426,7 +426,7 @@ class Parser {
 		}
 	}
 	
-	final function __toString() {
+	final public function __toString() {
 		return $this->html;
 	}
 
@@ -434,7 +434,7 @@ class Parser {
 	 * Get html code parsing
 	 * @return string Parsed html
      */
-	final function getHTML() {
+	final public function getHTML() {
 		return $this->html;
 	}
 	

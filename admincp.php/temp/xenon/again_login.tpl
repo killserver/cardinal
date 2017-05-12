@@ -16,7 +16,7 @@
 	<link rel="stylesheet" href="assets/xenon/css/bootstrap.css?1">
 	<link rel="stylesheet" href="assets/xenon/css/xenon-core.css?1">
 	<link rel="stylesheet" href="assets/xenon/css/xenon-forms.css?1">
-	<link rel="stylesheet" href="assets/xenon/css/xenon-components.css?12">
+	<link rel="stylesheet" href="assets/xenon/css/xenon-components.css?13">
 	<link rel="stylesheet" href="assets/xenon/css/xenon-skins.css?1">
 	<link rel="stylesheet" href="assets/xenon/css/custom.css?1">
 
@@ -36,7 +36,7 @@
 	
 		<div class="row">
 		
-			<div class="col-sm-7">
+			<div class="col-sm-12">
 				
 				<script type="text/javascript">
 					jQuery(document).ready(function($)

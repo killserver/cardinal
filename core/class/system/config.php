@@ -53,7 +53,7 @@ class config {
 		if(!isset($configWDB) || !is_array($configWDB)) {
 			$configWDB = array();
 		}
-		$dir = ROOT_PATH."core".DS."cache".DS."system".DS;
+		$dir = defined("ROOT_PATH") ? ROOT_PATH."core".DS."cache".DS."system".DS : dirname(__FILE__).DIRECTORY_SEPARATOR;
 		$filePATH = $dir."configWithoutDB.txt";
 		if($action == "read" && !empty($name) && file_exists($filePATH) && is_readable($filePATH)) {
 			$file = file_get_contents($filePATH);
@@ -114,7 +114,7 @@ class config {
 
 	final public static function init() {
 	global $config;
-		if(defined("WITHOUT_DB") || !db::connected()) {
+		if(defined("WITHOUT_DB") || !class_exists("db") || !method_exists("db", "connected") || !db::connected()) {
 			$cfg = self::initWithoutDB();
 			self::$config = array_merge($config, $cfg);
 			return self::$config;
@@ -218,7 +218,7 @@ class config {
 	}
 
 	final public static function Update($name, $data = "") {
-		if(defined("WITHOUT_DB")) {
+		if(defined("WITHOUT_DB") || !class_exists("db") || !method_exists("db", "connected") || !db::connected()) {
 			return self::initWithoutDB("edit", $name, $data);
 		}
 		db::doquery("REPLACE INTO `config` SET `config_value` = \"".$data."\", `config_name` = \"".$name."\"");

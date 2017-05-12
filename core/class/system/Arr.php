@@ -156,6 +156,56 @@ class Arr {
 		return self::$array;
 	}
 	
+    final public static function divide($array) {
+		$list = func_get_args();
+		if(is_array($array)) {
+			return call_user_func_array(__CLASS__."::divideArr", $list);
+		} else {
+			return call_user_func_array(__CLASS__."::divideSelf", $list);
+		}
+    }
+	
+	final private static function divideArr($arr) {
+		$arrs = array();
+		$arrs[] = array_keys($arr);
+		$arrs[] = array_values($arr);
+		return $arrs;
+	}
+	
+	final private static function divideSelf() {
+		$arrs = array();
+		$arrs[] = array_keys(self::$array);
+		$arrs[] = array_values(self::$array);
+		return $arrs;
+	}
+	
+	final public static function pull($arr, $mixed = "", $default = "") {
+		$list = func_get_args();
+		if(is_array($arr)) {
+			return call_user_func_array(__CLASS__."::pullArr", $list);
+		} else {
+			return call_user_func_array(__CLASS__."::pullSelf", $list);
+		}
+	}
+	
+	final private static function pullArr($arr, $mixed, $default = "") {
+		$val = false;
+		if(self::get($arr, $mixed, $default)) {
+			$val = self::$array[$mixed];
+			unset(self::$array[$mixed]);
+		}
+		return $val;
+	}
+	
+	final private static function pullSelf($mixed, $default = "") {
+		$val = false;
+		if(self::get($mixed, $default)) {
+			$val = self::$array[$mixed];
+			unset(self::$array[$mixed]);
+		}
+		return $val;
+	}
+	
 	final public static function foundValues($key, $array = array()) {
 		$values = array();
 		if(sizeof($array)>0) {
@@ -207,6 +257,10 @@ class Arr {
 			}
 		}
 		return $array;
+	}
+	
+	final public static function wrap($array) {
+		return (!is_array($array) ? array($value) : $value);
 	}
 	
 	final public static function GetAll() {

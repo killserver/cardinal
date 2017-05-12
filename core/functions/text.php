@@ -71,7 +71,7 @@ function iconv_charset($string, $pattern_size = 50){return function_call('iconv_
  * @return string Result detected charset
  */
 function or_iconv_charset($string, $pattern_size = 50) {
-	if(function_exists("mb_detect_encoding") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING) {
+	if(function_exists("mb_detect_encoding") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload')!==false && MB_OVERLOAD_STRING) {
 		return mb_detect_encoding($string, array('UTF-8', 'Windows-1251', 'KOI8-R', 'ISO-8859-5'));
 	} else {
 		$first2 = substr($string, 0, 2);
@@ -152,7 +152,7 @@ function nsubstr($text, $start, $end = "") {
 	if(empty($end)) {
 		$end = nstrlen($text);
 	}
-	if(function_exists("mb_substr") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING) {
+	if(function_exists("mb_substr") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload')!==false && MB_OVERLOAD_STRING) {
 		return mb_substr($text, $start, $end, config::Select('charset'));
 	} elseif(function_exists("iconv_substr")) {
 		return iconv_substr($text, $start, $end, config::Select('charset'));
@@ -167,10 +167,10 @@ function nsubstr($text, $start, $end = "") {
  * @return int Length text
  */
 function nstrlen($text) {
-	if(function_exists("mb_strlen") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING) {
+	if(function_exists("mb_strlen") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload')!==false && MB_OVERLOAD_STRING) {
 		return mb_strlen($text, config::Select('charset'));
 	} elseif(function_exists("iconv_strlen")) {
-		return iconv_strlen($text);
+		return iconv_strlen($text, config::Select('charset'));
 	} else {
 		return strlen($text);
 	}
@@ -188,6 +188,32 @@ function nstr_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT) {
    return str_pad($str, strlen($str)-nstrlen($str)+$pad_len, $pad_str, $dir); 
 }
 
+function nstr_padv2($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT) {
+    $encoding = iconv_charset($str);
+    $padBefore = $dir === STR_PAD_BOTH || $dir === STR_PAD_LEFT;
+    $padAfter = $dir === STR_PAD_BOTH || $dir === STR_PAD_RIGHT;
+    $pad_len -= nstrlen($str, $encoding);
+    $targetLen = $padBefore && $padAfter ? $pad_len / 2 : $pad_len;
+    $strToRepeatLen = nstrlen($pad_str, $encoding);
+    $repeatTimes = ceil($targetLen / $strToRepeatLen);
+    $repeatedString = str_repeat($pad_str, max(0, $repeatTimes)); // safe if used with valid utf-8 strings
+    $before = $padBefore ? nsubstr($repeatedString, 0, floor($targetLen), $encoding) : '';
+    $after = $padAfter ? nsubstr($repeatedString, 0, ceil($targetLen), $encoding) : '';
+    return $before . $str . $after;
+}
+
+function is_infinites($val){return function_call('is_infinites', array($val));}
+function or_is_infinites($val) {
+	return (is_float($val) && (defined("INF") ? ($val==INF || $val==(-(INF))) : (strval($val)=='INF' || strval($val)=='-INF')));
+}
+
+function int_pad($str, $pad_len, $pad_str = 0, $dir = STR_PAD_RIGHT){return function_call('int_pad', array($str, $pad_len, $pad_str, $dir));}
+function or_int_pad($str, $pad_len, $pad_str = 0, $dir = STR_PAD_RIGHT) {
+	$str = str_pad($str, $pad_len, $pad_str, $dir);
+	return intval($str);
+}
+
+
 function del_in_file($file, $row_number) {
 	if(file_exists($file)) {
 		$file_out = file($file);
@@ -203,10 +229,10 @@ function del_in_file($file, $row_number) {
 }
 
 function nstrpos($text, $search, $pos = 0) {
-	if(function_exists("mb_strpos") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING) {
+	if(function_exists("mb_strpos") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload')!==false && MB_OVERLOAD_STRING) {
 		return mb_strpos($text, $search, $pos, config::Select('charset'));
 	} elseif(function_exists("iconv_strpos")) {
-		return iconv_strpos($text, $search, $pos);
+		return iconv_strpos($text, $search, $pos, config::Select('charset'));
 	} else {
 		return strpos($text, $search, $pos);
 	}
@@ -220,6 +246,46 @@ function nucfirst($text, $all = false) {
 		$fc .= strtolowers(nsubstr($text, 1));
 	}
 	return $fc;
+}
+
+/*
+ New on version 6.3
+*/
+function is_ascii($str) {
+	if(is_array($str)) {
+		$str = implode($str);
+	}
+	return !preg_match('/[^\x00-\x7F]/S', $str);
+}
+
+/*
+ New on version 6.3
+*/
+function nltrim($str, $charlist = NULL) {
+	if($charlist === NULL) {
+		return ltrim($str);
+	}
+	if(is_ascii($str)) {
+		return ltrim($str, $charlist);
+	} else {
+		$charlist = preg_replace('#[-\[\]:\\\\^/]#', '\\\\$0', $charlist);
+		return preg_replace('/^['.$charlist.']+/u', '', $str);
+	}
+}
+
+/*
+ New on version 6.3
+*/
+function nrtrim($str, $charlist = NULL) {
+	if($charlist === NULL) {
+		return rtrim($str);
+	}
+	if(is_ascii($str)) {
+		return rtrim($str, $charlist);
+	} else {
+		$charlist = preg_replace('#[-\[\]:\\\\^/]#', '\\\\$0', $charlist);
+		return preg_replace('/['.$charlist.']++$/uD', '', $str);
+	}
 }
 
 function saves($text, $db=false, $ddb=false){return function_call('saves', array($text, $db, $ddb));}
@@ -243,7 +309,7 @@ return $text;
 }
 
 function strtouppers($text) {
-	if(function_exists("mb_strtoupper") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING) {
+	if(function_exists("mb_strtoupper") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload')!==false && MB_OVERLOAD_STRING) {
 		return mb_strtoupper($text, config::Select('charset'));
 	} else {
 		return strtoupper($text);
@@ -251,7 +317,7 @@ function strtouppers($text) {
 }
 
 function strtolowers($text) {
-	if(function_exists("mb_strtolower") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING) {
+	if(function_exists("mb_strtolower") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload')!==false && MB_OVERLOAD_STRING) {
 		return mb_strtolower($text, config::Select('charset'));
 	} else {
 		return strtolower($text);

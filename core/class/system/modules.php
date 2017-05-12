@@ -182,6 +182,18 @@ class modules {
 			return $refClass->newInstanceArgs((array) $re_args);
 		}
 	}
+	
+	final private static function implodeData($del, $arr) {
+		$err = false;
+		$arr = array_values($arr);
+		for($i=0;$i<sizeof($arr);$i++) {
+			if(is_array($arr[$i])) {
+				$err = true;
+				break;
+			}
+		}
+		return ($err ? "" : implode($del, $arr));
+	}
 
 	final public static function get_lang($get, $array = "") {
 	global $lang;
@@ -195,7 +207,7 @@ class modules {
 			$return = func_get_args();
 		}
 		$return = self::applyParam($return, 'after', "_e");
-		return implode("", $return);
+		return self::implodeData("", $return);
 	}
 	
 	final public static function init_mobileDetect() {
@@ -252,11 +264,29 @@ class modules {
 		}
 	}
 	
-	final public static function CheckVersion($old, $new) {
-		if(self::get_config("speed_update")) {
-			$if = ($old)<($new);
+	final public static function CheckVersion($check) {
+		if(function_exists("cardinal_version")) {
+			return cardinal_version($check);
 		} else {
-			$if = intval(str_replace(".", "", $old))<intval(str_replace(".", "", $new));
+			$isChecked = (defined("INTVERSION") ? INTVERSION : (defined("VERSION") ? VERSION : $old));
+			if(empty($check)) {
+				return $isChecked;
+			}
+			if(stripos($check, "-")!==false) {
+				$check = explode("-", $check);
+				$check = current($check);
+			}
+			if(class_exists("config") && method_exists("config", "Select") && config::Select("speed_update")) {
+				$if = ($check)>($isChecked);
+			} else {
+				$checked = intval(str_replace(".", "", $check));
+				$version = intval(str_replace(".", "", $isChecked));
+				if(strlen($checked)>strlen($version)) {
+					$version = int_pad($version, strlen($checked));
+				}
+				$if = $checked>$version;
+			}
+			return $if;
 		}
 		return $if;
 	}
@@ -332,7 +362,7 @@ class modules {
 		if(!defined("WITHOUT_DB") && (defined("IS_INSTALLER") || !self::init_db()->connected())) {
 			return false;
 		}
-		if(!defined("WITHOUT_DB") && !defined("START_VERSION")) {
+		if(!defined("WITHOUT_DB") || !defined("START_VERSION")) {
 			return true;
 		}
 		if(self::CheckVersion("3.1", START_VERSION)) {
@@ -936,6 +966,7 @@ class modules {
 
 	final public static function get_user($get) {
 	global $user;
+		$user = User::load();
 		if(in_array($get, self::$access_user)) {
 			if(isset($user[$get])) {
 				return $user[$get];

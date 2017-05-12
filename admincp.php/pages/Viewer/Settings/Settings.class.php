@@ -28,6 +28,7 @@ class Settings extends Core {
 		$ParsePHP = Arr::get($_POST, 'ParsePHP', "0");
 		$sitename = Arr::get($_POST, 'sitename', lang::get_lang('sitename'));
 		$description = Arr::get($_POST, 'description', lang::get_lang('description'));
+		$replaceProtocols = array("https", "http", "://");
 		$config = '<?php
 		if(!defined("IS_CORE")) {
 		echo "403 ERROR";
@@ -50,23 +51,15 @@ class Settings extends Core {
 			define("START_VERSION", "'.(defined("START_VERSION") ? START_VERSION : "3.1").'");
 		}
 
-		if(isset($_SERVER[\'HTTPS\']) && $_SERVER[\'HTTPS\']!=\'off\') {
-			$protocol = "https";
-		} else if(isset($_SERVER[\'HTTP_X_FORWARDED_PROTO\']) && $_SERVER[\'HTTP_X_FORWARDED_PROTO\']==\'https\') {
-			$protocol = "https";
-		} else {
-			$protocol = "http";
-		}
-
 		$config = array_merge($config, array(
 			"api_key" => "'.config::Select("api_key").'",
 			"logs" => '.Saves::SaveOld($error_type, true).',
 			"speed_update" => '.($speed_update=="1" ? "true" : "false").',
 			"hosting" => true,
-			"default_http_local" => "'.str_replace(array("http://".$_SERVER['HTTP_HOST'], "https://".$_SERVER['HTTP_HOST']), "", $default_http_local).'",
+			"default_http_local" => "'.str_replace(array_merge($replaceProtocols, array($_SERVER['HTTP_HOST'])), "", $default_http_local).'",
 			"default_http_hostname" => "'.Saves::SaveOld($default_http_hostname, true).'",
-			"default_http_host" => $protocol."://'.Saves::SaveOld(str_replace(array("https", "http", "://"), "", $default_http_host), true).'",
-			"default_http_mobyhost" => "'.Saves::SaveOld(str_replace(array("http", "https", "://"), "", $default_http_mobyhost), true).'",
+			"default_http_host" => HTTP::$protocol."://'.Saves::SaveOld(str_replace($replaceProtocols, "", $default_http_host), true).'",
+			"default_http_mobyhost" => "'.Saves::SaveOld(str_replace($replaceProtocols, "", $default_http_mobyhost), true).'",
 			"lang" => "ru",
 			"cache" => array(
 				"type" => '.Saves::SaveOld($cache_type, true).',

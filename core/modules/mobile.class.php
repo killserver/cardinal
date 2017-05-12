@@ -15,7 +15,7 @@ exit();
 
 class mobile extends modules {
 	
-	function location($link, $time=0, $exit=true, $code = "") {
+	private function location($link, $time = 0, $exit = true, $code = "") {
 		if($time == 0) {
 			header("Location: ".($link), true, $code);
 		} else {
@@ -26,11 +26,11 @@ class mobile extends modules {
 		}
 	}
 	
-	function is_ssl() {
+	private function is_ssl() {
 		return (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO']=='https') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
 	}
 	
-	function protocol() {
+	private function protocol() {
 		return ($this->is_ssl() ? "https" : "http");
 	}
 
@@ -52,8 +52,10 @@ class mobile extends modules {
 				$this->location($mobyLink, 0, true, 301);
 			}
 		} elseif($mobyActive) {
-			if(!isset($_COOKIE['moby']) && $moby) {
-				HTTP::set_cookie("moby", "true");
+			if($moby) {
+				if(!isset($_COOKIE['moby'])) {
+					HTTP::set_cookie("moby", "true");
+				}
 				define("MOBILE", true);
 			} else {
 				HTTP::set_cookie("moby", "", true);

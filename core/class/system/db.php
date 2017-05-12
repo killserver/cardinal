@@ -26,6 +26,11 @@ echo "403 ERROR";
 die();
 }
 
+$phpEx = substr(strrchr(__FILE__, '.'), 1);
+if(!defined("ROOT_EX") && strpos($phpEx, '/') === false) {
+	define("ROOT_EX", $phpEx);
+}
+
 /**
  * Class db
  */
@@ -67,6 +72,11 @@ class db {
      * @var string Database name
      */
     public static $dbName = "";
+    /**
+     * @var array Config for db without core
+     */
+	private static $configInit = array();
+	private static $loadedTable = array();
 
     /**
      * Check connection for database
@@ -132,12 +142,17 @@ class db {
     final public static function OpenDriver() {
 		$driv = self::$driver_name;
 		if(!is_string($driv) || !class_exists($driv)) {
-			if(file_exists(ROOT_PATH."core".DS."cache".DS."db_lock.lock") && is_readable(ROOT_PATH."core".DS."cache".DS."db_lock.lock")) {
+			if(defined("ROOT_PATH") && file_exists(ROOT_PATH."core".DS."cache".DS."db_lock.lock") && is_readable(ROOT_PATH."core".DS."cache".DS."db_lock.lock")) {
 				$driv = file_get_contents(ROOT_PATH."core".DS."cache".DS."db_lock.lock");
+			} elseif(!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock") && is_readable(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock")) {
+				$driv = file_get_contents(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock");
 			} else {
 				self::$driverGen = true;
 				$driv = self::DriverList();
 				$driv = $driv[array_rand($driv)];
+				if(!defined("ROOT_PATH")) {
+					include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."drivers".DIRECTORY_SEPARATOR.$driv.".".ROOT_EX);
+				}
 				self::$driver_name = $driv;
 			}
 		}
@@ -150,7 +165,7 @@ class db {
      * @return array List exists drivers
      */
     final public static function DriverList() {
-		$dir = ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS;
+		$dir = (defined("ROOT_PATH") ? ROOT_PATH."core".DS."class".DS."system".DS."DBDrivers".DS : dirname(__FILE__).DIRECTORY_SEPARATOR."DBDrivers".DIRECTORY_SEPARATOR);
 		$dirs = array();
 		if(is_dir($dir)) {
 			if($dh = dir($dir)) {
@@ -190,8 +205,13 @@ class db {
 		$open = self::OpenDriver();
 		if($open) {
 			self::$driver->connect($host, $user, $pass, $db, $charset, $port);
-			if(self::connected() && self::$driverGen && !file_exists(ROOT_PATH."core".DS."cache".DS."db_lock.lock") && is_writable(ROOT_PATH."core".DS."cache".DS) && !empty(self::$driver_name)) {
-				file_put_contents(ROOT_PATH."core".DS."cache".DS."db_lock.lock", self::$driver_name);
+			if(self::connected() && self::$driverGen && !empty(self::$driver_name)) {
+				if(defined("ROOT_PATH") && !file_exists(ROOT_PATH."core".DS."cache".DS."db_lock.lock") && is_writable(ROOT_PATH."core".DS."cache".DS)) {
+					file_put_contents(ROOT_PATH."core".DS."cache".DS."db_lock.lock", self::$driver_name);
+				}
+				if(!defined("ROOT_PATH") && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock") && is_writable(dirname(__FILE__).DIRECTORY_SEPARATOR)) {
+					file_put_contents(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock", self::$driver_name);
+				}
 			}
 		}
 	}
@@ -199,27 +219,116 @@ class db {
     /**
      * db constructor.
      */
-    function __construct($withoutInit = false) {
-		if(!$withoutInit && (!defined("INSTALLER") || (file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX) && defined("WITHOUT_DB")))) {
+    function __construct($withoutInit = false, $forceStart = false) {
+		if($forceStart || (!$withoutInit && (!defined("INSTALLER") || (((defined("ROOT_PATH") && file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX)) || (!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX))) && defined("WITHOUT_DB"))))) {
 			self::init();
 		}
+	}
+	
+	final public static function config($config = array()) {
+		if(sizeof($config)==0 && ((defined("ROOT_PATH") && !file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX)) || (!defined("ROOT_PATH") && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX)))) {
+			throw new Exception("Config file for db or data in config is not correct");
+			die();
+		} else if(defined("ROOT_PATH") && file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX)) {
+			include_once(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX);
+			if(isset($config['db'])) {
+				$config = $config['db'];
+			}
+		} else if(!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX)) {
+			include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX);
+		}
+		self::$configInit = array_merge(self::$configInit, $config);
 	}
 
     /**
      * Initializatior connection
      */
     final public static function init() {
-		config::StandAlone();
-		self::$driver_name = config::Select('db','driver');
-		self::$dbName = config::Select('db','db');
-		$host = config::Select('db','host');
-		$user = config::Select('db','user');
-		$pass = config::Select('db','pass');
-		$chst = config::Select('db', 'charset');
-		$port = config::Select('db', 'port');
+		if(class_exists("config")) {
+			config::StandAlone();
+			self::$driver_name = config::Select('db','driver');
+			self::$dbName = config::Select('db','db');
+			$host = config::Select('db','host');
+			$user = config::Select('db','user');
+			$pass = config::Select('db','pass');
+			$chst = config::Select('db', 'charset');
+			$port = config::Select('db', 'port');
+		} else {
+			if(!isset(self::$configInit['driver'])) {
+				throw new Exception("Error! Driver is not set");
+				die();
+			} else {
+				self::$driver_name = self::$configInit['driver'];
+			}
+			if(!isset(self::$configInit['db'])) {
+				throw new Exception("Error! DB is not set");
+				die();
+			} else {
+				self::$dbName = self::$configInit['db'];
+			}
+			if(!isset(self::$configInit['host'])) {
+				throw new Exception("Error! Host is not set");
+				die();
+			} else {
+				$host = self::$configInit['host'];
+			}
+			if(!isset(self::$configInit['user'])) {
+				throw new Exception("Error! User is not set");
+				die();
+			} else {
+				$user = self::$configInit['user'];
+			}
+			if(!isset(self::$configInit['pass'])) {
+				throw new Exception("Error! Password is not set");
+				die();
+			} else {
+				$pass = self::$configInit['pass'];
+			}
+			if(!isset(self::$configInit['charset'])) {
+				throw new Exception("Error! Charset is not set");
+				die();
+			} else {
+				$chst = self::$configInit['charset'];
+			}
+			if(!isset(self::$configInit['port'])) {
+				throw new Exception("Error! Port is not set");
+				die();
+			} else {
+				$port = self::$configInit['port'];
+			}
+		}
 		if(is_string($host) && is_string($user) && is_string($pass) && is_string($chst) && is_string($port)) {
 			self::connect($host, $user, $pass, self::$dbName, $chst, $port);
 		}
+	}
+	
+	final public static function getTables() {
+		if(sizeof(self::$loadedTable)==0 && self::connected()) {
+			$loaded = array();
+			$sel = db::doquery("SHOW FULL TABLES", true);
+			while($row = db::fetch_assoc($sel)) {
+				$res = db::query("SHOW COLUMNS FROM `".$row['Tables_in_'.self::$dbName]."`");
+				$loaded[$row['Tables_in_'.self::$dbName]] = array();
+				while($roz = db::fetch_assoc($res)) {
+					$loaded[$row['Tables_in_'.self::$dbName]][$roz['Field']] = $roz['Field'];
+				}
+				$loaded[$row['Tables_in_'.self::$dbName]] = array_values($loaded[$row['Tables_in_'.self::$dbName]]);
+			}
+			self::$loadedTable = $loaded;
+			return self::$loadedTable;
+		} else {
+			return self::$loadedTable;
+		}
+	}
+	
+	final public static function getTable($name) {
+		$list = self::getTables();
+		return (isset($list[$name]) ? $list[$name] : false);
+	}
+	
+	final public static function getColumnForTable($name, $field) {
+		$list = self::getTables();
+		return (isset($list[$name]) && isset($list[$name][$field]) ? $list[$name][$field] : false);
 	}
 
     /**
@@ -346,7 +455,7 @@ class db {
 			$report .= "\tUses Port - ".(isset($_SERVER['REMOTE_PORT']) ? $_SERVER['REMOTE_PORT'] : "")."\n";
 			$report .= "\tServer Protocol - ".(isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : "")."\n";
 			$report .= "\n--------------------------------------------------------------------------------------------------\n";
-			$fp = fopen(ROOT_PATH.'core'.DS.'cache'.DS.'badqrys.txt', 'a');
+			$fp = fopen((defined("ROOT_PATH") ? ROOT_PATH.'core'.DS.'cache'.DS : dirname(__FILE__).DIRECTORY_SEPARATOR).'badqrys.txt', 'a');
 			fwrite($fp, $report);
 			fclose($fp);
 			die($message);
@@ -381,7 +490,15 @@ class db {
      * Try repair all tables in database
      */
     final private static function RePair() {
-		$db_name = config::Select('db','db');
+		if(class_exists("config")) {
+			$db_name = config::Select('db','db');
+		} else {
+			if(!isset(self::$configInit['db'])) {
+				throw new Exception("Error! DB is not set");
+			} else {
+				$db_name = self::$configInit['db'];
+			}
+		}
 		$sel = self::query("SHOW FULL TABLES");
 		while($row = self::fetch_assoc($sel)) {
 			db::query("REPAIR TABLE `".$row['Tables_in_'.$db_name]."`");
@@ -597,9 +714,11 @@ class db {
 		/*if (isset($trace[1]['function']) && $trace[1]['function'] == "query" ) $level = 1;
 		if (isset($trace[2]['function']) && $trace[2]['function'] == "doquery" ) $level = 2;*/
 		
-		$trace[$level]['file'] = str_replace(ROOT_PATH, "", $trace[$level]['file']);
+		if(defined("ROOT_PATH")) {
+			$trace[$level]['file'] = str_replace(ROOT_PATH, "", $trace[$level]['file']);
+		}
         $tmp = false;
-		if(self::$driver->get_type() === 1) {
+		if(self::$driver->get_type() === 1 && class_exists("modules") && method_exists("modules", "init_templates")) {
             $tmp = modules::init_templates();
             $tmp->dir_skins("skins".DS);
             $tmp->assign_vars(array(
@@ -618,7 +737,73 @@ class db {
         }
 		exit();
 	}
-
+	
+	function backupDB($tables = '*', $path = "") {
+		if(empty($path) && defined("ROOT_PATH") && defined("DS") && (!file_exists(ROOT_PATH.'core'.DS.'cache'.DS) || !is_writable(ROOT_PATH.'core'.DS.'cache'.DS))) {
+			return false;
+		}
+		$pathToSave = "";
+		if(!empty($path) && defined("ROOT_PATH") && (!file_exists(ROOT_PATH.$path) || !is_writable(ROOT_PATH.$path))) {
+			return false;
+		} else {
+			$pathToSave = ROOT_PATH.$path;
+		}
+		if(!empty($path) && (!file_exists(dirname(__FILE__). DIRECTORY_SEPARATOR .$path) || !is_writable(dirname(__FILE__). DIRECTORY_SEPARATOR .$path))) {
+			return false;
+		} else {
+			$pathToSave = dirname(__FILE__). DIRECTORY_SEPARATOR .$path;
+		}
+		if(empty($pathToSave)) {
+			return false;
+		}
+		$len = DIRECTORY_SEPARATOR;
+		$exp = explode($len, $pathToSave);
+		$end = end($exp);
+		if(empty($end)) {
+			$pathToSave .= $len;
+		}
+		if($tables == '*') {
+			$tables = array();
+			$result = self::query('SHOW TABLES');
+			while($row = self::fetch_row($result)) {
+				$tables[] = $row[0];
+			}
+		} else {
+			$tables = is_array($tables) ? $tables : explode(',',$tables);
+		}
+		foreach($tables as $table) {
+			$result = self::query('SELECT * FROM '.$table);
+			$num_fields = self::num_fields($result);
+			$return .= 'DROP TABLE '.$table.';';
+			$tableCreate = self::query('SHOW CREATE TABLE '.$table);
+			$row2 = self::fetch_row($tableCreate);
+			$return.= "\n\n".$row2[1].";\n\n";
+			for($i=0;$i<$num_fields;$i++) {
+				while($row = self::fetch_row($result)) {
+					$return.= 'INSERT INTO '.$table.' VALUES(';
+					for($j=0;$j<$num_fields;$j++) {
+						if(!get_magic_quotes_gpc()) {
+							$row[$j] = addslashes($row[$j]);
+						}
+						$row[$j] = preg_replace("#\n#", "\\n", $row[$j]);
+						if(isset($row[$j])) {
+							$return.= '"'.$row[$j].'"' ;
+						} else {
+							$return.= '""';
+						}
+						if($j<($num_fields-1)) {
+							$return.= ',';
+						}
+					}
+					$return.= ");\n";
+				}
+			}
+			$return .= "\n\n\n";
+		}
+		file_put_contents($pathToSave.'db-backup-'.time().'-'.(md5(implode(',',$tables))).'.sql', $return);
+		return true;
+	}
+	
     /**
      * Close connection
      */

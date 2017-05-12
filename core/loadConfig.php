@@ -51,7 +51,7 @@ if(!defined("WITHOUT_DB") && file_exists(ROOT_PATH."core".DS."media".DS."config.
 			$config = array_merge($config, array(
 				"default_http_local" => $link,
 				"default_http_hostname" => $host,
-				"default_http_host" => $protocol."://".$host.$link,
+				"default_http_host" => HTTP::$protocol."://".$host.$link,
 			));
 			unset($link);
 		}
@@ -88,8 +88,8 @@ function cardinalAutoload($class) {
         include_once(ROOT_PATH."core".DS."class".DS.$class.".".ROOT_EX);
     } elseif(file_exists(ROOT_PATH."core".DS."class".DS."system".DS.$class.".".ROOT_EX)) {
         include_once(ROOT_PATH."core".DS."class".DS."system".DS.$class.".".ROOT_EX);
-    } elseif(file_exists(ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS.$class.".".ROOT_EX)) {
-        include_once(ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS.$class.".".ROOT_EX);
+    } elseif(file_exists(ROOT_PATH."core".DS."class".DS."system".DS."DBDrivers".DS.$class.".".ROOT_EX)) {
+        include_once(ROOT_PATH."core".DS."class".DS."system".DS."DBDrivers".DS.$class.".".ROOT_EX);
     }
 }
 if(version_compare(PHP_VERSION, '5.1.2', '>=')) {

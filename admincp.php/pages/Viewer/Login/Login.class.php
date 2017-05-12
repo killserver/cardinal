@@ -40,24 +40,11 @@ class Login extends Core {
 				} else {
 					$given_username = Saves::SaveOld($given_username);
 					$given_password = cardinal::create_pass($given_password);
-					if(defined("WITHOUT_DB")) {
-						if(isset($users) && is_array($users) && isset($users[$given_username]) && isset($users[$given_username]['admin_pass']) && Validate::equals($users[$given_username]['admin_pass'], $given_password)) {
-							$check = true;
-						}
-					} else {
-						db::doquery("SELECT `id`, `pass` FROM `users` WHERE `username` LIKE \"".($given_username)."\" AND `admin_pass` LIKE \"".($given_password)."\"", true);
-						$check = (db::num_rows()!=0);
-					}
+					$check = User::login($given_username, $given_password);
 				}
 			}
-			if($check) {
-				if(!$is_admin) {
-					if(!defined("WITHOUT_DB")) {
-						$row = db::fetch_assoc();
-					} else {
-						$row = $users[$given_username];
-					}
-				} else {
+			if($check===true) {
+				if($is_admin) {
 					$row = array("pass" => "cardinal", "level" => LEVEL_ADMIN);
 				}
 				cardinal::RegAction("Авторизация в админ-панели. Пользователь \"".$given_username."\"");
@@ -66,12 +53,6 @@ class Login extends Core {
 				HTTP::set_cookie('failed-attempts', 0, time()+(5*60), false);
 				HTTP::set_cookie(COOK_ADMIN_USER, $given_username);
 				HTTP::set_cookie(COOK_ADMIN_PASS, $given_password);
-				if(!Arr::get($_COOKIE, COOK_USER)) {
-					HTTP::set_cookie(COOK_USER, $given_username);
-				}
-				if(!Arr::get($_COOKIE, COOK_PASS)) {
-					HTTP::set_cookie(COOK_PASS, $row['pass']);
-				}
 			} else {
 				cardinal::RegAction("Провальная попытка авторизации в админ-панели. Пользователь \"".$given_username."\"");
 				// Failed Attempts

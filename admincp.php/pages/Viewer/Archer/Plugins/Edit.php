@@ -25,10 +25,14 @@ class Archer_Edit {
 			}
 			$l = $models->getAttribute($k, 'type');
 			$default = "";
+			$typeData = $models->getAttribute($k, "typeData");
 			if(is_array($v) && isset($v['default'])) {
 				$default = $v['default'];
 				unset($v['default']);
 				$v = array_values($v);
+			} elseif(is_array($typeData) && sizeof($typeData)>0) {
+				$default = $v;
+				$v = implode(",", $typeData);
 			}
 			$body .= KernelArcher::Viewing($l, $k, $v, $default);
 		}

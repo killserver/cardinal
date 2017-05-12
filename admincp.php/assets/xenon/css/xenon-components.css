@@ -2965,10 +2965,13 @@ button.toast-close-button {
   background: #2c2e2f;
   color: #fff;
   /*padding-top: 150px;*/
-  width: 1000px;
-  background: url('http://fc02.deviantart.net/fs70/i/2012/302/0/3/sword_art_online___kirito_wallpaper_hd_by_mikedu44800-d5jam5c.jpg');
+  background: url('http://wallpapercave.com/wp/rY06luP.jpg');
   background-repeat: no-repeat;
-  background-size: 130%;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  background-attachment: fixed;
   background-position: 50% 0;
 }
 .login-page .errors-container {
@@ -3294,21 +3297,35 @@ button.toast-close-button {
   }
 }
 .login-container {
-  max-width: 960px;
+  max-width: 500px;
   margin: 0 auto;
   position: absolute;
-  left: 20%;
-  top: 35%;
-  width: 960px;
+  left: 35%;
+  left: calc(50% - 500px / 2);
+  top: 25%;
+  width: 490px;
+  background: rgba(44, 46, 47, 0.9);
+  padding: 20px 30px 0px;
+  border-radius: 6px;
+  -webkit-box-shadow: 0px 5px 20px 1px #2c2e2f;
+  -moz-box-shadow: 0px 5px 20px 1px #2c2e2f;
+  box-shadow: 0px 5px 20px 1px #2c2e2f;
 }
 .lockscreen-page {
   background: #2c2e2f;
   color: #fff;
   /*padding-top: 250px;*/
-  background: url('http://fc02.deviantart.net/fs70/i/2012/302/0/3/sword_art_online___kirito_wallpaper_hd_by_mikedu44800-d5jam5c.jpg');
+  background: url('http://wallpapercave.com/wp/rY06luP.jpg');
   background-repeat: no-repeat;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
   background-size: cover;
+  background-attachment: fixed;
   background-position: 50% 0;
+}
+.lockscreen-page .login-container {
+  top: 35%;
 }
 @media screen and (max-width: 768px) {
   .lockscreen-page {
@@ -3316,6 +3333,12 @@ button.toast-close-button {
   }
   .lockscreen-page .row {
     margin: 0 auto;
+  }
+  .login-container {
+    max-width: 350px;
+    left: 3%;
+    left: calc(50% - 350px / 2);
+    top: 20%;
   }
 }
 .lockscreen-page .lockcreen-form .user-thumb {

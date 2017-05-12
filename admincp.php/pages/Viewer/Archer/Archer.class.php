@@ -2,6 +2,29 @@
 
 class Archer extends Core {
 	
+	private function nsubstr($text, $start, $end = "") {
+		if(empty($end)) {
+			$end = nstrlen($text);
+		}
+		if(function_exists("mb_substr") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING) {
+			return mb_substr($text, $start, $end, config::Select('charset'));
+		} elseif(function_exists("iconv_substr")) {
+			return iconv_substr($text, $start, $end, config::Select('charset'));
+		} else {
+			return substr($text, $start, $end);
+		}
+	}
+	
+	private function nucfirst($text, $all = false) {
+		$fc = strtouppers($this->nsubstr($text, 0, 1));
+		if(!$all) {
+			$fc .= $this->nsubstr($text, 1);
+		} else {
+			$fc .= strtolowers($this->nsubstr($text, 1));
+		}
+		return $fc;
+	}
+	
 	function __construct() {
 		$request = new Request();
 		$page = $request->get->get('pageType', false);
@@ -11,12 +34,13 @@ class Archer extends Core {
 		$andWhere = $request->get->get("Where", false);
 		$orderBy = $request->get->get("orderBy", false);
 		$orderTo = $request->get->get("orderTo", "ASC");
+		$upFirst = (function_exists("nucfirst") ? nucfirst($typeUni) : $this->nucfirst($typeUni));
 		switch($page) {
 			/*
 			Save data in database
 			*/
 			case "TakeAdd":
-				$model = modules::loadModels("Model".nucfirst($typeUni), $typeUni);
+				$model = modules::loadModels("Model".$upFirst, $typeUni);
 				$model->SetTable($typeUni);
 				$univ = new KernelArcher($typeUni, $model);
 				$tpl = $univ->TraceOn("TakeAdd", "ArcherAdd");
@@ -26,7 +50,7 @@ class Archer extends Core {
 			View model for add data
 			*/
 			case "Add":
-				$model = modules::loadModels("Model".nucfirst($typeUni), $typeUni);
+				$model = modules::loadModels("Model".$upFirst, $typeUni);
 				$model->SetTable($typeUni);
 				$univ = new KernelArcher($typeUni, $model);
 				$univ->Add($model, array(&$this, "View"));
@@ -35,7 +59,7 @@ class Archer extends Core {
 			Edit data in database
 			*/
 			case "TakeEdit":
-				$model = modules::loadModels("Model".nucfirst($typeUni), $typeUni);
+				$model = modules::loadModels("Model".$upFirst, $typeUni);
 				$model->SetTable($typeUni);
 				$model->SetLimit(1);
 				$model->WhereTo("", $viewId);
@@ -46,7 +70,7 @@ class Archer extends Core {
 			View model for edit data
 			*/
 			case "Edit":
-				$model = modules::loadModels("Model".nucfirst($typeUni), $typeUni);
+				$model = modules::loadModels("Model".$upFirst, $typeUni);
 				$model->SetTable($typeUni);
 				$model->SetLimit(1);
 				$model->WhereTo("", $viewId);
@@ -57,7 +81,7 @@ class Archer extends Core {
 			Delete data in database
 			*/
 			case "Delete":
-				$model = modules::loadModels("Model".nucfirst($typeUni), $typeUni);
+				$model = modules::loadModels("Model".$upFirst, $typeUni);
 				$model->SetTable($typeUni);
 				$model->SetLimit(1);
 				$model->WhereTo("", $viewId);
@@ -69,7 +93,7 @@ class Archer extends Core {
 			Sorting data in database
 			*/
 			case "Sort":
-				$model = modules::loadModels("Model".nucfirst($typeUni), $typeUni);
+				$model = modules::loadModels("Model".$upFirst, $typeUni);
 				$model->SetTable($typeUni);
 				$model->SetLimit(-1);
 				$model->OrderByTo($orderBy, $orderTo);
@@ -83,7 +107,7 @@ class Archer extends Core {
 			View data in database
 			*/
 			case "Show":
-				$model = modules::loadModels("Model".nucfirst($typeUni), $typeUni);
+				$model = modules::loadModels("Model".$upFirst, $typeUni);
 				$model->SetTable($typeUni);
 				$model->SetLimit(1);
 				$model->WhereTo("", $viewId);
@@ -95,7 +119,7 @@ class Archer extends Core {
 			*/
 			case "Shield":
 			default:
-				$model = modules::loadModels("Model".nucfirst($typeUni), $typeUni);
+				$model = modules::loadModels("Model".$upFirst, $typeUni);
 				$model->SetTable($typeUni);
 				$model->SetLimit(-1);
 				if(isset($_GET['catid'])) {

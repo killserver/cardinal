@@ -28,14 +28,6 @@ if(!defined("ROUTE_GET_URL")) {
 	define("ROUTE_GET_URL", "PATH_INFO");
 }
 
-if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off') {
-	$protocol = "https";
-} else if(isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO']=='https') {
-	$protocol = "https";
-} else {
-	$protocol = "http";
-}
-
 $config = array_merge($config, array(
 	"api_key" => "1234567890",
 	"logs" => ERROR_FILE,
@@ -72,12 +64,15 @@ $config = array_merge($config, array(
 	"gzip_output" => true,
 	"js_min" => true,
 	
-	"viewport" => "width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=yes",
+	//"viewport" => "width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes",
+	"viewport" => "width=device-width, initial-scale=1, shrink-to-fit=no",
 	
 	"skins" => array(
 		"skins" => "main",
 		"admincp" => "xenon",
 	),
+	
+	"mobyActive" => true,
 
 	"default_http_local" => "/",
 	"default_http_hostname" => "online-killer.pp.ua",

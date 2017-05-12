@@ -24,6 +24,7 @@ class cache {
 	private static $live_time = 2592000;
 	private static $conn_link = null;
 	private static $conn_path = null;
+	private static $apcu = false;
 
 	final public function __construct() {
 	global $config;
@@ -32,25 +33,31 @@ class cache {
 		}
 		self::$type = $config['cache']['type'];
 		self::$conn_path = $config['cache']['path'];
-		if(class_exists("Memcached") && $config['cache']['type'] == CACHE_MEMCACHED) {
+		if(class_exists("Memcached") && self::$type == CACHE_MEMCACHED) {
 			self::$connect = new Memcached();
 			self::$connect->addServer($config['cache']['server'], $config['cache']['port']) or die ("Could not connect");
-		} elseif(class_exists('Memcache') && $config['cache']['type'] == CACHE_MEMCACHE) {
+		} elseif(class_exists('Memcache') && self::$type == CACHE_MEMCACHE) {
 			self::$connect = new Memcache();
 			self::$connect->addServer($config['cache']['server'], $config['cache']['port']) or die ("Could not connect");
 		} elseif(self::$type == CACHE_FTP && self::$connect !==false) {
 			self::$connect = ftp_connect($config['cache']['server'], $config['cache']['port']);
 			ftp_login(self::$connect, $config['cache']['login'], $config['cache']['pass']);
 			self::$conn_link = "ftp://".$config['cache']['login'].":".$config['cache']['pass']."@".$config['cache']['server'].":".$config['cache']['port'].self::$conn_path;
-		} elseif((class_exists('PredisClient') || class_exists("PredisAutoloader")) && $config['cache']['type'] == CACHE_REDIS) {
+		} elseif((class_exists('PredisClient') || class_exists("PredisAutoloader")) && self::$type == CACHE_REDIS) {
 			if((class_exists('PredisClient') || class_exists("PredisAutoloader"))) {
 				require "predis/autoload.php";
 				PredisAutoloader::register();
 				self::$connect = new PredisClient(array("scheme" => "tcp", "host" => $config['cache']['server'], "port" => $config['cache']['port']));
 			}
-		} elseif(class_exists('Redis') && $config['cache']['type'] == CACHE_REDIS) {
+		} elseif(class_exists('Redis') && self::$type == CACHE_REDIS) {
 			self::$connect = new Redis();
 			self::$connect->connect($config['cache']['server'], $config['cache']['port'], 0 or 1) or die ("Could not connect");
+		} elseif(self::$type == CACHE_APC && (function_exists('apc_fetch') || function_exists('apcu_fetch'))) {
+			if(function_exists('apcu_fetch')) {
+				self::$apcu = true;
+			}
+		} else {
+			self::$type = CACHE_NONE;
 		}
 	}
 
@@ -69,6 +76,12 @@ class cache {
 				return $arr['mktime'];
 			} elseif(self::$type == CACHE_REDIS) {
 				return self::$connect->ttl("cardinal_".$data);
+			} elseif(self::$type == CACHE_APC) {
+				$arr = (self::$apcu ? apcu_fetch("cardinal_".$data) : apc_fetch("cardinal_".$data));
+				return $arr['mktime'];
+			} elseif(function_exists('wincache_ucache_add') && self::$type == CACHE_WINCACHE) {
+				$arr = wincache_ucache_get("cardinal_".$data);
+				return $arr['mktime'];
 			} else {
 				return 0;
 			}
@@ -99,6 +112,12 @@ class cache {
 				return $arr['data'];
 			} elseif(self::$type == CACHE_REDIS) {
 				return self::$connect->get("cardinal_".$data);
+			} elseif(self::$type == CACHE_APC) {
+				$arr = (self::$apcu ? apcu_fetch("cardinal_".$data) : apc_fetch("cardinal_".$data));
+				return $arr['data'];
+			} elseif(function_exists('wincache_ucache_get') && self::$type == CACHE_WINCACHE) {
+				$arr = wincache_ucache_get("cardinal_".$data);
+				return $arr['data'];
 			} else {
 				return false;
 			}
@@ -130,6 +149,10 @@ class cache {
 			return xcache_isset("cardinal_".$data);
 		} elseif(self::$type == CACHE_REDIS) {
 			return self::$connect->exists("cardinal_".$data);
+		} elseif(self::$type == CACHE_APC) {
+			return (self::$apcu ? apcu_exists("cardinal_".$data) : apc_exists("cardinal_".$data));
+		} elseif(function_exists('wincache_ucache_exists') && self::$type == CACHE_WINCACHE) {
+			return wincache_ucache_exists("cardinal_".$data);
 		} else {
 			return false;
 		}
@@ -151,6 +174,12 @@ class cache {
 			return xcache_set("cardinal_".$name, array("mktime" => time(), "data" => $val));
 		} elseif(self::$type == CACHE_REDIS) {
 			return self::$connect->set("cardinal_".$name, $val);
+		} elseif(self::$type == CACHE_APC) {
+			self::Delete("cardinal_".$name);
+			return (self::$apcu ? apcu_add("cardinal_".$name, array("mktime" => time(), "data" => $val)) : apc_add("cardinal_".$name, array("mktime" => time(), "data" => $val)));
+		} elseif(function_exists('wincache_ucache_set') && self::$type == CACHE_WINCACHE) {
+			self::Delete("cardinal_".$name);
+			return wincache_ucache_set("cardinal_".$name, array("mktime" => time(), "data" => $val));
 		} else {
 			return false;
 		}
@@ -169,6 +198,10 @@ class cache {
 				return xcache_unset("cardinal_".$name);
 			} elseif(self::$type == CACHE_REDIS) {
 				return self::$connect->del("cardinal_".$name);
+			} elseif(self::$type == CACHE_APC) {
+				return (self::$apcu ? apcu_delete("cardinal_".$name) : apc_delete("cardinal_".$name));
+			} elseif(function_exists('wincache_ucache_set') && self::$type == CACHE_WINCACHE) {
+				return wincache_ucache_delete("cardinal_".$name);
 			} else {
 				return false;
 			}
@@ -205,6 +238,8 @@ class cache {
 			foreach($keys as $key) {
 				return self::$connect->del($key);
 			}
+		} elseif(self::$type == CACHE_APC) {
+			return (self::$apcu ? apcu_clear_cache() : apc_clear_cache());
 		}
 		if($cache_areas) {
 			if(!is_array($cache_areas)) {

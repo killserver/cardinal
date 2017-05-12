@@ -39,12 +39,110 @@ global $manifest;
 	return $result;
 }
 
+function loadConfig($file = "") {
+global $config;
+	if($file==='' && !defined("ROOT_PATH")) {
+		throw new Exception("Error load config file. Path is not set");
+		die();
+	}
+	if(!file_exists($file) && !file_exists(ROOT_PATH.$file)) {
+		throw new Exception("Error load config file. File is not exists");
+		die();
+	}
+	if(!file_exists($file)) {
+		$file = ROOT_PATH.$file;
+	}
+	
+	$autodetect = ini_get('auto_detect_line_endings');
+	ini_set('auto_detect_line_endings', '1');
+	$lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+	ini_set('auto_detect_line_endings', $autodetect);
+	
+	for($i=0;$i<sizeof($lines);$i++) {
+		if(isset($lines[$i]) && isset($lines[$i][0]) && ($lines[$i][0] === '#' || $lines[$i][0] === ';')) {
+			continue;
+		}
+		if(isset($lines[$i]) && strpos($lines[$i], "=")!==false) {
+			continue;
+		}
+		$exp = array_map('trim', explode('=', $lines[$i], 2));
+		if(function_exists('apache_getenv') && function_exists('apache_setenv')) {
+			apache_setenv($exp[0], $exp[1]);
+		}
+		if(function_exists('putenv')) {
+			putenv($exp[0]."=".$exp[1]);
+		}
+		$_ENV[$exp[0]] = $exp[1];
+		$_SERVER[$exp[0]] = $exp[1];
+		$config[$exp[0]] = $exp[1];
+	}
+}	
+
+if(!function_exists('getallheaders')) {
+	function getallheaders() {
+		$headers = array();
+		foreach($_SERVER as $name => $value) {
+			if(substr($name, 0, 5) == 'HTTP_') {
+				$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+			} else {
+				$headers[$name] = $value;
+			}
+		}
+		return $headers; 
+	} 
+}
+
 if(!function_exists("RandomCompat_strlen")) {
 	function RandomCompat_strlen($binary_string) {
 		if(!is_string($binary_string)) {
 			throw new TypeError('RandomCompat_strlen() expects a string');
 		}
 		return strlen($binary_string);
+	}
+}
+
+if(!defined("ROUND_HALF_UP")) {
+	define("ROUND_HALF_UP", 1);
+}
+if(!defined("ROUND_HALF_DOWN")) {
+	define("ROUND_HALF_DOWN", 1);
+}
+if(!defined("ROUND_HALF_EVEN")) {
+	define("ROUND_HALF_EVEN", 1);
+}
+if(!defined("ROUND_HALF_ODD")) {
+	define("ROUND_HALF_ODD", 1);
+}
+function nround($value, $precision = 0, $mode = ROUND_HALF_UP, $native = TRUE) {
+	if(version_compare(PHP_VERSION, '5.3', '>=') AND $native) {
+		return round($value, $precision, $mode);
+	}
+	if($mode === ROUND_HALF_UP) {
+		return round($value, $precision);
+	} else {
+		$factor = ($precision === 0) ? 1 : pow(10, $precision);
+		switch($mode) {
+			case ROUND_HALF_DOWN:
+			case ROUND_HALF_EVEN:
+			case ROUND_HALF_ODD:
+				if(($value * $factor) - floor($value * $factor) === 0.5) {
+					if($mode === ROUND_HALF_DOWN) {
+						$up = ($value < 0);
+					} else {
+						$up = (!(!(floor($value * $factor) & 1)) === ($mode===ROUND_HALF_EVEN));
+					}
+
+					if($up) {
+						$value = ceil($value * $factor);
+					} else {
+						$value = floor($value * $factor);
+					}
+					return $value / $factor;
+				} else {
+					return round($value, $precision);
+				}
+			break;
+		}
 	}
 }
 
@@ -75,7 +173,62 @@ if(!function_exists('random_bytes')) {
     }
 }
 
-function getMax($max) {
+function cardinal_version($check = "") {
+	$isChecked = defined("INTVERSION") ? INTVERSION : VERSION;
+	if(empty($check)) {
+		return $isChecked;
+	}
+	if(stripos($check, "-")!==false) {
+		$check = explode("-", $check);
+		$check = current($check);
+	}
+	if(class_exists("config") && method_exists("config", "Select") && config::Select("speed_update")) {
+		$if = ($check)>($isChecked);
+	} else {
+		$checked = intval(str_replace(".", "", $check));
+		$version = intval(str_replace(".", "", $isChecked));
+		if(strlen($checked)>strlen($version)) {
+			$version = int_pad($version, strlen($checked));
+		}
+		$if = $checked>$version;
+	}
+	return $if;
+}
+
+if(!defined("RAND_FLOAT_MT")) {
+	define("RAND_FLOAT_MT", 1);
+}
+if(!defined("RAND_FLOAT_LCG")) {
+	define("RAND_FLOAT_LCG", 2);
+}
+if(!defined("RAND_FLOAT")) {
+	define("RAND_FLOAT", 3);
+}
+
+function randomFloat($min, $max, $type = RAND_FLOAT) {
+	if($type===RAND_FLOAT_MT && function_exists("mt_rand") && function_exists("mt_getrandmax")) {
+		return $min + abs($max - $min) * mt_rand(0, mt_getrandmax()) / mt_getrandmax(); 
+	} elseif($type===RAND_FLOAT_LCG && function_exists("lcg_value")) {
+		return $min + lcg_value() * abs($max - $min);
+	} elseif($type===RAND_FLOAT || ($type!==RAND_FLOAT && $type!==RAND_FLOAT_LCG && $type!==RAND_FLOAT_MT)) {
+		return $min + rand(0, getrandmax()) / getrandmax() * abs($max - $min);
+	}
+}
+
+function sha512($str) {
+	$ret = false;
+	if(function_exists("mhash") && defined("MHASH_SHA512")) {
+		$ret = mhash(MHASH_SHA512, $str);
+	} elseif(function_exists("openssl_digest")) { //5.3.0
+		$ret = openssl_digest($str, 'sha512');
+	} elseif(function_exists("hash") && function_exists("hash_algos") && in_array("sha512", hash_algos())) { //5.1.2
+		$ret = hash("sha512", $str);
+	}
+	return $ret;
+}
+
+function getMax($max){return function_call('getMax', array($max));}
+function or_getMax($max) {
 	if(function_exists('openssl_random_pseudo_bytes')) {
 	     do {
 	         $result = floor($max*(hexdec(bin2hex(openssl_random_pseudo_bytes(4)))/0xffffffff));
@@ -201,10 +354,6 @@ function is_serialized($data) {
 	}
 	return false;
 }
-	
-function random_color() {
-	return str_pad( dechex( mt_rand( 0, 100 ) ), 2, '0', STR_PAD_LEFT);
-}
 
 function removeBOM($string) { 
 	if(substr($string, 0,3) == pack('CCC',0xef,0xbb,0xbf)) { 
@@ -256,8 +405,30 @@ function vdump() {
 	echo '</pre>';
 }
 
+function vdebug() {
+	Debug::activation();
+	Debug::echoDebugMode(true);
+	Debug::limitOnView(0);
+	$backtrace = debug_backtrace();
+	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "Called: ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "");
+	echo call_user_func_array(array("Debug", "vars"), func_get_args());
+}
+
 function is_ssl() {
-	return (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO']=='https') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+	if(
+		   (isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && !empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')
+        || (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && !empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] == 'on')
+        || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
+        || (isset($_SERVER['HTTP_X_FORWARDED_PORT']) && $_SERVER['HTTP_X_FORWARDED_PORT'] == 443)
+        || (isset($_SERVER['REQUEST_SCHEME']) && $_SERVER['REQUEST_SCHEME'] == 'https')
+		|| (isset($_SERVER['CF_VISITOR']) && $_SERVER['CF_VISITOR'] == '{"scheme":"https"}')
+		|| (isset($_SERVER['HTTP_CF_VISITOR']) && $_SERVER['HTTP_CF_VISITOR'] == '{"scheme":"https"}')
+    ) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 function protocol() {

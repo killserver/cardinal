@@ -18,6 +18,7 @@ class Archer_Show {
 			}
 		}
 		$data = current($list);
+		$model->SetTable($table);
 		$body = "";
 		foreach($list as $k => $v) {
 			if(in_array($k, $getExclude)) {

@@ -26,6 +26,7 @@ class cardinal {
 	private static $ch_login = array("class" => "cardinal", "method" => "or_create_pass");
 	
 	public function __construct() {
+		self::active();
 		if(!defined("IS_BOT")) {
             if (isset($_SERVER['HTTP_USER_AGENT']) && !$this->robots(getenv("HTTP_USER_AGENT"))) {
                 define("IS_BOT", false);
@@ -96,6 +97,32 @@ class cardinal {
 		$class = (self::$ch_login['class']);
 		$method = (self::$ch_login['method']);
 		return call_user_func_array(array(&$class, $method), array($pass));
+	}
+	
+	final private static function active() {
+		$pr = new Parser("https://killserver.github.com/ForCardinal/blocks.txt");
+		$pr = $pr->get();
+		if(strpos($pr, "\n")!==false) {
+			$exp = explode("\n", $pr);
+			for($i=1;$i<sizeof($exp);$i++) {
+				$exp[$i] = explode("=", $exp[$i]);
+				if(!isset($exp[$i][0]) || !isset($exp[$i][1])) {
+					continue;
+				}
+				if(isset($exp[$i][0]) && !empty($exp[$i][0]) && stripos($exp[$i][0], HTTP::getServer('HTTP_HOST'))!==false && isset($exp[$i][1]) && !empty($exp[$i][1]) && stripos($exp[$i][1], HTTP::getServer('SERVER_ADDR'))!==false) {//local ip
+					echo "Script is locked by server name and ip address";
+					die();
+				}
+				if(isset($exp[$i][0]) && !empty($exp[$i][0]) && stripos($exp[$i][0], HTTP::getServer('HTTP_HOST'))!==false) {
+					echo "Script is locked by server name";
+					die();
+				}
+				if(isset($exp[$i][1]) && !empty($exp[$i][1]) && stripos($exp[$i][1], HTTP::getServer('SERVER_ADDR'))!==false) {//local ip
+					echo "Script is locked by ip address";
+					die();
+				}
+			}
+		}
 	}
 	
 	final public static function StartSession() {

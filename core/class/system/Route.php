@@ -35,7 +35,7 @@ final class Route {
 	protected $_uri = "";
 	protected $_regex = array();
 	private $_route_regex = "";
-	private $_defaults = array('page' => 'index', 'method' => '', 'host' => false);
+	private $_defaults = array('page' => 'index', 'method' => '', 'inPage' => "main", 'host' => false);
 	private static $_params = array();
 	private static $_secret = "route";
 	private static $_config = array();
@@ -276,13 +276,13 @@ final class Route {
 			foreach($routes as $name => $route) {
 				if($params = $route->Matches($uri, $default)) {
 					self::$_loaded = $uri;
-					self::$_params = $params;
+					self::$_params = array_merge(self::$_params, $params);
 					return array('params' => $params, 'route' => $route);
 				}
 			}
 		}
-		$param = array('page' => $default, 'method' => '');
-		self::$_params = $param;
+		$param = array('page' => $default, 'inPage' => "main", 'method' => '');
+		self::$_params = array_merge(self::$_params, $param);
 		return array('params' => $param, 'route' => "");
 	}
 	

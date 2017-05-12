@@ -58,8 +58,11 @@ class db_mysqli extends DriverParam implements drivers {
 	}
 	public function connect($host, $user, $pass, $db, $charset, $port) {
 		if (!class_exists('mysqli')) {
-			HTTP::echos();
-			echo ('Server database MySQL not support PHP');
+			if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
+				HTTP::echos('Server database MySQLi not support PHP');
+			} else {
+				echo ('Server database MySQLi not support PHP');
+			}
 			die();
 		}
 		if(!@$this->mc = mysqli_init()) {
@@ -71,7 +74,9 @@ class db_mysqli extends DriverParam implements drivers {
 		$this->mc->options(MYSQLI_INIT_COMMAND, "SET CHARACTER SET '".$charset."'");
 		try {
 			if(!$this->mc->real_connect($host, $user, $pass, $db, $port, false, MYSQLI_CLIENT_COMPRESS)) {
-				HTTP::echos();
+				if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
+					HTTP::echos();
+				}
 				switch($this->mc->connect_errno) {
 					case 1044:
 					case 1045:
@@ -98,7 +103,11 @@ class db_mysqli extends DriverParam implements drivers {
 			$this->connecten = true;
 			$this->mc->autocommit(false);
 		} catch(Exception $e) {
-			Error::handlePhpError($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
+			if(class_exists("cardinalError")) {
+				cardinalError::handlePhpError($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
+			} else {
+				throw new Exception($e);
+			}
 			exit();
 		}
 	}

@@ -1,6 +1,8 @@
 AddDefaultCharset UTF-8
 Options -Indexes
 
+php_value mbstring.func_overload 4
+
 <IfModule mod_http2.c>
 	# for a https server
 	Protocols h2 http/1.1
@@ -84,6 +86,58 @@ Options -Indexes
 	AddOutputFilterByType DEFLATE application/javascript
 	AddOutputFilterByType DEFLATE text/javascript
 	AddOutputFilterByType DEFLATE text/css
+	AddOutputFilterByType DEFLATE text/html
+	AddOutputFilterByType DEFLATE text/plain
+	AddOutputFilterByType DEFLATE text/xml
+	AddOutputFilterByType DEFLATE text/x-component
+	AddOutputFilterByType DEFLATE application/xhtml+xml
+	AddOutputFilterByType DEFLATE application/xml+rss
+	AddOutputFilterByType DEFLATE application/rss+xml
+	AddOutputFilterByType DEFLATE application/xml
+	AddOutputFilterByType DEFLATE application/x-javascript
+	AddOutputFilterByType DEFLATE application/msword
+	AddOutputFilterByType DEFLATE application/msexcel
+	AddOutputFilterByType DEFLATE application/mspowerpoint
+	AddOutputFilterByType DEFLATE application/msaccess
+	AddOutputFilterByType DEFLATE application/mshelp
+	AddOutputFilterByType DEFLATE application/pdf
+	AddOutputFilterByType DEFLATE application/postscript
+	AddOutputFilterByType DEFLATE audio/x-wav
+	AddOutputFilterByType DEFLATE text/rtf
+	AddOutputFilterByType DEFLATE text/comma-separated-values
+	AddOutputFilterByType DEFLATE text/tab-separated-values
+	AddOutputFilterByType DEFLATE text/vnd.wap.wml
+	AddOutputFilterByType DEFLATE text/vnd.wap.wmlscript
+	AddOutputFilterByType DEFLATE text/vnd.wap.wmlscript
+	AddOutputFilterByType DEFLATE application/vnd.wap.wmlc
+	AddOutputFilterByType DEFLATE text/x-setext
+	AddOutputFilterByType DEFLATE text/x-sgml
+	AddOutputFilterByType DEFLATE text/x-speech
+	AddOutputFilterByType DEFLATE application/x-sh
+	AddOutputFilterByType DEFLATE application/x-latex
+	AddOutputFilterByType DEFLATE application/x-httpd-php-source
+	AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
+	AddOutputFilterByType DEFLATE font/ttf
+	AddOutputFilterByType DEFLATE font/otf
+	AddOutputFilterByType DEFLATE font/x-woff
+	AddOutputFilterByType DEFLATE image/svg+xml
+	AddOutputFilterByType DEFLATE application/vnd.ms-word.document.macroEnabled.12
+	AddOutputFilterByType DEFLATE application/vnd.openxmlformats-officedocument.wordprocessingml.document
+	AddOutputFilterByType DEFLATE application/vnd.ms-word.template.macroEnabled.12
+	AddOutputFilterByType DEFLATE application/vnd.openxmlformats-officedocument.wordprocessingml.template
+	AddOutputFilterByType DEFLATE application/vnd.ms-powerpoint.template.macroEnabled.12
+	AddOutputFilterByType DEFLATE application/vnd.openxmlformats-officedocument.presentationml.template
+	AddOutputFilterByType DEFLATE application/vnd.ms-powerpoint.addin.macroEnabled.12
+	AddOutputFilterByType DEFLATE application/vnd.ms-powerpoint.slideshow.macroEnabled.12
+	AddOutputFilterByType DEFLATE application/vnd.openxmlformats-officedocument.presentationml.slideshow
+	AddOutputFilterByType DEFLATE application/vnd.ms-powerpoint.presentation.macroEnabled.12
+	AddOutputFilterByType DEFLATE application/vnd.openxmlformats-officedocument.presentationml.presentation
+	AddOutputFilterByType DEFLATE application/vnd.ms-excel.addin.macroEnabled.12
+	AddOutputFilterByType DEFLATE application/vnd.ms-excel.sheet.binary.macroEnabled.12
+	AddOutputFilterByType DEFLATE application/vnd.ms-excel.sheet.macroEnabled.12
+	AddOutputFilterByType DEFLATE application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+	AddOutputFilterByType DEFLATE application/vnd.ms-excel.template.macroEnabled.12
+	AddOutputFilterByType DEFLATE application/vnd.openxmlformats-officedocument.spreadsheetml.template
 	<IfModule mod_setenvif.c>
 		BrowserMatch ^Mozilla/4 gzip-only-text/html
 		BrowserMatch ^Mozilla/4\.0[678] no-gzip
@@ -94,10 +148,39 @@ FileETag None
 
 <IfModule mod_rewrite.c>
 	RewriteEngine On
+	RewriteCond %{HTTP_HOST} ^www\.(.*)$
+	RewriteRule ^(.*)$ http://%1/$1 [L,R=301]
+	RewriteRule ^(.*)index\.(php|html|phtml|htm|php3|php4|php5|phps|pl|cgi?)$ /$1 [R=301,NC,L]
+	<IfModule brotli_module>
+		# Serve brotli compressed CSS files if they exist
+		# and the client accepts brotli.
+		RewriteCond "%{HTTP:Accept-encoding}" "brotli"
+		RewriteCond "%{REQUEST_FILENAME}\.br" "-s"
+		RewriteRule "^(.*)\.css"              "$1\.css\.br" [QSA]
+		# Serve brotli compressed JS files if they exist
+		# and the client accepts brotli.
+		RewriteCond "%{HTTP:Accept-encoding}" "brotli"
+		RewriteCond "%{REQUEST_FILENAME}\.br" "-s"
+		RewriteRule "^(.*)\.js"               "$1\.js\.br" [QSA]
+		# Serve correct content types, and prevent mod_brotli double brotli.
+		RewriteRule "\.css\.gz$" "-" [T=text/css,E=no-brotli:1]
+		RewriteRule "\.js\.gz$"  "-" [T=text/javascript,E=no-brotli:1]
+		<FilesMatch "(\.js\.gz|\.css\.gz)$">
+			<IfModule mod_headers.c>
+				# Serve correct encoding type.
+				Header append Content-Encoding brotli
+
+				# Force proxies to cache brotli &
+				# non-brotli css/js files separately.
+				Header append Vary Accept-Encoding
+			</IfModule>
+		</FilesMatch>
+	</IfModule>
 	<Files .*>
 		Order Deny,Allow
 		Deny From All
 	</Files>
+	RewriteRule ^robots.txt$ uploads/robots.txt [L]
 	RewriteRule ^changelog.txt$ changelog.php [L]
 	RewriteCond %{REQUEST_FILENAME} !-d
 	RewriteCond %{REQUEST_FILENAME} !-f

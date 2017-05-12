@@ -101,6 +101,8 @@ if(function_exists("ob_implicit_flush")) {
 
 //define("NOT_DIE", true);
 
+ini_set('scream.enabled', false);
+
 if(defined("DEBUG") || isset($_GET['debug'])) {
 	ini_set('display_errors', 1);
 	error_reporting(E_ALL);
@@ -109,6 +111,10 @@ if(defined("DEBUG") || isset($_GET['debug'])) {
 	}
 }
 
+if(!defined('PHP_VERSION_ID')) {
+	$version = explode('.', PHP_VERSION);
+	define('PHP_VERSION_ID', ($version[0] * 10000 + $version[1] * 100 + $version[2]));
+}
 if(!defined("PHP_INT_MIN")) {
 	define("PHP_INT_MIN", -2147483647);
 }
@@ -143,6 +149,10 @@ if(file_exists(dirname(__FILE__).DS."core".DS."media".DS."definition.php")) {
 	include_once(dirname(__FILE__).DS."core".DS."media".DS."definition.php");
 }
 
+if(!defined("DEVELOPER_MODE") && file_exists(dirname(__FILE__).DS."core".DS."media".DS."develop.lock")) {
+	define("DEVELOPER_MODE", true);
+	define("ERROR_VIEW", true);
+}
 if(!defined("WITHOUT_DB") && file_exists(dirname(__FILE__).DS."core".DS."media".DS."isFrame.lock")) {
 	define("WITHOUT_DB", true);
 }
@@ -201,6 +211,30 @@ if(function_exists("mb_internal_encoding") && mb_internal_encoding($config['char
 if(function_exists("mb_regex_encoding") && mb_regex_encoding($config['charset'])) {
 	mb_regex_encoding($config['charset']);
 }
+
+HTTP::$protocol = "http";
+if(
+	   (isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+	|| (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && !empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')
+	|| (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && !empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] == 'on')
+	|| (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
+	|| (isset($_SERVER['HTTP_X_FORWARDED_PORT']) && $_SERVER['HTTP_X_FORWARDED_PORT'] == 443)
+	|| (isset($_SERVER['REQUEST_SCHEME']) && $_SERVER['REQUEST_SCHEME'] == 'https')
+	|| (isset($_SERVER['CF_VISITOR']) && $_SERVER['CF_VISITOR'] == '{"scheme":"https"}')
+	|| (isset($_SERVER['HTTP_CF_VISITOR']) && $_SERVER['HTTP_CF_VISITOR'] == '{"scheme":"https"}')
+) {
+	HTTP::$protocol = "https";
+}
+
+
+
+
+if(PHP_VERSION_ID>50600) {
+	ini_set("default_charset", $config['charset']);
+} else {
+	ini_set("iconv.internal_encoding", $config['charset']);
+}
+
 if(isset($config['date_timezone'])) {
 	date_default_timezone_set($config['date_timezone']);
 }

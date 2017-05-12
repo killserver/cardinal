@@ -20,13 +20,13 @@ echo "403 ERROR";
 die();
 }
 
-final class pager {
+class pager {
 	
 	private $pages = array();
 	private $limits = array(0,0);
 	private $links = array("next" => "", "prev" => "");
 	
-	private function Route($array) {
+	final private function Route($array) {
 		$route = Route::get($array[0]);
 		if(!is_bool($route)) {
 			$params = array();
@@ -51,7 +51,7 @@ final class pager {
 		}
 	}
 
-	function __construct($rpp, $count_all, $on_page, $url_page, $p_page = "/page/", $max_view = 10, $route = false) {
+	final public function __construct($rpp, $count_all, $on_page, $url_page, $p_page = "/page/", $max_view = 10, $route = false) {
 		if(!is_numeric($rpp) || !is_numeric($count_all) || !is_numeric($on_page) || empty($url_page) || $on_page == 0) {
 			return false;
 		}
@@ -216,19 +216,19 @@ final class pager {
 		}
 	}
 	
-	function limit() {
+	final public function limit() {
 		return "LIMIT ".$this->limits[0].",".$this->limits[1];
 	}
 	
-	function prevLink() {
+	final public function prevLink() {
 		return $this->links['prev'];
 	}
 	
-	function nextLink() {
+	final public function nextLink() {
 		return $this->links['next'];
 	}
 	
-	function get() {
+	final public function get() {
 		return $this->pages;
 	}
 }

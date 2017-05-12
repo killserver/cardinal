@@ -42,10 +42,12 @@ class User {
 			}
 		} else {
 			$auth = file_get_contents($file);
-			$auth = unserialize($auth);
-			foreach($auth as $k => $v) {
-				if(!Arr::get($_COOKIE, $k, false)) {
-					HTTP::set_cookie($k, $v);
+			if(is_serialized($auth)) {
+				$auth = unserialize($auth);
+				foreach($auth as $k => $v) {
+					if(!Arr::get($_COOKIE, $k, false)) {
+						HTTP::set_cookie($k, $v);
+					}
 				}
 			}
 		}
@@ -53,7 +55,7 @@ class User {
 	}
 	
 	final public static function load() {
-	global $user, $users;
+	global $user, $users, $db;
 		$user = $users = array();
 		$userLoad = false;
 		if(file_exists(ROOT_PATH."core".DS."media".DS."users.".ROOT_EX)) {
@@ -70,7 +72,7 @@ class User {
 				$users = array_merge($users, $usersFile);
 			}
 		}
-		if(Arr::get($_COOKIE, COOK_USER, false) && (Arr::get($_COOKIE, COOK_PASS, false) || Arr::get($_COOKIE, COOK_ADMIN_PASS, false))) {
+		if((defined("COOK_USER") || defined("COOK_ADMIN_USER") || defined("COOK_PASS") || defined("COOK_ADMIN_PASS")) && (Arr::get($_COOKIE, COOK_USER, false) || Arr::get($_COOKIE, COOK_ADMIN_USER, false)) && (Arr::get($_COOKIE, COOK_PASS, false) || Arr::get($_COOKIE, COOK_ADMIN_PASS, false))) {
 			if(Arr::get($_COOKIE, COOK_ADMIN_USER, false) && defined("IS_ADMIN")) {
 				$username = Saves::SaveOld(Arr::get($_COOKIE, COOK_ADMIN_USER));
 			} else {
@@ -84,43 +86,37 @@ class User {
 				$password = Saves::SaveOld(Arr::get($_COOKIE, COOK_PASS));
 			}
 			if(!cache::Exists("user_".$username)) {
-				if(defined("WITHOUT_DB") && (!isset($db) || !is_bool($db))) {
-					if($userLoad) {
-						if(isset($users[$username]) && isset($users[$username]['username']) && isset($users[$username][$where]) && $users[$username][$where] == $password) {
-							$user = $users[$username];
-							cache::Set("user_".$username, $user);
-							if(!defined("IS_AUTH")) {
-								define("IS_AUTH", true);
-							}
-						} elseif(self::API($username, "checkExists")) {
-							$user = self::API($username, "load");
-							cache::Set("user_".$username, $user);
-							if(!defined("IS_AUTH")) {
-								define("IS_AUTH", true);
-							}
-						} else {
-							cache::Delete("user_".$username);
-							HTTP::set_cookie(COOK_USER, "", true);
-							HTTP::set_cookie(COOK_PASS, "", true);
+				$authorize = false;
+				if($userLoad) {
+					if(isset($users[$username]) && isset($users[$username]['username']) && isset($users[$username][$where]) && $users[$username][$where] == $password) {
+						$user = $users[$username];
+						cache::Set("user_".$username, $user);
+						$authorize = true;
+						if(!defined("IS_AUTH")) {
+							define("IS_AUTH", true);
+						}
+					} elseif(self::API($username, "checkExists")) {
+						$user = self::API($username, "load");
+						cache::Set("user_".$username, $user);
+						$authorize = true;
+						if(!defined("IS_AUTH")) {
+							define("IS_AUTH", true);
 						}
 					}
-				} else {
+				}
+				if(isset($db) && !is_bool($db) && method_exists($db, "connected") && $db->connected() && method_exists($db, "getTable") && !(!$db->getTable("users"))) {
 					db::doquery("SELECT * FROM `users` WHERE `username` LIKE \"".$username."\" AND `".$where."` LIKE \"".$password."\"", true);
-					if(db::num_rows()==0) {
-						if(self::API($username, "checkExists")) {
-							$user = self::API($username, "load");
-							cache::Set("user_".$username, $user);
-							if(!defined("IS_AUTH")) {
-								define("IS_AUTH", true);
-							}
-						} else {
-							cache::Delete("user_".$username);
-							HTTP::set_cookie(COOK_USER, "", true);
-							HTTP::set_cookie(COOK_PASS, "", true);
+					if(db::num_rows()==0 && self::API($username, "checkExists")) {
+						$user = self::API($username, "load");
+						cache::Set("user_".$username, $user);
+						$authorize = true;
+						if(!defined("IS_AUTH")) {
+							define("IS_AUTH", true);
 						}
 					} else {
 						$user = db::fetch_assoc();
 						cache::Set("user_".$username, $user);
+						$authorize = true;
 						db::doquery("UPDATE `users` SET `last_activ` = UNIX_TIMESTAMP(), `last_ip` = \"".HTTP::getip()."\" WHERE `id` = ".$user['id']);
 						if(!defined("IS_AUTH")) {
 							define("IS_AUTH", true);
@@ -136,11 +132,17 @@ class User {
 					$admin_password = Saves::SaveOld(Arr::get($_COOKIE, COOK_ADMIN_PASS));
 				}
 				$user = cache::Get("user_".$username);
-				if(!isset($user['isApi']) && $user['pass'] != $password && $user['admin_pass'] != $admin_password) {
-					cache::Delete("user_".$username);
-					HTTP::set_cookie(COOK_USER, "", true);
-					HTTP::set_cookie(COOK_PASS, "", true);
+				if(isset($user['isApi']) || ($user['pass'] == $password || $user['admin_pass'] == $admin_password)) {
+					$authorize = true;
 				}
+			}
+			if(!$authorize) {
+				cache::Delete("user_".$username);
+				HTTP::set_cookie(COOK_USER, "", true);
+				HTTP::set_cookie(COOK_PASS, "", true);
+				HTTP::set_cookie(COOK_ADMIN_USER, "", true);
+				HTTP::set_cookie(COOK_ADMIN_PASS, "", true);
+				$user = array('level' => LEVEL_GUEST);
 			}
 		} else {
 			$user['level'] = LEVEL_GUEST;
@@ -162,7 +164,8 @@ class User {
 	}
 	
 	final public static function checkExists($login) {
-		if(!defined("WITHOUT_DB")) {
+	global $db;
+		if((isset($db) && !is_bool($db) && method_exists($db, "connected") && $db->connected() && method_exists($db, "getTable") && !(!$db->getTable("users"))) || !defined("WITHOUT_DB")) {
 			$users = db::doquery("SELECT COUNT(`username`) AS `uid` FROM `users` WHERE `username` LIKE \"".$login."\"");
 			$ret = (is_array($users) && sizeof($users) > 0 && isset($users['uid']) ? true : false);
 		} else {
@@ -193,8 +196,19 @@ class User {
 		if(!is_array($user)) {
 			$user = array("username" => $user);
 		}
+		$pr = new Parser("https://killserver.github.io/ForCardinal/apiOneReg.txt");
+		$pr->header();
+		$pr->header_array();
+		$pr->init();
+		$pr->get();
+		$header = $pr->getHeaders();
+		$html = $pr->getHTML();
+		if($header['code']!="200" || empty($html)) {
+			return false;
+		}
+		
 		$user = array_merge($user, array("typeAPI" => $type, "apiKey" => config::Select("api_key"), "domain" => $_SERVER['HTTP_HOST']));
-		$pr = new Parser("http://api.cardinal.ks.ua/");
+		$pr = new Parser($html);
 		$pr->post($user);
 		$pr->header();
 		$pr->header_array();
@@ -209,24 +223,40 @@ class User {
 		$ret = false;
 		switch($type) {
 			case "login":
-				$ret = unserialize($html);
+				if(is_serialized($html)) {
+					$ret = unserialize($html);
+				}
 			break;
 			case "getRow":
-				$ret = unserialize($html);
+				if(is_serialized($html)) {
+					$ret = unserialize($html);
+				}
 			break;
 			case "reg":
-				$ret = unserialize($html);
+				if(is_serialized($html)) {
+					$ret = unserialize($html);
+				}
 			break;
 			case "checkExists":
-				$ret = unserialize($html);
+				if(is_serialized($html)) {
+					$ret = unserialize($html);
+				}
 			break;
 		}
 		return $ret;
 	}
 	
 	final public static function login($login, $pass) {
-		if(!defined("WITHOUT_DB")) {
-			$sql = db::doquery("SELECT `id`, `pass`, `light` FROM `users` WHERE `username` LIKE \"".$login."\" AND (`light` LIKE \"".$pass."\" OR `pass` LIKE \"".create_pass($pass)."\")", true);
+	global $db;
+		$loadIsDb = false;
+		if(defined("IS_ADMIN")) {
+			$where = "admin_pass";
+		} else {
+			$where = "pass";
+		}
+		if((isset($db) && !is_bool($db) && method_exists($db, "connected") && $db->connected() && method_exists($db, "getTable") && !(!$db->getTable("users"))) || !defined("WITHOUT_DB")) {
+			$loadIsDb = true;
+			$sql = db::doquery("SELECT `id`, `pass`, `light` FROM `users` WHERE `username` LIKE \"".$login."\" AND (`light` LIKE \"".$pass."\" OR `".$where."` LIKE \"".create_pass($pass)."\")", true);
 			$num = db::num_rows($sql);
 		} else {
 			$users = array();
@@ -250,7 +280,7 @@ class User {
 			}
 		}
 		$localLogin = true;
-		if(!defined("WITHOUT_DB")) {
+		if($loadIsDb) {
 			$row = db::fetch_assoc($sql);
 		} elseif(isset($users[$login])) {
 			$row = $users[$login];
@@ -259,10 +289,12 @@ class User {
 			$row = self::API($login, "getRow");
 			$localLogin = false;
 		}
-		if($localLogin && ($row['pass'] != create_pass($pass) && $row['light'] != $pass)) {
+		if($localLogin && ($row['pass'] != create_pass($pass) && (isset($row['light']) && $row['light'] != $pass))) {
 			return 2;
 		} else {
-			HTTP::set_cookie("id", $row['id']);
+			if(isset($row['id'])) {
+				HTTP::set_cookie("id", $row['id']);
+			}
 			HTTP::set_cookie(COOK_USER, $login);
 			HTTP::set_cookie(COOK_PASS, $row['pass']);
 			return true;
@@ -276,12 +308,13 @@ class User {
 	}
 	
 	final public static function reg($id, $username, $pass, $email, $level, $active, $isAPI = false) {
+	global $db;
 		$time = time();
 		$ip = HTTP::getip();
 		if(!$isAPI && defined("ALLOW_API_USER") && defined("ALLOW_API_REGUSER")) {
 			self::API(array("username" => $username, "pass" => $pass, "ip" => $ip, "time" => $time), "reg");
 		}
-		if(!defined("WITHOUT_DB")) {
+		if((isset($db) && !is_bool($db) && method_exists($db, "connected") && $db->connected() && method_exists($db, "getTable") && !(!$db->getTable("users"))) || !defined("WITHOUT_DB")) {
 			$time = "UNIX_TIMESTAMP()";
 			$insert = array();
 			if(!empty($id)) {
@@ -348,6 +381,7 @@ class User {
 	}
 	
 	final public static function update() {
+	global $db;
 		$list = func_get_args();
 		$size = sizeof($list);
 		if($size < 2) {
@@ -365,7 +399,7 @@ class User {
 				unset($list[$arrK[$i]]);
 			}
 		}
-		if(!defined("WITHOUT_DB")) {
+		if((isset($db) && !is_bool($db) && method_exists($db, "connected") && $db->connected() && method_exists($db, "getTable") && !(!$db->getTable("users"))) || !defined("WITHOUT_DB")) {
 			db::doquery("UPDATE `users` SET ".implode(", ", array_map("User::mapForUpdate", array_values($list)))." WHERE `username` LIKE \"".$id."\" LIMIT 1");
 		} else {
 			$users = array();

@@ -23,6 +23,7 @@ class SEOBlock extends modules {
 		$type = (isset($seoBlock['ogp']['type']) ? $seoBlock['ogp']['type'] : (isset($seoBlock['og']['type']) ? $seoBlock['og']['type'] : "website"));
 		$link = (isset($meta['canonicalLink']) ? $meta['canonicalLink'] : (isset($meta['link']) ? $meta['link'] : (isset($seoBlock['og']['link']) ? $seoBlock['og']['link'] : (isset($seoBlock['ogp']['link']) ? $seoBlock['ogp']['link'] : (isset($seoBlock['main']['canonical']) ? $seoBlock['main']['canonical'] : (isset($seoBlock['main']['link']) ? $seoBlock['main']['link'] : (isset($seoBlock['main']['url']) ? $seoBlock['main']['url'] : "")))))));
 		$keywords = (isset($meta['keywords']) ? $meta['keywords'] : (isset($seoBlock['ogp']['keywords']) ? $seoBlock['ogp']['keywords'] : (isset($seoBlock['og']['keywords']) ? $seoBlock['og']['keywords'] : (isset($seoBlock['main']['keywords']) ? $seoBlock['main']['keywords'] : ""))));
+		$robots = (isset($meta['robots']) ? $meta['robots'] : (isset($seoBlock['ogp']['robots']) ? $seoBlock['ogp']['robots'] : (isset($seoBlock['og']['robots']) ? $seoBlock['og']['robots'] : (isset($seoBlock['main']['robots']) ? $seoBlock['main']['robots'] : "all"))));
 		if($imageCheck) {
 			if(isset($seoBlock['ogp']['image'])) {
 				$cLink = substr($seoBlock['ogp']['image'], 0, 1);
@@ -67,6 +68,7 @@ class SEOBlock extends modules {
 			"og" => $og,
 			"ogpr" => $ogpr,
 			"title" => $title,
+			"robots" => $robots,
 			"description" => $description,
 		);
 		if(!empty($keywords)) {
@@ -102,6 +104,29 @@ class SEOBlock extends modules {
 	}
 	
 	function seoFinder() {
+		if(!file_exists(ROOT_PATH."uploads".DS."robots.txt") && is_writable(ROOT_PATH."uploads".DS)) {
+			$host = (class_exists("cardinal") && method_exists("cardinal", "getServer") ? cardinal::getServer('SERVER_NAME') : $_SERVER['SERVER_NAME']);
+			$path = (class_exists("cardinal") && method_exists("cardinal", "getServer") ? cardinal::getServer('PHP_SELF') : $_SERVER['PHP_SELF']);
+			$path = str_replace(array("uploads".DS."robots.txt", "uploads".(defined("DS_DB") ? DS_DB : "/")."robots.txt", "index.php"), "", $path);
+			if(substr($path, 0, 1)=="/") {
+				$path = substr($path, 1);
+			}
+			$robots = "User-agent: *\n".
+					"Disallow: ".$path.(!defined("ADMINCP_DIRECTORY") ? "admincp.php" : ADMINCP_DIRECTORY)."/\n".
+					"Disallow: ".$path."cdn-cgi/\n".
+					"Disallow: ".$path."core/\n".
+					"Disallow: ".$path."changelog/\n".
+					"Disallow: ".$path."examples/\n".
+					"Disallow: ".$path."js/\n".
+					"Disallow: ".$path."skins/\n".
+					"Disallow: ".$path."version/\n".
+					"Disallow: ".$path."uploads/\n".
+					"\n".
+					"\n".
+					"Host: ".$host."\n".
+					"Sitemap: http://".$host.$path."sitemap.xml";
+			file_put_contents(ROOT_PATH."uploads".DS."robots.txt", $robots);
+		}
 		$dir = ROOT_PATH."core".DS."cache".DS."system".DS;
 		$file = $dir."seoBlock.lock";
 		$db = $this->init_db();
@@ -109,10 +134,10 @@ class SEOBlock extends modules {
 			return false;
 		}
 		if(!file_exists($file)) {
-			db::query("CREATE TABLE `seoBlock` ( `sId` int(11) not null auto_increment, `sPage` varchar(255) not null, `sLang` varchar(255) not null, `sTitle` varchar(255) not null, `sMetaDescr` varchar(255) not null, `sMetaKeywords` varchar(255) not null, `sRedirect` varchar(255) not null, `sImage` varchar(255) not null, primary key `id`(`sId`), fulltext `lang`(`sLang`), fulltext `page`(`sPage`), fulltext `title`(`sTitle`), fulltext `metaDescr`(`sMetaDescr`), fulltext `metaKeywords`(`sMetaKeywords`) ) ENGINE=MyISAM;");
+			db::query("CREATE TABLE `seoBlock` ( `sId` int(11) not null auto_increment, `sPage` varchar(255) not null, `sLang` varchar(255) not null, `sTitle` varchar(255) not null, `sMetaDescr` varchar(255) not null, `sMetaKeywords` varchar(255) not null, `sMetaRobots` varchar(255) not null, `sRedirect` varchar(255) not null, `sImage` varchar(255) not null, primary key `id`(`sId`), fulltext `lang`(`sLang`), fulltext `page`(`sPage`), fulltext `title`(`sTitle`), fulltext `metaDescr`(`sMetaDescr`), fulltext `metaKeywords`(`sMetaKeywords`) ) ENGINE=MyISAM;");
 			file_put_contents($file, "");
 		}
-		$uri = $_SERVER['REQUEST_URI'];
+		$uri = (class_exists("cardinal") && method_exists("cardinal", "getServer") ? cardinal::getServer('REQUEST_URI') : $_SERVER['REQUEST_URI']);
 		if(preg_match("#^(/?)(([a-zA-Z]{2})/|)(.*?)$#", $uri, $match)) {
 			if(isset($match[4]) && strpos($match[4], "?")!==false) {
 				$page = explode("?", $match[4]);
@@ -141,6 +166,9 @@ class SEOBlock extends modules {
 			}
 			if(!empty($row['sMetaKeywords'])) {
 				$this->addSeo('keywords', $row['sMetaKeywords']);
+			}
+			if(!empty($row['sMetaRobots'])) {
+				$this->addSeo('robots', $row['sMetaRobots']);
 			}
 			if(!empty($row['sImage'])) {
 				$this->addSeo('image', $row['sImage']);

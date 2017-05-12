@@ -90,7 +90,7 @@ if(sizeof($_POST)==0||(sizeof($_POST)==1)||(sizeof($_POST)==2)) {
 		templates::assign_vars(array("page" => "2", "apache" => $apache, "php" => $php, "cache" => $cache, "system_cache" => $system_cache, "template" => $template, "media" => $media, "mb" => $mb));
 	} else {
 		templates::assign_vars(array("page" => "3", "SERNAME" => getenv('SERVER_NAME').str_replace(array("index.".ROOT_EX."/", "install.".ROOT_EX, "/install/step2", "/install/step3"), "", getenv("REQUEST_URI")), "SERVERS" => getenv('SERVER_NAME')));
-		$driver = ROOT_PATH."core".DS."class".DS."system".DS."drivers".DS;
+		$driver = ROOT_PATH."core".DS."class".DS."system".DS."DBDrivers".DS;
 		$dirs = read_dir($driver, ".".ROOT_EX);
 		sort($dirs);
 		for($i=0;$i<sizeof($dirs);$i++) {
@@ -163,7 +163,7 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `comments` (
   `u_id` varchar(255) NOT NULL,
   `added` varchar(255) NOT NULL,
   `ip` varchar(255) NOT NULL,
-  `type` enum('catalog','salons') NOT NULL DEFAULT 'catalog',
+  `type` varchar(255) NOT NULL,
   `time` int(11) NOT NULL,
   `comment` text NOT NULL,
   `parent_id` varchar(255) NOT NULL,

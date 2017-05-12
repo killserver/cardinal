@@ -23,32 +23,63 @@ die();
 class HTTP {
 	
 	private static $pathSaveMime = false;
+	public static $protocol = "http";
 	
 	public function __construct() {
 		
 	}
 	
-	final public static function getip() {
+	final public static function getServer($name, $andEmpty = false, $return = false) {
 		if(isset($_SERVER)) {
-			if(isset($_SERVER['HTTP_X_FORWARDED_FOR']) && !empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-				$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-			} elseif(isset($_SERVER['HTTP_CLIENT_IP']) && !empty($_SERVER['HTTP_CLIENT_IP'])) {
-				$ip = $_SERVER['HTTP_CLIENT_IP'];
-			} elseif(isset($_SERVER['REMOTE_ADDR']) && !empty($_SERVER['REMOTE_ADDR'])) {
-				$ip = $_SERVER['REMOTE_ADDR'];
+			if($andEmpty===true && isset($_SERVER[$name]) && !empty($_SERVER[$name])) {
+				return $_SERVER[$name];
+			} elseif($andEmpty===false && isset($_SERVER[$name])) {
+				return $_SERVER[$name];
 			} else {
-				$ip = false;
+				return $return;
 			}
 		} else {
-			if(getenv('HTTP_X_FORWARDED_FOR')) {
-				$ip = getenv('HTTP_X_FORWARDED_FOR');
-			} elseif(getenv('HTTP_CLIENT_IP')) {
-				$ip = getenv('HTTP_CLIENT_IP');
-			} elseif(getenv('REMOTE_ADDR')) {
-				$ip = getenv('REMOTE_ADDR');
+			$name = getenv($name);
+			if($andEmpty===true && $name!==false && !empty($name)) {
+				return getenv($name);
+			} elseif($andEmpty===false && $name!==false) {
+				return getenv($name);
 			} else {
-				$ip = false;
+				return $return;
 			}
+		}
+	}
+	
+	final private static function execHTTPLang($res, $el) {
+		$el = explode(';q=', $el);
+		list($l, $q) = array_merge($el, array(1)); 
+		$res[$l] = floatval($q);
+		return $res;
+	}
+	
+	final public static function getHTTPLangs() {
+		if(isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+			$prefLocales = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
+			$prefLocales = array_reduce($prefLocales, "HTTP::execHTTPLang", array());
+			arsort($prefLocales);
+			$prefLocales = array_keys($prefLocales);
+		} else {
+			$prefLocales = array("");
+		}
+		return $prefLocales;
+	}
+	
+	final public static function getip() {
+		if(self::getServer('HTTP_CF_CONNECTING_IP', true)) {
+			$ip = self::getServer('HTTP_CF_CONNECTING_IP', true);
+		} elseif(self::getServer('HTTP_X_FORWARDED_FOR', true)) {
+			$ip = self::getServer('HTTP_X_FORWARDED_FOR', true);
+		} elseif(self::getServer('HTTP_CLIENT_IP', true)) {
+			$ip = self::getServer('HTTP_CLIENT_IP', true);
+		} elseif(self::getServer('REMOTE_ADDR', true)) {
+			$ip = self::getServer('REMOTE_ADDR', true);
+		} else {
+			$ip = false;
 		}
 		if(strpos($ip, ",")!==false) {
 			$ips = explode(",", $ip);
@@ -69,7 +100,11 @@ class HTTP {
 	}
 	
 	final public static function set_cookie($name, $value, $delete = false, $save = true) {
-		$domain = config::Select('default_http_hostname');
+		if(class_exists("config") && method_exists("config", "Select")) {
+			$domain = config::Select('default_http_hostname');
+		} else {
+			$domain = self::getServer("HTTP_HOST");
+		}
 		if(is_bool($delete)) {
 			if(!$delete) {
 				$time = time()+(120*24*60*60);
@@ -84,7 +119,11 @@ class HTTP {
 			if((version_compare(PHP_VERSION_ID, '70000', '>=')) || strpos("localhost", $domain)!==false || strpos("127.0.0.1", $domain)!==false) {
 				$ret = setcookie($name, $value, $time, "/");
 			} else {
-				$ret = setcookie($name, $value, $time, "/", ".".$domain, false, true);
+				if(version_compare(PHP_VERSION, '5.2', '<')) {
+					$ret = setcookie($name, $value, $time, "/", ".".$domain."; HttpOnly", false);
+				} else {
+					$ret = setcookie($name, $value, $time, "/", ".".$domain, false, true);
+				}
 			}
 		} else {
 			$ret = setcookie($name, $value, $time);
@@ -96,16 +135,39 @@ class HTTP {
 		$LastModified_unix = intval($LastModified_unix);
 		$LastModified = gmdate("D, d M Y H:i:s \G\M\T", $LastModified_unix);
 		$IfModifiedSince = false;
-		if(isset($_SERVER['HTTP_IF_MODIFIED_SINCE'])) {
-			$IfModifiedSince = strtotime(substr($_SERVER['HTTP_IF_MODIFIED_SINCE'], 5));
+		if(self::getServer('HTTP_IF_MODIFIED_SINCE')) {
+			$IfModifiedSince = strtotime(substr(self::getServer('HTTP_IF_MODIFIED_SINCE'), 5));
 		}
 		if(!is_bool($IfModifiedSince) && $IfModifiedSince >= $LastModified_unix) {
-			header($_SERVER['SERVER_PROTOCOL'].' 304 Not Modified');
+			header(self::getServer('SERVER_PROTOCOL', false, "HTTP 1/0").' 304 Not Modified');
 			return false;
 		}
 		header('Last-Modified: '.$LastModified);
 		header('Expires: '.$LastModified);
 		return true;
+	}
+	
+	final public static function parseRequest() {
+		if(function_exists('apache_request_headers')) {
+			return apache_request_headers();
+		} elseif(extension_loaded('http')) {
+			$headers = version_compare(phpversion('http'), '2.0.0', '>=') ?	\http\Env::getRequestHeader() :	http_get_request_headers();
+			return $headers;
+		}
+		$headers = array();
+		if(!empty($_SERVER['CONTENT_TYPE'])) {
+			$headers['content-type'] = $_SERVER['CONTENT_TYPE'];
+		}
+		if(!empty($_SERVER['CONTENT_LENGTH'])) {
+			$headers['content-length'] = $_SERVER['CONTENT_LENGTH'];
+		}
+		foreach($_SERVER as $key => $value) {
+			if(strpos($key, 'HTTP_')!==false) {
+				continue;
+			}
+			$headers[str_replace('_', '-', substr($key, 5))] = $value;
+		}
+		return $headers;
 	}
 	
 	final public static function setSaveMime($path) {
@@ -236,7 +298,7 @@ class HTTP {
 	}
 	
 	final public static function Location($link, $time = 0, $exit = true, $code = 302) {
-		if(defined("PHP_SAPI") && PHP_SAPI != 'cgi-fcgi') {
+		if(defined("PHP_SAPI") && (PHP_SAPI != 'cgi-fcgi')) {
 			self::StatusHeader($code);
 		}
 		if($time == 0) {

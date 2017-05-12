@@ -26,14 +26,8 @@ class Main_Updater extends Main {
 
 	public function __construct() {
 		$vid = parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/version.txt?'.date("d-m-Y-H"));
-		if(config::Select("speed_update")) {
-			$if = ($vid)>(VERSION);
-		} else {
-			$if = intval(str_replace(".", "", $vid))>intval(str_replace(".", "", VERSION));
-		}
+		$if = cardinal_version($vid);
 		if($if) {
-			templates::assign_var("new_version", $vid);
-			templates::assign_var("is_new", "1");
 			$file = ROOT_PATH."core".DS."cache".DS."system".DS."version_".str_replace("-", "_", $vid).".txt";
 			$changelog = "";
 			if(!file_exists($file) && is_writable(ROOT_PATH."core".DS."cache".DS."system".DS)) {
@@ -41,17 +35,17 @@ class Main_Updater extends Main {
 				$changelog = "";
 				$list = explode("\n", $vid);
 				for($i=sizeof($list)-1;$i>0;$i--) {
-					if(config::Select("speed_update")) {
-						$if = ($list[$i])>(VERSION);
-					} else {
-						$if = intval(str_replace(".", "", $list[$i]))>intval(str_replace(".", "", VERSION));
-					}
+					$if = cardinal_version($list[$i]);
 					if($if) {
 						$changelog .= parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/changelog/'.$list[$i].'.txt')."\n\n\n\n";
 					}
 				}
-				if(is_writable($file)) {
-					file_put_contents($file, $changelog, FILE_APPEND);
+				if(!empty($changelog)) {
+					templates::assign_var("new_version", $vid);
+					templates::assign_var("is_new", "1");
+					if(is_writable($file)) {
+						file_put_contents($file, $changelog, FILE_APPEND);
+					}
 				}
 			} else if(file_exists($file)) {
 				$changelog = file_get_contents($file);

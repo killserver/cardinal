@@ -149,6 +149,7 @@ global $seoBlock;
 	$type = (isset($seoBlock['ogp']['type']) ? $seoBlock['ogp']['type'] : (isset($seoBlock['og']['type']) ? $seoBlock['og']['type'] : "website"));
 	$link = (isset($meta['canonicalLink']) ? $meta['canonicalLink'] : (isset($meta['link']) ? $meta['link'] : (isset($seoBlock['og']['link']) ? $seoBlock['og']['link'] : (isset($seoBlock['ogp']['link']) ? $seoBlock['ogp']['link'] : (isset($seoBlock['main']['canonical']) ? $seoBlock['main']['canonical'] : (isset($seoBlock['main']['link']) ? $seoBlock['main']['link'] : (isset($seoBlock['main']['url']) ? $seoBlock['main']['url'] : "")))))));
 	$keywords = (isset($meta['keywords']) ? $meta['keywords'] : (isset($seoBlock['ogp']['keywords']) ? $seoBlock['ogp']['keywords'] : (isset($seoBlock['og']['keywords']) ? $seoBlock['og']['keywords'] : (isset($seoBlock['main']['keywords']) ? $seoBlock['main']['keywords'] : ""))));
+	$robots = (isset($meta['robots']) ? $meta['robots'] : (isset($seoBlock['ogp']['robots']) ? $seoBlock['ogp']['robots'] : (isset($seoBlock['og']['robots']) ? $seoBlock['og']['robots'] : (isset($seoBlock['main']['robots']) ? $seoBlock['main']['robots'] : "all"))));
 	if($imageCheck) {
 		if(isset($seoBlock['ogp']['image'])) {
 			$cLink = substr($seoBlock['ogp']['image'], 0, 1);
@@ -193,6 +194,7 @@ global $seoBlock;
 		"og" => $og,
 		"ogpr" => $ogpr,
 		"title" => $title,
+		"robots" => $robots,
 		"description" => $description,
 	);
 	if(!empty($keywords)) {
@@ -253,7 +255,7 @@ function headers($array = array(), $clear = false, $no_js = false) {
 	$header .= "<meta name=\"generator\" content=\"Cardinal ".VERSION."\" />\n";
 	$header .= "<meta name=\"author\" content=\"".(isset($array['author']) ? $array['author'] : "Cardinal ".VERSION)."\" />\n";
 	$header .= "<meta name=\"copyright\" content=\"{L_sitename}\" />\n";
-	if(isset($array['meta']) && array_key_exists("robots", $array['meta'])) {
+	if(!isset($array['meta']) || !array_key_exists("robots", $array['meta'])) {
 		$header .= "<meta name=\"robots\" content=\"all\" />\n";
 	}
 	if(file_exists(ROOT_PATH."favicon.ico")) {
@@ -276,7 +278,10 @@ if(!$clear) {
 	$header .= '<meta http-equiv="imagetoolbar" content="no" />'."\n";
 	$header .= '<!-- saved from url=(0014)about:internet -->'."\n";
 	$header .= '<meta name="apple-mobile-web-app-capable" content="yes">'."\n";
+	$header .= '<meta name="format-detection" content="telephone=no">'."\n";
+	$header .= '<meta http-equiv="url" content="{C_default_http_host}">'."\n";
 	$header .= '<meta http-equiv="cleartype" content="on">'."\n";
+	$header .= '<meta http-equiv="X-UA-Compatible" content="IE=edge">'."\n";
 	$header .= "<script type=\"text/javascript\">\n".
 		"	var username = \"{U_username}\";\n".
 		"	var default_link = \"{C_default_http_host}\";\n".

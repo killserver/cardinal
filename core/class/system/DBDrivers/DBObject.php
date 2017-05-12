@@ -133,10 +133,10 @@ class DBObject {
 			die();
 		}
 		$this->getAttributes($table);
-		if(isset($this->Attributes[$field]) && isset($this->Attributes[$field][$attr])) {
-			return $this->Attributes[$field][$attr];
-		} elseif(isset($this->setAttrFor[$field]) && isset($this->setAttrFor[$field][$attr])) {
+		if(isset($this->setAttrFor[$field]) && isset($this->setAttrFor[$field][$attr])) {
 			return $this->setAttrFor[$field][$attr];
+		} elseif(isset($this->Attributes[$field]) && isset($this->Attributes[$field][$attr])) {
+			return $this->Attributes[$field][$attr];
 		} elseif(!$this->allowEmptyAttr) {
 			throw new Exception("Attribute \"".$attr."\" for field \"".$field."\" is not found in ".$table);
 			die();
@@ -164,9 +164,9 @@ class DBObject {
 		$this->getAttributes($table);
 		if(isset($this->Attributes[$name]) && isset($this->Attributes[$name]["comment"])) {
 			if($empty === false) {
-				return "{L_\"".(!empty($this->Attributes[$name]["comment"]) ? $this->Attributes[$name]["comment"] : $name)."\"}";
+				return (defined("ADMINCP_DIRECTORY") ? "{L_\"" : "").(!empty($this->Attributes[$name]["comment"]) ? $this->Attributes[$name]["comment"] : $name).(defined("ADMINCP_DIRECTORY") ? "\"}" : "");
 			} else {
-				return "{L_\"".(!empty($this->Attributes[$name]["comment"]) ? $this->Attributes[$name]["comment"] : "")."\"}";
+				return (defined("ADMINCP_DIRECTORY") ? "{L_\"" : "").(!empty($this->Attributes[$name]["comment"]) ? $this->Attributes[$name]["comment"] : "").(defined("ADMINCP_DIRECTORY") ? "\"}" : "");
 			}
 		} else {
 			throw new Exception("Field \"".$name."\" is not found in set table");
@@ -385,7 +385,7 @@ class DBObject {
 	}
 	
 	final private function buildValueIn($d) {
-		return (strpos($d, "(")!==false&&strpos($d, ")")!==false ? $d : "".str_replace("\\\\u", "\\u", db::escape($d))."");
+		return (preg_match("/^([a-zA-Z0-9-_]+)/", $d) && strpos($d, "(")!==false&&strpos($d, ")")!==false ? $d : "".str_replace("\\\\u", "\\u", db::escape($d))."");
 	}
 
     final public function Update($table = "", $where = "", $orderBy = "", $limit = "") {
@@ -423,7 +423,7 @@ class DBObject {
     }
 	
 	final private function buildUpdateKV($k, $v) {
-		return "`".$k."` = ".(strpos($v, "(")!==false&&strpos($v, ")")!==false ? $v : "".str_replace("\\\\u", "\\u", db::escape($v))."");
+		return "`".$k."` = ".(preg_match("/^([a-zA-Z0-9-_]+)/", $v) && strpos($v, "(")!==false&&strpos($v, ")")!==false ? $v : "".str_replace("\\\\u", "\\u", db::escape($v))."");
 	}
 
     final public function Deletes($table = "", $where = "", $orderBy = "", $limit = "") {

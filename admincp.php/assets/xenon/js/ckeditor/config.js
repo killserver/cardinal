@@ -8,3 +8,11 @@ CKEDITOR.editorConfig = function( config ) {
 	// config.language = 'fr';
 	// config.uiColor = '#AADC6E';
 };
+// разрешить теги <style>
+CKEDITOR.config.protectedSource.push(/<(style)[^>]*>.*<\/style>/ig);
+// разрешить теги <script>
+CKEDITOR.config.protectedSource.push(/<(script)[^>]*>.*<\/script>/ig);
+// разрешить php-код
+CKEDITOR.config.protectedSource.push(/<\?[\s\S]*?\?>/g);
+// разрешить любой код: <!--dev-->код писать вот тут<!--/dev-->
+CKEDITOR.config.protectedSource.push(/<!--dev-->[\s\S]*<!--\/dev-->/g);

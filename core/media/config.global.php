@@ -39,6 +39,12 @@ if(!defined("CACHE_XCACHE")) {
 if(!defined("CACHE_REDIS")) {
 	define("CACHE_REDIS", 6);
 }
+if(!defined("CACHE_APC")) {
+	define("CACHE_APC", 6);
+}
+if(!defined("CACHE_WINCACHE")) {
+	define("CACHE_WINCACHE", 7);
+}
 if(!defined("CACHE_NONE")) {
 	define("CACHE_NONE", 0);
 }
@@ -113,7 +119,10 @@ if(!defined("UPLOAD_ALL")) {
 }
 
 if(!defined("VERSION")) {
-	define("VERSION", "6.2");
+	define("VERSION", "6.3");
+}
+if(!defined("INTVERSION")) {
+	define("INTVERSION", "603000");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "3.5");

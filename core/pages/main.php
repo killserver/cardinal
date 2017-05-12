@@ -27,7 +27,11 @@ class page {
 		} else {
 			$link = "";
 		}
-		$tmp = templates::complited_assing_vars("index");
+		if(templates::check_exists("index")) {
+			$tmp = templates::complited_assing_vars("index");
+		} else {
+			$tmp = "";
+		}
 		addSeo("link", $link);
 		$title = array();
 		$title['title'] = lang::get_lang('sitename');

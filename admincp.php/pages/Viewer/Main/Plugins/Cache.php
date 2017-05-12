@@ -2,9 +2,17 @@
 
 class Main_Cache extends Main {
 	
-	function formatSize($size) {
+	function formatSize($size, $only = false) {
 		$filesizename = array(" B", " KB", " MB", " GB", " TB", " PB", " EB", " ZB", " YB");
-		return $size ? round($size/pow(1024, ($i = floor(log($size, 1024)))), 2).$filesizename[$i] : '0 '.$filesizename[0];
+		$i = 0;
+		$sizes = $size ? round($size/pow(1024, ($i = floor(log($size, 1024)))), 2) : 0;
+		$ret = $sizes.$filesizename[$i];
+		if($only=="text") {
+			$ret = $filesizename[$i];
+		} else if($only=="integer") {
+			$ret = $sizes;
+		}
+		return $ret;
 	}
 	
 	public function __construct() {
@@ -64,6 +72,8 @@ class Main_Cache extends Main {
 			}
 		}
 		templates::assign_var("Cache", $this->formatSize($size));
+		templates::assign_var("CacheSizeS", $this->formatSize($size, "text"));
+		templates::assign_var("CacheSize", $this->formatSize($size, "integer"));
 		$size = 0;
 		$path = ROOT_PATH."core".DS."cache".DS."tmp".DS;
 		$files = read_dir($path);
@@ -84,6 +94,8 @@ class Main_Cache extends Main {
 			}
 		}
 		templates::assign_var("CachePHP", $this->formatSize($size));
+		templates::assign_var("CachePHPSizeS", $this->formatSize($size, "text"));
+		templates::assign_var("CachePHPSize", $this->formatSize($size, "integer"));
 	}
 	
 }

@@ -2,6 +2,23 @@
 
 class Archer_Shield {
 	
+	private function in_array_strpos($str, $arr, $rebuild = false) {
+		$ret = false;
+		$arr = array_values($arr);
+		for($i=0;$i<sizeof($arr);$i++) {
+			if($rebuild) {
+				$res = strpos($arr[$i], $str)!==false;
+			} else {
+				$res = strpos($str, $arr[$i])!==false;
+			}
+			if($res) {
+				$ret = true;
+				break;
+			}
+		}
+		return $ret;
+	}
+	
 	public function __construct() {
 		KernelArcher::callback("Shield", "TraceOn", array(&$this, "Headers"));
 	}
@@ -15,18 +32,18 @@ class Archer_Shield {
 		$head = "";
 		$counts = 0;
 		for($i=0;$i<sizeof($h);$i++) {
-			if(in_array_strpos($h[$i], $getExclude)) {
+			if($this->in_array_strpos($h[$i], $getExclude)) {
 				continue;
 			}
 			$head .= "<th>".$h[$i]."</th>";
 			$counts++;
 		}
-		$head .= "<th>{L_\"options\"}</th>";
+		$head .= (!defined("ADMINCP_DIRECTORY") ? "<th>Options</th>" : "<th>{L_\"options\"}</th>");
 		$d = $model->getArray();
 		$d = array_keys($d);
 		$data = "";
 		for($i=0;$i<sizeof($d);$i++) {
-			if(in_array_strpos($d[$i], $getExclude)) {
+			if($this->in_array_strpos($d[$i], $getExclude)) {
 				continue;
 			}
 			$data .= "<td>{".$modelName.".".$d[$i]."}</td>";

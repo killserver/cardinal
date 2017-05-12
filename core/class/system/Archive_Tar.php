@@ -1,6 +1,10 @@
 <?php
-define('ARCHIVE_TAR_ATT_SEPARATOR', 90001);
-define('ARCHIVE_TAR_END_BLOCK', pack("a512", ''));
+if(!defined("ARCHIVE_TAR_ATT_SEPARATOR")) {
+	define('ARCHIVE_TAR_ATT_SEPARATOR', 90001);
+}
+if(!defined("ARCHIVE_TAR_END_BLOCK")) {
+	define('ARCHIVE_TAR_END_BLOCK', pack("a512", ''));
+}
 
 if (!function_exists('gzopen') && function_exists('gzopen64')) {
     function gzopen($filename, $mode, $use_include_path = 0)

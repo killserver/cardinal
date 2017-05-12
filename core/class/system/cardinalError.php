@@ -27,284 +27,19 @@ class cardinalError {
 	}
 	
 	final public static function TplDebug($arr) {
-		$filesizename = array(" Bytes", " Kb", " Mb", " Gb", " Tb", " Pb", " Eb", " Zb", " Yb");
-		templates::assign_var("time_work", $arr['time_work']);
-		templates::assign_var("memory", $arr['memory']);
-		for($i=0;$i<sizeof($arr['db']['list']);$i++) {
-			templates::assign_vars($arr['db']['list'][$i], "db_query", "db".$i);
-		}
-		templates::assign_var("db_time", number_format($arr['db']['time'], 5, '.', ' '));
-		templates::assign_var("db_count", $arr['db']['num']);
-		/* Start File */
-		$size = $lines = 0;
-		templates::assign_var("count_file", sizeof($arr['use_files']));
-		for($i=0;$i<sizeof($arr['use_files']);$i++) {
-			templates::assign_vars(array(
-				"file" => $arr['use_files'][$i]['file'],
-				"size" => $arr['use_files'][$i]['size'],
-				"line" => $arr['use_files'][$i]['lines'],
-			), "files", "file".$i);
-			$lines += $arr['use_files'][$i]['lines'];
-			$size += $arr['use_files'][$i]['sizeNum'];
-		}
-		$size = sprintf("%u", $size);
-		$size = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
-		templates::assign_var("total_fileline", $lines);
-		templates::assign_var("total_filesize", $size);
-		/* End File */
-		/* Start Include */
-		$size = $lines = 0;
-		templates::assign_var("count_include", sizeof($arr['included_files']));
-		for($i=0;$i<sizeof($arr['included_files']);$i++) {
-			templates::assign_vars(array(
-				"file" => $arr['included_files'][$i]['file'],
-				"size" => $arr['included_files'][$i]['size'],
-				"line" => $arr['included_files'][$i]['lines'],
-			), "include", "include".$i);
-			$lines += $arr['included_files'][$i]['lines'];
-			$size += $arr['included_files'][$i]['sizeNum'];
-		}
-		templates::assign_var("total_includeline", $lines);
-		$size = sprintf("%u", $size);
-		$size = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
-		templates::assign_var("total_includesize", $size);
-		/* End Include */
-		/* Start GET */
-		templates::assign_var("count_get", sizeof($_GET));
-		$i = 0;
-		foreach($_GET as $k => $v) {
-			templates::assign_vars(array("key" => $k, "val" => $v), "gets", "get".$i);
-			$i++;
-		}
-		/* End GET */
-		/* Start POST */
-		templates::assign_var("count_post", sizeof($_POST));
-		$i = 0;
-		foreach($_POST as $k => $v) {
-			templates::assign_vars(array("key" => $k, "val" => $v), "posts", "posts".$i);
-			$i++;
-		}
-		/* End POST */
-		/* Start COOKIE */
-		templates::assign_var("count_cookie", sizeof($_COOKIE));
-		$i = 0;
-		foreach($_COOKIE as $k => $v) {
-			templates::assign_vars(array("key" => $k, "val" => $v), "cookies", "cookie".$i);
-			$i++;
-		}
-		/* End COOKIE */
-		/* Start SERVER */
-		templates::assign_var("count_server", sizeof($_SERVER));
-		$i = 0;
-		foreach($_SERVER as $k => $v) {
-			templates::assign_vars(array("key" => $k, "val" => (is_string($v) ? $v : var_export($v, true))), "servers", "server".$i);
-			$i++;
-		}
-		/* End SERVER */
-		/* Start Route */
-		$params = Route::param();
-		templates::assign_var("count_router", sizeof($params));
-		$i = 0;
-		foreach($params as $k => $v) {
-			templates::assign_vars(array("key" => $k, "val" => (is_string($v) ? $v : var_export($v, true))), "router", "router".$i);
-			$i++;
-		}
-		/* End Route */
-		templates::dir_skins("skins");
-		templates::set_skins("");
-		$tpl = templates::complited_assing_vars("debug_panel", null);
-		return templates::view($tpl);
+		return Debug::TplDebug($type, $echo);
 	}
 	
 	final public static function Debug($type = "", $echo = false) {
-		if(empty($type)) {
-			$type = DEBUG_MEMORY * DEBUG_TIME * DEBUG_FILES * DEBUG_INCLUDE * DEBUG_DB * DEBUG_TEMPLATE;
-		}
-		$incl_files = $files = $db_querys = $include = array();
-		$memory = $memoryNum = $time = $incl_filesize = $filesize = $db_time = $db_num = $tmp = 0;
-		$filesizename = array(" Bytes", " Kb", " Mb", " Gb", " Tb", " Pb", " Eb", " Zb", " Yb");
-		switch($type) {
-			case DEBUG_MEMORY:
-				$size = sprintf("%u", memory_get_peak_usage()-MEMORY_GET);
-				$memoryNum = $size;
-				$memory = $size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes';
-				unset($size, $filesizename, $i);
-			break;
-			case DEBUG_TIME:
-			global $Timer;
-				$time = microtime()-$Timer;
-				unset($Timer);
-			break;
-			case DEBUG_FILES:
-				$tmp_files = debug_backtrace();
-				$num = 0;
-				for($i=0;$i<sizeof($tmp_files);$i++) {
-					if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
-						$files[$num]['file'] = $tmp_files[$i]['file'];
-						$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
-						$files[$num]['size'] = filesize($tmp_files[$i]['file']);
-						$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
-						$num++;
-					}
-				}
-				unset($tmp_files, $filesizename, $i);
-			break;
-			case DEBUG_INCLUDE:
-				$num = 0;
-				$incl_files = get_included_files();
-				foreach($incl_files as $f) {
-					if(file_exists($f)) {
-						$include[$num]['file'] = $f;
-						$include[$num]['lines'] = self::FileLine($f);
-						$size = sprintf("%u", filesize($f));
-						$include[$num]['sizeNum'] = filesize($f);
-						$include[$num]['size'] = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
-						$num++;
-					}
-				}
-				unset($size, $i);
-			break;
-			case DEBUG_DB:
-				$db_time = db::$time;
-				$db_num = db::$num;
-				$db_querys = db::$querys;
-			break;
-			case DEBUG_TEMPLATE:
-				$tmp = templates::$time;
-			break;
-			case DEBUG_MEMORY * DEBUG_TIME * DEBUG_FILES * DEBUG_INCLUDE:
-			case DEBUG_CORE:
-				$num = 0;
-				$incl_files = get_included_files();
-				foreach($incl_files as $f) {
-					if(file_exists($f)) {
-						$include[$num]['file'] = $f;
-						$include[$num]['lines'] = self::FileLine($f);
-						$size = sprintf("%u", filesize($f));
-						$include[$num]['sizeNum'] = filesize($f);
-						$include[$num]['size'] = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
-						$num++;
-					}
-				}
-				unset($size, $i);
-				$tmp_files = debug_backtrace();
-				$num = 0;
-				for($i=0;$i<sizeof($tmp_files);$i++) {
-					if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
-						$files[$num]['file'] = $tmp_files[$i]['file'];
-						$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
-						$files[$num]['size'] = filesize($tmp_files[$i]['file']);
-						$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
-						$num++;
-					}
-				}
-				unset($tmp_files, $i);
-				$size = sprintf("%u", memory_get_peak_usage()-MEMORY_GET);
-				$memoryNum = $size;
-				$memory = $size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes';
-				unset($size, $filesizename, $i);
-				global $Timer;
-				$time = microtime()-$Timer;
-				unset($Timer);
-			break;
-			case DEBUG_FILES * DEBUG_INCLUDE:
-			case DEBUG_FILE:
-				$num = 0;
-				$incl_files = get_included_files();
-				foreach($incl_files as $f) {
-					if(file_exists($f)) {
-						$include[$num]['file'] = $f;
-						$include[$num]['lines'] = self::FileLine($f);
-						$size = sprintf("%u", filesize($f));
-						$include[$num]['sizeNum'] = filesize($f);
-						$include[$num]['size'] = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
-						$num++;
-					}
-				}
-				unset($size, $i);
-				$tmp_files = debug_backtrace();
-				$num = 0;
-				for($i=0;$i<sizeof($tmp_files);$i++) {
-					if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
-						$files[$num]['file'] = $tmp_files[$i]['file'];
-						$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
-						$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
-						$files[$num]['size'] = filesize($tmp_files[$i]['file']);
-						$num++;
-					}
-				}
-				unset($tmp_files, $filesizename, $i);
-			break;
-			case DEBUG_DB * DEBUG_TEMPLATE:
-			case DEBUG_DBTEMP:
-				$db_time = db::$time;
-				$db_num = db::$num;
-				$db_querys = db::$querys;
-				$tmp = templates::$time;
-			break;
-			case DEBUG_ALL:
-			default:
-				$tmp = templates::$time;
-				$db_time = db::$time;
-				$db_num = db::$num;
-				$db_querys = db::$querys;
-				$num = 0;
-				$incl_files = get_included_files();
-				foreach($incl_files as $f) {
-					if(file_exists($f)) {
-						$include[$num]['file'] = $f;
-						$include[$num]['lines'] = self::FileLine($f);
-						$size = sprintf("%u", filesize($f));
-						$include[$num]['sizeNum'] = filesize($f);
-						$include[$num]['size'] = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
-						$num++;
-					}
-				}
-				unset($size, $i);
-				$tmp_files = debug_backtrace();
-				$num = 0;
-				for($i=0;$i<sizeof($tmp_files);$i++) {
-					if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
-						$files[$num]['file'] = $tmp_files[$i]['file'];
-						$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
-						$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
-						$size = sprintf("%u", filesize($tmp_files[$i]['file']));
-						$files[$num]['size'] = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
-						$num++;
-					}
-				}
-				unset($tmp_files, $i);
-				$size = sprintf("%u", memory_get_peak_usage()-MEMORY_GET);
-				$memoryNum = $size;
-				$memory = $size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes';
-				unset($size, $filesizename, $i);
-				global $Timer;
-				$time = microtime()-$Timer;
-				unset($Timer);
-			break;
-		}
-		$arr = array("memory" => $memory, "memoryNum" => $memoryNum, "time_work" => $time, "included_files" => $include, "use_files" => $files, "work_template" => $tmp, "db" => array("time" => $db_time, "num" => $db_num, "list" => $db_querys));
-		unset($memory, $time, $incl_filesize, $incl_files, $include, $files, $tmp, $db_time, $db_num, $db_querys);
-		if(!$echo) {
-			return $arr;
-		} else {
-			$arr = self::TplDebug($arr);
-			self::viewOnPage($arr);
-		}
+		return Debug::DebugAll($type, $echo);
 	}
 	
 	final private static function FileLine($file) {
-		$lines = 0;
-		$fh = fopen($file, "r");
-		while(fgets($fh) !== false) {
-			$lines++;
-		}
-		fclose($fh);
-		return $lines;
+		return Debug::FileLine($file);
 	}
 	
-	final public static function SetEcho() {
-		self::$_echo = false;
+	final public static function SetEcho($echo = false) {
+		self::$_echo = $echo;
 	}
 	
 	final public static function FriendlyErrorType($type) {
@@ -346,7 +81,7 @@ class cardinalError {
 	}
 	
 	final private static function viewOnPage($data) {
-		echo $data;
+		return Debug::viewOnPage($data);
 	}
 	
 	final public static function handleException($e) {
@@ -537,8 +272,12 @@ primary key `id`(`id`)
 		}
 	}
 	
-	final public static function debugMode() {
-		return self::$_debug;
+	final public static function debugMode($debug = "") {
+		if($debug!=="") {
+			self::$_debug = $debug;
+		} else {
+			return self::$_debug;
+		}
 	}
 	
 	final public static function handlePhpError($errorType = "", $errorString = "", $file = "", $line = "") {
