@@ -73,7 +73,7 @@ if(class_exists($view)) {
 		array_walk($par, "cacheWalk");
 		$url = implode("=", $par);
 		$md5 = md5($url);
-		if(!file_exists(ROOT_PATH."core".DS."cache".DS."page".DS."admin_".$md5.".txt")) {
+		if(!file_exists(PATH_CACHE_PAGE."admin_".$md5.".txt")) {
 			$active = true;
 		} else {
 			$load = false;
@@ -86,12 +86,12 @@ if(class_exists($view)) {
 		}
 		new $view();
 	} else {
-		include(ROOT_PATH."core".DS."cache".DS."page".DS."admin_".$md5.".txt");
+		include(PATH_CACHE_PAGE."admin_".$md5.".txt");
 	}
 	if($active) {
 		$obj = ob_get_contents();
 		ob_end_clean();
-		file_put_contents(ROOT_PATH."core".DS."cache".DS."page".DS."admin_".$md5.".txt", removeBOM($obj));
+		file_put_contents(PATH_CACHE_PAGE."admin_".$md5.".txt", removeBOM($obj));
 		HTTP::echos($obj);
 	}
 }

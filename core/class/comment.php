@@ -153,14 +153,14 @@ class comment {
 		} else {
 			$spam = "no";
 		}
-		db::doquery("INSERT INTO `comments` SET `added` = \"".$userAltName."\", `email` = \"".$mail."\", `type` = \"".self::$param['type']."\", `ip` = \"".$ip."\", `user_agent` = \"".$client."\", `comment` = \"".$comment."\", `u_id` = \"".self::$param['u_id']."\", `parent_id` = \"".$parent_id."\", `time` = UNIX_TIMESTAMP(), `guest` = \"".$guest."\", `mod` = \"".$mod."\", `spam` = \"".$spam."\"");
+		db::doquery("INSERT INTO `".PREFIX_DB."comments` SET `added` = \"".$userAltName."\", `email` = \"".$mail."\", `type` = \"".self::$param['type']."\", `ip` = \"".$ip."\", `user_agent` = \"".$client."\", `comment` = \"".$comment."\", `u_id` = \"".self::$param['u_id']."\", `parent_id` = \"".$parent_id."\", `time` = UNIX_TIMESTAMP(), `guest` = \"".$guest."\", `mod` = \"".$mod."\", `spam` = \"".$spam."\"");
 		unset($_POST);
 		location(getenv("REQUEST_URI"));
 	}
 
 	/*delete(
-		DELETE FROM comments WHERE parent_id = $id
-		DELETE FROM comments WHERE id = $id
+		DELETE FROM ".PREFIX_DB."comments WHERE parent_id = $id
+		DELETE FROM ".PREFIX_DB."comments WHERE id = $id
 	}*/
 
 	/**
@@ -229,7 +229,7 @@ class comment {
 			$u_id = self::$param['u_id'];
 		}
 		if(!cache::Exists("comment_".$type."-".$u_id)) {
-			$result = db::doquery("SELECT `id`, `u_id`, (SELECT `last_activ` FROM `users` WHERE `username` = `comments`.`added`) as `last_activ`, (SELECT `username` FROM `users` WHERE `username` = `comments`.`added`) as `alt_name`, (SELECT `avatar` FROM `users` WHERE `username` = `comments`.`added`) as `avatar`, `added`, `ip`, `time`, `comment`, `parent_id`, `level` FROM `comments` WHERE `type` = \"".$type."\" AND `u_id` = \"".$u_id."\" AND `mod` = \"yes\"", true);
+			$result = db::doquery("SELECT `id`, `u_id`, (SELECT `last_activ` FROM `".PREFIX_DB."users` WHERE `username` = `comments`.`added`) as `last_activ`, (SELECT `username` FROM `".PREFIX_DB."users` WHERE `username` = `comments`.`added`) as `alt_name`, (SELECT `avatar` FROM `".PREFIX_DB."users` WHERE `username` = `comments`.`added`) as `avatar`, `added`, `ip`, `time`, `comment`, `parent_id`, `level` FROM `".PREFIX_DB."comments` WHERE `type` LIKE \"".$type."\" AND `u_id` LIKE \"".$u_id."\" AND `mod` LIKE \"yes\"", true);
 			while($row = db::fetch_assoc($result)) {
 				$msg[] = $row;
 			}

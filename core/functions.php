@@ -34,7 +34,7 @@ function require_dir($dir = "", $modules = "", $mod = false) {include_dir($dir, 
 function include_dir($dir = "", $modules = "", $mod = false) {
 global $useNew;
 	if(empty($dir)) {
-		$dir = ROOT_PATH."core".DS."functions".DS;
+		$dir = PATH_FUNCTIONS;
 	}
 	if(empty($modules)) {
 		$modules = ".".ROOT_EX;
@@ -45,7 +45,8 @@ global $useNew;
 	if(is_dir($dir)) {
 		if($dh = dir($dir)) {
 			while(($file = $dh->read()) !== false) {
-				if($file != "index.".ROOT_EX && $file != "." && $file != ".." && strpos($file, $modules) !== false && ($inc ? modules::load_modules("core".DS."modules".DS.$file, $modules) : true)) {
+				$strip_path = str_replace(ROOT_PATH, "", PATH_MODULES);
+				if($file != "index.".ROOT_EX && $file != "." && $file != ".." && strpos($file, $modules) !== false && ($inc ? modules::load_modules($strip_path.$file, $modules) : true)) {
 					if($useNew) {
 						$class = str_replace($modules, "", $file);
 						require_once($dir.$class.DS.$file);
@@ -65,14 +66,14 @@ global $useNew;
 		}
 	}
 }
-if(file_exists(ROOT_PATH."core".DS."media".DS."config.route.global.".ROOT_EX)) {
-	require_once(ROOT_PATH."core".DS."media".DS."config.route.global.".ROOT_EX);
+if(file_exists(PATH_MEDIA."config.route.global.".ROOT_EX)) {
+	require_once(PATH_MEDIA."config.route.global.".ROOT_EX);
 }
-if(file_exists(ROOT_PATH."core".DS."media".DS."config.route.".ROOT_EX)) {
-	require_once(ROOT_PATH."core".DS."media".DS."config.route.".ROOT_EX);
+if(file_exists(PATH_MEDIA."config.route.".ROOT_EX)) {
+	require_once(PATH_MEDIA."config.route.".ROOT_EX);
 }
-include_dir(ROOT_PATH."core".DS."modules".DS, ".2.class.".ROOT_EX, true);
-include_dir(ROOT_PATH."core".DS."modules".DS, ".class.".ROOT_EX, true);
+include_dir(PATH_MODULES, ".2.class.".ROOT_EX, true);
+include_dir(PATH_MODULES, ".class.".ROOT_EX, true);
 include_dir();
 
 if(file_exists(ROOT_PATH.".htaccess") && defined("DEVELOPER_MODE")) {
@@ -87,10 +88,20 @@ if(file_exists(ROOT_PATH.".htaccess") && defined("DEVELOPER_MODE")) {
 	$file = file_get_contents(ROOT_PATH.".htaccess");
 	if(strpos($file, "# Add htaccess")!==false) {
 		chmod(ROOT_PATH.".htaccess", 0777);
-		$fLen = strlen("# Add htaccess\n<IfModule pagespeed_module>\n\tModPagespeed off\n</IfModule>\n\n");
+		$fLen = strlen("# Add htaccess\n<IfModule pagespeed_module>\n\tModPagespeed on\n</IfModule>\n\n");
 		$file = substr($file, $fLen);
 		file_put_contents(ROOT_PATH.".htaccess", $file);
 		chmod(ROOT_PATH.".htaccess", 0644);
 	}
+}
+if($error = error_get_last() && in_array($error['type'], array(E_PARSE, E_ERROR, E_USER_ERROR))) {
+	// Clean the output buffer
+	ob_get_level() && ob_clean();
+
+	// Fake an exception for nice debugging
+	cardinalError::handleException(new ErrorException($error['message'], $error['type'], 0, $error['file'], $error['line']));
+
+	// Shutdown now to avoid a "death loop"
+	exit(1);
 }
 ?>

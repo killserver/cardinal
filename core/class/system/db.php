@@ -142,8 +142,8 @@ class db {
     final public static function OpenDriver() {
 		$driv = self::$driver_name;
 		if(!is_string($driv) || !class_exists($driv)) {
-			if(defined("ROOT_PATH") && file_exists(ROOT_PATH."core".DS."cache".DS."db_lock.lock") && is_readable(ROOT_PATH."core".DS."cache".DS."db_lock.lock")) {
-				$driv = file_get_contents(ROOT_PATH."core".DS."cache".DS."db_lock.lock");
+			if(defined("ROOT_PATH") && file_exists(PATH_CACHE."db_lock.lock") && is_readable(PATH_CACHE."db_lock.lock")) {
+				$driv = file_get_contents(PATH_CACHE."db_lock.lock");
 			} elseif(!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock") && is_readable(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock")) {
 				$driv = file_get_contents(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock");
 			} else {
@@ -151,7 +151,7 @@ class db {
 				$driv = self::DriverList();
 				$driv = $driv[array_rand($driv)];
 				if(!defined("ROOT_PATH")) {
-					include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."drivers".DIRECTORY_SEPARATOR.$driv.".".ROOT_EX);
+					include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."DBDrivers".DIRECTORY_SEPARATOR.$driv.".".ROOT_EX);
 				}
 				self::$driver_name = $driv;
 			}
@@ -165,7 +165,7 @@ class db {
      * @return array List exists drivers
      */
     final public static function DriverList() {
-		$dir = (defined("ROOT_PATH") ? ROOT_PATH."core".DS."class".DS."system".DS."DBDrivers".DS : dirname(__FILE__).DIRECTORY_SEPARATOR."DBDrivers".DIRECTORY_SEPARATOR);
+		$dir = (defined("PATH_DB_DRIVERS") ? PATH_DB_DRIVERS : dirname(__FILE__).DIRECTORY_SEPARATOR."DBDrivers".DIRECTORY_SEPARATOR);
 		$dirs = array();
 		if(is_dir($dir)) {
 			if($dh = dir($dir)) {
@@ -206,8 +206,8 @@ class db {
 		if($open) {
 			self::$driver->connect($host, $user, $pass, $db, $charset, $port);
 			if(self::connected() && self::$driverGen && !empty(self::$driver_name)) {
-				if(defined("ROOT_PATH") && !file_exists(ROOT_PATH."core".DS."cache".DS."db_lock.lock") && is_writable(ROOT_PATH."core".DS."cache".DS)) {
-					file_put_contents(ROOT_PATH."core".DS."cache".DS."db_lock.lock", self::$driver_name);
+				if(defined("ROOT_PATH") && !file_exists(PATH_CACHE_SYSTEM."db_lock.lock") && is_writable(PATH_CACHE_SYSTEM)) {
+					file_put_contents(PATH_CACHE_SYSTEM."db_lock.lock", self::$driver_name);
 				}
 				if(!defined("ROOT_PATH") && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock") && is_writable(dirname(__FILE__).DIRECTORY_SEPARATOR)) {
 					file_put_contents(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock", self::$driver_name);
@@ -220,17 +220,17 @@ class db {
      * db constructor.
      */
     function __construct($withoutInit = false, $forceStart = false) {
-		if($forceStart || (!$withoutInit && (!defined("INSTALLER") || (((defined("ROOT_PATH") && file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX)) || (!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX))) && defined("WITHOUT_DB"))))) {
+		if($forceStart || (!$withoutInit && (!defined("INSTALLER") || (((defined("ROOT_PATH") && file_exists(PATH_MEDIA."db.".ROOT_EX)) || (!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX))) && defined("WITHOUT_DB"))))) {
 			self::init();
 		}
 	}
 	
 	final public static function config($config = array()) {
-		if(sizeof($config)==0 && ((defined("ROOT_PATH") && !file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX)) || (!defined("ROOT_PATH") && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX)))) {
+		if(sizeof($config)==0 && ((defined("ROOT_PATH") && !file_exists(PATH_MEDIA."db.".ROOT_EX)) || (!defined("ROOT_PATH") && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX)))) {
 			throw new Exception("Config file for db or data in config is not correct");
 			die();
-		} else if(defined("ROOT_PATH") && file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX)) {
-			include_once(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX);
+		} else if(defined("ROOT_PATH") && file_exists(PATH_MEDIA."db.".ROOT_EX)) {
+			include_once(PATH_MEDIA."db.".ROOT_EX);
 			if(isset($config['db'])) {
 				$config = $config['db'];
 			}
@@ -455,7 +455,7 @@ class db {
 			$report .= "\tUses Port - ".(isset($_SERVER['REMOTE_PORT']) ? $_SERVER['REMOTE_PORT'] : "")."\n";
 			$report .= "\tServer Protocol - ".(isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : "")."\n";
 			$report .= "\n--------------------------------------------------------------------------------------------------\n";
-			$fp = fopen((defined("ROOT_PATH") ? ROOT_PATH.'core'.DS.'cache'.DS : dirname(__FILE__).DIRECTORY_SEPARATOR).'badqrys.txt', 'a');
+			$fp = fopen((defined("ROOT_PATH") ? PATH_LOGS : dirname(__FILE__).DIRECTORY_SEPARATOR).'badqrys.txt', 'a');
 			fwrite($fp, $report);
 			fclose($fp);
 			die($message);
@@ -739,7 +739,7 @@ class db {
 	}
 	
 	function backupDB($tables = '*', $path = "") {
-		if(empty($path) && defined("ROOT_PATH") && defined("DS") && (!file_exists(ROOT_PATH.'core'.DS.'cache'.DS) || !is_writable(ROOT_PATH.'core'.DS.'cache'.DS))) {
+		if(empty($path) && defined("ROOT_PATH") && defined("DS") && (!file_exists(PATH_CACHE_SYSTEM) || !is_writable(PATH_CACHE_SYSTEM))) {
 			return false;
 		}
 		$pathToSave = "";

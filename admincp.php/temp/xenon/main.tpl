@@ -19,9 +19,14 @@
 	<link rel="stylesheet" href="assets/xenon/css/xenon-forms.css?1">
 	<link rel="stylesheet" href="assets/xenon/css/xenon-components.css?10">
 	<link rel="stylesheet" href="assets/xenon/css/xenon-skins.css?1">
-	<link rel="stylesheet" href="assets/xenon/css/custom.css?1">
+	<link rel="stylesheet" href="assets/xenon/css/custom.css?{S_time}">
 
 	<script src="assets/xenon/js/jquery-1.11.1.min.js?1"></script>
+	<script>
+		var defaultTime = {S_time};
+		var default_link = "{C_default_http_host}";
+		var default_admin_link = "{C_default_http_host}{D_ADMINCP_DIRECTORY}/";
+	</script>
 
 	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 </head>
@@ -291,6 +296,17 @@
 						</a>
 					</li>
 					
+					<li class="dropdown hover-line">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+							<i class="fa-paper-plane"></i>
+						</a>
+						<ul class="dropdown-menu messages">
+							<li class="external">
+								<a href="{C_default_http_host}">{L_"Перейти на сайт"}</a>
+							</li>
+						</ul>
+					</li>
+					
 					[if {count_unmoder}>=1]<li class="dropdown hover-line">
 						<a href="#" data-toggle="dropdown">
 							<i class="fa-bell-o"></i>
@@ -322,6 +338,13 @@
 							</li>
 						</ul>
 					</li>[/if {count_unmoder}>=1]
+					
+					[if {count[langListSupport]}>=2]<li class="dropdown hover-line language-switcher" style="min-height: 76px;">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><img src="{nowLangImg}">{nowLangText}</a>
+						<ul class="dropdown-menu languages">
+							[foreach block=langListSupport]<li><a href="./?setLanguage={langListSupport.langMenu}"><img src="{langListSupport.img}">{langListSupport.lang}</a></li>[/foreach]
+						</ul>
+					</li>[/if {count[langListSupport]}>=2]
 					
 				</ul>
 				
@@ -373,9 +396,9 @@
 				
 					<!-- Add your copyright text here -->
 					<div class="footer-text">
-						&copy; 2014 
+						&copy; 2015 - {S_data="Y"} 
 						<strong>Xenon</strong> 
-						theme by <a href="http://laborator.co" target="_blank">Laborator</a>
+						theme by <a href="http://laborator.co" target="_blank">Laborator</a> for Cardinal Engine
 					</div>
 					
 					
@@ -477,8 +500,9 @@
 	<script src="assets/xenon/js/joinable.js?2"></script>
 	<script src="assets/xenon/js/xenon-api.js?1"></script>
 	<script src="assets/xenon/js/xenon-toggles.js?1"></script>
-	<script src="assets/xenon/js/ckeditor/ckeditor.js?1"></script>
-	<script src="assets/xenon/js/ckeditor/adapters/jquery.js"></script>
+	<!--script src="assets/xenon/js/ckeditor/ckeditor.js?1"></script>
+	<script src="assets/xenon/js/ckeditor/adapters/jquery.js"></script-->
+	<script src="assets/xenon/js/tinymce/tinymce.min.js?{S_time}"></script>
 	{js_list}
 
 	<!-- JavaScripts initializations and stuff -->

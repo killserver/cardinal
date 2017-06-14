@@ -14,13 +14,13 @@ class Logs extends Core {
 	
 	function Delete() {
 		cardinal::RegAction("Очистка логов ошибок");
-		if(file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt")) {
-			unlink(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt");
+		if(file_exists(PATH_CACHE_SYSTEM."php_log.txt")) {
+			unlink(PATH_CACHE_SYSTEM."php_log.txt");
 		}
 		if(!defined("WITHOUT_DB") && db::connected()) {
-			$list = db::doquery("SELECT `id` FROM `error_log`", true);
+			$list = db::doquery("SELECT `id` FROM `".PREFIX_DB."error_log`", true);
 			while($l = db::fetch_assoc($list)) {
-				db::doquery("DELETE FROM `error_log` WHERE id = ".$l['id']);
+				db::doquery("DELETE FROM `".PREFIX_DB."error_log` WHERE id = ".$l['id']);
 			}
 		}
 	}
@@ -31,8 +31,8 @@ class Logs extends Core {
 			location("./?pages=Logs");
 			die();
 		}
-		if((defined("WITHOUT_DB") || config::Select('logs')==ERROR_FILE) && file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt")) {
-			$logs = file(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt");
+		if((defined("WITHOUT_DB") || config::Select('logs')==ERROR_FILE) && file_exists(PATH_CACHE_SYSTEM."php_log.txt")) {
+			$logs = file(PATH_CACHE_SYSTEM."php_log.txt");
 			$log_el = array();
 			for($i=(sizeof($logs)-1);$i>=0;$i--) {
 				$log = json_decode(trim($logs[$i]));
@@ -48,7 +48,7 @@ class Logs extends Core {
 				), "logs", $log->filename.$log->line);
 			}
 		} elseif(!defined("WITHOUT_DB") && db::connected()) {
-			db::doquery("SELECT * FROM `error_log` ORDER BY `id` DESC", true);
+			db::doquery("SELECT * FROM `".PREFIX_DB."error_log` ORDER BY `id` DESC", true);
 			while($log = db::fetch_assoc()) {
 				templates::assign_vars(array(
 					"time" => date("d-m-Y H:i:s", $log['times']),

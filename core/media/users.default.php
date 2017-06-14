@@ -7,8 +7,8 @@ if(!defined("IS_CORE")) {
 $users = array_merge($users, array(
 	"admin" => array(
 		"username" => "admin",
-		"pass" => create_pass("1q2we3r4t5y6u"),
+		"pass" => User::create_pass("1q2we3r4t5y6u"),
 		"admin_pass" => cardinal::create_pass("1q2we3r4t5y6u"),
-		"level" => LEVEL_ADMIN,
+		"level" => LEVEL_CREATOR,
 	),
 ));

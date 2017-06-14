@@ -159,19 +159,19 @@ primary key `id`(`id`)
 */
 			$db = false;
 			if(defined("WITHOUT_DB") || config::Select('logs')==ERROR_FILE) {
-				if(is_writable(ROOT_PATH."core".DS."cache".DS."system".DS)) {
-					file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt", json_encode(array("times" => time(), "ip" => self::getip(), "exception_type" => self::FriendlyErrorType($e->getCode()), "message" => self::saves($messagePrefix . $e->getMessage()), "filename" => self::saves($file), "line" => $e->getLine(), "trace_string" => self::saves($e->getTraceAsString()), "request_state" => self::saves(serialize($request), true)))."\n", FILE_APPEND);
+				if(is_writable(PATH_LOGS)) {
+					file_put_contents(PATH_LOGS."php_log.txt", json_encode(array("times" => time(), "ip" => self::getip(), "exception_type" => self::FriendlyErrorType($e->getCode()), "message" => self::saves($messagePrefix . $e->getMessage()), "filename" => self::saves($file), "line" => $e->getLine(), "trace_string" => self::saves($e->getTraceAsString()), "request_state" => self::saves(serialize($request), true)))."\n", FILE_APPEND);
 				}
 			} else {
 				$db = modules::init_db();
-				$db->doquery("INSERT INTO `error_log`(`times`, `ip`, `exception_type`, `message`, `filename`, `line`, `trace_string`, `request_state`) VALUES(UNIX_TIMESTAMP(), \"".self::getip()."\", \"".self::FriendlyErrorType($e->getCode())."\", \"".self::saves($messagePrefix . $e->getMessage())."\", \"".self::saves($file)."\", \"".$e->getLine()."\", \"".self::saves($e->getTraceAsString())."\", \"".self::saves(serialize($request), true)."\")");
+				$db->doquery("INSERT INTO `".PREFIX_DB."error_log`(`times`, `ip`, `exception_type`, `message`, `filename`, `line`, `trace_string`, `request_state`) VALUES(UNIX_TIMESTAMP(), \"".self::getip()."\", \"".self::FriendlyErrorType($e->getCode())."\", \"".self::saves($messagePrefix . $e->getMessage())."\", \"".self::saves($file)."\", \"".$e->getLine()."\", \"".self::saves($e->getTraceAsString())."\", \"".self::saves(serialize($request), true)."\")");
 			}
 			if(self::$_echo) {
 				if(!defined("ERROR_VIEW")) {
 					self::viewOnPage("<div style=\"text-decoration:underline;\"><div style=\"padding-top: 10px;text-transform: uppercase;\"><h1>Error!</h1> <b>[" . self::FriendlyErrorType($e->getCode()) . "]</b> level error. Error code <h2 style=\"display:inline-block;\">(" . self::NextId($db) . ")</h2>. Please, report developer</div></div>");
 				} else {
-					if(file_exists(ROOT_PATH."skins".DS."phpError.tpl")) {
-						$file = file_get_contents(ROOT_PATH."skins".DS."phpError.tpl");
+					if(file_exists(PATH_SKINS."phpError.tpl")) {
+						$file = file_get_contents(PATH_SKINS."phpError.tpl");
 						$file = str_replace(array(
 								"{code}",
 								"{message}",
@@ -198,10 +198,10 @@ primary key `id`(`id`)
 	
 	final private static function NextId($db = false) {
 		if(defined("WITHOUT_DB") || config::Select('logs')==ERROR_FILE) {
-			if(!file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt") || !is_readable(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt")) {
+			if(!file_exists(PATH_LOGS."php_log.txt") || !is_readable(PATH_LOGS."php_log.txt")) {
 				return 0;
 			}
-			$handle = fopen(ROOT_PATH."core".DS."cache".DS."system".DS."php_log.txt", "rb");
+			$handle = fopen(PATH_LOGS."php_log.txt", "rb");
 			$id = 1;
 			while(($c = fgetc($handle))!==false) {
 				if($c==="\n") {
@@ -281,13 +281,13 @@ primary key `id`(`id`)
 	}
 	
 	final public static function handlePhpError($errorType = "", $errorString = "", $file = "", $line = "") {
-		if (!self::$_handlePhpError) {
+		if(!self::$_handlePhpError) {
 			return false;
 		}
-		if ($errorType & error_reporting()) {
+		if($errorType & error_reporting()) {
 			$trigger = true;
-			if (!self::debugMode()) {
-				if ((defined('E_DEPRECATED') && $errorType & E_DEPRECATED) || (defined('E_USER_DEPRECATED') && $errorType & E_USER_DEPRECATED)) {
+			if(!self::debugMode()) {
+				if((defined('E_DEPRECATED') && $errorType & E_DEPRECATED) || (defined('E_USER_DEPRECATED') && $errorType & E_USER_DEPRECATED)) {
 					$trigger = false;
 					$e = new ErrorException($errorString, 0, $errorType, $file, $line);
 					self::logException($e, false);
@@ -299,8 +299,10 @@ primary key `id`(`id`)
 					return true;
 				}
 			}
-			if ($trigger) {
-				throw new ErrorException($errorString, 0, $errorType, $file, $line);
+			if($trigger) {
+				$e = new ErrorException($errorString, 0, $errorType, $file, $line);
+				self::logException($e, false);
+				return true;
 			}
 		}
 		return false;

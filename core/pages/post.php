@@ -22,7 +22,7 @@ class page {
 		$page = Route::param("action");
 		if(sizeof($_POST)>0) {
 			if(isset($_GET['add']) || $page=="add") {
-				$model = new ModelDB("posts");
+				$model = new ModelDB(PREFIX_DB."posts");
 				$_POST = modules::change_db("add", $_POST);
 				$title = Arr::get($_POST, 'title');
 				$model->title = Saves::SaveOld($title, true);
@@ -55,7 +55,7 @@ class page {
 						$model->Update();
 					}
 				}
-				$tags = new ModelDB("tags", $id, "id", "insert");
+				$tags = new ModelDB(PREFIX_DB."tags", $id, "id", "insert");
 				$tags_list = Saves::SaveOld(Arr::get($_POST, 'tags'), true);
 				$tags_list = explode(",", $tags_list);
 				$tags_list = array_unique($tags_list);
@@ -76,7 +76,7 @@ class page {
 				templates::complited($tpl);
 				templates::display();
 			} else if($page=="edit") {
-				$model = new ModelDB("posts", "\"%".Route::param("sub_link")."%\" AND `type` = \"post\"", "alt_name", "select", "like");
+				$model = new ModelDB(PREFIX_DB."posts", "\"%".Route::param("sub_link")."%\" AND `type` LIKE \"post\"", "alt_name", "select", "like");
 				$_POST = modules::change_db("add", $_POST);
 				$title = Saves::SaveOld(Arr::get($_POST, 'title'), true);
 				if($model->title != $title) {
@@ -111,9 +111,9 @@ class page {
 						$model->Update();
 					}
 				}
-				$tags = new ModelDB("tags", $id, "id", "insert");
+				$tags = new ModelDB(PREFIX_DB."tags", $id, "id", "insert");
 				$tags->Delete();
-				$tags = new ModelDB("tags", $id, "id", "insert");
+				$tags = new ModelDB(PREFIX_DB."tags", $id, "id", "insert");
 				$tags_list = Saves::SaveOld(Arr::get($_POST, 'tags'), true);
 				$tags_list = explode(",", $tags_list);
 				$tags_list = array_unique($tags_list);
@@ -160,7 +160,7 @@ class page {
 			} else if($page == "edit") {
 				modules::use_modules("edit");
 				$sub_link = Route::param("sub_link");
-				db::doquery("SELECT * FROM `posts` WHERE `alt_name` LIKE \"".Saves::SaveOld($sub_link, true)."\" AND `type` = \"post\"", true);
+				db::doquery("SELECT * FROM `".PREFIX_DB."posts` WHERE `alt_name` LIKE \"".Saves::SaveOld($sub_link, true)."\" AND `type` LIKE \"post\"", true);
 				if(db::num_rows() == 0) {
 					templates::error("Not Found", "{L_error}");
 					return;
@@ -168,14 +168,14 @@ class page {
 				$row = db::fetch_assoc();
 				$row['descr'] = bbcodes::colorit(str_replace(array("&amp;laquo;", "&amp;raquo;"), array("&laquo;", "&raquo;"), $row['descr']));
 				templates::assign_vars($row);
-				$tags = db::doquery("SELECT * FROM `tags` WHERE `post_id` = ".$row['id']);
+				$tags = db::doquery("SELECT * FROM `".PREFIX_DB."tags` WHERE `post_id` = ".$row['id']);
 				if(sizeof($tags)>0) {
 					templates::assign_var("tags", implode(",", array_map(function($data) {return $data;}, $tags)));
 				} else {
 					templates::assign_var("tags", "");
 				}
 			}
-			db::doquery("SELECT `cat_id`, `name` FROM `category` ORDER BY `sort` ASC", true);
+			db::doquery("SELECT `cat_id`, `name` FROM `".PREFIX_DB."category` ORDER BY `sort` ASC", true);
 			while($rows = db::fetch_assoc()) {
 				if(isset($row) && is_array($row) && sizeof($row) > 0 && $row['cat_id'] == $rows['cat_id']) {
 					$rows['active'] = " selected=\"selected\"";

@@ -145,23 +145,6 @@ if(!defined("PHP_WIN")) {
 		define("PHP_WIN", false);
 	}
 }
-if(file_exists(dirname(__FILE__).DS."core".DS."media".DS."definition.php")) {
-	include_once(dirname(__FILE__).DS."core".DS."media".DS."definition.php");
-}
-
-if(!defined("DEVELOPER_MODE") && file_exists(dirname(__FILE__).DS."core".DS."media".DS."develop.lock")) {
-	define("DEVELOPER_MODE", true);
-	define("ERROR_VIEW", true);
-}
-if(!defined("WITHOUT_DB") && file_exists(dirname(__FILE__).DS."core".DS."media".DS."isFrame.lock")) {
-	define("WITHOUT_DB", true);
-}
-if(!defined("ERROR_VIEW") && file_exists(dirname(__FILE__).DS."core".DS."media".DS."error.lock")) {
-	define("ERROR_VIEW", true);
-}
-if(!defined("PERMISSION_PHP") && file_exists(dirname(__FILE__).DS."core".DS."media".DS."phpINtmp.lock")) {
-	define("PERMISSION_PHP", true);
-}
 
 if(!defined("MEMORY_GET")) {
 	define("MEMORY_GET", memory_get_usage());
@@ -173,15 +156,39 @@ $phpEx = substr(strrchr(__FILE__, '.'), 1);
 if(!defined("ROOT_EX") && strpos($phpEx, '/') === false) {
 	define("ROOT_EX", $phpEx);
 }
+if(file_exists(ROOT_PATH."core".DS."paths.".ROOT_EX)) {
+	include_once(ROOT_PATH."core".DS."paths.".ROOT_EX);
+} else if(file_exists(ROOT_PATH."core".DS."paths.default.".ROOT_EX)) {
+	include_once(ROOT_PATH."core".DS."paths.default.".ROOT_EX);
+} 
+
+if(file_exists(PATH_MEDIA."definition.php")) {
+	include_once(PATH_MEDIA."definition.php");
+}
+
+if(!defined("DEVELOPER_MODE") && file_exists(PATH_MEDIA."develop.lock")) {
+	define("DEVELOPER_MODE", true);
+	define("ERROR_VIEW", true);
+}
+if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."isFrame.lock")) {
+	define("WITHOUT_DB", true);
+}
+if(!defined("ERROR_VIEW") && file_exists(PATH_MEDIA."error.lock")) {
+	define("ERROR_VIEW", true);
+}
+if(!defined("PERMISSION_PHP") && file_exists(PATH_MEDIA."phpINtmp.lock")) {
+	define("PERMISSION_PHP", true);
+}
+
 $Timer = microtime();
 
 require_once(ROOT_PATH."core".DS."functions.".ROOT_EX);
 
-HTTP::setSaveMime(ROOT_PATH."core".DS."cache".DS."system".DS."mimeList.json");
+HTTP::setSaveMime(PATH_CACHE_SYSTEM."mimeList.json");
 Validate::$host = config::Select("default_http_host");
 
 $lang = array();
-if(file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX)) {
+if(file_exists(PATH_MEDIA."db.".ROOT_EX)) {
 	$db = new db();
 }
 $cache = new cache();
@@ -253,14 +260,14 @@ if(defined("WITHOUT_DB") || !defined("INSTALLER")) {
 		header("Location: http://".$config['default_http_hostname'].$_SERVER['REQUEST_URI']);
 	die();
 	}
-	User::PathUsers(ROOT_PATH."core".DS."cache".DS."system".DS);
+	User::PathUsers(PATH_CACHE_SYSTEM);
 	User::load();
 }
 
 $templates = new templates($config_templates);
 templates::SetConfig($config_templates);
 header('Content-Type: text/html; charset='.config::Select('charset'));
-header('X-UA-Compatible: IE=edge,chrome=1');
+header('X-UA-Compatible: IE=edge');
 header("X-Content-Type-Options: SAMEORIGIN");
 header("X-XSS-Protection: 1; mode=block");
 header('Cache-Control: max-age');

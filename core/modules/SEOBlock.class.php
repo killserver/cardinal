@@ -134,7 +134,7 @@ class SEOBlock extends modules {
 			return false;
 		}
 		if(!file_exists($file)) {
-			db::query("CREATE TABLE `seoBlock` ( `sId` int(11) not null auto_increment, `sPage` varchar(255) not null, `sLang` varchar(255) not null, `sTitle` varchar(255) not null, `sMetaDescr` varchar(255) not null, `sMetaKeywords` varchar(255) not null, `sMetaRobots` varchar(255) not null, `sRedirect` varchar(255) not null, `sImage` varchar(255) not null, primary key `id`(`sId`), fulltext `lang`(`sLang`), fulltext `page`(`sPage`), fulltext `title`(`sTitle`), fulltext `metaDescr`(`sMetaDescr`), fulltext `metaKeywords`(`sMetaKeywords`) ) ENGINE=MyISAM;");
+			db::query("CREATE TABLE `".PREFIX_DB."seoBlock` ( `sId` int(11) not null auto_increment, `sPage` varchar(255) not null, `sLang` varchar(255) not null, `sTitle` varchar(255) not null, `sMetaDescr` varchar(255) not null, `sMetaKeywords` varchar(255) not null, `sMetaRobots` varchar(255) not null, `sRedirect` varchar(255) not null, `sImage` varchar(255) not null, primary key `id`(`sId`), fulltext `lang`(`sLang`), fulltext `page`(`sPage`), fulltext `title`(`sTitle`), fulltext `metaDescr`(`sMetaDescr`), fulltext `metaKeywords`(`sMetaKeywords`) ) CHARSET=utf8 ENGINE=MyISAM;");
 			file_put_contents($file, "");
 		}
 		$uri = (class_exists("cardinal") && method_exists("cardinal", "getServer") ? cardinal::getServer('REQUEST_URI') : $_SERVER['REQUEST_URI']);
@@ -149,12 +149,28 @@ class SEOBlock extends modules {
 				}
 			}
 			$tmp = $this->init_templates();
-			$db->doquery("SELECT * FROM `seoBlock` WHERE `sLang` LIKE \"".$match[3]."\" AND `sPage` LIKE \"/".(isset($match[4]) && !empty($match[4]) ? $match[4] : "")."\"", true);
+			$db->doquery("SELECT * FROM `".PREFIX_DB."seoBlock` WHERE `sLang` LIKE \"".$match[3]."\" AND `sPage` LIKE \"/".(isset($match[4]) && !empty($match[4]) ? $match[4] : "")."\"", true);
 			if($db->num_rows()==0) {
-				return false;
+				$rows = $db->select_query("SELECT * FROM `".PREFIX_DB."seoBlock` WHERE `sLang` LIKE \"".$match[3]."\" ORDER BY `sPage` DESC", true);
+				$ret = false;
+				for($i=0;$i<sizeof($rows);$i++) {
+					if(preg_match("#^".($rows[$i]['sPage'])."#is", $uri)) {
+						$row = $rows[$i];
+						$ret = true;
+						break;
+					}
+				}
+				if(!$ret) {
+					return false;
+				}
+			} else {
+				$row = $db->fetch_assoc();
 			}
-			$row = $db->fetch_assoc();
 			if(!empty($row['sRedirect'])) {
+				if(strpos($row['sRedirect'], '$1')!==false) {
+					preg_match("#".($row['sPage'])."(.*?)$#is", $uri, $arr);
+					$row['sRedirect'] = str_replace('$1', $arr[1], $row['sRedirect']);
+				}
 				header("Location: ".$row['sRedirect'], true, 301);
 				die();
 			}

@@ -65,7 +65,7 @@ $config = array_merge($config, array(
 	"js_min" => true,
 	
 	//"viewport" => "width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes",
-	"viewport" => "width=device-width, initial-scale=1, shrink-to-fit=no",
+	"viewport" => "width=device-width, initial-scale=1, shrink-to-fit=no, minimal-ui",
 	
 	"skins" => array(
 		"skins" => "main",
@@ -76,7 +76,7 @@ $config = array_merge($config, array(
 
 	"default_http_local" => "/",
 	"default_http_hostname" => "online-killer.pp.ua",
-	"default_http_host" => $protocol."://online-killer.pp.ua/",
+	"default_http_host" => HTTP::$protocol."://online-killer.pp.ua/",
 	'lang' => "ru",
 	"charset" => "utf-8",
 

@@ -106,15 +106,15 @@ jQuery(".sidebar-menu").addClass("none");
 var randTime = 0;
 function ViewAntivirus(data) {
 	var html = "<div class=\"row\"><div class=\"col-sm-12\"><div class=\"panel panel-default\"><table class=\"table responsive\" width=\"100%\">";
-	html += "<thead><tr><th>Путь к файлу</th><th>Действие</th></tr></thead><tbody>";
+	html += "<thead><tr><th>{L_"Путь к файлу"}</th><th>{L_"Действие"}</th></tr></thead><tbody>";
 	for(var i=0;i<data.length;i++) {
 		var actionWith = "";
 		switch(data[i].alert) {
 			case "alert":
-				actionWith = "Удалите данный файл - он представляет угрозу для безопасности";
+				actionWith = "{L_"Удалите данный файл - он представляет угрозу для безопасности"}";
 			break;
 			case "warning":
-				actionWith = "Возможно не представляет угрозы, но всё-же - обратитесь в службу тех.поддержки";
+				actionWith = "{L_"Возможно не представляет угрозы, но всё-же - обратитесь в службу тех.поддержки"}";
 			break;
 		}
 		html += "<tr><td>"+data[i].path+"</td><td>"+actionWith+"</td></tr>";
@@ -128,19 +128,19 @@ function ViewAntivirus(data) {
 	});
 }
 setTimeout(function() {
-	jQuery(".antivirus > .status").html("Инициализация антивирусной защиты");
+	jQuery(".antivirus > .status").html("{L_"Инициализация антивирусной защиты"}");
 	randTime = rand(1, 3)*1000;
 	setTimeout(function() {
 		jQuery.post("./?pages=Antivirus", "page=Init").done(function(data) {
-			jQuery(".antivirus > .status").html("Запуск антивирусной защиты<br><b>завершено</b>");
+			jQuery(".antivirus > .status").html("{L_"Запуск антивирусной защиты"}<br><b>{L_"завершено"}</b>");
 			randTime = 2000;
 			setTimeout(function() {
-				jQuery(".antivirus > .status").html("Инициализация антивирусного сканера");
+				jQuery(".antivirus > .status").html("{L_"Инициализация антивирусного сканера"}");
 				randTime = rand(5, 7)*1000;
 				setTimeout(function() {
-					jQuery(".antivirus > .status").html("Запуск антивирусного сканера");
+					jQuery(".antivirus > .status").html("{L_"Запуск антивирусного сканера"}");
 					jQuery.post("./?pages=Antivirus", "page=Scan").done(function(data) {
-						jQuery(".antivirus > .status").html("Запуск антивирусного сканера<br><b>завершено</b>");
+						jQuery(".antivirus > .status").html("{L_"Запуск антивирусного сканера"}<br><b>{L_"завершено"}</b>");
 						randTime = rand(2, 3)*1000;
 						setTimeout("ViewAntivirus("+data+")", randTime);
 					}, "json");

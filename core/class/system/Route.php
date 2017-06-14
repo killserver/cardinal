@@ -26,7 +26,7 @@ echo "403 ERROR";
 die();
 }
 
-final class Route {
+class Route {
 
 	const REGEX_KEY = '<([a-zA-Z0-9_]++)>';
 	const REGEX_SEGMENT = '[^/.,;?\n]++';
@@ -42,7 +42,7 @@ final class Route {
 	private static $_lang = "";
 	private static $_loaded = "";
 	
-	public static function Config($get) {
+	final public static function Config($get) {
 		if(is_array($get)) {
 			self::$_config = $get;
 			return true;
@@ -54,11 +54,11 @@ final class Route {
 		return false;
 	}
 	
-	public static function SetLang($lang) {
+	final public static function SetLang($lang) {
 		self::$_lang = $lang;
 	}
 	
-	public static function Build(array $arr, $mode = 1) {
+	final public static function Build(array $arr, $mode = 1) {
 		$arrs = array();
 		foreach($arr as $n => $v) {
 			if(!is_numeric($n)) {
@@ -73,7 +73,7 @@ final class Route {
 		extract($arrs);
 	}
 	
-	private static function GetBuild($n = "") {
+	final private static function GetBuild($n = "") {
 		if(is_array($n)) {
 			$b = self::$_secret;
 			global $$b;
@@ -118,7 +118,7 @@ final class Route {
 		}
 	}
 
-	public function __construct($uri = "", $regex = array()) {
+	final public function __construct($uri = "", $regex = array()) {
 		if(empty($uri)) {
 			return;
 		}
@@ -135,7 +135,7 @@ final class Route {
 		$this->_route_regex = self::Compile($uri, $regex);
 	}
 
-	public static function Set($name, $uri_callback = "", $regex = array()) {
+	final public static function Set($name, $uri_callback = "", $regex = array()) {
 		$class = __class__;
 		$ret = new $class($uri_callback, $regex);
 		self::Build(array(
@@ -144,7 +144,7 @@ final class Route {
 		return $ret;
 	}
 
-	public static function Get($name) {
+	final public static function Get($name) {
 		$list = self::GetBuild($name);
 		if(!$list) {
 			return false;
@@ -152,17 +152,17 @@ final class Route {
 		return $list;
 	}
 	
-	public static function Search($route) {
+	final public static function Search($route) {
 		$_routes = self::GetBuild();
 		return array_key_exists($route, $_routes);
 	}
 
-	public static function Name($route) {
+	final public static function Name($route) {
 		$_routes = self::GetBuild();
 		return array_search($route, $_routes);
 	}
 
-	public static function Compile($uri, $regex = array()) {
+	final public static function Compile($uri, $regex = array()) {
 		if(!is_string($uri)) {
 			return;
 		}
@@ -185,7 +185,7 @@ final class Route {
 		return '#^'.$expression.'$#uD';
 	}
 
-	public function defaults($defaults = array()) {
+	final public function defaults($defaults = array()) {
 		if(!is_array($defaults)) {
 			return false;
 		}
@@ -193,7 +193,7 @@ final class Route {
 		return $this;
 	}
 
-	public function Matches($uri, $def = "") {
+	final public function Matches($uri, $def = "") {
 		if($this->_callback) {
 			$closure = $this->_callback;
 			$params = call_user_func_array($closure, array($uri, $def));
@@ -221,7 +221,7 @@ final class Route {
 		return $params;
 	}
 	
-	private static function PreDefault($url) {
+	final private static function PreDefault($url) {
 		$page = $url;
 		if(!empty($url)) {
 			$page = substr($url, 1);
@@ -241,14 +241,14 @@ final class Route {
 		return $page;
 	}
 
-	public function GetDefaults() {
+	final public function GetDefaults() {
 		if(!is_array($this->_defaults)) {
 			return false;
 		}
 		return $this->_defaults;
 	}
 	
-	public static function checkEmpty($arr) {
+	final public static function checkEmpty($arr) {
 		if(!is_array($arr)) {
 			return false;
 		}
@@ -256,7 +256,7 @@ final class Route {
 		return (isset($arr[$k]) && !empty($arr[$k]));
 	}
 
-	public static function Load($default = "") {
+	final public static function Load($default = "") {
 		$uri = getenv(ROUTE_GET_URL);
 		$len = strlen($uri);
 		if(strpos($uri, "&")!==false) {
@@ -286,11 +286,11 @@ final class Route {
 		return array('params' => $param, 'route' => "");
 	}
 	
-	public static function getLoaded() {
+	final public static function getLoaded() {
 		return self::$_loaded;
 	}
 	
-	public static function Delete($name) {
+	final public static function Delete($name) {
 		if(!isset($GLOBALS[self::$_secret])) {
 			return false;
 		}
@@ -301,7 +301,7 @@ final class Route {
 		}
 	}
 	
-	public static function RegParam($key, $value = "") {
+	final public static function RegParam($key, $value = "") {
 		if(is_array($key)) {
 			$keys = array_keys($key);
 			$values = array_values($key);
@@ -313,14 +313,14 @@ final class Route {
 		}
 	}
 
-	public static function param($key = "", $default = false) {
+	final public static function param($key = "", $default = false) {
 		if(empty($key)) {
 			return self::$_params;
 		}
 		return isset(self::$_params[$key]) ? self::$_params[$key] : $default;
 	}
 
-	public function Uri($params = array()) {
+	final public function Uri($params = array()) {
 		if(!empty(self::$_lang)) {
 			$params['lang'] = self::$_lang;
 		}

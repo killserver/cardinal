@@ -7216,3 +7216,14 @@ pre {
     padding-bottom: 48px;
   }
 }
+
+.language-switcher {
+  z-index: 100000000 !important;
+  pointer-events: all !important;
+}
+.user-info-navbar .user-info-menu > li.language-switcher a > img {
+  display: inline-block;
+  margin-right: 5px;
+  position: relative;
+  top: -2px;
+}

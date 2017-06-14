@@ -66,8 +66,11 @@ class db_mysqli extends DriverParam implements drivers {
 			die();
 		}
 		if(!@$this->mc = mysqli_init()) {
-			HTTP::echos();
-			echo "[error]";
+			if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
+			HTTP::echos("[error]");
+			} else {
+				echo "[error]";
+			}
 			die();
 		}
 		$this->mc->options(MYSQLI_INIT_COMMAND, "SET NAMES '".$charset."'");

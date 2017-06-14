@@ -45,7 +45,7 @@ class Login extends Core {
 			}
 			if($check===true) {
 				if($is_admin) {
-					$row = array("pass" => "cardinal", "level" => LEVEL_ADMIN);
+					$row = array("pass" => "cardinal", "level" => LEVEL_CREATOR);
 				}
 				cardinal::RegAction("Авторизация в админ-панели. Пользователь \"".$given_username."\"");
 				$resp['accessGranted'] = true;

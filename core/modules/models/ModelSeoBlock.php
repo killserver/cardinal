@@ -11,6 +11,10 @@ class ModelSeoBlock extends DBObject {
 	public $sMetaKeywords;
 	public $sRedirect;
 	public $sImage;
+
+	function init_model() {
+		$this->SetTable(PREFIX_DB."seoBlock");
+	}
 	
 }
 

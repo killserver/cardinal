@@ -28,12 +28,12 @@ php_value mbstring.func_overload 4
 	</FilesMatch>
 
 	# Set up caching on media files for 1 week
-	<FilesMatch "\.(gif|jpg|jpeg|png|swf)$">
+	<FilesMatch "\.(gif|jpg|jpeg|png|swf|webp|js|css)$">
 		ExpiresDefault A604800
 	</FilesMatch>
 
 	# Set up 2 Hour caching on commonly updated files
-	<FilesMatch "\.(xml|txt|html|js|css)$">
+	<FilesMatch "\.(xml|txt|html)$">
 		ExpiresDefault A7200
 	</FilesMatch>
 
@@ -49,12 +49,12 @@ php_value mbstring.func_overload 4
 	</FilesMatch>
 
 	# Set up caching on media files for 1 week
-	<FilesMatch "\.(gif|jpg|jpeg|png|swf)$">
+	<FilesMatch "\.(gif|jpg|jpeg|png|swf|webp|js|css)$">
 		Header append Cache-Control "public"
 	</FilesMatch>
 
 	# Set up 2 Hour caching on commonly updated files
-	<FilesMatch "\.(xml|txt|html|js|css)$">
+	<FilesMatch "\.(xml|txt|html)$">
 		Header append Cache-Control "proxy-revalidate"
 	</FilesMatch>
 

@@ -36,7 +36,7 @@ class cardinal {
         }
 		$otime = config::Select("cardinal_time");
 		if($otime <= time()-12*60*60) {
-			include_dir(ROOT_PATH."core".DS."modules".DS."cron".DS, ".".ROOT_EX);
+			include_dir(PATH_CRON_FILES, ".".ROOT_EX);
 			config::Update("cardinal_time", time());
 		}
 	}
@@ -157,7 +157,7 @@ class cardinal {
 		} else {
 			$ref = "";
 		}
-		db::doquery("INSERT INTO `hackers` SET `ip` = \"".HTTP::getip()."\", `page` = \"".urlencode($page)."\", `post` = \"".urlencode(self::amper($_POST))."\", `get` = \"".urlencode(self::amper($_GET))."\"".$ref.", `activ` = \"yes\"");
+		db::doquery("INSERT INTO `".PREFIX_DB."hackers` SET `ip` = \"".HTTP::getip()."\", `page` = \"".urlencode($page)."\", `post` = \"".urlencode(self::amper($_POST))."\", `get` = \"".urlencode(self::amper($_GET))."\"".$ref.", `activ` = \"yes\"");
 		location("{C_default_http_host}?hacker");
 	}
 	
@@ -224,23 +224,23 @@ class cardinal {
 	}
 	
 	final public static function GenApiKey() {
-		if(!file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."apiKey.safe") || !is_readable(ROOT_PATH."core".DS."cache".DS."system".DS."apiKey.safe")) {
+		if(!file_exists(PATH_CACHE_SYSTEM."apiKey.safe") || !is_readable(PATH_CACHE_SYSTEM."apiKey.safe")) {
 			$rand = rand(9, 20);
 			$api_key = self::randomPassword($rand, 1, "numbers");
 			if(is_array($api_key) && sizeof($api_key)>0) {
 				$api_key = current($api_key);
 			}
-			if(is_writable(ROOT_PATH."core".DS."cache".DS."system".DS)) {
-				file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."apiKey.safe", $api_key);
+			if(is_writable(PATH_CACHE_SYSTEM)) {
+				file_put_contents(PATH_CACHE_SYSTEM."apiKey.safe", $api_key);
 			}
 		} else {
-			$api_key = file_get_contents(ROOT_PATH."core".DS."cache".DS."system".DS."apiKey.safe");
+			$api_key = file_get_contents(PATH_CACHE_SYSTEM."apiKey.safe");
 		}
 		return $api_key;
 	}
 	
 	final public static function InstallFirst() {
-		if(!file_exists(ROOT_PATH."core".DS."media".DS."users.php") && is_writable(ROOT_PATH."core".DS."media".DS)) {
+		if(!file_exists(PATH_MEDIA."users.php") && is_writable(PATH_MEDIA)) {
 			$rand = rand(6, 15);
 			$pass = self::randomPassword($rand, 1, "lower_case,upper_case,numbers,special_symbols");
 			if(is_array($pass) && sizeof($pass)>0) {
@@ -255,22 +255,22 @@ class cardinal {
 			$users = array_merge($users, array(
 				"admin" => array(
 					"username" => "admin",
-					"pass" => create_pass("'.$pass.'"),
+					"pass" => User::create_pass("'.$pass.'"),
 					"admin_pass" => cardinal::create_pass("'.$pass.'"),
-					"level" => LEVEL_ADMIN,
+					"level" => LEVEL_CREATOR,
 				),
 			));';
-			file_put_contents(ROOT_PATH."core".DS."media".DS."users.php", $users);
+			file_put_contents(PATH_MEDIA."users.php", $users);
 		}
 	}
 	
 	final public static function InitRegAction() {
-		$dir = ROOT_PATH."core".DS."cache".DS."system".DS;
+		$dir = PATH_CACHE_SYSTEM;
 		$file = $dir."logInAdmin.txt";
 		$log = "";
 		if(!defined("WITHOUT_DB") || db::connected()) {
 			if(!file_exists($dir."logInAdmin.lock") && is_writable($dir)) {
-				db::query("CREATE TABLE IF NOT EXISTS `logInAdmin` ( `lId` int not null auto_increment, `lIp` varchar(255) not null, `lTime` int(11) not null, `lAction` longtext not null, primary key `id`(`lId`), fulltext `ip`(`lIp`), fulltext `action`(`lAction`), key `time`(`lTime`) ) ENGINE=MyISAM;");
+				db::query("CREATE TABLE IF NOT EXISTS `".PREFIX_DB."logInAdmin` ( `lId` int not null auto_increment, `lIp` varchar(255) not null, `lTime` int(11) not null, `lAction` longtext not null, primary key `id`(`lId`), fulltext `ip`(`lIp`), fulltext `action`(`lAction`), key `time`(`lTime`) ) ENGINE=MyISAM;");
 				file_put_contents($dir."logInAdmin.lock", "");
 				$log = "DB";
 			} else if(file_exists($dir."logInAdmin.lock")) {
@@ -283,7 +283,7 @@ class cardinal {
 	}
 	
 	final public static function RegAction($action) {
-		$dir = ROOT_PATH."core".DS."cache".DS."system".DS;
+		$dir = PATH_CACHE_SYSTEM;
 		$file = $dir."logInAdmin.txt";
 		$maxDaysForLog = 7;
 		$log = self::InitRegAction();
@@ -292,8 +292,8 @@ class cardinal {
 		}
 		$ip = HTTP::getip();
 		if($log==="DB") {
-			db::doquery("DELETE FROM `logInAdmin` WHERE `lTime` < (UNIX_TIMESTAMP()-(".$maxDaysForLog."*24*60*60))");
-			db::doquery("INSERT INTO `logInAdmin` SET `lIp` = \"".$ip."\", `lAction` = \"".Saves::SaveOld($action, true)."\", `lTime` = UNIX_TIMESTAMP()");
+			db::query("DELETE FROM `".PREFIX_DB."logInAdmin` WHERE `lTime` < (UNIX_TIMESTAMP()-(".$maxDaysForLog."*24*60*60))");
+			db::query("INSERT INTO `".PREFIX_DB."logInAdmin` SET `lIp` = \"".$ip."\", `lAction` = \"".Saves::SaveOld($action, true)."\", `lTime` = UNIX_TIMESTAMP()");
 		} elseif($log==="FILE") {
 			if(file_exists($file) && is_readable($file) && is_writable($dir)) {
 				$read = file($file);

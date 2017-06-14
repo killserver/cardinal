@@ -119,13 +119,19 @@ if(!defined("UPLOAD_ALL")) {
 }
 
 if(!defined("VERSION")) {
-	define("VERSION", "6.3");
+	define("VERSION", "6.4");
+}
+if(!defined("VERSION_ADMIN_STYLE")) {
+	define("VERSION_ADMIN_STYLE", "1.0");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "603000");
+	define("INTVERSION", "60401");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "3.5");
+}
+if(!defined("LEVEL_CREATOR")) {
+	define("LEVEL_CREATOR", 4);
 }
 if(!defined("LEVEL_ADMIN")) {
 	define("LEVEL_ADMIN", 3);

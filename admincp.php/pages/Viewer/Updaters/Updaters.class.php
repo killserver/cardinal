@@ -45,12 +45,12 @@ class Updaters extends Core {
 	function __construct() {
 		$this->ParseLang();
 		if(isset($_GET['download'])) {
-			if(file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."lastest.tar.gz")) {
-				unlink(ROOT_PATH."core".DS."cache".DS."system".DS."lastest.tar.gz");
+			if(file_exists(PATH_CACHE_SYSTEM."lastest.tar.gz")) {
+				unlink(PATH_CACHE_SYSTEM."lastest.tar.gz");
 			}
 			$prs = new Parser("https://codeload.github.com/killserver/cardinal/tar.gz/trunk?".time());
 			$prs->timeout(30);
-			file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."lastest.tar.gz", $prs->get());
+			file_put_contents(PATH_CACHE_SYSTEM."lastest.tar.gz", $prs->get());
 			cardinal::RegAction("Скачивание свежей версии движка");
 			HTTP::echos("1");
 			return;
@@ -61,12 +61,12 @@ class Updaters extends Core {
 				HTTP::echos(lang::get_lang("install_update_fail_localhost"));
 				die();
 			}
-			if(!file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."lastest.tar.gz")) {
+			if(!file_exists(PATH_CACHE_SYSTEM."lastest.tar.gz")) {
 				header("HTTP/1.0 404 Not Found");
 				HTTP::echos(lang::get_lang("install_update_fail_file"));
 				die();
 			}
-			$tar_object = new Archive_Tar(ROOT_PATH."core".DS."cache".DS."system".DS."lastest.tar.gz", "gz");
+			$tar_object = new Archive_Tar(PATH_CACHE_SYSTEM."lastest.tar.gz", "gz");
 			$list = $tar_object->listContent();
 			if(!is_array($list) || sizeof($list)==0) {
 				header("HTTP/1.0 404 Not Found");
@@ -74,19 +74,19 @@ class Updaters extends Core {
 			cardinal::RegAction("Обновление движка");
 			$tr = $tar_object->extractModify(ROOT_PATH, "cardinal-trunk/");
 			if($tr === true) {
-				unlink(ROOT_PATH."core".DS."cache".DS."system".DS."lastest.tar.gz");
+				unlink(PATH_CACHE_SYSTEM."lastest.tar.gz");
 				echo "1";
 			} else {
 				header("HTTP/1.1 406 Not Acceptable");
 			}
 			return;
 		}
-		if(!is_writable(ROOT_PATH."core".DS."cache".DS) || !is_writable(ROOT_PATH."core".DS."cache".DS."system".DS)) {
+		if(!is_writable(ROOT_PATH."core".DS."cache".DS) || !is_writable(PATH_CACHE_SYSTEM)) {
 			templates::assign_var("is_locked", "1");
 		} else {
 			templates::assign_var("is_locked", "0");
 		}
-		if(file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."lastest.tar.gz")) {
+		if(file_exists(PATH_CACHE_SYSTEM."lastest.tar.gz")) {
 			templates::assign_var("is_download", "1");
 		} else {
 			templates::assign_var("is_download", "0");
@@ -100,7 +100,7 @@ class Updaters extends Core {
 		if($if) {
 			templates::assign_var("new_version", $vid);
 			templates::assign_var("is_new", "1");
-			$file = ROOT_PATH."core".DS."cache".DS."system".DS."version_".str_replace("-", "_", $vid).".txt";
+			$file = PATH_CACHE_SYSTEM."version_".str_replace("-", "_", $vid).".txt";
 			if(!file_exists($file)) {
 				$vid = parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/changelog/list.txt?'.date("d-m-Y-H"));
 				$changelog = "";

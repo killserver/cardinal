@@ -95,7 +95,7 @@ if(config::Select("activeCache")) {
 	array_walk($par, "cacheWalk");
 	$url = implode("=", $par);
 	$md5 = md5($md5.$url);
-	if(!file_exists(ROOT_PATH."core".DS."cache".DS."page".DS.$md5.".txt")) {
+	if(!file_exists(PATH_CACHE_PAGE.$md5.".txt")) {
 		$active = true;
 	} else {
 		$load = false;
@@ -120,12 +120,12 @@ if($load) {
 		}
 	}
 } else {
-	include(ROOT_PATH."core".DS."cache".DS."page".DS.$md5.".txt");
+	include(PATH_CACHE_PAGE.$md5.".txt");
 }
 if($active) {
 	$obj = ob_get_contents();
 	ob_end_clean();
-	file_put_contents(ROOT_PATH."core".DS."cache".DS."page".DS.$md5.".txt", removeBOM($obj));
+	file_put_contents(PATH_CACHE_PAGE.$md5.".txt", removeBOM($obj));
 	HTTP::echos($obj);
 }
 unset($page, $class, $method, $file, $is_file);

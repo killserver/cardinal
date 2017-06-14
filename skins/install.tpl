@@ -49,6 +49,7 @@
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Имя пользователя</div><input type="text" name="db_user" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Пароль</div><input type="password" name="db_pass" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Имя базы данных</div><input type="text" name="db_db" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
+		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Префикс базы данных<br>(<small>если не знаете - лучше не трогайте</small>)</div><input type="text" name="db_prefix" value="cardinal_" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;"><br />
 		<div style="display:inline-block;width:40%;padding:5px;margin:1px;">Драйвер базы данных</div><select name="db_driver" style="width:50%;border:1px solid #000;border-radius:10px;padding:5px;margin:1px;">[foreach block=drivers]<option value="{drivers.name}">{drivers.value}</option>[/foreach]</select><br />
 	</span>
 	<br />

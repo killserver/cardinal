@@ -21,7 +21,7 @@ class ModuleList extends Core {
 	}
 	
 	private function ReadModules() {
-		$path = ROOT_PATH."core".DS."modules".DS."xml".DS;
+		$path = PATH_MODULES."xml".DS;
 		$arr = read_dir($path, ".xml");
 		$modules = array();
 		for($i=0;$i<sizeof($arr);$i++) {
@@ -123,21 +123,21 @@ class ModuleList extends Core {
 		}
 		if(isset($_GET['unactive']) && is_string($_GET['unactive'])) {
 			cardinal::RegAction("Отключение модуля ".$_GET['unactive']);
-			db::doquery("UPDATE `modules` SET `activ` = \"no\" WHERE `module` = \"".saves($_GET['unactive'], true)."\"");
+			db::doquery("UPDATE `".PREFIX_DB."modules` SET `activ` = \"no\" WHERE `module` = \"".saves($_GET['unactive'], true)."\"");
 			cache::Delete("load_modules");
 			location("{C_default_http_host}".ADMINCP_DIRECTORY."/?pages=ModuleList");
 			return;
 		}
 		if(isset($_GET['active']) && is_string($_GET['active'])) {
 			cardinal::RegAction("Включение модуля ".$_GET['active']);
-			db::doquery("UPDATE `modules` SET `activ` = \"yes\" WHERE `module` = \"".saves($_GET['active'], true)."\"");
+			db::doquery("UPDATE `".PREFIX_DB."modules` SET `activ` = \"yes\" WHERE `module` = \"".saves($_GET['active'], true)."\"");
 			cache::Delete("load_modules");
 			location("{C_default_http_host}".ADMINCP_DIRECTORY."/?pages=ModuleList");
 			return;
 		}
 		$modules = $this->ReadModules();
 		$sort = 0;
-		db::doquery("SELECT `id`, `file`, `module`, `activ` FROM `modules` ORDER BY `type` ASC, `id` ASC", true);
+		db::doquery("SELECT `id`, `file`, `module`, `activ` FROM `".PREFIX_DB."modules` ORDER BY `type` ASC, `id` ASC", true);
 		while($row = db::fetch_assoc()) {
 			$modules[$row['module']]['id'] = $sort;
 			$modules[$row['module']]['module'] = $row['module'];

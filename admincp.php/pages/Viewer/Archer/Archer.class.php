@@ -44,7 +44,7 @@ class Archer extends Core {
 				$model->SetTable($typeUni);
 				$univ = new KernelArcher($typeUni, $model);
 				$tpl = $univ->TraceOn("TakeAdd", "ArcherAdd");
-				$univ->TakeAdd($model, array(&$this, "View"), $tpl, false);
+				$univ->TakeAdd($model, array(&$this, "View"), "ArcherTakeAdd");
 			break;
 			/*
 			View model for add data

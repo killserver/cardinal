@@ -58,8 +58,8 @@ class HTTP {
 	}
 	
 	final public static function getHTTPLangs() {
-		if(isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-			$prefLocales = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
+		if(self::getServer('HTTP_ACCEPT_LANGUAGE')) {
+			$prefLocales = explode(',', self::getServer('HTTP_ACCEPT_LANGUAGE'));
 			$prefLocales = array_reduce($prefLocales, "HTTP::execHTTPLang", array());
 			arsort($prefLocales);
 			$prefLocales = array_keys($prefLocales);
@@ -155,11 +155,11 @@ class HTTP {
 			return $headers;
 		}
 		$headers = array();
-		if(!empty($_SERVER['CONTENT_TYPE'])) {
-			$headers['content-type'] = $_SERVER['CONTENT_TYPE'];
+		if(self::getServer('CONTENT_TYPE')) {
+			$headers['content-type'] = self::getServer('CONTENT_TYPE');
 		}
-		if(!empty($_SERVER['CONTENT_LENGTH'])) {
-			$headers['content-length'] = $_SERVER['CONTENT_LENGTH'];
+		if(self::getServer('CONTENT_LENGTH')) {
+			$headers['content-length'] = self::getServer('CONTENT_LENGTH');
 		}
 		foreach($_SERVER as $key => $value) {
 			if(strpos($key, 'HTTP_')!==false) {

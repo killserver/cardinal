@@ -53,7 +53,7 @@ class config {
 		if(!isset($configWDB) || !is_array($configWDB)) {
 			$configWDB = array();
 		}
-		$dir = defined("ROOT_PATH") ? ROOT_PATH."core".DS."cache".DS."system".DS : dirname(__FILE__).DIRECTORY_SEPARATOR;
+		$dir = defined("ROOT_PATH") ? PATH_CACHE_SYSTEM : dirname(__FILE__).DIRECTORY_SEPARATOR;
 		$filePATH = $dir."configWithoutDB.txt";
 		if($action == "read" && !empty($name) && file_exists($filePATH) && is_readable($filePATH)) {
 			$file = file_get_contents($filePATH);
@@ -122,7 +122,7 @@ class config {
 		self::$config = array();
 		if(!cache::Exists("config")) {
 			$configs = array();
-			db::doquery("SELECT `config_name`, `config_value` FROM `config`", true);
+			db::doquery("SELECT `config_name`, `config_value` FROM `".PREFIX_DB."config`", true);
 			while($conf = db::fetch_array()) {
 				$ret = self::ReadConfig($conf['config_name'], $conf['config_value']);
 				$configs = array_merge($configs, $ret);
@@ -221,7 +221,7 @@ class config {
 		if(defined("WITHOUT_DB") || !class_exists("db") || !method_exists("db", "connected") || !db::connected()) {
 			return self::initWithoutDB("edit", $name, $data);
 		}
-		db::doquery("REPLACE INTO `config` SET `config_value` = \"".$data."\", `config_name` = \"".$name."\"");
+		db::doquery("REPLACE INTO `".PREFIX_DB."config` SET `config_value` = \"".$data."\", `config_name` = \"".$name."\"");
 		cache::Delete("config");
 		if(!empty(self::$config[$data])) {
 			return self::$config[$data];

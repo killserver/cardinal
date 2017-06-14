@@ -57,11 +57,11 @@ global $user;
 				$js[] = 'http://ie.microsoft.com/testdrive/HTML5/CompatInspector/inspector.js';
 			}
 		}
-		$dirs = read_dir(ROOT_PATH."core".DS."modules".DS."js".DS, ".".ROOT_EX);
+		$dirs = read_dir(PATH_LOADED_CONTENT."js".DS, ".".ROOT_EX);
 		sort($dirs);
 		for($i=0;$i<sizeof($dirs);$i++) {
-			if(file_exists(ROOT_PATH."core".DS."modules".DS."js".DS.$dirs[$i]) && $dirs[$i]!="index.php") {
-				include_once(ROOT_PATH."core".DS."modules".DS."js".DS.$dirs[$i]);
+			if(file_exists(PATH_LOADED_CONTENT."js".DS.$dirs[$i]) && $dirs[$i]!="index.php") {
+				include_once(PATH_LOADED_CONTENT."js".DS.$dirs[$i]);
 			}
 		}
 		if(is_array($js)) {
@@ -70,11 +70,11 @@ global $user;
 			}
 		}
 		unset($dirs, $js);
-		$dirs = read_dir(ROOT_PATH."core".DS."modules".DS."css".DS, ".".ROOT_EX);
+		$dirs = read_dir(PATH_LOADED_CONTENT."css".DS, ".".ROOT_EX);
 		sort($dirs);
 		for($i=0;$i<sizeof($dirs);$i++) {
-			if(file_exists(ROOT_PATH."core".DS."modules".DS."css".DS.$dirs[$i]) && $dirs[$i]!="index.php") {
-				include_once(ROOT_PATH."core".DS."modules".DS."css".DS.$dirs[$i]);
+			if(file_exists(PATH_LOADED_CONTENT."css".DS.$dirs[$i]) && $dirs[$i]!="index.php") {
+				include_once(PATH_LOADED_CONTENT."css".DS.$dirs[$i]);
 			}
 		}
 		if(is_array($css)) {
@@ -260,7 +260,7 @@ function headers($array = array(), $clear = false, $no_js = false) {
 	}
 	if(file_exists(ROOT_PATH."favicon.ico")) {
 		$header .= "<link href=\"{C_default_http_host}favicon.ico\" rel=\"shortcut icon\" type=\"image/x-icon\" />\n";
-		$header .= "<link rel=\"icon shortcut\" type=\"image/vnd.microsoft.icon\" href=\"{C_default_http_host}favicon.ico\" sizes=\"16x16\" />\n";
+		$header .= "<link rel=\"shortcut icon\" type=\"image/vnd.microsoft.icon\" href=\"{C_default_http_host}favicon.ico\" sizes=\"16x16\" />\n";
 		$header .= "<link rel=\"icon\" type=\"image/x-icon\" href=\"{C_default_http_host}favicon.ico\" sizes=\"16x16\" />\n";
 	}
 if(!$clear) {
@@ -279,6 +279,7 @@ if(!$clear) {
 	$header .= '<!-- saved from url=(0014)about:internet -->'."\n";
 	$header .= '<meta name="apple-mobile-web-app-capable" content="yes">'."\n";
 	$header .= '<meta name="format-detection" content="telephone=no">'."\n";
+	$header .= '<meta name="format-detection" content="address=no">'."\n";
 	$header .= '<meta http-equiv="url" content="{C_default_http_host}">'."\n";
 	$header .= '<meta http-equiv="cleartype" content="on">'."\n";
 	$header .= '<meta http-equiv="X-UA-Compatible" content="IE=edge">'."\n";
@@ -358,8 +359,65 @@ if(!$clear) {
 	if($is_use) {
 		$header .= "</span>";
 	}
+	if(userlevel::get("admin") && isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && strpos(HTTP::getServer("HTTP_REFERER"), ADMINCP_DIRECTORY)===false) {
+		$links = array();
+		if($dh = dir(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."menu".DS)) {
+			$i=1;
+			while(($file = $dh->read()) !== false) {
+				if($file != "index.".ROOT_EX && $file != "index.html" && $file != "." && $file != "..") {
+					include_once(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."menu".DS.$file);
+				}
+			}
+			$dh->close();
+		}
+		adminPanelVsort($links);
+		$level = User::get("level");
+		$menu = "";
+		$newMenu = array();
+		foreach($links as $name => $datas) {
+			for($i=0;$i<sizeof($datas);$i++) {
+				for($is=0;$is<sizeof($datas[$i]);$is++) {
+					if(isset($datas[$i][$is]['access']) && $datas[$i][$is]['access']!=$level) {
+						break;
+					}
+					if($datas[$i][$is]['type']=="cat") {
+						$newMenu[$name] = $datas[$i][$is];
+					} elseif($newMenu[$name]['link']!=$datas[$i][$is]['link']) {
+						$newMenu[$name]['items'][$datas[$i][$is]['link']] = $datas[$i][$is];
+					}
+				}
+			}
+		}
+		$header .= "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\"><link rel=\"stylesheet\" href=\"{C_default_http_local}skins/admin.css?{S_time}\"><div class=\"adminCoreCardinal\"><a href=\"{C_default_http_local}\" class=\"logo\"></a><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/\" class=\"linkToAdmin\">{L_'adminpanel'}</a>".menuAdminHeader($newMenu)."<div class=\"user\"><span>{U_username}</span><div class=\"dropped\"><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Login&out\"><i class=\"fa-user-times\"></i>{L_'logout'}</a></div></div></div>";
+	}
 	unset($array);
 return $header;
+}
+
+function adminPanelVsort(&$array) {
+	$arrs = array();
+	foreach($array as $key => $val) {
+		sort($val);
+		$arrs[$key] = $val;
+	}
+	$array = $arrs;
+}
+
+function menuAdminHeader($arr, $isCat = false) {
+	$menu = "";
+	foreach($arr as $v) {
+		$cat = false;
+		if(isset($v['items'])) {
+			$cat = true;
+		}
+		$menu .= (!$isCat ? "<div class=\"items\">" : "")."<a href=\"".$v['link']."\">".(isset($v['icon']) && !empty($v['icon']) ? "<i class=\"".$v['icon']."\"></i>" : "")."<span>".$v['title']."</span></a>";
+		$menu .= ($cat ? "<div class=\"dropped\">" : "");
+		if($cat) {
+			$menu .= menuAdminHeader($v['items'], true);
+		}
+		$menu .= ($cat ? "</div>" : "").(!$isCat ? "</div>\n" : "");
+	}
+	return $menu;
 }
 
 function ajax_check() {

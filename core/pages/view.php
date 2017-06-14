@@ -6,7 +6,7 @@ class page {
 		$search = others_video($name);
 		$limit = config::Select("related");
 		$view = str_replace("\"", "\\\"", Saves::SaveOld($name." ".$descr));
-		db::doquery("SELECT `id`, `alt_name`, `title`, `image`, `descr`, (MATCH(`title`, `descr`) AGAINST(\"".$view."\")) AS `status` FROM `posts` WHERE `id` != ".$id." AND MATCH(`title`, `descr`) AGAINST(\"".$view."\") AND `type` LIKE \"post\" ORDER BY `status` DESC LIMIT ".$limit, true);
+		db::doquery("SELECT `id`, `alt_name`, `title`, `image`, `descr`, (MATCH(`title`, `descr`) AGAINST(\"".$view."\")) AS `status` FROM `".PREFIX_DB."posts` WHERE `id` != ".$id." AND MATCH(`title`, `descr`) AGAINST(\"".$view."\") AND `type` LIKE \"post\" ORDER BY `status` DESC LIMIT ".$limit, true);
 		while($row = db::fetch_assoc()) {
 			$short_descr = bbcodes::clear_bbcode($row['descr']);
 			$short_descr = trim($short_descr);
@@ -30,7 +30,7 @@ class page {
 		}
 		$repl = ToTranslit($link);
 		if(!cache::Exists($repl)) {
-			$model = new ModelDB("posts", "\"%".$link."%\" AND `type` LIKE \"post\"", "alt_name", "select", "like", array("id", "title", "image", "descr", "time", "added", "cat_id"));
+			$model = new ModelDB(PREFIX_DB."posts", "\"%".$link."%\" AND `type` LIKE \"post\"", "alt_name", "select", "like", array("id", "title", "image", "descr", "time", "added", "cat_id"));
 			if($model->loaded()) {
 				cache::Set($repl, ($model));
 			} else {
@@ -41,7 +41,7 @@ class page {
 		}
 		if(!cache::Exists("category")) {
 			$category = array();
-			db::doquery("SELECT * FROM `category`", true);
+			db::doquery("SELECT * FROM `".PREFIX_DB."category`", true);
 			while($row = db::fetch_assoc()) {
 				$category[$row['cat_id']] = $row;
 			}
@@ -64,7 +64,7 @@ class page {
 		$tags = "";
 		if($model->loaded()) {
 			if(!cache::Exists("tags_".$repl)) {
-				$tags = new ModelDB("tags", $model->id, array("post_id", "id"));
+				$tags = new ModelDB(PREFIX_DB."tags", $model->id, array("post_id", "id"));
 				if($tags->loaded()) {
 					cache::Set("tags_".$repl, ($tags));
 				}

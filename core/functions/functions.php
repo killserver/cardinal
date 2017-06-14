@@ -355,6 +355,46 @@ function is_serialized($data) {
 	return false;
 }
 
+if(!function_exists('is_iterable')) {
+	/**
+	 * Check wether or not a variable is iterable (i.e array or \Traversable)
+	 *
+	 * @param  array|\Traversable $iterable
+	 * @return bool
+	 */
+	function is_iterable($iterable) {
+		return (is_array($iterable) || $iterable instanceof \Traversable);
+	}
+}
+if(!function_exists('iterable_to_array')) {
+	/**
+	 * Copy the iterable into an array. If the iterable is already an array, return it.
+	 *
+	 * @param  array|\Traversable $iterable
+	 * @return array
+	 */
+	function iterable_to_array($iterable) {
+		return (is_array($iterable) ? $iterable : iterator_to_array($iterable));
+	}
+}
+if(!function_exists('iterable_to_traversable')) {
+	/**
+	 * If the iterable is not intance of \Traversable, it is an array => convert it to an ArrayIterator.
+	 *
+	 * @param  $iterable
+	 * @return \Traversable
+	 */
+	function iterable_to_traversable($iterable) {
+		if($iterable instanceof Traversable) {
+			return $iterable;
+		} elseif(is_array($iterable)) {
+			return new ArrayIterator($iterable);
+		} else {
+			throw new \InvalidArgumentException(sprintf('Expected array or \\Traversable, got %s', (is_object($iterable) ? get_class($iterable) : gettype($iterable))));
+		}
+	}
+}
+
 function removeBOM($string) { 
 	if(substr($string, 0,3) == pack('CCC',0xef,0xbb,0xbf)) { 
 		$string=substr($string, 3); 
@@ -392,7 +432,7 @@ if(!function_exists("hex2bin")) {
 function vdump() {
 	$list = func_get_args();
 	$last = end($list);
-	if(is_string($last)) {
+	if(is_string($last) && sizeof($list)>1) {
 		$title = $last;
 		$last = key($list);
 		unset($list[$last]);
@@ -401,7 +441,9 @@ function vdump() {
 	}
 	$backtrace = debug_backtrace();
 	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "Called: ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "").(!empty($title) ? "<b>".$title."</b>\n\n" : '');
-	call_user_func_array("var_dump", $list);
+	if(sizeof($list)>0) {
+		call_user_func_array("var_dump", $list);
+	}
 	echo '</pre>';
 }
 
@@ -411,7 +453,9 @@ function vdebug() {
 	Debug::limitOnView(0);
 	$backtrace = debug_backtrace();
 	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "Called: ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "");
-	echo call_user_func_array(array("Debug", "vars"), func_get_args());
+	if(func_num_args()>0) {
+		echo call_user_func_array(array("Debug", "vars"), func_get_args());
+	}
 }
 
 function is_ssl() {

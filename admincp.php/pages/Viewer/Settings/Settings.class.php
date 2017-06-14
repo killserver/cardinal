@@ -77,10 +77,10 @@ class Settings extends Core {
 		));
 
 		?>';
-		if(file_exists(ROOT_PATH."core".DS."media".DS."config.install.php")) {
-			unlink(ROOT_PATH."core".DS."media".DS."config.install.php");
+		if(file_exists(PATH_MEDIA."config.install.php")) {
+			unlink(PATH_MEDIA."config.install.php");
 		}
-		file_put_contents(ROOT_PATH."core".DS."media".DS."config.install.php", $config);
+		file_put_contents(PATH_MEDIA."config.install.php", $config);
 		$lang = '<?php
 		if(!defined("IS_CORE")) {
 		echo "403 ERROR";
@@ -94,10 +94,10 @@ class Settings extends Core {
 
 		?>';
 		$lang = charcode($lang);
-		if(file_exists(ROOT_PATH."core".DS."media".DS."config.lang.php")) {
-			unlink(ROOT_PATH."core".DS."media".DS."config.lang.php");
+		if(file_exists(PATH_MEDIA."config.lang.php")) {
+			unlink(PATH_MEDIA."config.lang.php");
 		}
-		file_put_contents(ROOT_PATH."core".DS."media".DS."config.lang.php", $lang);
+		file_put_contents(PATH_MEDIA."config.lang.php", $lang);
 		cardinal::RegAction("Внесение изменений в настройки сайта");
 		setcookie("SaveDone", "1", time()+10);
 		location("./?pages=Settings");

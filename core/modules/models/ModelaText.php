@@ -8,7 +8,7 @@ class ModelaText extends DBObject {
 	public $text;
 	
 	public function init_model() {
-		$this->SetTable("aText");
+		$this->SetTable(PREFIX_DB."aText");
 	}
 	
 }

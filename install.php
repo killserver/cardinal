@@ -77,10 +77,10 @@ if(sizeof($_POST)==0||(sizeof($_POST)==1)||(sizeof($_POST)==2)) {
 			$apache = "green";
 		}
 		$php = (PHP_VERSION_ID>=50302 ? "green":"red");
-		$cache = (get_chmod(ROOT_PATH."core".DS."cache".DS)=="0777" ? "green":"red");
-		$system_cache = (get_chmod(ROOT_PATH."core".DS."cache".DS."system".DS)=="0777" ? "green":"red");
-		$template = (get_chmod(ROOT_PATH."core".DS."cache".DS."tmp".DS)=="0777" ? "green":"red");
-		$media = (get_chmod(ROOT_PATH."core".DS."media".DS)=="0777" ? "green":"red");
+		$cache = (get_chmod(PATH_CACHE)=="0777" ? "green":"red");
+		$system_cache = (get_chmod(PATH_CACHE_SYSTEM)=="0777" ? "green":"red");
+		$template = (get_chmod(PATH_CACHE_TEMP)=="0777" ? "green":"red");
+		$media = (get_chmod(PATH_MEDIA)=="0777" ? "green":"red");
 		$mb = (function_exists('mb_detect_encoding') ? "green" : "red");
 		if($apache=="red"||$php=="red"||$cache=="red"||$system_cache=="red"||$media=="red"||$mb=="red") {
 			templates::assign_var("is_stop", "1");
@@ -90,7 +90,7 @@ if(sizeof($_POST)==0||(sizeof($_POST)==1)||(sizeof($_POST)==2)) {
 		templates::assign_vars(array("page" => "2", "apache" => $apache, "php" => $php, "cache" => $cache, "system_cache" => $system_cache, "template" => $template, "media" => $media, "mb" => $mb));
 	} else {
 		templates::assign_vars(array("page" => "3", "SERNAME" => getenv('SERVER_NAME').str_replace(array("index.".ROOT_EX."/", "install.".ROOT_EX, "/install/step2", "/install/step3"), "", getenv("REQUEST_URI")), "SERVERS" => getenv('SERVER_NAME')));
-		$driver = ROOT_PATH."core".DS."class".DS."system".DS."DBDrivers".DS;
+		$driver = PATH_DB_DRIVERS;
 		$dirs = read_dir($driver, ".".ROOT_EX);
 		sort($dirs);
 		for($i=0;$i<sizeof($dirs);$i++) {
@@ -121,6 +121,7 @@ $db_user = Saves::SaveOld(Arr::get($_POST, 'db_user'), true);
 $db_pass = Saves::SaveOld(Arr::get($_POST, 'db_pass'), true);
 $db_db = Saves::SaveOld(Arr::get($_POST, 'db_db'), true);
 $db_driver = Saves::SaveOld(Arr::get($_POST, 'db_driver'), true);
+$db_prefix = Saves::SaveOld(Arr::get($_POST, 'db_prefix', "cardinal_"), true);
 
 db::changeDriver($db_driver);
 db::OpenDriver();
@@ -132,8 +133,8 @@ if(!db::check_connect($db_host, $db_user, $db_pass)) {
 
 $SQL = array();
 $SQL[] = "SET FOREIGN_KEY_CHECKS = 0;";
-$SQL[] = "DROP TABLE IF EXISTS `category`;";
-$SQL[] = "CREATE TABLE IF NOT EXISTS `category` (
+$SQL[] = "DROP TABLE IF EXISTS `".$db_prefix."category`;";
+$SQL[] = "CREATE TABLE IF NOT EXISTS `".$db_prefix."category` (
   `cat_id` int(11) NOT NULL AUTO_INCREMENT,
   `alt_name` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -145,8 +146,8 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `category` (
   FULLTEXT KEY `alt_name` (`alt_name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
-$SQL[] = "DROP TABLE IF EXISTS `config`;";
-$SQL[] = "CREATE TABLE IF NOT EXISTS `config` (
+$SQL[] = "DROP TABLE IF EXISTS `".$db_prefix."config`;";
+$SQL[] = "CREATE TABLE IF NOT EXISTS `".$db_prefix."config` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `config_name` varchar(255) NOT NULL,
   `config_value` text NOT NULL,
@@ -154,11 +155,11 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `config` (
   KEY `config_name` (`config_name`),
   FULLTEXT KEY `config_value` (`config_value`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
-$SQL[] = "INSERT INTO `config` SET `config_name` = \"db_version\", `config_value` = \"".VERSION."\"";
-$SQL[] = "INSERT INTO `config` SET `config_name` = \"cardinal_time\", `config_value` = \"\"";
+$SQL[] = "INSERT INTO `".$db_prefix."config` SET `config_name` = \"db_version\", `config_value` = \"".VERSION."\"";
+$SQL[] = "INSERT INTO `".$db_prefix."config` SET `config_name` = \"cardinal_time\", `config_value` = \"\"";
 
-$SQL[] = "DROP TABLE IF EXISTS `comments`;";
-$SQL[] = "CREATE TABLE IF NOT EXISTS `comments` (
+$SQL[] = "DROP TABLE IF EXISTS `".$db_prefix."comments`;";
+$SQL[] = "CREATE TABLE IF NOT EXISTS `".$db_prefix."comments` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `u_id` varchar(255) NOT NULL,
   `added` varchar(255) NOT NULL,
@@ -185,8 +186,8 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `comments` (
   FULLTEXT KEY `comment` (`comment`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 
-$SQL[] = "DROP TABLE IF EXISTS `error_log`;";
-$SQL[] = "CREATE TABLE IF NOT EXISTS `error_log` (
+$SQL[] = "DROP TABLE IF EXISTS `".$db_prefix."error_log`;";
+$SQL[] = "CREATE TABLE IF NOT EXISTS `".$db_prefix."error_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `times` int(11) NOT NULL,
   `ip` varchar(255) NOT NULL,
@@ -199,8 +200,8 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `error_log` (
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 
-$SQL[] = "DROP TABLE IF EXISTS `hackers`;";
-$SQL[] = "CREATE TABLE IF NOT EXISTS `hackers` (
+$SQL[] = "DROP TABLE IF EXISTS `".$db_prefix."hackers`;";
+$SQL[] = "CREATE TABLE IF NOT EXISTS `".$db_prefix."hackers` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ip` varchar(255) NOT NULL,
   `page` text NOT NULL,
@@ -216,8 +217,8 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `hackers` (
   FULLTEXT KEY `referer` (`referer`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 
-$SQL[] = "DROP TABLE IF EXISTS `lang`;";
-$SQL[] = "CREATE TABLE IF NOT EXISTS `lang` (
+$SQL[] = "DROP TABLE IF EXISTS `".$db_prefix."lang`;";
+$SQL[] = "CREATE TABLE IF NOT EXISTS `".$db_prefix."lang` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `lang` varchar(255) NOT NULL,
   `orig` text NOT NULL,
@@ -228,8 +229,8 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `lang` (
   FULLTEXT KEY `translate` (`translate`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 
-$SQL[] = "DROP TABLE IF EXISTS `menu`;";
-$SQL[] = "CREATE TABLE IF NOT EXISTS `menu` (
+$SQL[] = "DROP TABLE IF EXISTS `".$db_prefix."menu`;";
+$SQL[] = "CREATE TABLE IF NOT EXISTS `".$db_prefix."menu` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `data` text NOT NULL,
@@ -242,8 +243,8 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `menu` (
   FULLTEXT KEY `content` (`data`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 
-$SQL[] = "DROP TABLE IF EXISTS `modules`;";
-$SQL[] = "CREATE TABLE IF NOT EXISTS `modules` (
+$SQL[] = "DROP TABLE IF EXISTS `".$db_prefix."modules`;";
+$SQL[] = "CREATE TABLE IF NOT EXISTS `".$db_prefix."modules` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `page` varchar(255) NOT NULL,
   `module` varchar(255) NOT NULL,
@@ -263,14 +264,14 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `modules` (
   FULLTEXT KEY `file` (`file`),
   KEY `type` (`type`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
-$SQL[] = "INSERT INTO `modules` SET `module` = 'base', `activ` = 'yes', `file` = 'core".DS_DB."modules".DS_DB."base.class.".ROOT_EX."';";
-$SQL[] = "INSERT INTO `modules` SET `module` = 'changelog', `activ` = 'yes', `file` = 'core".DS_DB."modules".DS_DB."changelog.class.".ROOT_EX."';";
-$SQL[] = "INSERT INTO `modules` SET `module` = 'mobile_detect', `activ` = 'yes', `file` = 'core".DS_DB."modules".DS_DB."mobile.class.".ROOT_EX."';";
-$SQL[] = "INSERT INTO `modules` SET `module` = 'SEOBlock', `activ` = 'yes', `file` = 'core".DS_DB."modules".DS_DB."SEOBlock.class.".ROOT_EX."';";
-$SQL[] = "INSERT INTO `modules` SET `module` = 'DataTables', `activ` = 'yes', `file` = '".ADMINCP_DIRECTORY.DS_DB."pages".DS_DB."Viewer".DS_DB."Core".DS_DB."Plugins".DS_DB."CoreDataTables.".ROOT_EX."', `type` = 'admincp';";
+$SQL[] = "INSERT INTO `".$db_prefix."modules` SET `module` = 'base', `activ` = 'yes', `file` = '".str_replace(array(ROOT_PATH, DS), array("", DS_DB), PATH_MODULES)."base.class.".ROOT_EX."';";
+$SQL[] = "INSERT INTO `".$db_prefix."modules` SET `module` = 'changelog', `activ` = 'yes', `file` = '".str_replace(array(ROOT_PATH, DS), array("", DS_DB), PATH_MODULES)."changelog.class.".ROOT_EX."';";
+$SQL[] = "INSERT INTO `".$db_prefix."modules` SET `module` = 'mobile_detect', `activ` = 'yes', `file` = '".str_replace(array(ROOT_PATH, DS), array("", DS_DB), PATH_MODULES)."mobile.class.".ROOT_EX."';";
+$SQL[] = "INSERT INTO `".$db_prefix."modules` SET `module` = 'SEOBlock', `activ` = 'yes', `file` = '".str_replace(array(ROOT_PATH, DS), array("", DS_DB), PATH_MODULES)."SEOBlock.class.".ROOT_EX."';";
+$SQL[] = "INSERT INTO `".$db_prefix."modules` SET `module` = 'DataTables', `activ` = 'yes', `file` = '".ADMINCP_DIRECTORY.DS_DB."pages".DS_DB."Viewer".DS_DB."Core".DS_DB."Plugins".DS_DB."CoreDataTables.".ROOT_EX."', `type` = 'admincp';";
 
-$SQL[] = "DROP TABLE IF EXISTS `posts`;";
-$SQL[] = "CREATE TABLE IF NOT EXISTS `posts` (
+$SQL[] = "DROP TABLE IF EXISTS `".$db_prefix."posts`;";
+$SQL[] = "CREATE TABLE IF NOT EXISTS `".$db_prefix."posts` (
    `id` int(11) NOT NULL AUTO_INCREMENT,
    `title` varchar(255) NOT NULL,
    `alt_name` varchar(255) NOT NULL,
@@ -292,8 +293,8 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `posts` (
    KEY `type`(`type`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 
-$SQL[] = "DROP TABLE IF EXISTS `users`;";
-$SQL[] = "CREATE TABLE IF NOT EXISTS `users` (
+$SQL[] = "DROP TABLE IF EXISTS `".$db_prefix."users`;";
+$SQL[] = "CREATE TABLE IF NOT EXISTS `".$db_prefix."users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
   `alt_name` varchar(255) NOT NULL,
@@ -321,8 +322,8 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `users` (
   FULLTEXT `last_ip` (`last_ip`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 
-$SQL[] = "DROP TABLE IF EXISTS `userlevels`;";
-$SQL[] = "CREATE TABLE IF NOT EXISTS `userlevels` (
+$SQL[] = "DROP TABLE IF EXISTS `".$db_prefix."userlevels`;";
+$SQL[] = "CREATE TABLE IF NOT EXISTS `".$db_prefix."userlevels` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `alt_name` varchar(255) NOT NULL COMMENT 'DEFINE LEVEL',
@@ -353,17 +354,17 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `userlevels` (
   `access_delete_torrents` enum('yes','no') NOT NULL DEFAULT 'yes',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
-$SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (1, 'Гость', 'GUEST', 'no', 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'no', 'no', 'no', 'no', 'yes', 'yes', 'no', 'no', 'no', 'yes', 'no', 'no', 'no');";
-$SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (2, 'Пользователь', 'USER', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
-$SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (3, 'Модератор', 'ADMIN', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
-$SQL[] = "INSERT INTO `userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (4, 'Администратор', 'ADMIN', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
+$SQL[] = "INSERT INTO `".$db_prefix."userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (1, 'Гость', 'GUEST', 'no', 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'no', 'no', 'no', 'no', 'yes', 'yes', 'no', 'no', 'no', 'yes', 'no', 'no', 'no');";
+$SQL[] = "INSERT INTO `".$db_prefix."userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (2, 'Пользователь', 'USER', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
+$SQL[] = "INSERT INTO `".$db_prefix."userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (3, 'Модератор', 'ADMIN', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
+$SQL[] = "INSERT INTO `".$db_prefix."userlevels` (`id`, `name`, `alt_name`, `access_add`, `access_edit`, `access_delete`, `access_profile`, `access_feedback`, `access_rss`, `access_search`, `access_sitemap`, `access_player`, `access_view`, `access_tags`, `access_view_comments`, `access_add_comments`, `access_edit_comments`, `access_delete_comments`, `access_admin`, `access_site`, `access_albums`, `access_add_albums`, `access_edit_albums`, `access_delete_albums`, `access_torrents`, `access_add_torrents`, `access_edit_torrents`, `access_delete_torrents`) VALUES (4, 'Администратор', 'ADMIN', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes');";
 
 $SQL[] = "SET FOREIGN_KEY_CHECKS = 1;";
 
 
 db::connect($db_host, $db_user, $db_pass, $db_db, "utf8", $db_port);
 $insert = array();
-$last = db::last_id("users");
+$last = db::last_id($db_prefix."users");
 if(!empty($last)) {
 	$insert['new_id'] = "id = ".$last;
 }
@@ -381,7 +382,7 @@ $insert['reg_ip'] = "reg_ip = \"".HTTP::getip()."\"";
 $insert['last_ip'] = "last_ip = \"".HTTP::getip()."\"";
 $insert['activ'] = "activ = \"yes\"";
 $insert = modules::change_db('reg', $insert);
-$SQL[] = "INSERT INTO users SET ".implode(", ", $insert);
+$SQL[] = "INSERT INTO ".$db_prefix."users SET ".implode(", ", $insert);
 
 for($i=0;$i<sizeof($SQL);$i++) {
 	db::query($SQL[$i]);
@@ -392,6 +393,10 @@ $db_config = '<?php
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
 die();
+}
+
+if(!defined("PREFIX_DB")) {
+	define("PREFIX_DB", "'.$db_prefix.'");
 }
 
 $config = array_merge($config, array(
@@ -407,10 +412,10 @@ $config = array_merge($config, array(
 ));
 
 ?>';
-if(file_exists(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX)) {
-	unlink(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX);
+if(file_exists(PATH_MEDIA."db.".ROOT_EX)) {
+	unlink(PATH_MEDIA."db.".ROOT_EX);
 }
-file_put_contents(ROOT_PATH."core".DS."media".DS."db.".ROOT_EX, $db_config);
+file_put_contents(PATH_MEDIA."db.".ROOT_EX, $db_config);
 
 $path = str_replace("http://", "", Arr::get($_POST, 'PATH'));
 if(substr($path, -1)=="/") {
@@ -425,17 +430,20 @@ echo "403 ERROR";
 die();
 }
 
-define("COOK_USER", "username_'.rand(0, 1000).'");
-define("COOK_PASS", "password_'.rand(0, 1000).'");
-define("COOK_ADMIN_USER", "admin_username_'.rand(0, 1000).'");
-define("COOK_ADMIN_PASS", "admin_password_'.rand(0, 1000).'");
-
-if(isset($_SERVER[\'HTTPS\']) && $_SERVER[\'HTTPS\']!=\'off\') {
-	$protocol = "https";
-} else if(isset($_SERVER[\'HTTP_X_FORWARDED_PROTO\']) && $_SERVER[\'HTTP_X_FORWARDED_PROTO\']==\'https\') {
-	$protocol = "https";
-} else {
-	$protocol = "http";
+if(!defined("COOK_USER")) {
+	define("COOK_USER", "username_'.rand(0, 1000).'");
+}
+if(!defined("COOK_PASS")) {
+	define("COOK_PASS", "password_'.rand(0, 1000).'");
+}
+if(!defined("COOK_ADMIN_USER")) {
+	define("COOK_ADMIN_USER", "admin_username_'.rand(0, 1000).'");
+}
+if(!defined("COOK_ADMIN_PASS")) {
+	define("COOK_ADMIN_PASS", "admin_password_'.rand(0, 1000).'");
+}
+if(!defined("START_VERSION")) {
+	define("START_VERSION", "'.VERSION.'");
 }
 
 $config = array_merge($config, array(
@@ -445,7 +453,7 @@ $config = array_merge($config, array(
 	"hosting" => true,
 	"default_http_local" => "'.$path.'",
 	"default_http_hostname" => "'.Saves::SaveOld(Arr::get($_POST, 'SERVER'), true).'",
-	"default_http_host" => $protocol."://'.Saves::SaveOld($host, true).'/",
+	"default_http_host" => HTTP::$protocol."://'.Saves::SaveOld($host, true).'/",
 	"lang" => "ru",
 	"cache" => array(
 		"type" => '.Saves::SaveOld(Arr::get($_POST, 'cache_type'), true).',
@@ -460,10 +468,10 @@ $config = array_merge($config, array(
 ));
 
 ?>';
-if(file_exists(ROOT_PATH."core".DS."media".DS."config.install.".ROOT_EX)) {
-	unlink(ROOT_PATH."core".DS."media".DS."config.install.".ROOT_EX);
+if(file_exists(PATH_MEDIA."config.install.".ROOT_EX)) {
+	unlink(PATH_MEDIA."config.install.".ROOT_EX);
 }
-file_put_contents(ROOT_PATH."core".DS."media".DS."config.install.".ROOT_EX, $config);
+file_put_contents(PATH_MEDIA."config.install.".ROOT_EX, $config);
 
 $lang = '<?php
 if(!defined("IS_CORE")) {
@@ -478,12 +486,12 @@ $lang = array_merge($lang, array(
 
 ?>';
 $lang = charcode($lang);
-if(file_exists(ROOT_PATH."core".DS."media".DS."config.lang.".ROOT_EX)) {
-	unlink(ROOT_PATH."core".DS."media".DS."config.lang.".ROOT_EX);
+if(file_exists(PATH_MEDIA."config.lang.".ROOT_EX)) {
+	unlink(PATH_MEDIA."config.lang.".ROOT_EX);
 }
-file_put_contents(ROOT_PATH."core".DS."media".DS."config.lang.".ROOT_EX, $lang);
-if(file_exists(ROOT_PATH."core".DS."media".DS."config.default.".ROOT_EX)) {
-	rename(ROOT_PATH."core".DS."media".DS."config.default.".ROOT_EX, ROOT_PATH."core".DS."media".DS."config.".ROOT_EX);
+file_put_contents(PATH_MEDIA."config.lang.".ROOT_EX, $lang);
+if(file_exists(PATH_MEDIA."config.default.".ROOT_EX)) {
+	rename(PATH_MEDIA."config.default.".ROOT_EX, PATH_MEDIA."config.".ROOT_EX);
 }
 header("Location: ../".Route::get("install_done")->uri(array()));
 ?>

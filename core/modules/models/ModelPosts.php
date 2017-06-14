@@ -15,6 +15,7 @@ class ModelPosts extends DBObject {
 	public $type = 'post';
 
 	function init_model($type) {
+		$this->SetTable(PREFIX_DB."posts");
 		$this->WhereTo("type", "LIKE", $type);
 	}
 }

@@ -4,6 +4,10 @@ echo "403 ERROR";
 die();
 }
 
+if(!defined("PREFIX_DB")) {
+	define("PREFIX_DB", "cardinal_");
+}
+
 $config = array_merge($config, array(
 	"db" => array(
 		"host" => "localhost",

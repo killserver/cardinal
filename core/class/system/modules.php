@@ -108,8 +108,8 @@ class modules {
 	
 	final public static function loadModels($class, $autoload = false) {
 		if(!class_exists($class, false)) {
-			if(file_exists(ROOT_PATH."core".DS."modules".DS."models".DS.$class.".".ROOT_EX)) {
-				include_once(ROOT_PATH."core".DS."modules".DS."models".DS.$class.".".ROOT_EX);
+			if(file_exists(PATH_MODELS.$class.".".ROOT_EX)) {
+				include_once(PATH_MODELS.$class.".".ROOT_EX);
 				if(is_bool($autoload) && $autoload === false) {
 					return true;
 				} else {
@@ -143,39 +143,43 @@ class modules {
 	
 	final public static function loader($class, $standard = array()) {
 		if(!class_exists($class, false)) {
-			if(file_exists(ROOT_PATH."core".DS."modules".DS."autoload".DS.$class.".".ROOT_EX)) {
-				include_once(ROOT_PATH."core".DS."modules".DS."autoload".DS.$class.".".ROOT_EX);
-			} else if(file_exists(ROOT_PATH."core".DS."class".DS.$class.".".ROOT_EX)) {
-				include_once(ROOT_PATH."core".DS."class".DS.$class.".".ROOT_EX);
-			} else if(file_exists(ROOT_PATH."core".DS."modules".DS."library".DS.$class.".".ROOT_EX)) {
-				include_once(ROOT_PATH."core".DS."modules".DS."library".DS.$class.".".ROOT_EX);
+			if(file_exists(PATH_MODULES."autoload".DS.$class.".".ROOT_EX)) {
+				include_once(PATH_MODULES."autoload".DS.$class.".".ROOT_EX);
+			} else if(file_exists(PATH_CLASS.$class.".".ROOT_EX)) {
+				include_once(PATH_CLASS.$class.".".ROOT_EX);
+			} else if(file_exists(PATH_LOAD_LIBRARY.$class.".".ROOT_EX)) {
+				include_once(PATH_LOAD_LIBRARY.$class.".".ROOT_EX);
 			}
 			if(!class_exists($class, false)) {
 				throw new Exception('Class is not exists', 6);
 			}
-			$refMethod = new ReflectionMethod($class,  '__construct');
-			$params = $refMethod->getParameters();
 			$re_args = array();
-			foreach($params as $key => $param) {
-				$name = $param->getName();
-				if($param->isPassedByReference() && isset($standard[$name])) {
-					$re_args[$key] = &$standard[$name];
-				} else if(isset($standard[$name])) {
-					$re_args[$key] = $standard[$name];
+			if(method_exists($class, "__construct")) {
+				$refMethod = new ReflectionMethod($class,  '__construct');
+				$params = $refMethod->getParameters();
+				foreach($params as $key => $param) {
+					$name = $param->getName();
+					if($param->isPassedByReference() && isset($standard[$name])) {
+						$re_args[$key] = &$standard[$name];
+					} else if(isset($standard[$name])) {
+						$re_args[$key] = $standard[$name];
+					}
 				}
 			}
 			$refClass = new ReflectionClass($class);
 			return $refClass->newInstanceArgs((array) $re_args);
 		} else {
-			$refMethod = new ReflectionMethod($class,  '__construct');
-			$params = $refMethod->getParameters();
 			$re_args = array();
-			foreach($params as $key => $param) {
-				$name = $param->getName();
-				if($param->isPassedByReference() && isset($standard[$name])) {
-					$re_args[$key] = &$standard[$name];
-				} else if(isset($standard[$name])) {
-					$re_args[$key] = $standard[$name];
+			if(method_exists($class, "__construct")) {
+				$refMethod = new ReflectionMethod($class,  '__construct');
+				$params = $refMethod->getParameters();
+				foreach($params as $key => $param) {
+					$name = $param->getName();
+					if($param->isPassedByReference() && isset($standard[$name])) {
+						$re_args[$key] = &$standard[$name];
+					} else if(isset($standard[$name])) {
+						$re_args[$key] = $standard[$name];
+					}
 				}
 			}
 			$refClass = new ReflectionClass($class);
@@ -293,7 +297,7 @@ class modules {
 	
 	final private static function ExecHooks($module, $param = array()) {
 		try {
-			$dir = ROOT_PATH."core".DS."modules".DS."hooks".DS;
+			$dir = PATH_HOOKS;
 			if(is_dir($dir)) {
 				if($dh = dir($dir)) {
 					while(($file = $dh->read()) !== false) {
@@ -320,16 +324,16 @@ class modules {
 	
 	final public static function load_hooks($module, $param = array()) {
 		if(defined("WITHOUT_DB")) {
-			if(file_exists(ROOT_PATH."core".DS."modules".DS."hooks".DS."loader.".ROOT_EX)) {
+			if(file_exists(PATH_HOOKS."loader.".ROOT_EX)) {
 				$hooksLoad = array();
-				include(ROOT_PATH."core".DS."modules".DS."hooks".DS."loader.".ROOT_EX);
+				include(PATH_HOOKS."loader.".ROOT_EX);
 				if(!isset($hooksLoad[$module])) {
 					return false;
 				}
 				return self::ExecHooks($module, $param);
-			} else if(file_exists(ROOT_PATH."core".DS."modules".DS."hooks".DS."loader.default.".ROOT_EX)) {
+			} else if(file_exists(PATH_HOOKS."loader.default.".ROOT_EX)) {
 				$hooksLoad = array();
-				include(ROOT_PATH."core".DS."modules".DS."hooks".DS."loader.default.".ROOT_EX);
+				include(PATH_HOOKS."loader.default.".ROOT_EX);
 				if(!isset($hooksLoad[$module])) {
 					return false;
 				}
@@ -342,7 +346,7 @@ class modules {
 			$cache = self::init_cache();
 			if(!$cache->exists("load_hooks")) {
 				$db = self::init_db();
-				$db->doquery("SELECT `module` FROM `modules` WHERE `activ` = \"yes\" AND `file` LIKE \"core%".$module.".class.".ROOT_EX."\"", true);
+				$db->doquery("SELECT `module` FROM `".PREFIX_DB."modules` WHERE `activ` LIKE \"yes\" AND `file` LIKE \"core%".$module.".class.".ROOT_EX."\"", true);
 				self::$load_hooks = array();
 				while($row = $db->fetch_assoc()) {
 					self::$load_hooks[$row['module']] = true;
@@ -369,21 +373,22 @@ class modules {
 			return true;
 		}
 		if(self::CheckVersion("3.5", START_VERSION)) {
-			$files = str_replace(array(ROOT_PATH, "core".DS."modules".DS, $load), "", $file);
+			$stripRoot = str_replace(ROOT_PATH, "", PATH_MODULES);
+			$files = str_replace(array(ROOT_PATH, $stripRoot, $load), "", $file);
 			if(!is_subclass_of($files, "modules")) {
 				modules::manifest_set(array('dependency_modules', $files), $file);
 			}
 		}
 		if(defined("WITHOUT_DB")) {
-			if(file_exists(ROOT_PATH."core".DS."modules".DS."loader.".ROOT_EX)) {
+			if(file_exists(PATH_MODULES."loader.".ROOT_EX)) {
 				$modulesLoad = array();
-				include(ROOT_PATH."core".DS."modules".DS."loader.".ROOT_EX);
+				include(PATH_MODULES."loader.".ROOT_EX);
 				if(isset($modulesLoad[$file])) {
 					return true;
 				}
-			} else if(file_exists(ROOT_PATH."core".DS."modules".DS."loader.default.".ROOT_EX)) {
+			} else if(file_exists(PATH_MODULES."loader.default.".ROOT_EX)) {
 				$modulesLoad = array();
-				include(ROOT_PATH."core".DS."modules".DS."loader.default.".ROOT_EX);
+				include(PATH_MODULES."loader.default.".ROOT_EX);
 				if(isset($modulesLoad[$file])) {
 					return true;
 				}
@@ -394,7 +399,7 @@ class modules {
 			$cache = self::init_cache();
 			if(!$cache->exists("load_modules")) {
 				$db = self::init_db();
-				$db->doquery("SELECT `file` FROM `modules` WHERE `activ` = \"yes\" AND `file` LIKE \"core%\"", true);
+				$db->doquery("SELECT `file` FROM `".PREFIX_DB."modules` WHERE `activ` LIKE \"yes\" AND `file` LIKE \"core%\"", true);
 				self::$load_modules = array();
 				while($row = $db->fetch_assoc()) {
 					self::$load_modules[$row['file']] = true;
@@ -417,8 +422,8 @@ class modules {
 		}
 		$cache = self::init_cache();
 		if(!$cache->exists("modules")) {
-//INSERT INTO `modules` SET activ = "yes", page = "reg", module = "reg_email"
-			self::init_db()->doquery("SELECT `page`, `module`, `method`, `param`, `tpl` FROM `modules` WHERE `activ` = \"yes\"", true);
+//INSERT INTO `".PREFIX_DB."modules` SET activ = "yes", page = "reg", module = "reg_email"
+			self::init_db()->doquery("SELECT `page`, `module`, `method`, `param`, `tpl` FROM `".PREFIX_DB."modules` WHERE `activ` LIKE \"yes\"", true);
 			$modules = array();
 			while($row = self::init_db()->fetch_assoc()) {
 				$modules[$row['page']][] = $row;
@@ -603,13 +608,13 @@ class modules {
 				if(isset($xml->install[$i]->tpl)) {
 					$param['tpl'] = $xml->install[$i]->tpl;
 				}
-				$sql .= "INSERT INTO `modules` SET ".implode(", ", array_map("self::insertModule", array_keys($param), array_values($param)))."!;";
+				$sql .= "INSERT INTO `".PREFIX_DB."modules` SET ".implode(", ", array_map("self::insertModule", array_keys($param), array_values($param)))."!;";
 			}
 			// register all files for module
 			$fileList = 0;
 			for($i=0;$i<sizeof($xml->files->file);$i++) {
 				$name = "name=".$xml->info->attributes()->module;
-				$sql .= "INSERT INTO `modules` SET `file` = \"".self::SearchOnArray($xml->files->file[$i]->attributes()->path, $files_root)."\", `module` = \"".(isset($xml->install->type) ? $xml->install->type : "site")."_-_".$xml->info->attributes()->module."\", `type` = \"".(isset($xml->install->type) ? $xml->install->type : "site")."\"!;";
+				$sql .= "INSERT INTO `".PREFIX_DB."modules` SET `file` = \"".self::SearchOnArray($xml->files->file[$i]->attributes()->path, $files_root)."\", `module` = \"".(isset($xml->install->type) ? $xml->install->type : "site")."_-_".$xml->info->attributes()->module."\", `type` = \"".(isset($xml->install->type) ? $xml->install->type : "site")."\"!;";
 				$fileList++;
 			}
 		}
@@ -643,11 +648,11 @@ class modules {
 	
 	final public static function Install($module, $file = false, $names = "") {
 		if($file) {
-			if(!file_exists(ROOT_PATH."core".DS."cache".DS."system".DS.$module.".tar")) {
+			if(!file_exists(PATH_CACHE_SYSTEM.$module.".tar")) {
 				return "File archive is not exists";
 			}
 			try {
-				$tar_object = new Archive_Tar(ROOT_PATH."core".DS."cache".DS."system".DS.$module.".tar", "gz");
+				$tar_object = new Archive_Tar(PATH_CACHE_SYSTEM.$module.".tar", "gz");
 				$list = $tar_object->listContent();
 				if(is_array($list) && sizeof($list)>0) {
 					$tar_object->extractModify(ROOT_PATH, ucfirst($names)."/");
@@ -656,14 +661,14 @@ class modules {
 			} catch(Exception $ex) {
 				return "Error unzip file";
 			}
-			unlink(ROOT_PATH."core".DS."cache".DS."system".DS.$module.".tar");
+			unlink(PATH_CACHE_SYSTEM.$module.".tar");
 			return true;
 		} else {
-			if(!file_exists(ROOT_PATH."core".DS."modules".DS."xml".DS.$module.".xml")) {
+			if(!file_exists(PATH_MODULES."xml".DS.$module.".xml")) {
 				return "File configuration is not exists";
 			}
 			try {
-				$xml = simplexml_load_string(file_get_contents(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $module . ".xml"));
+				$xml = simplexml_load_string(file_get_contents(PATH_MODULES . "xml" . DS . $module . ".xml"));
 			} catch(Exception $ex) {
 				return "Falled parse configuration";
 			}
@@ -678,13 +683,13 @@ class modules {
 	}
 	
 	final private static function FindXML($module) {
-		$files = read_dir(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS);
+		$files = read_dir(PATH_MODULES . "xml" . DS);
 		for($i=0;$i<sizeof($files);$i++) {
 			if($files[$i]=="index.php") {
 				continue;
 			}
 			try {
-				$xml = simplexml_load_string(file_get_contents(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $files[$i]));
+				$xml = simplexml_load_string(file_get_contents(PATH_MODULES . "xml" . DS . $files[$i]));
 				if(isset($xml->info) && isset($xml->info->attributes()->module) && $xml->info->attributes()->module==$module) {
 					return str_Replace(".xml", "", $files[$i]);
 				}
@@ -700,17 +705,17 @@ class modules {
 		}
 		if(!defined("WITHOUT_DB")) {
 			$db = self::init_db();
-			$db->doquery("SELECT `file` FROM `modules` WHERE `module` LIKE \"%".$module."\"", true);
+			$db->doquery("SELECT `file` FROM `".PREFIX_DB."modules` WHERE `module` LIKE \"%".$module."\"", true);
 			if($db->num_rows()>0) {
 				while($files = $db->fetch_assoc()) {
 					if(!empty($files['file']) && file_exists(ROOT_PATH.$files['file'])) {
 						unlink(ROOT_PATH.$files['file']);
 					}
 				}
-				$db->doquery("DELETE FROM `modules` WHERE `module` LIKE \"%".$module."\"");
+				$db->doquery("DELETE FROM `".PREFIX_DB."modules` WHERE `module` LIKE \"%".$module."\"");
 			}
-			if(file_exists(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $file . ".xml")) {
-				unlink(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $file . ".xml");
+			if(file_exists(PATH_MODULES . "xml" . DS . $file . ".xml")) {
+				unlink(PATH_MODULES . "xml" . DS . $file . ".xml");
 			}
 			cardinal::RegAction("Удаление файлов модуля \"".$file."\"");
 			return true;
@@ -721,7 +726,7 @@ class modules {
 
 	final public static function UnInstall($module) {
 		$moduleFile = self::FindXML($module);
-		if(!file_exists(ROOT_PATH."core".DS."modules".DS."xml".DS.$moduleFile.".xml")) {
+		if(!file_exists(PATH_MODULES."xml".DS.$moduleFile.".xml")) {
 			return self::UnInstallFile($module, $moduleFile);
 		}
 		if(!defined("WITHOUT_DB")) {
@@ -730,7 +735,7 @@ class modules {
 		$files_root = array();
 		self::ReadRoot($files_root);
 		try {
-			$xml = simplexml_load_string(file_get_contents(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $moduleFile . ".xml"));
+			$xml = simplexml_load_string(file_get_contents(PATH_MODULES . "xml" . DS . $moduleFile . ".xml"));
 		} catch(Exception $ex) {
 			return self::UnInstallFile($module, $moduleFile);
 		}
@@ -815,13 +820,13 @@ class modules {
 			}
 			
 			if(!defined("WITHOUT_DB")) {
-				$db->doquery("SELECT `file` FROM `modules` WHERE `module` LIKE \"%".$xml->info->attributes()->module."\"", true);
+				$db->doquery("SELECT `file` FROM `".PREFIX_DB."modules` WHERE `module` LIKE \"%".$xml->info->attributes()->module."\"", true);
 				while($files = $db->fetch_assoc()) {
 					if(file_exists(ROOT_PATH.$files['file'])) {
 						unlink(ROOT_PATH.$files['file']);
 					}
 				}
-				$sql .= "DELETE FROM `modules` WHERE `module` LIKE \"%".$xml->info->attributes()->module."\";";
+				$sql .= "DELETE FROM `".PREFIX_DB."modules` WHERE `module` LIKE \"%".$xml->info->attributes()->module."\";";
 				if(empty($sql)) {
 					return false;
 				}
@@ -841,8 +846,8 @@ class modules {
 				} else {
 					$db->query($sql);
 				}
-				if(file_exists(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $moduleFile . ".xml")) {
-					unlink(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $moduleFile . ".xml");
+				if(file_exists(PATH_MODULES . "xml" . DS . $moduleFile . ".xml")) {
+					unlink(PATH_MODULES . "xml" . DS . $moduleFile . ".xml");
 				}
 			}
 			cardinal::RegAction("Удаление файлов модуля \"".$moduleFile."\"");
@@ -921,11 +926,11 @@ class modules {
 		if(defined("WITHOUT_DB")) {
 			return false;
 		}
-		if(!file_exists(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $module . ".xml")) {
+		if(!file_exists(PATH_MODULES . "xml" . DS . $module . ".xml")) {
 			return false;
 		}
 		try {
-			$xml = simplexml_load_string(file_get_contents(ROOT_PATH . "core" . DS . "modules" . DS . "xml" . DS . $module . ".xml"));
+			$xml = simplexml_load_string(file_get_contents(PATH_MODULES . "xml" . DS . $module . ".xml"));
 		} catch(Exception $ex) {
 			return false;
 		}

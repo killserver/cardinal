@@ -42,8 +42,8 @@ global $manifest;
 		}
 		unset($pages);
 	}
-	if(array_key_exists($page, $manifest['pages']) && file_exists(ROOT_PATH."core".DS."pages".DS.$manifest['pages'][$page])) {
-		include_once(ROOT_PATH."core".DS."pages".DS.$manifest['pages'][$page]);
+	if(array_key_exists($page, $manifest['pages']) && file_exists(PATH_PAGES.$manifest['pages'][$page])) {
+		include_once(PATH_PAGES.$manifest['pages'][$page]);
 		if(array_key_exists($page, $manifest['after_ini_class'])) {
 			$page = $manifest['after_ini_class'][$page];
 			if(is_array($page) && !isset($page['object'])) {
@@ -84,36 +84,36 @@ global $manifest;
 	}
 	switch($page) {
 		case "error":
-			include_once(ROOT_PATH."core".DS."pages".DS."error.".ROOT_EX);
+			include_once(PATH_PAGES."error.".ROOT_EX);
 		break;
 		case "upload":
-			include_once(ROOT_PATH."core".DS."pages".DS."upload.".ROOT_EX);
+			include_once(PATH_PAGES."upload.".ROOT_EX);
 		break;
 		case "reg":
-			include_once(ROOT_PATH."core".DS."pages".DS."reg.".ROOT_EX);
+			include_once(PATH_PAGES."reg.".ROOT_EX);
 		break;
 		case "manifest":
-			include_once(ROOT_PATH."core".DS."pages".DS."manifest.".ROOT_EX);
+			include_once(PATH_PAGES."manifest.".ROOT_EX);
 		break;
 		case "add":
 		case "edit":
 		case "post":
-			include_once(ROOT_PATH."core".DS."pages".DS."post.".ROOT_EX);
+			include_once(PATH_PAGES."post.".ROOT_EX);
 		break;
 		case "login":
-			include_once(ROOT_PATH."core".DS."pages".DS."login.".ROOT_EX);
+			include_once(PATH_PAGES."login.".ROOT_EX);
 		break;
 		case "news":
-			include_once(ROOT_PATH."core".DS."pages".DS."view.".ROOT_EX);
+			include_once(PATH_PAGES."view.".ROOT_EX);
 		break;
 		case "skin":
-			include_once(ROOT_PATH."core".DS."pages".DS."skin.".ROOT_EX);
+			include_once(PATH_PAGES."skin.".ROOT_EX);
 		break;
 		case "search":
-			include_once(ROOT_PATH."core".DS."pages".DS."search.".ROOT_EX);
+			include_once(PATH_PAGES."search.".ROOT_EX);
 		break;
 		case "main":
-			include_once(ROOT_PATH."core".DS."pages".DS."main.".ROOT_EX);
+			include_once(PATH_PAGES."main.".ROOT_EX);
 		break;
 		default:
 			if(array_key_exists("default", $manifest['class_pages'])) {
@@ -149,7 +149,7 @@ global $manifest;
 				}
 				return false;
 			}
-			include_once(ROOT_PATH."core".DS."pages".DS."main.".ROOT_EX);
+			include_once(PATH_PAGES."main.".ROOT_EX);
 		break;
 	}
 	if(array_key_exists($page, $manifest['after_ini_class'])) {

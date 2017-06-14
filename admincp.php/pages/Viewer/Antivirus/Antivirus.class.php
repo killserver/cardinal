@@ -67,23 +67,23 @@ class Antivirus extends Core {
 	function initialize() {
 		$fileList = array();
 		$dirList = array();
-		if(!file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."fileMask.sha1") || !file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."dirMask.sha1")) {
+		if(!file_exists(PATH_CACHE_SYSTEM."fileMask.sha1") || !file_exists(PATH_CACHE_SYSTEM."dirMask.sha1")) {
 			$this->read(ROOT_PATH, $fileList, $dirList);
-			if(!file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."fileMask.sha1")) {
+			if(!file_exists(PATH_CACHE_SYSTEM."fileMask.sha1")) {
 				$md5 = array();
 				for($i=0;$i<sizeof($fileList);$i++) {
-					if(strpos($fileList[$i], ROOT_PATH."core".DS."cache".DS."system".DS)!==false || strpos($fileList[$i], ROOT_PATH."core".DS."cache".DS."tmp".DS)!==false || strpos($fileList[$i], ROOT_PATH."core".DS."cache".DS."page".DS)!==false) {
+					if(strpos($fileList[$i], PATH_CACHE_SYSTEM)!==false || strpos($fileList[$i], PATH_CACHE_TEMP)!==false || strpos($fileList[$i], PATH_CACHE_PAGE)!==false) {
 						continue;
 					}
 					$path = str_replace(ROOT_PATH, "", $fileList[$i]);
 					$md5[$path] = sha1_file($fileList[$i]);
 				}
-				if(is_writable(ROOT_PATH."core".DS."cache".DS."system".DS) && !file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."fileMask.sha1")) {
-					file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."fileMask.sha1", serialize($md5));
+				if(is_writable(PATH_CACHE_SYSTEM) && !file_exists(PATH_CACHE_SYSTEM."fileMask.sha1")) {
+					file_put_contents(PATH_CACHE_SYSTEM."fileMask.sha1", serialize($md5));
 				}
 			}
-			if(is_writable(ROOT_PATH."core".DS."cache".DS."system".DS) && !file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."dirMask.sha1")) {
-				file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."dirMask.sha1", serialize($dirList));
+			if(is_writable(PATH_CACHE_SYSTEM) && !file_exists(PATH_CACHE_SYSTEM."dirMask.sha1")) {
+				file_put_contents(PATH_CACHE_SYSTEM."dirMask.sha1", serialize($dirList));
 			}
 		}
 		cardinal::RegAction("Инициализация антивируса");
@@ -92,12 +92,12 @@ class Antivirus extends Core {
 	}
 	
 	function scan($mask = false) {
-		if(file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."fileMask.sha1")) {
-			$md5 = file_get_contents(ROOT_PATH."core".DS."cache".DS."system".DS."fileMask.sha1");
+		if(file_exists(PATH_CACHE_SYSTEM."fileMask.sha1")) {
+			$md5 = file_get_contents(PATH_CACHE_SYSTEM."fileMask.sha1");
 			$md5 = unserialize($md5);
 		}
-		if(file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."dirMask.sha1")) {
-			$dirList = file_get_contents(ROOT_PATH."core".DS."cache".DS."system".DS."dirMask.sha1");
+		if(file_exists(PATH_CACHE_SYSTEM."dirMask.sha1")) {
+			$dirList = file_get_contents(PATH_CACHE_SYSTEM."dirMask.sha1");
 			$dirList = unserialize($dirList);
 		}
 		$types = HTTP::getContentTypes();
@@ -108,15 +108,15 @@ class Antivirus extends Core {
 		if($mask) {
 			$maskInit = true;
 		} else {
-			if(file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."fileMask.db")) {
-				$exclude = file_get_contents(ROOT_PATH."core".DS."cache".DS."system".DS."fileMask.db");
+			if(file_exists(PATH_CACHE_SYSTEM."fileMask.db")) {
+				$exclude = file_get_contents(PATH_CACHE_SYSTEM."fileMask.db");
 				$exclude = unserialize($exclude);
 			}
 		}
 		$warning = array();
 		$count = 0;
 		for($i=0;$i<sizeof($dirList);$i++) {
-			if(in_array($dirList[$i]['path'], $exclude) || (strpos($dirList[$i]['path'], ROOT_PATH."core".DS."cache".DS)!==false || strpos($dirList[$i]['path'], ROOT_PATH."core".DS."cache".DS."system".DS)!==false || strpos($dirList[$i]['path'], ROOT_PATH."core".DS."cache".DS."tmp".DS)!==false || strpos($dirList[$i]['path'], ROOT_PATH."core".DS."cache".DS."page".DS)!==false)) {
+			if(in_array($dirList[$i]['path'], $exclude) || (strpos($dirList[$i]['path'], PATH_CACHE)!==false || strpos($dirList[$i]['path'], PATH_CACHE_SYSTEM)!==false || strpos($dirList[$i]['path'], PATH_CACHE_TEMP)!==false || strpos($dirList[$i]['path'], PATH_CACHE_PAGE)!==false)) {
 				// need  || strpos($dirList[$i]['path'], ROOT_PATH."uploads".DS)!==false) ??
 				continue;
 			}
@@ -146,7 +146,7 @@ class Antivirus extends Core {
 			}
 		}
 		if($maskInit) {
-			if(!is_writable(ROOT_PATH."core".DS."cache".DS."system".DS)) {
+			if(!is_writable(PATH_CACHE_SYSTEM)) {
 				throw new Exception("Error write mask on server");
 				die();
 			}
@@ -154,10 +154,10 @@ class Antivirus extends Core {
 			for($i=0;$i<sizeof($warning);$i++) {
 				$mask[] = $warning[$i]['path'];
 			}
-			if(file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."fileMask.db")) {
-				unlink(ROOT_PATH."core".DS."cache".DS."system".DS."fileMask.db");
+			if(file_exists(PATH_CACHE_SYSTEM."fileMask.db")) {
+				unlink(PATH_CACHE_SYSTEM."fileMask.db");
 			}
-			file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."fileMask.db", serialize($mask));
+			file_put_contents(PATH_CACHE_SYSTEM."fileMask.db", serialize($mask));
 			cardinal::RegAction("Создание \"маски\" файлов в антивирусе");
 			HTTP::echos("done");
 			die();

@@ -52,6 +52,34 @@ class Core {
 			}
 		}
 	}
+
+	protected function GetFullEditor($label, $name, $value, $lang = "ru", array $styles = array(), $id = "", $class = "col-sm-12") {
+		if(empty($id)) {
+			$id = "id".rand(0, PHP_INT_MAX);
+		}
+		$ret = '<div class="form-group"><label class="col-sm-12 control-label" for="'.$id.'">'.$label.'</label><div class="'.$class.'"><textarea name="'.$name.'" id="'.$id.'">'.$value.'</textarea></div></div>';
+		//<script src="assets/xenon/js/tinymce/tinymce.min.js"></script>
+		/*
+		$(document).ready(function(){
+	tinymce.init({
+	  selector: 'textarea',
+	  height: 500,
+	  language : "$lang",
+	  plugins: [
+	        "advlist autolink lists link image charmap print preview anchor",
+	        "searchreplace visualblocks code fullscreen",
+	        "insertdatetime media table contextmenu paste imagetools"
+	    ],
+	    toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image",
+	  // imagetools_cors_hosts: ['www.tinymce.com', 'codepen.io'],
+	  content_css: [
+	    '/skins/Constroy/css/style.css?1495788912',
+		'/skins/Constroy/css/fonts.css?1495788912'
+	  ]
+	});
+});
+		 */
+	}
 	
 	private function vsort(&$array) {
 		$arrs = array();
@@ -184,7 +212,7 @@ class Core {
 				}
 			} elseif(!cache::Exists("load_adminmodules")) {
 				$delete = ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS;
-				db::doquery("SELECT `file` FROM `modules` WHERE `activ` LIKE \"yes\" AND `type` LIKE \"admincp\"", true);
+				db::doquery("SELECT `file` FROM `".PREFIX_DB."modules` WHERE `activ` LIKE \"yes\" AND `type` LIKE \"admincp\"", true);
 				$this->load_adminmodules = array();
 				while($row = db::fetch_assoc()) {
 					$this->load_adminmodules[str_replace($delete, "", $row['file'])] = true;
@@ -243,7 +271,21 @@ class Core {
 			location("{C_default_http_host}".ADMINCP_DIRECTORY."/?pages=Login".(!empty($ref) ? "&ref=".$ref : ""));
 			return;
 		}
+		if(Arr::get($_GET, "setLanguage", false) && strpos(HTTP::getServer("HTTP_REFERER"), config::Select("default_http_host"))!==false && strpos(HTTP::getServer("HTTP_REFERER"), ADMINCP_DIRECTORY)!==false) {
+			$support = lang::support();
+			for($i=0;$i<sizeof($support);$i++) {
+				$support[$i] = nsubstr($support[$i], 4, -3);
+			}
+			if(in_array(Arr::get($_GET, "setLanguage"), $support)) {
+				HTTP::set_cookie("langSet", Arr::get($_GET, "setLanguage"));
+			}
+			location(htmlspecialchars_decode(HTTP::getServer("HTTP_REFERER")));die();
+		}
 		$this->ParseLang();
+		if(isset($_COOKIE['langSet'])) {
+			lang::set_lang($_COOKIE['langSet']);
+			lang::init_lang();
+		}
 		if(!$print) {
 			$echo = (templates::complited_assing_vars($echo, null));
 		}
@@ -307,6 +349,14 @@ class Core {
 				}
 			}
 			$all++;
+		}
+		templates::assign_var("nowLangText", "{L_Languages}&nbsp;".nucfirst(lang::get_lg()));
+		templates::assign_var("nowLangImg", "http://www.nivea.ua/img/flags/small/flag-".lang::get_lg().".png");
+		$support = lang::support();
+		for($i=0;$i<sizeof($support);$i++) {
+			$cutLang = nsubstr($support[$i], 4, -3);
+			$lang = nucfirst($cutLang);
+			templates::assign_vars(array("img" => "http://www.nivea.ua/img/flags/small/flag-".$cutLang.".png", "langMenu" => $cutLang, "lang" => "{L_Languages}&nbsp;".$lang), "langListSupport", "lang".($i+1));
 		}
 		$this->ReadPlugins();
 		if(sizeof(self::$modules)>0 && isset(self::$modules['before'])) {

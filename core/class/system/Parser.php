@@ -316,8 +316,8 @@ class Parser {
 	//curl_setopt($ch, CURLOPT_FAILONERROR, 1);
 	//Устанавливаем значение referer - адрес последней активной страницы
 		if(is_bool($this->cookie) && $this->cookie && !empty($this->cookie_path)) {
-			curl_setopt($ch, CURLOPT_COOKIEJAR, (defined("ROOT_PATH") ? ROOT_PATH."core".DS."cache".DS.$this->cookie_path.".txt" : $this->cookie_path));
-			curl_setopt($ch, CURLOPT_COOKIEFILE, (defined("ROOT_PATH") ? ROOT_PATH."core".DS."cache".DS.$this->cookie_path.".txt" : $this->cookie_path));
+			curl_setopt($ch, CURLOPT_COOKIEJAR, (defined("PATH_CACHE") ? PATH_CACHE.$this->cookie_path.".txt" : $this->cookie_path));
+			curl_setopt($ch, CURLOPT_COOKIEFILE, (defined("PATH_CACHE") ? PATH_CACHE.$this->cookie_path.".txt" : $this->cookie_path));
 		}
 		if(!is_bool($this->cookie) && !empty($this->cookie)) {
 			if(is_array($this->cookie)) {

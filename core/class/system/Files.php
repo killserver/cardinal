@@ -9,6 +9,9 @@ die();
  * Class for working with files
  */
 class Files {
+	
+	public static $switchException = false;
+	public static $simulate = false;
 
     /**
      * Check necessary type file
@@ -32,10 +35,31 @@ class Files {
 			return (in_array($rt, $type) || in_array($ext, $type));
 		}
 	}
+
+    /**
+     * Sanitizes a filename, replacing illegal characters
+     *
+     * @param string $fileName
+     * @return string
+     */
+	final public static function sanitizeName($fileName) {
+		if(!($fileName = trim($fileName))) {
+			return false;
+		}
+		$specialChars = array("?", "[", "]", "/", "\\", "=", "<", ">", ":", ";", ",", "'", "\"", "&", "$", "#", "*", "(", ")", "|", "~", "`", "!", "{", "}");
+		$fileName = str_replace($specialChars, '', $fileName);
+		$fileName = preg_replace('/[\s-]+/', '-', $fileName);
+		$fileName = trim($fileName, '.-_');
+		return $fileName;
+	}
 	
 	final public static function checkType($file, $types) {
 		if(is_string($types) || is_array($types)) {
-			throw new Exception("Error checking type");
+			if(self::$switchException) {
+				throw new Exception("Error checking type");
+				die();
+			}
+			return false;
 		}
 		if(is_string($types)) {
 			$types = array($types);
@@ -75,15 +99,26 @@ class Files {
 		}
 		$filename = preg_replace('/\s+/u', '_', $filename);
 		if(empty($directory)) {
-			$directory = ROOT_PATH."uploads";
+			$directory = substr(PATH_UPLOADS, 0, (-(strlen(DS))));
 		}
 		if(!is_dir($directory) || !is_writable(realpath($directory))) {
+			if(self::$switchException) {
+				throw new Exception("Directory is not exists or not allowed write");
+				die();
+			}
 			return false;
 		}
 		if(!empty($type) && !self::typeFile($file, $type)) {
+			if(self::$switchException) {
+				throw new Exception("Type file is not allowed for \"".$type."\"");
+				die();
+			}
 			return false;
 		}
 		$filename = realpath($directory).DS.$filename;
+		if(self::$simulate) {
+			return str_replace(ROOT_PATH, "", $filename);
+		}
 		if($force && file_exists($filename)) {
 			unlink($filename);
 		}
@@ -101,6 +136,10 @@ class Files {
 				}
 				return str_replace(ROOT_PATH, "", $filename);
 			}
+		}
+		if(self::$switchException) {
+			throw new Exception("In proccess upload occurred error. Check file");
+			die();
 		}
 		return false;
 	}

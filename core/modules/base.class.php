@@ -73,7 +73,7 @@ class base extends modules {
 		$cache = $this->init_cache();
 		if(!$cache->Exists("menu")) {
 			$db = $this->init_db();
-			$rows = $db->select_query("SELECT id, name, data, menu FROM menu WHERE activ = \"yes\" ORDER BY position ASC");
+			$rows = $db->select_query("SELECT `id`, `name`, `data`, `menu` FROM `".PREFIX_DB."menu` WHERE `activ` LIKE \"yes\" ORDER BY `position` ASC");
 			if(!is_bool($rows)) {
 				$cache->Set("menu", $rows);
 			}

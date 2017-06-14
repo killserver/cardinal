@@ -17,14 +17,14 @@ class Main_Cache extends Main {
 	
 	public function __construct() {
 		if(isset($_GET['clear']) && isset($_GET['tmp'])) {
-			$path = ROOT_PATH."core".DS."cache".DS."tmp".DS;
+			$path = PATH_CACHE_TEMP;
 			$files = read_dir($path);
 			for($i=0;$i<sizeof($files);$i++) {
 				if($files[$i] != "index.php" && $files[$i] != "index.html") {
 					unlink($path.$files[$i]);
 				}
 			}
-			$path = ROOT_PATH."core".DS."cache".DS."page".DS;
+			$path = PATH_CACHE_PAGE;
 			$files = read_dir($path);
 			for($i=0;$i<sizeof($files);$i++) {
 				if($files[$i] != "index.php" && $files[$i] != "index.html") {
@@ -35,14 +35,14 @@ class Main_Cache extends Main {
 			die();
 		}
 		if(isset($_GET['clear']) && isset($_GET['cache'])) {
-			$path = ROOT_PATH."core".DS."cache".DS;
+			$path = PATH_CACHE;
 			$files = read_dir($path);
 			for($i=0;$i<sizeof($files);$i++) {
 				if($files[$i] != "index.php" && $files[$i] != "index.html") {
 					unlink($path.$files[$i]);
 				}
 			}
-			$path = ROOT_PATH."core".DS."cache".DS."system".DS;
+			$path = PATH_CACHE_SYSTEM;
 			$files = read_dir($path);
 			for($i=0;$i<sizeof($files);$i++) {
 				if($files[$i] != "index.php" && $files[$i] != "index.html") {
@@ -53,7 +53,7 @@ class Main_Cache extends Main {
 			die();
 		}
 		$size = 0;
-		$path = ROOT_PATH."core".DS."cache".DS;
+		$path = PATH_CACHE;
 		$files = read_dir($path);
 		for($i=0;$i<sizeof($files);$i++) {
 			if($files[$i] == "index.php" || $files[$i] == "index.html") {
@@ -62,7 +62,7 @@ class Main_Cache extends Main {
 				$size += filesize($path.$files[$i]);
 			}
 		}
-		$path = ROOT_PATH."core".DS."cache".DS."system".DS;
+		$path = PATH_CACHE_SYSTEM;
 		$files = read_dir($path);
 		for($i=0;$i<sizeof($files);$i++) {
 			if($files[$i] == "index.php" || $files[$i] == "index.html") {
@@ -75,7 +75,7 @@ class Main_Cache extends Main {
 		templates::assign_var("CacheSizeS", $this->formatSize($size, "text"));
 		templates::assign_var("CacheSize", $this->formatSize($size, "integer"));
 		$size = 0;
-		$path = ROOT_PATH."core".DS."cache".DS."tmp".DS;
+		$path = PATH_CACHE_TEMP;
 		$files = read_dir($path);
 		for($i=0;$i<sizeof($files);$i++) {
 			if($files[$i] == "index.php" || $files[$i] == "index.html") {
@@ -84,7 +84,7 @@ class Main_Cache extends Main {
 				$size += filesize($path.$files[$i]);
 			}
 		}
-		$path = ROOT_PATH."core".DS."cache".DS."page".DS;
+		$path = PATH_CACHE_PAGE;
 		$files = read_dir($path);
 		for($i=0;$i<sizeof($files);$i++) {
 			if($files[$i] == "index.php" || $files[$i] == "index.html") {

@@ -656,7 +656,7 @@ class PHPMailer
      */
     public function __construct($exceptions = null)
     {
-		$this->PluginDir  = ROOT_PATH."core".DS."class".DS."Mail".DS;
+		$this->PluginDir  = PATH_CLASS."Mail".DS;
         if ($exceptions !== null) {
             $this->exceptions = (boolean)$exceptions;
         }

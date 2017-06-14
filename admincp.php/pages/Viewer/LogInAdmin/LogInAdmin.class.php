@@ -4,7 +4,7 @@ class LogInAdmin extends Core {
 	
 	function __construct() {
 		cardinal::InitRegAction();
-		$dir = ROOT_PATH."core".DS."cache".DS."system".DS;
+		$dir = PATH_CACHE_SYSTEM;
 		$file = $dir."logInAdmin.txt";
 		if(!defined("WITHOUT_DB") || db::connected() && (!file_exists($dir."logInAdmin.lock") && is_writable($dir)) || file_exists($dir."logInAdmin.lock")) {
 			$log = "DB";
@@ -15,7 +15,7 @@ class LogInAdmin extends Core {
 			return false;
 		}
 		if($log==="DB") {
-			db::doquery("SELECT * FROM `logInAdmin` ORDER BY `lId` DESC", true);
+			db::doquery("SELECT * FROM `".PREFIX_DB."logInAdmin` ORDER BY `lId` DESC", true);
 			while($row = db::fetch_assoc()) {
 				templates::assign_vars($row, "logs", $row['lId']);
 			}

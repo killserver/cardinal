@@ -111,9 +111,9 @@ class Api {
 		if(!isset(self::$params['post']['is_install'])) {
 			try {
 				if(isset(self::$params['post']['is_xml'])) {
-					$fp = fopen(ROOT_PATH.'core'.DS.'modules'.DS.'xml'.DS.self::$params['post']['name'].'.xml', 'w+');
+					$fp = fopen(PATH_MODULES.'xml'.DS.self::$params['post']['name'].'.xml', 'w+');
 				} else {
-					$fp = fopen(ROOT_PATH.'core'.DS.'cache'.DS.'system'.DS.self::$params['post']['name'].'.tar', 'w+');
+					$fp = fopen(PATH_CACHE_SYSTEM.self::$params['post']['name'].'.tar', 'w+');
 				}
 				$ch = curl_init(str_replace(" ", "%20", self::$params['post']['url']));
 				curl_setopt($ch, CURLOPT_TIMEOUT, 50);

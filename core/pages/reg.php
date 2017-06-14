@@ -75,7 +75,7 @@ class page {
 					return false;
 				}
 			}
-			User::reg(db::last_id("users"), Saves::SaveOld(Arr::get($_POST, 'username'), true), Saves::SaveOld(Arr::get($_POST, 'pass'), true), Saves::SaveOld(Arr::get($_POST, 'email'), true), LEVEL_USER, "yes");
+			User::reg(db::last_id(PREFIX_DB."users"), Saves::SaveOld(Arr::get($_POST, 'username'), true), Saves::SaveOld(Arr::get($_POST, 'pass'), true), Saves::SaveOld(Arr::get($_POST, 'email'), true), LEVEL_USER, "yes");
 			if($ajax=="ajax") {
 				HTTP::echos(templates::view("<font color=\"green\">{L_good_reg}</font>"));
 				return false;

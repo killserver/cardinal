@@ -5,6 +5,10 @@ if(!defined("IS_CORE")) {
 }
 
 $userlevels = array_replace($userlevels, array(
+	"4" => array(
+		"access_admin" => "yes",
+		"access_site" => "yes",
+	),
 	"3" => array(
 		"access_admin" => "yes",
 		"access_site" => "yes",

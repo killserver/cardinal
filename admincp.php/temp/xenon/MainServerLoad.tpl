@@ -1,4 +1,4 @@
-<span id="servercpu" class="col-md-[if {C_FullMenu}==1]5[/if {C_FullMenu}==1][if {C_FullMenu}!=1]4[/if {C_FullMenu}!=1] col-sm-12">
+<span id="servercpu" class="col-md-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-sm-12"[if {cpuUseVisible}=="0"] style="display:none;"[/if {cpuUseVisible}=="0"]>
   <div class="chart-item-bg">
     <div class="chart-label">
       <div id="cpuUseHtml" class="h1 text-secondary text-bold" data-count="this" data-from="0.00" data-to="{cpuUse}" data-suffix="%" data-duration="1.5">0.00%</div>
@@ -9,7 +9,7 @@
     </div>
   </div>
 </span>
-<span id="servermem" class="col-md-[if {C_FullMenu}==1]5[/if {C_FullMenu}==1][if {C_FullMenu}!=1]4[/if {C_FullMenu}!=1] col-sm-12">
+<span id="servermem" class="col-md-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-sm-12"[if {memUseVisible}=="0"] style="display:none;"[/if {memUseVisible}=="0"]>
   <div class="chart-item-bg">
     <div class="chart-label">
       <div id="memUseHtml" class="h1 text-secondary text-bold" data-count="this" data-from="0.00" data-to="{memUse}" data-suffix="%" data-duration="1.5">0.00%</div>
