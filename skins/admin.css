@@ -27,6 +27,9 @@
 html:lang(he-il) .rtl .adminCoreCardinal *  {
  	font-family: Arial, sans-serif;
 }
+body {
+	padding-top: 1.8em;
+}
 .adminCoreCardinal ul, .adminCoreCardinal ul li {
 	background: none;
 	clear: none;
@@ -37,8 +40,8 @@ html:lang(he-il) .rtl .adminCoreCardinal *  {
 	text-indent: 0;
 	z-index: 99999;
 }
-.adminCoreCardinal * { font-family: 'Maven Pro', sans-serif !important; font-size: 14px; }
-.adminCoreCardinal i { font-family: 'FontAwesome' !important; padding: 0px 0.35em; font-style: none; }
+.adminCoreCardinal * { font-family: 'Maven Pro', sans-serif !important; font-size: 14px; color: #fff; text-decoration: none; }
+.adminCoreCardinal i { font-family: 'FontAwesome' !important; padding: 0px 0.35em; font-style: normal; }
 .adminCoreCardinal > .logo {
 	width: 1.6em;
 	height: 1.6em;
@@ -58,14 +61,19 @@ html:lang(he-il) .rtl .adminCoreCardinal *  {
 	float: left;
 	padding: 0.5em 0.75em;
 	background: #ac1f1f;
+	color: #fff;
+	text-decoration: none;
 }
 .adminCoreCardinal > .items {
 	float: left;
+	position: relative;
 }
 .adminCoreCardinal > .items a {
 	display: block;
 	padding: 0.5em 0.75em;
 	background: #ac1f1f;
+	color: #fff;
+	text-decoration: none;
 }
 .adminCoreCardinal > .logo:hover, .adminCoreCardinal > .user:hover, .adminCoreCardinal > .linkToAdmin:hover, .adminCoreCardinal > .items a:hover, .adminCoreCardinal > .items .dropped a:hover, .adminCoreCardinal > .items:hover > a {
 	background: #7d1515;
@@ -74,10 +82,13 @@ html:lang(he-il) .rtl .adminCoreCardinal *  {
 	display: block;
 	padding: 0.5em 1em;
 	background: #ac1f1f;
+	color: #fff;
+	text-decoration: none;
 }
 .adminCoreCardinal > .items > .dropped {
 	position: absolute;
-	top: 2.2em;
+	top: -500%;
+	top: -100vh;
 	background: #ac1f1f;
 	transition: all 300ms ease-in-out;
 	transform-origin: 50% 0px;
@@ -115,6 +126,8 @@ html:lang(he-il) .rtl .adminCoreCardinal *  {
 	min-width: 5.2em;
 	padding: 1em;
 	background: #ac1f1f;
+	color: #fff;
+	text-decoration: none;
 }
 .adminCoreCardinal > .user:hover > .dropped {
 	display: block;

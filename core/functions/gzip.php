@@ -5,13 +5,13 @@ die();
 }
 
 function CheckCanGzip() {
-	if((function_exists("headers_sent") && headers_sent()) || (function_exists("connection_aborted") && connection_aborted()) || !function_exists('ob_gzhandler') || ini_get('zlib.output_compression') || !isset($_SERVER['HTTP_ACCEPT_ENCODING'])) { 
+	if((function_exists("headers_sent") && headers_sent()) || (function_exists("connection_aborted") && connection_aborted()) || !function_exists('ob_gzhandler') || ini_get('zlib.output_compression') || HTTP::getServer('HTTP_ACCEPT_ENCODING')) { 
 		return false;
 	}
-	if(strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'x-gzip') !== false) {
+	if(strpos(HTTP::getServer('HTTP_ACCEPT_ENCODING'), 'x-gzip') !== false) {
 		return "x-gzip";
 	}
-	if(strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== false) {
+	if(strpos(HTTP::getServer('HTTP_ACCEPT_ENCODING'), 'gzip') !== false) {
 		return "gzip";
 	}
 	return false; 

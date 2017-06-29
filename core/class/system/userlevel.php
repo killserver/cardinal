@@ -28,21 +28,19 @@ class userlevel {
 		}
 		if(defined("WITHOUT_DB")) {
 			$userlevels = array();
-			if(file_exists(ROOT_PATH."core".DS."media".DS."userlevels.".ROOT_EX)) {
-				include_once(ROOT_PATH."core".DS."media".DS."userlevels.".ROOT_EX);
-			} else if(file_exists(ROOT_PATH."core".DS."media".DS."userlevels.default.".ROOT_EX)) {
-				include_once(ROOT_PATH."core".DS."media".DS."userlevels.default.".ROOT_EX);
+			if(file_exists(PATH_MEDIA."userlevels.".ROOT_EX)) {
+				include_once(PATH_MEDIA."userlevels.".ROOT_EX);
+			} else if(file_exists(PATH_MEDIA."userlevels.default.".ROOT_EX)) {
+				include_once(PATH_MEDIA."userlevels.default.".ROOT_EX);
 			}
 			self::$cacheAll = $userlevels;
 			return $userlevels;
 		}
-		$cache = modules::init_cache();
-		if(!$cache->Exists("userlevels")) {
-			$db = modules::init_db();
-			$row = $db->select_query("SELECT * FROM `".PREFIX_DB."userlevels` ORDER BY `id` ASC");
-			$cache->Set("userlevels", $row);
+		if(!cache::Exists("userlevels")) {
+			$row = db::select_query("SELECT * FROM `".PREFIX_DB."userlevels` ORDER BY `id` ASC");
+			cache::Set("userlevels", $row);
 		} else {
-			$row = $cache->Get("userlevels");
+			$row = cache::Get("userlevels");
 		}
 		self::$cacheAll = $row;
 	return $row;
@@ -91,9 +89,9 @@ class userlevel {
 	final public static function check($get, $access = "") {
 		$all = self::all();
 		$all = self::define($all);
-		$level = modules::get_user('level');
+		$level = User::get('level');
 		if(is_bool($level) || empty($level)) {
-			$level = modules::get_config("guest_level");
+			$level = config::Select("guest_level");
 		}
 		if(isset($all[$get]) && (isset($all[$get]['id']) && $level == $all[$get]['id']) && (isset($all[$get]['access_'.$access]) && $all[$get]['access_'.$access] == "yes")) {
 			return "true";
@@ -124,10 +122,8 @@ class userlevel {
 		} elseif(!isset($data) || empty($data)) {
 			$data = "no";
 		}
-		$db = modules::init_db();
-		$db->doquery("UPDATE `".PREFIX_DB."userlevels` SET `".$set."` = \"".$data."\" WHERE `id` = ".$id);
-		$cache = modules::init_cache();
-		$cache->Delete("userlevels");
+		db::doquery("UPDATE `".PREFIX_DB."userlevels` SET `".$set."` = \"".$data."\" WHERE `id` = ".$id);
+		cache::Delete("userlevels");
 	}
 
 }

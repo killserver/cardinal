@@ -29,7 +29,7 @@ die();
 require_once(ROOT_PATH."core".DS."loadConfig.".ROOT_EX);
 
 $useNew = false;
-function require_dir($dir = "", $modules = "", $mod = false) {include_dir($dir, $modules, $mod);}
+function require_dir($dir = "", $modules = "", $mod = false) { include_dir($dir, $modules, $mod); }
 
 function include_dir($dir = "", $modules = "", $mod = false) {
 global $useNew;
@@ -94,7 +94,8 @@ if(file_exists(ROOT_PATH.".htaccess") && defined("DEVELOPER_MODE")) {
 		chmod(ROOT_PATH.".htaccess", 0644);
 	}
 }
-if($error = error_get_last() && in_array($error['type'], array(E_PARSE, E_ERROR, E_USER_ERROR))) {
+$error = error_get_last();
+if(is_array($error) && in_array($error['type'], array(E_PARSE, E_ERROR, E_USER_ERROR))) {
 	// Clean the output buffer
 	ob_get_level() && ob_clean();
 

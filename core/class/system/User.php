@@ -104,7 +104,7 @@ class User {
 						}
 					}
 				}
-				if(isset($db) && !is_bool($db) && method_exists($db, "connected") && $db->connected() && method_exists($db, "getTable") && !(!$db->getTable("users"))) {
+				if(class_exists("db", false) && method_exists("db", "connected") && db::connected() && method_exists("db", "getTable") && !(!db::getTable("users"))) {
 					db::doquery("SELECT * FROM `".PREFIX_DB."users` WHERE `username` LIKE \"".$username."\" AND `".$where."` LIKE \"".$password."\"", true);
 					if(db::num_rows()==0 && self::API($username, "checkExists")) {
 						$user = self::API($username, "load");
@@ -381,7 +381,6 @@ class User {
 	}
 	
 	final public static function update() {
-	global $db;
 		$list = func_get_args();
 		$size = sizeof($list);
 		if($size < 2) {
@@ -399,7 +398,7 @@ class User {
 				unset($list[$arrK[$i]]);
 			}
 		}
-		if((isset($db) && !is_bool($db) && method_exists($db, "connected") && $db->connected() && method_exists($db, "getTable") && !(!$db->getTable("users"))) || !defined("WITHOUT_DB")) {
+		if((class_exists("db", false) && method_exists("db", "connected") && db::connected() && method_exists("db", "getTable") && !(!db::getTable("users"))) || !defined("WITHOUT_DB")) {
 			db::doquery("UPDATE `".PREFIX_DB."users` SET ".implode(", ", array_map("User::mapForUpdate", array_values($list)))." WHERE `username` LIKE \"".$id."\" LIMIT 1");
 		} else {
 			$users = array();

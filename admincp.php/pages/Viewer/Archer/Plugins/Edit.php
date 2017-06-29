@@ -37,8 +37,8 @@ class Archer_Edit {
 			$body .= KernelArcher::Viewing($l, $k, $v, $default);
 		}
 		$tpl = str_replace("{ArcherPage}", $page.($page!="Add" ? "&viewId=".$isId : ""), $tpl);
-		$tpl = str_replace("{ArcherPath}", $table, $tpl);
-		$tpl = str_replace("{ArcherMind}", "{L_".$page."}&nbsp;{L_".$table."}", $tpl);
+		$tpl = str_replace("{ArcherPath}", str_replace(PREFIX_DB, "", $table), $tpl);
+		$tpl = str_replace("{ArcherMind}", "{L_".$page."}&nbsp;{L_".str_replace(PREFIX_DB, "", $table)."}", $tpl);
 		$tpl = str_replace("{ArcherData}", "\n".$body, $tpl);
 		//var_dump($tpl);die();
 		return $tpl;

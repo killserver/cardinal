@@ -359,7 +359,7 @@ if(!$clear) {
 	if($is_use) {
 		$header .= "</span>";
 	}
-	if(userlevel::get("admin") && isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && strpos(HTTP::getServer("HTTP_REFERER"), ADMINCP_DIRECTORY)===false) {
+	if(isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && userlevel::get("admin") && Arr::get($_GET, "noShowAdmin", false)===false) {
 		$links = array();
 		if($dh = dir(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."menu".DS)) {
 			$i=1;
@@ -421,7 +421,7 @@ function menuAdminHeader($arr, $isCat = false) {
 }
 
 function ajax_check() {
-	if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest') {
+	if(HTTP::getServer('HTTP_X_REQUESTED_WITH') && HTTP::getServer('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest') {
 		return "ajax";
 	} else {
 		return "html";

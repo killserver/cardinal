@@ -104,9 +104,9 @@ class SEOBlock extends modules {
 	}
 	
 	function seoFinder() {
-		if(!file_exists(ROOT_PATH."uploads".DS."robots.txt") && is_writable(ROOT_PATH."uploads".DS)) {
-			$host = (class_exists("cardinal") && method_exists("cardinal", "getServer") ? cardinal::getServer('SERVER_NAME') : $_SERVER['SERVER_NAME']);
-			$path = (class_exists("cardinal") && method_exists("cardinal", "getServer") ? cardinal::getServer('PHP_SELF') : $_SERVER['PHP_SELF']);
+		if(!file_exists(PATH_UPLOADS."robots.txt") && is_writable(PATH_UPLOADS)) {
+			$host = (class_exists("HTTP") && method_exists("HTTP", "getServer") ? HTTP::getServer('SERVER_NAME') : $_SERVER['SERVER_NAME']);
+			$path = (class_exists("HTTP") && method_exists("HTTP", "getServer") ? HTTP::getServer('PHP_SELF') : $_SERVER['PHP_SELF']);
 			$path = str_replace(array("uploads".DS."robots.txt", "uploads".(defined("DS_DB") ? DS_DB : "/")."robots.txt", "index.php"), "", $path);
 			if(substr($path, 0, 1)=="/") {
 				$path = substr($path, 1);
@@ -125,9 +125,9 @@ class SEOBlock extends modules {
 					"\n".
 					"Host: ".$host."\n".
 					"Sitemap: http://".$host.$path."sitemap.xml";
-			file_put_contents(ROOT_PATH."uploads".DS."robots.txt", $robots);
+			file_put_contents(PATH_UPLOADS."robots.txt", $robots);
 		}
-		$dir = ROOT_PATH."core".DS."cache".DS."system".DS;
+		$dir = PATH_CACHE_SYSTEM;
 		$file = $dir."seoBlock.lock";
 		$db = $this->init_db();
 		if(!is_writable($dir) || !$db->connected()) {
@@ -137,7 +137,7 @@ class SEOBlock extends modules {
 			db::query("CREATE TABLE `".PREFIX_DB."seoBlock` ( `sId` int(11) not null auto_increment, `sPage` varchar(255) not null, `sLang` varchar(255) not null, `sTitle` varchar(255) not null, `sMetaDescr` varchar(255) not null, `sMetaKeywords` varchar(255) not null, `sMetaRobots` varchar(255) not null, `sRedirect` varchar(255) not null, `sImage` varchar(255) not null, primary key `id`(`sId`), fulltext `lang`(`sLang`), fulltext `page`(`sPage`), fulltext `title`(`sTitle`), fulltext `metaDescr`(`sMetaDescr`), fulltext `metaKeywords`(`sMetaKeywords`) ) CHARSET=utf8 ENGINE=MyISAM;");
 			file_put_contents($file, "");
 		}
-		$uri = (class_exists("cardinal") && method_exists("cardinal", "getServer") ? cardinal::getServer('REQUEST_URI') : $_SERVER['REQUEST_URI']);
+		$uri = (class_exists("HTTP") && method_exists("HTTP", "getServer") ? HTTP::getServer('REQUEST_URI') : $_SERVER['REQUEST_URI']);
 		if(preg_match("#^(/?)(([a-zA-Z]{2})/|)(.*?)$#", $uri, $match)) {
 			if(isset($match[4]) && strpos($match[4], "?")!==false) {
 				$page = explode("?", $match[4]);

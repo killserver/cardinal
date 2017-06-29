@@ -75,6 +75,9 @@ global $config;
 		$_ENV[$exp[0]] = $exp[1];
 		$_SERVER[$exp[0]] = $exp[1];
 		$config[$exp[0]] = $exp[1];
+		if(class_exists("config", false) && method_exists("config", "Set")) {
+			config::Set($exp[0], $exp[1]);
+		}
 	}
 }	
 
@@ -182,12 +185,12 @@ function cardinal_version($check = "") {
 		$check = explode("-", $check);
 		$check = current($check);
 	}
-	if(class_exists("config") && method_exists("config", "Select") && config::Select("speed_update")) {
-		$if = ($check)>($isChecked);
+	if(class_exists("config", false) && method_exists("config", "Select") && config::Select("speed_update")) {
+		$if = ($check) > ($isChecked);
 	} else {
 		$checked = intval(str_replace(".", "", $check));
 		$version = intval(str_replace(".", "", $isChecked));
-		if(strlen($checked)>strlen($version)) {
+		if(strlen($checked) > strlen($version)) {
 			$version = int_pad($version, strlen($checked));
 		}
 		$if = $checked>$version;
@@ -227,7 +230,7 @@ function sha512($str) {
 	return $ret;
 }
 
-function getMax($max){return function_call('getMax', array($max));}
+function getMax($max) { return function_call('getMax', array($max)); }
 function or_getMax($max) {
 	if(function_exists('openssl_random_pseudo_bytes')) {
 	     do {
@@ -241,7 +244,7 @@ function or_getMax($max) {
 	return $result;
 }
 
-function mrand($min = 0, $max = 0){return function_call('mrand', array($min, $max));}
+function mrand($min = 0, $max = 0) { return function_call('mrand', array($min, $max)); }
 function or_mrand($min = 0, $max = 0) {
 	if($min==0 && $max==0) {
 		if(function_exists("random_int") && defined("PHP_INT_MIN")) {
@@ -290,7 +293,7 @@ function or_location($link, $time = 0, $exit = true, $code = 302) {
 }
 
 
-function search_file($file, $dir = ""){return function_call('search_file', array($file, $dir));}
+function search_file($file, $dir = "") { return function_call('search_file', array($file, $dir)); }
 function or_search_file($file, $dir = "") {
 	if(empty($dir)) {
 		return glob(ROOT_PATH.$file);
@@ -396,7 +399,7 @@ if(!function_exists('iterable_to_traversable')) {
 }
 
 function removeBOM($string) { 
-	if(substr($string, 0,3) == pack('CCC',0xef,0xbb,0xbf)) { 
+	if(substr($string, 0, 3) == pack('CCC', 0xef, 0xbb, 0xbf)) { 
 		$string=substr($string, 3); 
 	} 
 	return $string; 
@@ -404,10 +407,12 @@ function removeBOM($string) {
 
 function sortByKey(&$arr) {
 	uksort($arr, 'strnatcmp');
+	return $arr;
 }
 
 function sortByValue(&$arr) {
 	usort($arr, 'strnatcmp');
+	return $arr;
 }
 
 if(!function_exists("hex2bin")) {
@@ -460,14 +465,14 @@ function vdebug() {
 
 function is_ssl() {
 	if(
-		   (isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-        || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && !empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')
-        || (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && !empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] == 'on')
-        || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
-        || (isset($_SERVER['HTTP_X_FORWARDED_PORT']) && $_SERVER['HTTP_X_FORWARDED_PORT'] == 443)
-        || (isset($_SERVER['REQUEST_SCHEME']) && $_SERVER['REQUEST_SCHEME'] == 'https')
-		|| (isset($_SERVER['CF_VISITOR']) && $_SERVER['CF_VISITOR'] == '{"scheme":"https"}')
-		|| (isset($_SERVER['HTTP_CF_VISITOR']) && $_SERVER['HTTP_CF_VISITOR'] == '{"scheme":"https"}')
+		   (HTTP::getServer('HTTPS') && HTTP::getServer('HTTPS') !== 'off')
+        || (HTTP::getServer('HTTP_X_FORWARDED_PROTO') && HTTP::getServer('HTTP_X_FORWARDED_PROTO') == 'https')
+        || (HTTP::getServer('HTTP_X_FORWARDED_SSL') && HTTP::getServer('HTTP_X_FORWARDED_SSL') == 'on')
+        || (HTTP::getServer('SERVER_PORT', true) && HTTP::getServer('SERVER_PORT') == 443)
+        || (HTTP::getServer('HTTP_X_FORWARDED_PORT', true) && HTTP::getServer('HTTP_X_FORWARDED_PORT') == 443)
+        || (HTTP::getServer('REQUEST_SCHEME', true) && HTTP::getServer('REQUEST_SCHEME') == 'https')
+		|| (HTTP::getServer('CF_VISITOR', true) && HTTP::getServer('CF_VISITOR') == '{"scheme":"https"}')
+		|| (HTTP::getServer('HTTP_CF_VISITOR', true) && HTTP::getServer('HTTP_CF_VISITOR') == '{"scheme":"https"}')
     ) {
 		return true;
 	} else {

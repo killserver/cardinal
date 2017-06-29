@@ -124,12 +124,68 @@ class cardinal {
 			}
 		}
 	}
-	
-	final public static function StartSession() {
+
+	final public static function StartSession($timeout = 0, $probability = 100, $cookie_domain = '/') {
 	global $session;
 		if(!is_bool($session)) {
-			session_start();
+			if($timeout===0) {
+				$timeout = time()+(120*24*60*60);
+			}
+			// Set the max lifetime
+			ini_set("session.gc_maxlifetime", $timeout);
+
+			// Set the session cookie to timout
+			ini_set("session.cookie_lifetime", $timeout);
+
+			// Change the save path. Sessions stored in teh same path
+			// all share the same lifetime; the lowest lifetime will be
+			// used for all. Therefore, for this to work, the session
+			// must be stored in a directory where only sessions sharing
+			// it's lifetime are. Best to just dynamically create on.
+			$path = ini_get("session.save_path").DS."session_".substr($timeout, 0, 5)."sec";
+			if(!file_exists($path)) {
+				if(!mkdir($path, 0777)) {
+					trigger_error("Failed to create session save path directory '$path'. Check permissions.", E_USER_ERROR);
+					die();
+				}
+			}
+			if (!is_writable(session_save_path())) {
+				trigger_error('Session path "'.session_save_path().'" is not writable for PHP!', E_USER_ERROR);
+				die();
+			}
+			ini_set("session.save_path", $path);
+
+			// Set the chance to trigger the garbage collection.
+			ini_set("session.gc_probability", $probability);
+			ini_set("session.gc_divisor", 100); // Should always be 100
+
+			if(Arr::get($_COOKIE, "PHPSESSID")) {
+				session_id($_COOKIE['PHPSESSID']);
+			}
+
+			// Start the session!
+			$session = session_start();
+
+			// Renew the time left until this session times out.
+			// If you skip this, the session will time out based
+			// on the time when it was created, rather than when
+			// it was last used.
+			if(isset($_COOKIE[session_name()])) {
+				HTTP::set_cookie(session_name(), $_COOKIE[session_name()], time()+(120*24*60*60), true, false);
+			}
 		}
+		return $_SESSION;
+	}
+
+	final public static function SessionStarted() {
+		if(php_sapi_name() !== 'cli') {
+			if(version_compare(phpversion(), '5.4.0', '>=') && function_exists("session_status")) {
+				return session_status() === PHP_SESSION_ACTIVE ? TRUE : FALSE;
+			} else {
+				return session_id() === '' ? FALSE : TRUE;
+			}
+		}
+		return FALSE;
 	}
 
 	final protected static function amper($data) {
@@ -295,7 +351,7 @@ class cardinal {
 			db::query("DELETE FROM `".PREFIX_DB."logInAdmin` WHERE `lTime` < (UNIX_TIMESTAMP()-(".$maxDaysForLog."*24*60*60))");
 			db::query("INSERT INTO `".PREFIX_DB."logInAdmin` SET `lIp` = \"".$ip."\", `lAction` = \"".Saves::SaveOld($action, true)."\", `lTime` = UNIX_TIMESTAMP()");
 		} elseif($log==="FILE") {
-			if(file_exists($file) && is_readable($file) && is_writable($dir)) {
+			if(file_exists($file) && is_readable($file) && is_writable($file)) {
 				$read = file($file);
 				$read = array_map("trim", $read);
 				$size = sizeof($read);
@@ -306,8 +362,9 @@ class cardinal {
 					}
 				}
 				file_put_contents($file, implode("\n", $read)."\n");
+			} else if(is_writable($dir)) {
+				file_put_contents($file, serialize(array("lIp" => $ip, "lTime" => time(), "lAction" => Saves::SaveOld($action, true)))."\n", FILE_APPEND);
 			}
-			file_put_contents($file, serialize(array("lIp" => $ip, "lTime" => time(), "lAction" => Saves::SaveOld($action, true)))."\n", FILE_APPEND);
 		}
 	}
 

@@ -52,7 +52,7 @@ class Archer_Shield {
 		$tpl = str_replace("{ArcherMind}", $head, $tpl);
 		$tpl = str_replace("{ArcherData}", $data, $tpl);
 		$tpl = str_replace("{ArcherPage}", $modelName, $tpl);
-		$tpl = str_replace("{ArcherTable}", $table, $tpl);
+		$tpl = str_replace("{ArcherTable}", str_replace(PREFIX_DB, "", $table), $tpl);
 		$tpl = str_replace("{ArcherNotTouch}", $counts, $tpl);
 		return $tpl;
 	}

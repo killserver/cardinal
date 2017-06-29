@@ -898,7 +898,7 @@ class templates {
 	 * @return array|mixed|NUll|string Result rebuild
      */
 	final private static function ecomp($tmp, $file = "") {
-		if(strpos($tmp, "///***")!==false&&strpos($tmp, "***///")!==false) {
+		while(strpos($tmp, "///***")!==false && strpos($tmp, "***///")!==false) {
 			$tmp = nsubstr($tmp, 0, nstrpos($tmp, "///***")).nsubstr($tmp, nstrpos($tmp, "***///")+6, nstrlen($tmp));
 		}
 		$tmp = self::ParsePHP($tmp, $file);
@@ -1423,7 +1423,16 @@ class templates {
 	}
 	
 	final private static function fmk($array) {
-		// Not Implemented
+		if(!isset($array[2]) || empty($array[2])) {
+			return "";
+		}
+		$file = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $array[2]);
+		$file = substr(ROOT_PATH, 0, -1).$file;
+		$file = filemtime($file);
+		if($file===false) {
+			return "";
+		}
+		return $file;
 	}
 
 	/**
@@ -1856,7 +1865,9 @@ if(!$test) {
 			$html = preg_replace('/(<textarea[^>]*?>.*?<\/textarea>)/si', '#textarea'.$i.'#', $html, 1);
 			$i++;
 		}
-		$html = preg_replace('#<!-[^\[].+?->#', '', $html);//ToDo: WTF?!
+		$html = preg_replace('#<!(.*?)\[(if|endif)(.*?)\](.*?)>#', '<#!$1[$2$3]$4>', $html);
+		$html = preg_replace('#<!-[^\[].+?->#s', '', $html);//ToDo: WTF?!
+		$html = preg_replace('@<\#!(.*?)\[(if|endif)(.*?)\](.*?)>@', '<!$1[$2$3]$4>', $html);
 		$html = preg_replace('/[\r\n\t]+/', ' ', $html);
 		$html = preg_replace('/>[\s]*</', '><', $html); // Strip spacechars between tags
 		$html = preg_replace('/[\s]+/', ' ', $html); // Replace several spacechars with one space

@@ -84,7 +84,7 @@ class Core {
 	private function vsort(&$array) {
 		$arrs = array();
 		foreach($array as $key => $val) {
-			sort($val);
+			asort($val);
 			$arrs[$key] = $val;
 		}
 		$array = $arrs;
@@ -282,7 +282,19 @@ class Core {
 			location(htmlspecialchars_decode(HTTP::getServer("HTTP_REFERER")));die();
 		}
 		$this->ParseLang();
-		if(isset($_COOKIE['langSet'])) {
+		$routeLang = HTTP::getServer(ROUTE_GET_URL);
+		preg_match("#/([a-zA-Z]+)/#", $routeLang, $arr);
+		if(isset($arr[1])) {
+			$support = lang::support();
+			for($i=0;$i<sizeof($support);$i++) {
+				$support[$i] = nsubstr($support[$i], 4, -3);
+			}
+			if(in_array($arr[1], $support)) {
+				lang::set_lang($arr[1]);
+				lang::init_lang();
+				Route::RegParam("lang", $arr[1]);
+			}
+		} else if(isset($_COOKIE['langSet'])) {
 			lang::set_lang($_COOKIE['langSet']);
 			lang::init_lang();
 		}
@@ -327,6 +339,18 @@ class Core {
 		$page_v = getenv("REQUEST_URI");
 		$now = str_replace(ADMINCP_DIRECTORY."/?", "", substr($page_v, 1, strlen($page_v)));
 		foreach($links as $name => $datas) {
+			if(isset($datas['item']) && is_array($datas['item'])) {
+				if(sizeof($datas['item'])>1) {
+					$type = "cat";
+				} else {
+					unset($datas['item']);
+					$type = "item";
+				}
+			} else {
+
+				$type = "check";
+			}
+			$datas = array_values($datas);
 			for($i=0;$i<sizeof($datas);$i++) {
 				for($is=0;$is<sizeof($datas[$i]);$is++) {
 					if(isset($datas[$i][$is]['access']) && $datas[$i][$is]['access']!=$level) {
@@ -342,8 +366,9 @@ class Core {
 						"value" => $datas[$i][$is]['title'],
 						"link" => $datas[$i][$is]['link'],
 						"is_now" => (($is_now==$now) ? "1" : "0"),
-						"type_st" => ($datas[$i][$is]['type']=="cat" ? "start" : ""),
-						"type_end" => ($count==$is&&$datas[$i][$is]['type']=="item" ? "end" : ""),
+						"type" => $type,
+						"type_st" => ($type=="cat"&&$datas[$i][$is]['type']=="cat" ? "start" : ""),
+						"type_end" => ($type=="cat"&&$count==$is&&$datas[$i][$is]['type']=="item" ? "end" : ""),
 						"icon" => (isset($datas[$i][$is]['icon']) ? $datas[$i][$is]['icon'] : " "),
 					), "menu", "m".$all.$i.$is);
 				}

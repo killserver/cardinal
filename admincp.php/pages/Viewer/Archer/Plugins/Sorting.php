@@ -29,7 +29,7 @@ class Archer_Sorting {
 			}
 		}
 		$model = $this->rebuildName($model, $objName);
-		$tpl = str_replace("{ShowPage}", $table, $tpl);
+		$tpl = str_replace("{ShowPage}", str_replace(PREFIX_DB, "", $table), $tpl);
 		$tpl = str_replace("{ShowSort}", $objName, $tpl);
 		$tpl = str_replace("{ShowID}", $firstId, $tpl);
 		$tpl = str_replace("{ShowName}", implode(" ", $model), $tpl);

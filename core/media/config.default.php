@@ -71,8 +71,6 @@ $config = array_merge($config, array(
 		"skins" => "main",
 		"admincp" => "xenon",
 	),
-	
-	"mobyActive" => true,
 
 	"default_http_local" => "/",
 	"default_http_hostname" => "online-killer.pp.ua",

@@ -34,7 +34,15 @@ class Archer extends Core {
 		$andWhere = $request->get->get("Where", false);
 		$orderBy = $request->get->get("orderBy", false);
 		$orderTo = $request->get->get("orderTo", "ASC");
+		$removePrefix = false;
+		if(strpos($typeUni, PREFIX_DB)!==false) {
+			$typeUni = str_replace(PREFIX_DB, "", $typeUni);
+			$removePrefix = true;
+		}
 		$upFirst = (function_exists("nucfirst") ? nucfirst($typeUni) : $this->nucfirst($typeUni));
+		if($removePrefix) {
+			$typeUni = PREFIX_DB.$typeUni;
+		}
 		switch($page) {
 			/*
 			Save data in database

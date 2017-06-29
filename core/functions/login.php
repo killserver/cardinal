@@ -20,7 +20,7 @@ echo "403 ERROR";
 die();
 }
 
-function create_pass($pass){return function_call('create_pass', array($pass));}
+function create_pass($pass) { return function_call('create_pass', array($pass)); }
 function or_create_pass($pass) {
 	$pass = md5(md5($pass).$pass);
 	$pass = strrev($pass);

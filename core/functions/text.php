@@ -62,7 +62,7 @@ function or_cut($text, $start, $end = "", $add = "") {
  * @param int $pattern_size Part pattern
  * @return string Result detected charset
  */
-function iconv_charset($string, $pattern_size = 50){return function_call('iconv_charset', array($string, $pattern_size));}
+function iconv_charset($string, $pattern_size = 50){ return function_call('iconv_charset', array($string, $pattern_size)); }
 
 /**
  * Detect charset
@@ -202,12 +202,12 @@ function nstr_padv2($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT) {
     return $before . $str . $after;
 }
 
-function is_infinites($val){return function_call('is_infinites', array($val));}
+function is_infinites($val){ return function_call('is_infinites', array($val)); }
 function or_is_infinites($val) {
 	return (is_float($val) && (defined("INF") ? ($val==INF || $val==(-(INF))) : (strval($val)=='INF' || strval($val)=='-INF')));
 }
 
-function int_pad($str, $pad_len, $pad_str = 0, $dir = STR_PAD_RIGHT){return function_call('int_pad', array($str, $pad_len, $pad_str, $dir));}
+function int_pad($str, $pad_len, $pad_str = 0, $dir = STR_PAD_RIGHT){ return function_call('int_pad', array($str, $pad_len, $pad_str, $dir)); }
 function or_int_pad($str, $pad_len, $pad_str = 0, $dir = STR_PAD_RIGHT) {
 	$str = str_pad($str, $pad_len, $pad_str, $dir);
 	return intval($str);
@@ -288,24 +288,10 @@ function nrtrim($str, $charlist = NULL) {
 	}
 }
 
-function saves($text, $db=false, $ddb=false){return function_call('saves', array($text, $db, $ddb));}
+function saves($text, $db = false, $ddb = false){ return function_call('saves', array($text, $db, $ddb)); }
 
-function or_saves($text, $db=false, $ddb=false) {
-	if($ddb) {
-		$text = str_replace('"', '\\\\"', $text);
-	} elseif($db) {
-		$text = str_replace("\\", "\\\\", $text);
-		$text = str_replace('"', '\\"', $text);
-	} else {
-		$text = str_replace("&quot;", "\\\"", $text);
-	}
-	$text = preg_replace('#<script[^>]*>.*?</script>#is', "", $text);
-	$text = strip_tags($text);
-	$text = htmlspecialchars($text);
-	if($db) {
-		$text = str_replace("&quot;", '"', $text);
-	}
-return $text;
+function or_saves($text, $db = false, $ddb = false) {
+return Saves::SaveOld($text, $db, $ddb);
 }
 
 function strtouppers($text) {
@@ -324,7 +310,7 @@ function strtolowers($text) {
 	}
 }
 
-function comp_search($text="", $finds = array()) {
+function comp_search($text = "", $finds = array()) {
 	if(empty($text)) {
 		return "";
 	}
@@ -354,7 +340,7 @@ function comp_search($text="", $finds = array()) {
 	}
 }
 
-function charcode($text, $code=null, $rev = false) {
+function charcode($text, $code = "", $rev = false) {
 	if(!empty($code)) {
 		if(!$rev) {
 			return iconv($code, config::Select('charset'), $text);
@@ -370,20 +356,21 @@ function charcode($text, $code=null, $rev = false) {
 	}
 }
 
-function ToTranslit($var, $rep=false, $norm=false) {
-global $lang;
+function ToTranslit($var, $rep = false, $norm = false) {
 	if(empty($var)) {
-		return;
+		return "";
 	}
+	$translate = lang::get_lang("translate");
 	if($rep) {
+		$lang = lang::get_lang('translate_en');
 		if($norm) {
-			$lang['translate_en'] = array_flip($lang['translate_en']);
+			$lang = array_flip($lang);
 		}
-		$lang['translate'] = array_merge($lang['translate_en'], array("\\" => "", "/" => "", "$" => "", "#" => "", "@" => "", "!" => "", "%" => "", "^" => "", "&" => "", "*" => "", "(" => "", ")" => "", "?" => "", ":" => "", "=" => "", "+" => ""));
+		$translate = array_merge($lang, array("\\" => "", "/" => "", "$" => "", "#" => "", "@" => "", "!" => "", "%" => "", "^" => "", "&" => "", "*" => "", "(" => "", ")" => "", "?" => "", ":" => "", "=" => "", "+" => ""));
 	} else {
-		$lang['translate'] = array_merge($lang['translate'], array(" " => "_", "\\" => "", "/" => "", "'" => "", "$" => "", "#" => "", "@" => "", "!" => "", "%" => "", "^" => "", "&" => "", "*" => "", "(" => "", ")" => "", "," => "", "." => "", "?" => "", ":" => "", "=" => "", "+" => "", "\"" => "'"));
+		$translate = array_merge($translate, array(" " => "_", "\\" => "", "/" => "", "'" => "", "$" => "", "#" => "", "@" => "", "!" => "", "%" => "", "^" => "", "&" => "", "*" => "", "(" => "", ")" => "", "," => "", "." => "", "?" => "", ":" => "", "=" => "", "+" => "", "\"" => "'"));
 	}
-return strtr(strtolowers($var), $lang['translate']);
+return strtr(strtolowers($var), $translate);
 }
 
 function plural_form($arr) {
@@ -418,6 +405,64 @@ function _e() {
 		$ret = $rets;
 	}
 	return $ret;
+}
+
+function check_invalid_utf8($string) {
+	if(!is_string($string) || strlen($string)===0) {
+		return '';
+	}
+	static $is_utf8 = null;
+	if(!isset($is_utf8)) {
+		$is_utf8 = in_array(config::Select("charset"), array('utf8', 'utf-8', 'UTF8', 'UTF-8'));
+	}
+	if(!$is_utf8) {
+		return $string;
+	}
+	static $utf8_pcre = null;
+	if(!isset($utf8_pcre)) {
+		$utf8_pcre = @preg_match('/^./u', 'a');
+	}
+	if(!$utf8_pcre) {
+		return $string;
+	}
+	if(1 === @preg_match('/^./us', $string)) {
+		return $string;
+	}
+	return '';
+}
+
+function sanitize_callback($matches) {
+    if(strpos($matches[0], '>')===false) {
+		$safe_text = check_invalid_utf8($matches[0]);
+		$safe_text = htmlspecialchars($safe_text, ENT_QUOTES);
+		return $safe_text;
+	}
+    return $matches[0];
+}
+
+function sanitize_text($str, $keep_newlines = false) {
+    $nstr = check_invalid_utf8($str);
+    if(strpos($nstr, '<') !== false) {
+        $nstr = preg_replace_callback('%<[^>]*?((?=<)|>|$)%', 'sanitize_callback', $nstr);
+		$nstr = preg_replace('@<(script|style)[^>]*?>.*?</\\1>@si', '', $nstr);
+		$nstr = strip_tags($nstr);
+		$nstr = trim($nstr);
+        $nstr = str_replace("<\n", "&lt;\n", $nstr);
+    }
+    if(!$keep_newlines) {
+        $nstr = preg_replace('/[\r\n\t ]+/', ' ', $nstr);
+    }
+    $nstr = trim($nstr);
+    $found = false;
+    while(preg_match('/%[a-f0-9]{2}/i', $nstr, $match)) {
+        $nstr = str_replace($match[0], '', $nstr);
+        $found = true;
+    }
+    if($found) {
+		$nstr = preg_replace('/ +/', ' ', $nstr);
+        $nstr = trim($nstr);
+    }
+    return $nstr;
 }
 
 ?>

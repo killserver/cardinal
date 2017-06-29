@@ -146,7 +146,7 @@ class bbcodes {
 		return "[img]".$array[1]."|".base64_encode(serialize($style))."[/img]";
 	}
 
-	public static function html2bbcode($text, $activ = array("year"=>true,"genre"=>true,"descr"=>true)) {
+	public static function html2bbcode($text, $activ = array("year" => true,"genre" => true,"descr" => true)) {
 	global $lang;
 		$text=preg_replace("#<h([0-9]+)>(.+?)</h([0-9]+)>#is", "$2", $text);
 		$text=preg_replace("#<em>(.+?)</em>#", "[i]$1[/i]", $text);

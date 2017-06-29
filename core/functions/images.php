@@ -63,7 +63,7 @@ function hex2rgb($hex) {
 }
 
 function random_color() {
-	return str_pad( dechex( mt_rand( 0, 100 ) ), 2, '0', STR_PAD_LEFT);
+	return str_pad(dechex(mt_rand(0, 100)), 2, '0', STR_PAD_LEFT);
 }
 
 ?>

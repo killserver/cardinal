@@ -72,9 +72,12 @@ class lang {
 				$arr[] = "lang".$arrQ[$i]['lang'].".db";
 			}
 		} else {
-			$dirLangs = defined("ROOT_PATH") ? PATH_CACHE_LANGS : dirname(__FILE__).DIRECTORY_SEPARATOR;
+			$dirLangs = defined("PATH_CACHE_LANGS") ? PATH_CACHE_LANGS : dirname(__FILE__).DIRECTORY_SEPARATOR;
 			$arr = array_merge($arr, read_dir($dirLangs, ".db"));
 		}
+		$pathLangs = (!defined("PATH_LANGS") ? dirname(__FILE__).DIRECTORY_SEPARATOR."lang".DIRECTORY_SEPARATOR : PATH_LANGS);
+		$langs = read_dir($pathLangs, "dir");
+		$arr = array_merge($arr, $langs);
 		return $arr;
 	}
 
@@ -179,7 +182,7 @@ class lang {
 	}
 	
 	final private static function merge($lang, $orig = "", $tr = "", $type = "get") {
-		$dirLangs = defined("ROOT_PATH") ? PATH_CACHE_LANGS : dirname(__FILE__).DIRECTORY_SEPARATOR;
+		$dirLangs = defined("PATH_CACHE_LANGS") ? PATH_CACHE_LANGS : dirname(__FILE__).DIRECTORY_SEPARATOR;
 		if($type=="edit") {
 			$fileLang = array();
 			if(file_exists($dirLangs."lang".$lang.".db") && is_readable($dirLangs."lang".$lang.".db")) {
@@ -243,7 +246,7 @@ class lang {
 		if(!is_array($lang) || sizeof($lang)==0) {
 			$lang = array();
 		}
-		if(isset($manifest['lang']) && isset($manifest['lang']['main']) && defined("ROOT_PATH") && file_Exists(PATH_LANGS.self::$lang.DS.$manifest['lang']['main'].".".ROOT_EX)) {
+		if(isset($manifest['lang']) && isset($manifest['lang']['main']) && defined("PATH_LANGS") && file_Exists(PATH_LANGS.self::$lang.DS.$manifest['lang']['main'].".".ROOT_EX)) {
 			include(PATH_LANGS.self::$lang.DS.$manifest['lang']['main'].".".ROOT_EX);
 			if($db) {
 				$lang = array_merge($lang, self::lang_db());
@@ -252,7 +255,7 @@ class lang {
 			}
 			return $lang;
 		}
-		if(defined("ROOT_PATH") && file_exists(PATH_LANGS.self::$lang.DS."main.".ROOT_EX)) {
+		if(defined("PATH_LANGS") && file_exists(PATH_LANGS.self::$lang.DS."main.".ROOT_EX)) {
 			include(PATH_LANGS.self::$lang.DS."main.".ROOT_EX);
 			$db_lang = array();
 			if($db) {
@@ -267,7 +270,7 @@ class lang {
 				$lang = self::merge(self::$lang, $lang, "", "merge");
 			}
 			return $lang;
-		} elseif(!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."lang".DIRECTORY_SEPARATOR.self::$lang.DIRECTORY_SEPARATOR."main.".ROOT_EX)) {
+		} elseif(!defined("PATH_LANGS") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."lang".DIRECTORY_SEPARATOR.self::$lang.DIRECTORY_SEPARATOR."main.".ROOT_EX)) {
 			include(dirname(__FILE__).DIRECTORY_SEPARATOR."lang".DIRECTORY_SEPARATOR.self::$lang.DIRECTORY_SEPARATOR."main.".ROOT_EX);
 			$db_lang = array();
 			if($db) {
@@ -282,7 +285,7 @@ class lang {
 		} elseif(self::merge(self::$lang, "", "", "check")) {
 			$lang = self::merge(self::$lang, "", "", "get");
 			return $lang;
-		} elseif(defined("ROOT_PATH") && file_exists(PATH_LANGS.self::$defaultLang.DS."main.".ROOT_EX)) {
+		} elseif(defined("PATH_LANGS") && file_exists(PATH_LANGS.self::$defaultLang.DS."main.".ROOT_EX)) {
 			include(PATH_LANGS.self::$defaultLang.DS."main.".ROOT_EX);
 			if($db) {
 				$db_lang = self::lang_db();
@@ -298,7 +301,7 @@ class lang {
 				$lang = self::merge(self::$defaultLang, $lang, "", "merge");
 			}
 			return $lang;
-		} elseif(!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."lang".DIRECTORY_SEPARATOR.self::$defaultLang.DIRECTORY_SEPARATOR."main.".ROOT_EX)) {
+		} elseif(!defined("PATH_LANGS") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."lang".DIRECTORY_SEPARATOR.self::$defaultLang.DIRECTORY_SEPARATOR."main.".ROOT_EX)) {
 			include(dirname(__FILE__).DIRECTORY_SEPARATOR."lang".DIRECTORY_SEPARATOR.self::$defaultLang.DS."main.".ROOT_EX);
 			if($db) {
 				$db_lang = self::lang_db();
@@ -324,9 +327,9 @@ class lang {
      */
     final public static function get_lang($name, $sub = "") {
 	global $lang;
-		if(!empty($sub) && isset($lang[$name][$sub])) {
+		if(is_string($name) && is_string($sub) && !empty($sub) && isset($lang[$name][$sub])) {
 			return $lang[$name][$sub];
-		} else if(isset($lang[$name])) {
+		} else if(is_string($name) && isset($lang[$name])) {
 			return $lang[$name];
 		} else {
 			return "";
@@ -376,18 +379,18 @@ class lang {
 		} else {
 			self::$lang = "ru";
 		}
-		if(defined("ROOT_PATH") && isset($manifest['lang']) && isset($manifest['lang'][$page]) && file_Exists(PATH_LANGS.self::$lang.DS.$manifest['lang'][$page].".".ROOT_EX)) {
+		if(defined("PATH_LANGS") && isset($manifest['lang']) && isset($manifest['lang'][$page]) && file_Exists(PATH_LANGS.self::$lang.DS.$manifest['lang'][$page].".".ROOT_EX)) {
 			include(PATH_LANGS.self::$lang.DS.$manifest['lang'][$page].".".ROOT_EX);
 			$langs = self::lang_db();
 			$lang = array_merge($lang, $langs);
-		} elseif(defined("ROOT_PATH") && file_exists(PATH_LANGS.self::$lang.DS.$page.".".ROOT_EX)) {
+		} elseif(defined("PATH_LANGS") && file_exists(PATH_LANGS.self::$lang.DS.$page.".".ROOT_EX)) {
 			include(PATH_LANGS.self::$lang.DS.$page.".".ROOT_EX);
 			if($db) {
 				$langs = self::lang_db();
 				$lang = array_merge($lang, $langs);
 			}
 			$lang = self::merge(self::$lang, $lang, "", "merge");
-		} elseif(!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."lang".DIRECTORY_SEPARATOR.self::$lang.DIRECTORY_SEPARATOR.$page.".".ROOT_EX)) {
+		} elseif(!defined("PATH_LANGS") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."lang".DIRECTORY_SEPARATOR.self::$lang.DIRECTORY_SEPARATOR.$page.".".ROOT_EX)) {
 			include(dirname(__FILE__).DIRECTORY_SEPARATOR."lang".DIRECTORY_SEPARATOR.self::$lang.DIRECTORY_SEPARATOR.$page.".".ROOT_EX);
 			if($db) {
 				$langs = self::lang_db();
@@ -396,14 +399,14 @@ class lang {
 			$lang = self::merge(self::$lang, $lang, "", "merge");
 		} elseif(self::merge(self::$lang, "", "", "check")) {
 			$lang = self::merge(self::$lang, "", "", "get");
-		} elseif(defined("ROOT_PATH") && file_exists(PATH_LANGS.self::$defaultLang.DS.$page.".".ROOT_EX)) {
+		} elseif(defined("PATH_LANGS") && file_exists(PATH_LANGS.self::$defaultLang.DS.$page.".".ROOT_EX)) {
 			include(PATH_LANGS.self::$defaultLang.DS.$page.".".ROOT_EX);
 			if($db) {
 				$langs = self::lang_db();
 				$lang = array_merge($lang, $langs);
 			}
 			$lang = self::merge(self::$defaultLang, $lang, "", "merge");
-		} elseif(!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."lang".DIRECTORY_SEPARATOR.self::$defaultLang.DIRECTORY_SEPARATOR.$page.".".ROOT_EX)) {
+		} elseif(!defined("PATH_LANGS") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."lang".DIRECTORY_SEPARATOR.self::$defaultLang.DIRECTORY_SEPARATOR.$page.".".ROOT_EX)) {
 			include(dirname(__FILE__).DIRECTORY_SEPARATOR."lang".DIRECTORY_SEPARATOR.self::$defaultLang.DIRECTORY_SEPARATOR.$page.".".ROOT_EX);
 			if($db) {
 				$langs = self::lang_db();

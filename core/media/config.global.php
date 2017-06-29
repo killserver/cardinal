@@ -122,13 +122,13 @@ if(!defined("VERSION")) {
 	define("VERSION", "6.4");
 }
 if(!defined("VERSION_ADMIN_STYLE")) {
-	define("VERSION_ADMIN_STYLE", "1.0");
+	define("VERSION_ADMIN_STYLE", "1.1");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "60401");
+	define("INTVERSION", "60503");
 }
 if(!defined("DB_VERSION")) {
-	define("DB_VERSION", "3.5");
+	define("DB_VERSION", "6.5");
 }
 if(!defined("LEVEL_CREATOR")) {
 	define("LEVEL_CREATOR", 4);
@@ -152,6 +152,9 @@ if(!defined("S_TIME_VIEW")) {
 // Shop
 if(!defined("SERVER_MODULES")) {
 	define("SERVER_MODULES", "http://shop.killer.pp.ua/");
+}
+if(!defined("LANGUAGE_SUPPORT_SERVICE")) {
+	define("LANGUAGE_SUPPORT_SERVICE", "https://raw.githubusercontent.com/killserver/ForCardinal/master/translateSupport.serialize");
 }
 if(!defined("ROUTE_GET_URL")) {
 	define("ROUTE_GET_URL", "PATH_INFO");

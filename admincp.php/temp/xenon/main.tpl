@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="[if {RP[lang]}==""]{C_lang}[else {RP[lang]}==""]{RP[lang]}[/if {RP[lang]}==""]">
 <head>
 	<meta charset="{C_charset}">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -12,20 +12,21 @@
 	<title>Xenon - Compose Message</title>
 
 	<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Arimo:400,700,400italic">
-	<link rel="stylesheet" href="assets/xenon/css/fonts/linecons/css/linecons.css?1">
-	<link rel="stylesheet" href="assets/xenon/css/fonts/fontawesome/css/font-awesome.min.css?1">
-	<link rel="stylesheet" href="assets/xenon/css/bootstrap.css?1">
-	<link rel="stylesheet" href="assets/xenon/css/xenon-core.css?1">
-	<link rel="stylesheet" href="assets/xenon/css/xenon-forms.css?1">
-	<link rel="stylesheet" href="assets/xenon/css/xenon-components.css?10">
-	<link rel="stylesheet" href="assets/xenon/css/xenon-skins.css?1">
-	<link rel="stylesheet" href="assets/xenon/css/custom.css?{S_time}">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/fonts/linecons/css/linecons.css?1">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/fonts/fontawesome/css/font-awesome.min.css?1">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/bootstrap.css?1">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-core.css?1">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-forms.css?1">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-components.css?10">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-skins.css?1">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/custom.css?{S_time}">
 
-	<script src="assets/xenon/js/jquery-1.11.1.min.js?1"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/jquery-1.11.1.min.js?1"></script>
 	<script>
 		var defaultTime = {S_time};
 		var default_link = "{C_default_http_host}";
 		var default_admin_link = "{C_default_http_host}{D_ADMINCP_DIRECTORY}/";
+		var selectLang = "[if {RP[lang]}==""]{C_lang}[else {RP[lang]}==""]{RP[lang]}[/if {RP[lang]}==""]";
 	</script>
 
 	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -223,11 +224,11 @@
 					<!-- logo -->
 					<div class="logo">
 						<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}?pages=main" class="logo-expanded">
-							<img src="assets/xenon/images/logo@2x.png" width="80" alt="" />
+							<img src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/images/logo@2x.png" width="80" alt="" />
 						</a>
 						
 						<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}?pages=main" class="logo-collapsed">
-							<img src="assets/xenon/images/logo-collapsed@2x.png" width="40" alt="" />
+							<img src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/images/logo-collapsed@2x.png" width="40" alt="" />
 						</a>
 					</div>
 					
@@ -270,6 +271,7 @@
 							<ul>[/foreachif {menu.type_st}=="start"]
 								<li[foreachif {menu.is_now}==1] class="active"[/foreachif][foreachif {menu.type_st}=="start"] style="display:none;"[/foreachif {menu.type_st}=="start"]>
 									<a href="{menu.link}">
+										[foreachif {menu.type}=="item"]<i class="{menu.icon}"></i>[/foreachif {menu.type}=="item"]
 										<span class="title">{menu.value}</span>
 									</a>
 								</li>
@@ -490,24 +492,49 @@
 	</script>
 	
 	<!-- Imported styles on this page -->
-	<link rel="stylesheet" href="assets/xenon/js/toastr/toastr.min.css?1">
-	<link rel="stylesheet" href="assets/xenon/js/dropzone/css/dropzone.css">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/toastr/toastr.min.css?1">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/dropzone/css/dropzone.css">
 	{css_list}
 	<!-- Bottom Scripts -->
-	<script src="assets/xenon/js/bootstrap.min.js?1"></script>
-	<script src="assets/xenon/js/TweenMax.min.js?1"></script>
-	<script src="assets/xenon/js/resizeable.js?1"></script>
-	<script src="assets/xenon/js/joinable.js?2"></script>
-	<script src="assets/xenon/js/xenon-api.js?1"></script>
-	<script src="assets/xenon/js/xenon-toggles.js?1"></script>
-	<!--script src="assets/xenon/js/ckeditor/ckeditor.js?1"></script>
-	<script src="assets/xenon/js/ckeditor/adapters/jquery.js"></script-->
-	<script src="assets/xenon/js/tinymce/tinymce.min.js?{S_time}"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/bootstrap.min.js?1"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/TweenMax.min.js?1"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/resizeable.js?1"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/joinable.js?2"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-api.js?1"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-toggles.js?1"></script>
+	<!--script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/ckeditor/ckeditor.js?1"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/ckeditor/adapters/jquery.js"></script-->
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/tinymce/tinymce.min.js?{S_time}"></script>
 	{js_list}
+	<script>
+	$(document).ready(function(){
+		if(typeof(editorTextarea)!="object") {
+			var editorTextarea = {
+				selector: 'textarea',
+				height: 500,
+				language : selectLang,
+				plugins: [
+					"advlist autolink lists link image charmap print preview anchor",
+					"searchreplace visualblocks code fullscreen",
+					"insertdatetime media table contextmenu paste imagetools responsivefilemanager"
+				],
+				toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image responsivefilemanager",
+				content_css: [],
+				valid_elements : "*[*]",
+				forced_root_block : '',
+				image_advtab: true, 
+				external_filemanager_path: default_admin_link+"assets/xenon/js/tinymce/filemanager/",
+				filemanager_title: "{L_"Загрузка файлов"}", 
+				external_plugins: { "filemanager" : default_admin_link+"assets/xenon/js/tinymce/filemanager/plugin.min.js"}
+			}
+		}
+		tinymce.init(editorTextarea);
+	});
+	</script>
 
 	<!-- JavaScripts initializations and stuff -->
-	<script src="assets/xenon/js/xenon-custom.js?1"></script>
-	<script src="assets/xenon/js/toastr/toastr.min.js?1"></script>
-	<script src="assets/xenon/js/dropzone/dropzone.min.js"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-custom.js?1"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/toastr/toastr.min.js?1"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/dropzone/dropzone.min.js"></script>
 </body>
 </html>

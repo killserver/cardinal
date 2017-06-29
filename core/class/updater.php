@@ -48,6 +48,30 @@ class updater {
 				db::query("alter table `".PREFIX_DB."posts` add `type` varchar(255) NOT NULL DEFAULT 'post', add KEY `type` (`type`);");
 				$update = true;
 			break;
+			case "6.4":
+				$tables = array(
+					"category" => PREFIX_DB."category",
+					"config" => PREFIX_DB."config",
+					"comments" => PREFIX_DB."comments",
+					"error_log" => PREFIX_DB."error_log",
+					"hackers" => PREFIX_DB."hackers",
+					"lang" => PREFIX_DB."lang",
+					"menu" => PREFIX_DB."menu",
+					"modules" => PREFIX_DB."modules",
+					"posts" => PREFIX_DB."posts",
+					"users" => PREFIX_DB."users",
+					"userlevels" => PREFIX_DB."userlevels",
+					"category" => PREFIX_DB."category",
+					"category" => PREFIX_DB."category",
+				);
+				foreach($tables as $k => $v) {
+					$isTableExist = db::query("SELECT count(*) FROM information_schema.tables WHERE table_schema = '".config::Select("db", "db")."' AND table_name = '".$k."'");
+					if($isTableExist) {
+						db::query("RENAME TABLE `".$k."` TO `".$v."`");
+					}
+				}
+				$update = true;
+			break;
 		}
 		if($update) {
 			self::UpVersion($version);

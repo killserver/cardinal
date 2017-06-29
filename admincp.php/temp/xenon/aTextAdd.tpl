@@ -36,6 +36,26 @@
 	</div>
 </div>
 <script type="text/javascript">
+if(typeof(editorTextarea)!="object") {
+	var editorTextarea = {
+		selector: 'textarea',
+		height: 500,
+		language : selectLang,
+		plugins: [
+			"advlist autolink lists link image charmap print preview anchor",
+			"searchreplace visualblocks code fullscreen",
+			"insertdatetime media table contextmenu paste imagetools responsivefilemanager"
+		],
+		toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image responsivefilemanager",
+		content_css: [],
+		valid_elements : "*[*]",
+		forced_root_block : '',
+		image_advtab: true, 
+		external_filemanager_path: default_admin_link+"assets/xenon/js/tinymce/filemanager/",
+		filemanager_title: "{L_"Загрузка файлов"}", 
+		external_plugins: { "filemanager" : default_admin_link+"assets/xenon/js/tinymce/filemanager/plugin.min.js"}
+	}
+}
 var template = jQuery("#descr").html();
 jQuery("#descr").remove();
 var lengthElem = jQuery("textarea").length;
@@ -48,16 +68,12 @@ function add() {
 	lengthElem++;
 	tmp.find("textarea").attr("id", tmp.find("textarea").attr("id")+""+lengthElem);
 	jQuery(".findAdd").before(tmp);
-	CKEDITOR.replace('editor'+lengthElem, {
-		customConfig: '{C_default_http_local}{D_ADMINCP_DIRECTORY}?pages=ATextAdmin&mod=Editor'
-	});
+	tinymce.init(editorTextarea);
 	return false;
 }
 jQuery(document).ready(function() {
 	for(var i=1;i<lengthElem+1;i++) {
-		CKEDITOR.replace('editor'+i, {
-			customConfig: '{C_default_http_local}{D_ADMINCP_DIRECTORY}?pages=ATextAdmin&mod=Editor'
-		});
+		tinymce.init(editorTextarea);
 	}
 });
 </script>

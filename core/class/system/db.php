@@ -109,7 +109,11 @@ class db {
      * @return string Result saving
      */
     final public static function escape($str) {
-		return self::$driver->escape($str);
+		if(is_bool(self::$driver) || empty(self::$driver)) {
+			return str_replace(array('\x00', '\n', '\r', '\\', "'", '"', '\x1a'), array('\\x00', '\\n', '\\r', '\\\\', "\'", '\"', '\\x1a'), $val);
+		} else {
+			return self::$driver->escape($str);
+		}
 	}
 
     /**
@@ -307,12 +311,12 @@ class db {
 			$loaded = array();
 			$sel = db::doquery("SHOW FULL TABLES", true);
 			while($row = db::fetch_assoc($sel)) {
-				$res = db::query("SHOW COLUMNS FROM `".$row['Tables_in_'.self::$dbName]."`");
-				$loaded[$row['Tables_in_'.self::$dbName]] = array();
+				$res = db::query("SHOW COLUMNS FROM `".$row['Tables_in_'.strtolower(self::$dbName)]."`");
+				$loaded[$row['Tables_in_'.strtolower(self::$dbName)]] = array();
 				while($roz = db::fetch_assoc($res)) {
-					$loaded[$row['Tables_in_'.self::$dbName]][$roz['Field']] = $roz['Field'];
+					$loaded[$row['Tables_in_'.strtolower(self::$dbName)]][$roz['Field']] = $roz['Field'];
 				}
-				$loaded[$row['Tables_in_'.self::$dbName]] = array_values($loaded[$row['Tables_in_'.self::$dbName]]);
+				$loaded[$row['Tables_in_'.strtolower(self::$dbName)]] = array_values($loaded[$row['Tables_in_'.strtolower(self::$dbName)]]);
 			}
 			self::$loadedTable = $loaded;
 			return self::$loadedTable;

@@ -5,6 +5,17 @@ class Languages extends Core {
 	function implodes($k, $v) {
 		return $k."[-@-]".$v;
 	}
+
+	function translateSupport() {
+		$p = new Parser(LANGUAGE_SUPPORT_SERVICE);
+		$echo = $p->get();
+		if(is_serialized($echo)) {
+			$arr = unserialize($echo);
+		} else {
+			$arr = array();
+		}
+		return $arr;
+	}
 	
 	function translate($text, $to) {
 		$ret = "";
@@ -23,10 +34,15 @@ class Languages extends Core {
 			$p = new Parser("https://translate.yandex.net/api/v1.5/tr.json/translate");
 			$p->post(array("text" => $subText, "key" => config::Select("apiKeyTranslate"), "lang" => $to));
 			$resp = json_decode($p->get(), true);
+			if(isset($resp['message'])) {
+				$ret = "";
+				break;
+			}
 			$ret .= (is_string($resp['text']) ? $resp['text'] : current($resp['text']));
 		}
-		if($isArr) {
-			$ret = array_map('trim', explode('[@]', $ret));
+		if($isArr && strpos($ret, "[@]")!==false) {
+			$ret = explode('[@]', $ret);
+			$ret = array_map('trim', $ret);
 			$arr = array();
 			$keys = array_keys($orText);
 			for($i=0;$i<sizeof($ret);$i++) {
@@ -40,6 +56,28 @@ class Languages extends Core {
 	
 	function __construct() {
 		$langs = "ru";
+		if(Arr::get($_GET, "page", false)) {
+			if(Arr::get($_GET, "page")=="main") {
+				$support = lang::support();
+				for($i=0;$i<sizeof($support);$i++) {
+					$clearLang = nsubstr($support[$i], 4, -3);
+					$langer = nucfirst($clearLang);
+					templates::assign_vars(array(
+						"clearLang" => $clearLang,
+						"lang" => $langer,
+					), "supportLang", "lang".($i+1));
+				}
+				$support = $this->translateSupport();
+				foreach($support as $k => $v) {
+					templates::assign_vars(array(
+						"clearLang" => $k,
+						"lang" => $v,
+					), "supportTranslate", "lang".$k);
+				}
+				$this->Prints("LangSupport");
+			}
+			return;
+		}
 		if(Arr::get($_GET, 'createLang', false)) {
 			$newLang = Arr::get($_GET, 'createLang');
 			lang::include_lang("install");
@@ -83,18 +121,18 @@ class Languages extends Core {
 				$v = $this->translate($v, $newLang);
 				lang::Update($newLang, $k, $v);
 			}
-			return;
+			return true;
 		}
 		if(Arr::get($_GET, 'lang', false)) {
-			if(!lang::checkLang(Arr::get($_GET, 'lang'))) {
+			if(!(Arr::get($_GET, 'lang', false)) || !lang::checkLang(Arr::get($_GET, 'lang'))) {
 				new Errors();
 				die();
 			}
 			$langs = Arr::get($_GET, 'lang', 'ru');
 			lang::set_lang($langs);
 		}
-		if(isset($_GET['saveLang'])) {
-			if(lang::Update($langs, urldecode($_POST['orLang']), urldecode($_POST['translate']))) {
+		if(Arr::get($_GET, 'saveLang', false)) {
+			if(Arr::get($_POST, 'orLang', false) && Arr::get($_POST, 'translate', false) && lang::Update($langs, urldecode(Arr::get($_POST, 'orLang')), urldecode(Arr::get($_POST, 'translate')))) {
 				$ret = "1";
 			} else {
 				$ret = "0";
@@ -102,8 +140,8 @@ class Languages extends Core {
 			HTTP::echos($ret);
 			die();
 		}
-		if(isset($_GET['resetLang'])) {
-			if(lang::LangReset($langs, urldecode($_POST['orLang']))) {
+		if(Arr::get($_GET, 'resetLang', false)) {
+			if(Arr::get($_POST, 'orLang', false) && lang::LangReset($langs, urldecode(Arr::get($_POST, 'orLang')))) {
 				$ret = "1";
 			} else {
 				$ret = "0";

@@ -1,20 +1,20 @@
 <?php
 if(!defined("IS_CORE")) {
 echo "403 ERROR";
-die;
+die();
 }
 
 function get_date($date, $array) {
-	$first=$array[0];
-	$second=$array[1];
-	$third=$array[2];
-	if((($date % 10) > 4 && ($date % 10) < 10) || ($date > 10 && $date < 20)){
+	$first = $array[0];
+	$second = $array[1];
+	$third = $array[2];
+	if((($date % 10) > 4 && ($date % 10) < 10) || ($date > 10 && $date < 20)) {
 		return $second;
 	}
-	if(($date % 10) > 1 && ($date % 10) < 5){
+	if(($date % 10) > 1 && ($date % 10) < 5) {
 		return $third;
 	}
-	if(($date) == 1){
+	if($date == 1) {
 		return $first;
 	} else {
 		return $second;
@@ -34,11 +34,15 @@ function langdate($date) {
 	if(is_array($date) && isset($date[1])) {
 		$date = $date[1];
 	}
+	$lang = lang::get_lang("langdate");
+	if(!is_array($lang)) {
+		return date($temp, $date);
+	}
 	if(empty($date) || $date==0 || !is_numeric($date)) {
 		if($only_date) {
 			$local = new DateTime('@'.time());
 			$local->setTimeZone(new DateTimeZone(config::Select("date_timezone")));
-			$date = strtr($local->format($temp), lang::get_lang("langdate"));
+			$date = strtr($local->format($temp), $lang);
 			return $date;
 		}
 		return "";
@@ -46,7 +50,7 @@ function langdate($date) {
 	if(date('Ymd', $date) == date('Ymd', time())) {
 		$local = new DateTime('@'.$date);
 		$local->setTimeZone(new DateTimeZone(config::Select("date_timezone")));
-		$date = strtr($local->format($temp), lang::get_lang("langdate"));
+		$date = strtr($local->format($temp), $lang);
 		if(!$only_date) {
 			return lang::get_lang("time_heute").",".$date;
 		} else {
@@ -55,7 +59,7 @@ function langdate($date) {
 	} elseif(date('Ymd', $date) == date('Ymd', (time()-86400))) {
 		$local = new DateTime('@'.$date);
 		$local->setTimeZone(new DateTimeZone(config::Select("date_timezone")));
-		$date = strtr($local->format($temp), lang::get_lang("langdate"));
+		$date = strtr($local->format($temp), $lang);
 		if(!$only_date) {
 			return lang::get_lang("time_gestern").",".$date;
 		} else {
@@ -64,12 +68,11 @@ function langdate($date) {
 	} else {
 		$local = new DateTime('@'.$date);
 		$local->setTimeZone(new DateTimeZone(config::Select("date_timezone")));
-		return strtr($local->format($temp), lang::get_lang("langdate"));
+		return strtr($local->format($temp), $lang);
 	}
 }
 
 function timespan($seconds = 1, $time = "") {
-global $lang;
 	if(!is_numeric($seconds)) {
 		$seconds = 1;
 	}
@@ -86,7 +89,12 @@ global $lang;
 	$years = floor($seconds / 31536000);
 
 	if($years > 0) {
-		$result[] = $years.' '.get_date($years,$lang['times']['years']);
+		$lang = lang::get_lang('times', 'years');
+		if(!is_array($lang) || sizeof($lang)<3) {
+			throw new Exception("Lang times for years is not implemented");
+			die();
+		}
+		$result[] = $years.' '.get_date($years, $lang);
 	}
 
 	$seconds -= $years*31536000;
@@ -94,7 +102,12 @@ global $lang;
 
 	if($years > 0 || $months > 0) {
 		if($months > 0) {
-			$result[] = $months.' '.get_date($months,$lang['times']['months']);
+			$lang = lang::get_lang('times', 'months');
+			if(!is_array($lang) || sizeof($lang)<3) {
+				throw new Exception("Lang times for months is not implemented");
+				die();
+			}
+			$result[] = $months.' '.get_date($months, $lang);
 		}
 		$seconds -= $months * 2628000;
 	}
@@ -102,7 +115,12 @@ global $lang;
 	$weeks = floor($seconds / 604800);
 	if($years > 0 || $months > 0 || $weeks > 0) {
 		if($weeks > 0) {
-			$result[] = $weeks.' '.get_date($weeks,$lang['times']['weeks']);
+			$lang = lang::get_lang('times', 'weeks');
+			if(!is_array($lang) || sizeof($lang)<3) {
+				throw new Exception("Lang times for weeks is not implemented");
+				die();
+			}
+			$result[] = $weeks.' '.get_date($weeks, $lang);
 		}
 		$seconds -= $weeks * 604800;
 	}
@@ -110,7 +128,12 @@ global $lang;
 	$days = floor($seconds / 86400);
 	if($months > 0 || $weeks > 0 || $days > 0) {
 		if($days > 0) {
-			$result[] = $days.' '.get_date($days,$lang['times']['days']);
+			$lang = lang::get_lang('times', 'days');
+			if(!is_array($lang) || sizeof($lang)<3) {
+				throw new Exception("Lang times for days is not implemented");
+				die();
+			}
+			$result[] = $days.' '.get_date($days, $lang);
 		}
 		$seconds -= $days * 86400;
 	}
@@ -118,7 +141,12 @@ global $lang;
 	$hours = floor($seconds / 3600);
 	if($days > 0 || $hours > 0) {
 		if($hours > 0) {
-			$result[] = $hours.' '.get_date($hours,$lang['times']['hours']);
+			$lang = lang::get_lang('times', 'hours');
+			if(!is_array($lang) || sizeof($lang)<3) {
+				throw new Exception("Lang times for hours is not implemented");
+				die();
+			}
+			$result[] = $hours.' '.get_date($hours, $lang);
 		}
 		$seconds -= $hours * 3600;
 	}
@@ -126,13 +154,23 @@ global $lang;
 	$minutes = floor($seconds / 60);
 	if($days > 0 || $hours > 0 || $minutes > 0) {
 		if($minutes > 0) {
-			$result[] = $minutes.' '.get_date($minutes,$lang['times']['minutes']);
+			$lang = lang::get_lang('times', 'minutes');
+			if(!is_array($lang) || sizeof($lang)<3) {
+				throw new Exception("Lang times for minutes is not implemented");
+				die();
+			}
+			$result[] = $minutes.' '.get_date($minutes, $lang);
 		}
 		$seconds -= $minutes * 60;
 	}
 
 	if(empty($result)) {
-		$result[] = $seconds.' '.get_date($seconds,$lang['times']['seconds']);
+		$lang = lang::get_lang('times', 'seconds');
+		if(!is_array($lang) || sizeof($lang)<3) {
+			throw new Exception("Lang times for seconds is not implemented");
+			die();
+		}
+		$result[] = $seconds.' '.get_date($seconds, $lang);
 	}
 return implode(" ", $result);
 }

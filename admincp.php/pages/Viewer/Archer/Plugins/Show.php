@@ -34,7 +34,7 @@ class Archer_Show {
 			$body .= KernelArcher::Viewing($l, $k, $v, $default, true);
 		}
 		templates::assign_var("ArcherShow", $body);
-		return array("table" => $table, "objTemplate" => $page, "list" => $model);
+		return array("table" => str_replace(PREFIX_DB, "", $table), "objTemplate" => $page, "list" => $model);
 	}
 }
 

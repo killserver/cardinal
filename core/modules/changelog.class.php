@@ -26,7 +26,7 @@ class changelog extends modules {
 	
 	function change() {
 		header("Content-Type: text/plain; charset=utf-8");
-		$dir = ROOT_PATH.DS."changelog".DS;
+		$dir = ROOT_PATH."changelog".DS;
 		$files = array();
 		if(is_dir($dir)) {
 			if($dh = dir($dir)) {

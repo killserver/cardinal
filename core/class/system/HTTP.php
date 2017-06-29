@@ -99,7 +99,7 @@ class HTTP {
 		}
 	}
 	
-	final public static function set_cookie($name, $value, $delete = false, $save = true) {
+	final public static function set_cookie($name, $value, $delete = false, $save = true, $allSubDomain = true) {
 		if(class_exists("config") && method_exists("config", "Select")) {
 			$domain = config::Select('default_http_hostname');
 		} else {
@@ -120,9 +120,9 @@ class HTTP {
 				$ret = setcookie($name, $value, $time, "/");
 			} else {
 				if(version_compare(PHP_VERSION, '5.2', '<')) {
-					$ret = setcookie($name, $value, $time, "/", ".".$domain."; HttpOnly", false);
+					$ret = setcookie($name, $value, $time, "/", ($allSubDomain ? ".".$domain : "")."; HttpOnly", false);
 				} else {
-					$ret = setcookie($name, $value, $time, "/", ".".$domain, false, true);
+					$ret = setcookie($name, $value, $time, "/", ($allSubDomain ? ".".$domain : ""), false, true);
 				}
 			}
 		} else {
