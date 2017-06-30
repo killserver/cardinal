@@ -738,7 +738,7 @@ class templates {
 		}
 		if($type=="tablet" && $mobileDetect->isTablet()) {
 			return 1;
-		} else if($type=="mobile" && $mobileDetect->isMobile()) {
+		} else if($type=="mobile" && ($mobileDetect->isMobile() && !$mobileDetect->isMobile())) {
 			return 1;
 		} else if($type=="desktop" && !($mobileDetect->isMobile() || $mobileDetect->isTablet())) {
 			return 1;

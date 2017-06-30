@@ -125,7 +125,7 @@ if(!defined("VERSION_ADMIN_STYLE")) {
 	define("VERSION_ADMIN_STYLE", "1.1");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "60503");
+	define("INTVERSION", "60505");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "6.5");
