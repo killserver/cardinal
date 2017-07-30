@@ -362,6 +362,12 @@ class Parser {
 		if(strtolower(substr($url,0,5))=='https') {
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+			if(defined("CURLOPT_SSL_VERIFYSTATUS")) {
+				curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, 0);
+			}
+		}
+		if(defined("CURLOPT_NOSIGNAL")) {
+			curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
 		}
 		if(class_exists("config") && method_exists("config", "Select")) {
 			if(!config::Select("hosting") || $this->forceReferrer) {
@@ -372,6 +378,7 @@ class Parser {
 			curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 		}
+		curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		if($this->gzip) {
 			curl_setopt($ch, CURLOPT_ENCODING, 'gzip');

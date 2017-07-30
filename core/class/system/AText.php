@@ -10,9 +10,10 @@ class AText {
 		if(defined("WITHOUT_DB") && !db::connected()) {
 			return $this;
 		}
-		if(file_exists(PATH_CACHE_SYSTEM) && is_writable(PATH_CACHE_SYSTEM) && !file_exists(PATH_CACHE_SYSTEM."aText.lock")) {
-			db::query("CREATE TABLE IF NOT EXISTS `".PREFIX_DB."aText` ( `aId` int not null auto_increment, `lang` varchar(255) not null, `page` varchar(255) not null, `text` longtext not null, primary key `id`(`aId`), fulltext `page`(`page`), fulltext `lang`(`lang`), fulltext `text`(`text`(200)) ) ENGINE=MyISAM;");
-			file_put_contents(PATH_CACHE_SYSTEM."aText.lock", "");
+		$dirCache = (defined("PATH_CACHE_SYSTEM") ? PATH_CACHE_SYSTEM : ROOT_PATH.'core'.DS.'cache'.DS.'system'.DS);
+		if(file_exists($dirCache) && is_writable($dirCache) && !file_exists($dirCache."aText.lock")) {
+			db::query("CREATE TABLE IF NOT EXISTS `".(defined("PREFIX_DB") ? PREFIX_DB : "")."aText` ( `aId` int not null auto_increment, `lang` varchar(255) not null, `page` varchar(255) not null, `text` longtext not null, primary key `id`(`aId`), fulltext `page`(`page`), fulltext `lang`(`lang`), fulltext `text`(`text`(200)) ) ENGINE=MyISAM;");
+			file_put_contents($dirCache."aText.lock", "");
 		}
 		$this->uri = str_replace(array($_SERVER['PHP_SELF']."?", $_SERVER['PHP_SELF']."/"), "", $_SERVER['REQUEST_URI']);
 		if(strpos($this->uri, "?")!==false) {
@@ -35,11 +36,12 @@ class AText {
 		if(defined("WITHOUT_DB") && !db::connected()) {
 			return false;
 		}
-		if(file_exists(PATH_CACHE_SYSTEM) && is_writable(PATH_CACHE_SYSTEM) && !file_exists(PATH_CACHE_SYSTEM."aText.lock")) {
-			db::query("CREATE TABLE IF NOT EXISTS `".PREFIX_DB."aText` ( `aId` int not null auto_increment, `lang` varchar(255) not null, `page` varchar(255) not null, `text` longtext not null, primary key `id`(`aId`), fulltext `page`(`page`), fulltext `lang`(`lang`), fulltext `text`(`text`(200)) ) ENGINE=MyISAM;");
-			file_put_contents(PATH_CACHE_SYSTEM."aText.lock", "");
+		$dirCache = (defined("PATH_CACHE_SYSTEM") ? PATH_CACHE_SYSTEM : ROOT_PATH.'core'.DS.'cache'.DS.'system'.DS);
+		if(file_exists($dirCache) && is_writable($dirCache) && !file_exists($dirCache."aText.lock")) {
+			db::query("CREATE TABLE IF NOT EXISTS `".(defined("PREFIX_DB") ? PREFIX_DB : "")."aText` ( `aId` int not null auto_increment, `lang` varchar(255) not null, `page` varchar(255) not null, `text` longtext not null, primary key `id`(`aId`), fulltext `page`(`page`), fulltext `lang`(`lang`), fulltext `text`(`text`(200)) ) ENGINE=MyISAM;");
+			file_put_contents($dirCache."aText.lock", "");
 			return true;
-		} else if(file_exists(PATH_CACHE_SYSTEM."aText.lock")) {
+		} else if(file_exists($dirCache."aText.lock")) {
 			return true;
 		} else {
 			return false;
@@ -48,17 +50,18 @@ class AText {
 	
 	private function cacheSave($data = array()) {
 		$files = array();
-		if(file_exists(PATH_CACHE."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt") && is_readable(PATH_CACHE."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt")) {
-			$files = file_get_contents(PATH_CACHE."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt");
+		$dirCache = (defined("PATH_CACHE") ? PATH_CACHE : ROOT_PATH.'core'.DS.'cache'.DS);
+		if(file_exists($dirCache."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt") && is_readable($dirCache."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt")) {
+			$files = file_get_contents($dirCache."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt");
 			try {
-				$files = unserialize($files);
+				$files = json_decode($files, true);
 			} catch(Exception $ex) {
 				$files = array();
 			}
 		}
 		$data = array_merge($files, $data);
-		if(file_exists(PATH_CACHE) && is_writable(PATH_CACHE)) {
-			file_put_contents(PATH_CACHE."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt", serialize($data));
+		if(file_exists($dirCache) && is_writable($dirCache)) {
+			file_put_contents($dirCache."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt", json_encode($data));
 			return true;
 		} else {
 			return false;
@@ -66,10 +69,11 @@ class AText {
 	}
 	
 	private function cacheExist() {
-		if(file_exists(PATH_CACHE."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt") && is_readable(PATH_CACHE."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt")) {
-			$file = file_get_contents(PATH_CACHE."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt");
+		$dirCache = (defined("PATH_CACHE") ? PATH_CACHE : ROOT_PATH.'core'.DS.'cache'.DS);
+		if(file_exists($dirCache."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt") && is_readable($dirCache."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt")) {
+			$file = file_get_contents($dirCache."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt");
 			try {
-				$file = unserialize($file);
+				$file = json_decode($file, true);
 			} catch(Exception $ex) {
 				$file = array();
 			}
@@ -84,15 +88,16 @@ class AText {
 	}
 	
 	private function cacheRead() {
-		if(file_exists(PATH_CACHE."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt") && is_readable(PATH_CACHE."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt")) {
-			$file = file_get_contents(PATH_CACHE."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt");
+		$dirCache = (defined("PATH_CACHE") ? PATH_CACHE : ROOT_PATH.'core'.DS.'cache'.DS);
+		if(file_exists($dirCache."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt") && is_readable($dirCache."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt")) {
+			$file = file_get_contents($dirCache."AText".(!empty($this->lang) ? "_".$this->lang : "").".txt");
 			try {
-				$file = unserialize($file);
+				$file = json_decode($file, true);
 			} catch(Exception $ex) {
 				$file = array();
 			}
 			if(isset($file[$this->uri])) {
-				return unserialize($file[$this->uri]);
+				return json_decode($file[$this->uri], true);
 			} else {
 				return array();
 			}
@@ -103,7 +108,7 @@ class AText {
 	
 	function get() {
 		if(!$this->cacheExist($this->uri)) {
-			db::doquery("SELECT `text` FROM `".PREFIX_DB."aText` WHERE".(!empty($this->lang) ? "`lang` LIKE \"".$this->lang."\" AND " : "")."`page` LIKE \"".$this->uri."%\" LIMIT 1", true);
+			db::doquery("SELECT `text` FROM `".(defined("PREFIX_DB") ? PREFIX_DB : "")."aText` WHERE ".(!empty($this->lang) ? "`lang` LIKE \"".$this->lang."\" AND " : "")."`page` LIKE \"".$this->uri."%\" LIMIT 1", true);
 			if(db::num_rows()==1) {
 				$row = db::fetch_assoc();
 				if(isset($row['text'])) {

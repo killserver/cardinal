@@ -19,6 +19,10 @@
  * fix bugs on include files
  *
 */
+if(strpos($_SERVER['PATH_INFO'], "/favicon.ico")!==false || strpos($_SERVER['REQUEST_URI'], "/favicon.ico")!==false) {
+	die();
+}
+
 define("IS_CORE", true);
 include_once("core.php");
 

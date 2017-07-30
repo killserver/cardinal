@@ -108,11 +108,20 @@ class HTTP {
 		if(is_bool($delete)) {
 			if(!$delete) {
 				$time = time()+(120*24*60*60);
+				$_COOKIE[$name] = $value;
 			} else {
 				$time = time()-(120*24*60*60);
+				if(isset($_COOKIE[$name])) {
+					unset($_COOKIE[$name]);
+				}
 			}
 		} else {
 			$time = $delete;
+			if($time>0) {
+				$_COOKIE[$name] = $value;
+			} elseif(isset($_COOKIE[$name])) {
+				unset($_COOKIE[$name]);
+			}
 		}
 		$ret = false;
 		if($save) {

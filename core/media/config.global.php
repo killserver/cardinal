@@ -119,19 +119,22 @@ if(!defined("UPLOAD_ALL")) {
 }
 
 if(!defined("VERSION")) {
-	define("VERSION", "6.4");
+	define("VERSION", "6.6");
 }
 if(!defined("VERSION_ADMIN_STYLE")) {
 	define("VERSION_ADMIN_STYLE", "1.1");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "60505");
+	define("INTVERSION", "60603");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "6.5");
 }
 if(!defined("LEVEL_CREATOR")) {
-	define("LEVEL_CREATOR", 4);
+	define("LEVEL_CREATOR", 5);
+}
+if(!defined("LEVEL_CUSTOMER")) {
+	define("LEVEL_CUSTOMER", 4);
 }
 if(!defined("LEVEL_ADMIN")) {
 	define("LEVEL_ADMIN", 3);

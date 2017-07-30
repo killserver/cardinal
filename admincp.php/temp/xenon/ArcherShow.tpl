@@ -7,3 +7,4 @@
 		</div>
 	</div>
 </div>
+<script type="text/javascript"> var readOnlyEditor = true; </script>

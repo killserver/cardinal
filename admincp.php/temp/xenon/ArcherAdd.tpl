@@ -7,7 +7,7 @@
 			<div class="panel-body">
 				<form method="post" role="form" action="./?pages=Archer&type={ArcherPath}&pageType=Take{ArcherPage}" method="post" class="form-horizontal" enctype="multipart/form-data">
 					{ArcherData}
-					<button class="btn btn-blue btn-icon btn-icon-standalone btn-icon-standalone-right btn-sm">
+					<button class="btn btn-savePage btn-icon btn-icon-standalone btn-icon-standalone-right btn-sm">
 						<i class="fa-save"></i>
 						<span>{L_save}</span>
 					</button>

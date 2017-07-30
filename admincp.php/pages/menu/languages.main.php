@@ -3,14 +3,14 @@ $links['languages']["cat"][] = array(
 	'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Languages",
 	'title' => "{L_Languages}",
 	'type' => "cat",
-	'access' => LEVEL_ADMIN || LEVEL_CREATOR,
+	'access' => userlevel::get("languages"),
 	'icon' => 'fa-language',
 );
 $links['languages']["item"][] = array(
 	'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Languages&page=main",
 	'title' => "{L_Languages}",
 	'type' => "item",
-	'access' => LEVEL_ADMIN || LEVEL_CREATOR,
+	'access' => userlevel::get("languages"),
 	'icon' => '',
 );
 $support = lang::support();
@@ -21,7 +21,7 @@ for($i=1;$i<sizeof($support);$i++) {
 		'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Languages&lang=".$clearLang,
 		'title' => "{L_Languages}&nbsp;".$langer,
 		'type' => "item",
-		'access' => LEVEL_ADMIN || LEVEL_CREATOR,
+		'access' => userlevel::get("languages"),
 		'icon' => '',
 	);
 }

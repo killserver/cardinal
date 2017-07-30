@@ -109,6 +109,13 @@ class Saves {
      */
     final public static function SaveAltName($uri) {
 		$uri = preg_replace("|[^\d\w ]+|i", "", $uri);
+		$str = strip_tags($str);
+		$str = html_entity_decode($str, ENT_QUOTES, 'UTF-8');
+		$str = preg_replace("#[\.;:\]\}\[\{\+\)\(\*&\^\$\#@\!±`%~']#iu", '', $str);
+		$str = preg_replace("#[\"\']#", '', $str);
+		$str = preg_replace("#[\’]#", '-', $str);
+		$str = preg_replace("#[/_|+ -]+#u", "-", $str);
+		$str = trim($str, "-");
 		$uri = htmlspecialchars($uri, ENT_QUOTES, 'ISO-8859-1');
 		$uri = self::SaveOld($uri, true);
 		return $uri;

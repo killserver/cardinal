@@ -28,7 +28,7 @@ html:lang(he-il) .rtl .adminCoreCardinal *  {
  	font-family: Arial, sans-serif;
 }
 body {
-	padding-top: 1.8em;
+	padding-top: 2.6em !important;
 }
 .adminCoreCardinal ul, .adminCoreCardinal ul li {
 	background: none;
@@ -43,11 +43,10 @@ body {
 .adminCoreCardinal * { font-family: 'Maven Pro', sans-serif !important; font-size: 14px; color: #fff; text-decoration: none; }
 .adminCoreCardinal i { font-family: 'FontAwesome' !important; padding: 0px 0.35em; font-style: normal; }
 .adminCoreCardinal > .logo {
-	width: 1.6em;
-	height: 1.6em;
+	width: 3.3em;
+	height: 2.3em;
 	display: block;
 	float: left;
-	padding: 0.3em 1em 0.3em 1em;
 	background: #ac1f1f;
 }
 .adminCoreCardinal > .logo:before {
@@ -56,6 +55,7 @@ body {
 	width: 100%;
 	height: 100%;
 	background: url(cardinal.svg) no-repeat 50%;
+	background-size: 50%;
 }
 .adminCoreCardinal > .linkToAdmin {
 	float: left;
@@ -75,15 +75,19 @@ body {
 	color: #fff;
 	text-decoration: none;
 }
+.adminCoreCardinal > .items a.subItem {
+	padding-right: 1.8em;
+}
+.adminCoreCardinal > .items a.subItem:after {
+	content: '\f107';
+	font-family: 'FontAwesome' !important;
+	margin-left: 0.7em;
+}
+.adminCoreCardinal > .items a.subItem:hover:after {
+	content: '\f106';
+}
 .adminCoreCardinal > .logo:hover, .adminCoreCardinal > .user:hover, .adminCoreCardinal > .linkToAdmin:hover, .adminCoreCardinal > .items a:hover, .adminCoreCardinal > .items .dropped a:hover, .adminCoreCardinal > .items:hover > a {
 	background: #7d1515;
-}
-.adminCoreCardinal > .items .dropped a {
-	display: block;
-	padding: 0.5em 1em;
-	background: #ac1f1f;
-	color: #fff;
-	text-decoration: none;
 }
 .adminCoreCardinal > .items > .dropped {
 	position: absolute;
@@ -95,13 +99,23 @@ body {
 	margin-left: -3%;
 	margin-top: -100%;
 	z-index: -1;
+	width: 106%;
 }
 .adminCoreCardinal > .items:hover > .dropped {
 	margin-top: 0px;
+	top: auto;
+}
+.adminCoreCardinal > .items .dropped a {
+	display: block;
+	padding: 0.5em 1em;
+	background: #ac1f1f;
+	color: #fff;
+	text-decoration: none;
 }
 .adminCoreCardinal > .user {
 	float: right;
 	margin: 0px 0.2em;
+	position: relative;
 }
 .adminCoreCardinal > .user > span {
 	padding: 0.5em 0.2em 0.5em 1em;
@@ -134,6 +148,9 @@ body {
 	text-align: center;
 }
 @media(max-device-width: 900px) {
+	body {
+		padding-top: 3.5em !important;
+	}
 	.adminCoreCardinal {
 		font-size: 5vw;
 		overflow: auto;

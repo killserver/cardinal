@@ -32,6 +32,8 @@ class Archer extends Core {
 		$viewId = intval($viewId);
 		$typeUni = $request->get->get('type', 'posts');
 		$andWhere = $request->get->get("Where", false);
+		$typeWhere = $request->get->get("WhereType", false);
+		$dataWhere = $request->get->get("WhereData", false);
 		$orderBy = $request->get->get("orderBy", false);
 		$orderTo = $request->get->get("orderTo", "ASC");
 		$removePrefix = false;
@@ -108,6 +110,11 @@ class Archer extends Core {
 				if(isset($_GET['catid'])) {
 					$model->WhereTo("catId", intval($_GET['catid']));
 				}
+				if(!empty($andWhere) && !empty($typeWhere) && !empty($dataWhere)) {
+					$model->Where($andWhere, $typeWhere, $dataWhere);
+				} else if(!empty($andWhere) && !empty($dataWhere)) {
+					$model->Where($andWhere, $dataWhere);
+				}
 				$univ = new KernelArcher($typeUni, $model);
 				$univ->Sorting($model, array(&$this, "View"));
 			break;
@@ -132,6 +139,11 @@ class Archer extends Core {
 				$model->SetLimit(-1);
 				if(isset($_GET['catid'])) {
 					$model->WhereTo("catId", intval($_GET['catid']));
+				}
+				if(!empty($andWhere) && !empty($typeWhere) && !empty($dataWhere)) {
+					$model->Where($andWhere, $typeWhere, $dataWhere);
+				} else if(!empty($andWhere) && !empty($dataWhere)) {
+					$model->Where($andWhere, $dataWhere);
 				}
 				templates::assign_var("LinkOrderBy", (empty($orderBy) ? $model->getFirst() : $orderBy));
 				templates::assign_var("LinkorderTo", $orderTo);

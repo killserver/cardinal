@@ -1,5 +1,5 @@
 <?php
-define("ERROR_VIEW", true);
+
 class ATextAdmin extends Core {
 	
 	function __construct() {
@@ -38,8 +38,8 @@ HTML;
 die();
 			break;
 			case "TakeAdd":
-				$model = modules::loadModels("ModelaText", PREFIX_DB."aText");
-				$model->SetTable(PREFIX_DB."aText");
+				$model = modules::loadModels("ModelaText", (defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
+				$model->SetTable((defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
 				$model->page = Saves::SaveOld($request->post->get("page"), true);
 				$post = $request->post->get("descr");
 				$post = array_map("trim", $post);
@@ -49,7 +49,7 @@ die();
 				location("{C_default_http_local}{D_ADMINCP_DIRECTORY}?pages=ATextAdmin");
 			break;
 			case "Add":
-				$model = modules::loadModels("ModelaText", PREFIX_DB."aText");
+				$model = modules::loadModels("ModelaText", (defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
 				templates::assign_var("typePage", "Add");
 				templates::assign_var("textarea", '<div class="row"><div class="col-sm-11"><textarea id="editor1" name="descr[]"></textarea></div><div class="col-sm-1"><a href="#" class="btn btn-red" onclick="return removed(this);">{L_delete}</a></div></div>');
 				templates::assign_vars($model->getArray());
@@ -57,8 +57,8 @@ die();
 				return;
 			break;
 			case "TakeEdit":
-				$model = modules::loadModels("ModelaText", PREFIX_DB."aText");
-				$model->SetTable(PREFIX_DB."aText");
+				$model = modules::loadModels("ModelaText", (defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
+				$model->SetTable((defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
 				$model->SetLimit(1);
 				$model->WhereTo($viewId);
 				
@@ -85,8 +85,8 @@ die();
 				}
 			break;
 			case "Edit":
-				$model = modules::loadModels("ModelaText", PREFIX_DB."aText");
-				$model->SetTable(PREFIX_DB."aText");
+				$model = modules::loadModels("ModelaText", (defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
+				$model->SetTable((defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
 				$model->SetLimit(1);
 				$model->WhereTo($viewId);
 				$model = $model->Select();
@@ -99,8 +99,8 @@ die();
 				$this->Prints("aTextAdd");
 			break;
 			case "Delete":
-				$model = modules::loadModels("ModelaText", PREFIX_DB."aText");
-				$model->SetTable(PREFIX_DB."aText");
+				$model = modules::loadModels("ModelaText", (defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
+				$model->SetTable((defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
 				$model->SetLimit(1);
 				$model->WhereTo($viewId);
 				$sel = $model->Select();
@@ -115,8 +115,8 @@ die();
 				}
 			break;
 			default:
-				$model = modules::loadModels("ModelaText", PREFIX_DB."aText");
-				$model->SetTable(PREFIX_DB."aText");
+				$model = modules::loadModels("ModelaText", (defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
+				$model->SetTable((defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
 				$model->SetLimit(-1);
 				$list = $model->Select();
 				if(is_array($list)) {

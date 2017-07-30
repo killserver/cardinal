@@ -27,9 +27,16 @@ config::Set("skins", "admincp", $skin);
 templates::dir_skins(ADMINCP_DIRECTORY."/temp/".$skin);
 templates::set_skins("");
 
+function accessOnDefault($class) {
+	$classCheck = strtolowers($class);
+	if(in_array($class, array("Antivirus", "Archer", "ATextAdmin", "Core", "Editor", "Languages", "LogInAdmin", "Logs", "Main", "ModuleList", "Phpinfo", "Settings", "Shop", "Users")) && !userlevel::get($classCheck)) {
+		return false;
+	}
+	return true;
+}
 function cardinalAutoloadAdmin($class) {
     global $in_page;
-    if(strpos($class, "/")===false&&strpos($class, "\\")===false&&file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS.$class.DS.$class.".class.".ROOT_EX)) {
+    if(strpos($class, "/")===false&&strpos($class, "\\")===false&&!class_exists($class,false)&&!accessOnDefault($class)&&file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS.$class.DS.$class.".class.".ROOT_EX)) {
         include_once(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS.$class.DS.$class.".class.".ROOT_EX);
     } else if(strpos($class, "_")===false) {
         $in_page = "Errors";
@@ -48,9 +55,9 @@ if(version_compare(PHP_VERSION, '5.1.2', '>=')) {
 		cardinalAutoloadAdmin($class);
 	}
 }
-if(isset($_GET['pages'])) {
+if(isset($_GET['pages']) && $_GET['pages'] != "Core") {
 	$view = htmlspecialchars(strip_tags($_GET['pages']));
-	$view = ucfirst($view);
+	$view = nucfirst($view);
 } else {
 	$view = "Main";
 }

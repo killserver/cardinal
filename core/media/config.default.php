@@ -78,8 +78,9 @@ $config = array_merge($config, array(
 	'lang' => "ru",
 	"charset" => "utf-8",
 
+	"FullMenu" => true,
 	"manifestCache" => false,
-	"ParsePHP" => true,
+	"ParsePHP" => false,
 	"rewrite" => true,
 	"guest_level" => LEVEL_GUEST,
 	"db" => array(

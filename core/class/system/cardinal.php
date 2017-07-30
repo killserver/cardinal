@@ -164,7 +164,11 @@ class cardinal {
 			}
 
 			// Start the session!
-			$session = session_start();
+			if(function_exists("session_status") && defined("PHP_SESSION_NONE") && session_status() == PHP_SESSION_NONE) {
+				$session = session_start();
+			} else if(session_id() == '') {
+				$session = session_start();
+			}
 
 			// Renew the time left until this session times out.
 			// If you skip this, the session will time out based
@@ -289,7 +293,7 @@ class cardinal {
 			if(is_writable(PATH_CACHE_SYSTEM)) {
 				file_put_contents(PATH_CACHE_SYSTEM."apiKey.safe", $api_key);
 			}
-		} else {
+		} else if(file_exists(PATH_CACHE_SYSTEM."apiKey.safe")) {
 			$api_key = file_get_contents(PATH_CACHE_SYSTEM."apiKey.safe");
 		}
 		return $api_key;
@@ -297,7 +301,7 @@ class cardinal {
 	
 	final public static function InstallFirst() {
 		if(!file_exists(PATH_MEDIA."users.php") && is_writable(PATH_MEDIA)) {
-			$rand = rand(6, 15);
+			$rand = rand(5, 20);
 			$pass = self::randomPassword($rand, 1, "lower_case,upper_case,numbers,special_symbols");
 			if(is_array($pass) && sizeof($pass)>0) {
 				$pass = current($pass);
@@ -309,13 +313,24 @@ class cardinal {
 			}
 
 			$users = array_merge($users, array(
-				"admin" => array(
-					"username" => "admin",
+				"root" => array(
+					"username" => "root",
 					"pass" => User::create_pass("'.$pass.'"),
 					"admin_pass" => cardinal::create_pass("'.$pass.'"),
 					"level" => LEVEL_CREATOR,
-				),
-			));';
+				),';
+			$rand = rand(8, 20);
+			$pass = self::randomPassword($rand, 1, "lower_case,upper_case,numbers,special_symbols");
+			if(is_array($pass) && sizeof($pass)>0) {
+				$pass = current($pass);
+			}
+			$users .= PHP_EOL.'	"admin" => array(
+					"username" => "admin",
+					"pass" => User::create_pass("'.$pass.'"),
+					"admin_pass" => cardinal::create_pass("'.$pass.'"),
+					"level" => LEVEL_CUSTOMER,
+				),';
+			$users .= PHP_EOL.'));';
 			file_put_contents(PATH_MEDIA."users.php", $users);
 		}
 	}

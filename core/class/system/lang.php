@@ -65,19 +65,36 @@ class lang {
 	
 	final public static function support() {
 		$arr = array();
-		$arr[] = "langru.db";
+		$mainLang = (modules::manifest_get("mainLang")!==false ? modules::manifest_get("mainLang") : "ru");
+		$arr["lang".$mainLang.".db"] = "lang".$mainLang.".db";
 		if(!defined("WITHOUT_DB") && class_exists("db") && method_exists("db", "connected") && db::connected()) {
 			$arrQ = db::select_query("SELECT DISTINCT `lang` FROM `".PREFIX_DB."lang`");
 			for($i=0;$i<sizeof($arrQ);$i++) {
-				$arr[] = "lang".$arrQ[$i]['lang'].".db";
+				$arr["lang".$arrQ[$i]['lang'].".db"] = "lang".$arrQ[$i]['lang'].".db";
 			}
 		} else {
 			$dirLangs = defined("PATH_CACHE_LANGS") ? PATH_CACHE_LANGS : dirname(__FILE__).DIRECTORY_SEPARATOR;
-			$arr = array_merge($arr, read_dir($dirLangs, ".db"));
+			$dirLangs = read_dir($dirLangs, ".db");
+			$arrLangs = array();
+			for($i=0;$i<sizeof($dirLangs);$i++) {
+				if(strpos($dirLangs[$i], "lang")===false) {
+					unset($dirLangs[$i]);
+				} else {
+					$arrLangs[$dirLangs[$i]] = $dirLangs[$i];
+				}
+			}
+			$arr = array_merge($arr, $arrLangs);
 		}
 		$pathLangs = (!defined("PATH_LANGS") ? dirname(__FILE__).DIRECTORY_SEPARATOR."lang".DIRECTORY_SEPARATOR : PATH_LANGS);
 		$langs = read_dir($pathLangs, "dir");
-		$arr = array_merge($arr, $langs);
+		$arrLangs = array();
+		for($t=0;$t<sizeof($langs);$t++) {
+			if(strpos($langs[$t], ".html")===false && strpos($langs[$t], ".php")===false) {
+				$arrLangs["lang".$langs[$t].".db"] =  "lang".$langs[$t].".db";
+			}
+		}
+		$arr = array_merge($arr, $arrLangs);
+		$arr = array_values($arr);
 		return $arr;
 	}
 

@@ -276,6 +276,7 @@ if(!$clear) {
 	unset($dprm);
 	$header .= '<meta name="viewport" content="'.config::Select("viewport").'" />'."\n";
 	$header .= '<meta http-equiv="imagetoolbar" content="no" />'."\n";
+	$header .= '<script type="text/javascript" src="{C_default_http_host}js/supports.js" async="true"></script>'."\n";
 	$header .= '<!-- saved from url=(0014)about:internet -->'."\n";
 	$header .= '<meta name="apple-mobile-web-app-capable" content="yes">'."\n";
 	$header .= '<meta name="format-detection" content="telephone=no">'."\n";
@@ -382,13 +383,18 @@ if(!$clear) {
 					}
 					if($datas[$i][$is]['type']=="cat") {
 						$newMenu[$name] = $datas[$i][$is];
-					} elseif($newMenu[$name]['link']!=$datas[$i][$is]['link']) {
+					} elseif(isset($newMenu[$name]) && $newMenu[$name]['link']!=$datas[$i][$is]['link']) {
 						$newMenu[$name]['items'][$datas[$i][$is]['link']] = $datas[$i][$is];
 					}
 				}
 			}
 		}
-		$header .= "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\"><link rel=\"stylesheet\" href=\"{C_default_http_local}skins/admin.css?{S_time}\"><div class=\"adminCoreCardinal\"><a href=\"{C_default_http_local}\" class=\"logo\"></a><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/\" class=\"linkToAdmin\">{L_'adminpanel'}</a>".menuAdminHeader($newMenu)."<div class=\"user\"><span>{U_username}</span><div class=\"dropped\"><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Login&out\"><i class=\"fa-user-times\"></i>{L_'logout'}</a></div></div></div>";
+		$editPage = "";
+		$editor = modules::manifest_get("editor");
+		if($editor!==false && Arr::get($editor, "class", false)) {
+			$editPage = "{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=".$editor['class'].(isset($editor['page']) ? "&".$editor['page'] : "");
+		}
+		$header .= "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\"><link rel=\"stylesheet\" href=\"{C_default_http_local}skins/admin.css?{S_time}\"><div class=\"adminCoreCardinal\"><a href=\"{C_default_http_local}\" class=\"logo\"></a><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/\" class=\"linkToAdmin\">{L_'adminpanel'}</a>".menuAdminHeader($newMenu).(!empty($editPage) ? "<div class=\"items\"><a href=\"".$editPage."\"><i class=\"fa-edit\"></i><span>{L_'Редактировать на этой странице'}</span></a></div>":"")."<div class=\"user\"><span>{U_username}</span><div class=\"dropped\"><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Login&out\"><i class=\"fa-user-times\"></i>{L_'logout'}</a></div></div></div>";
 	}
 	unset($array);
 return $header;
@@ -410,7 +416,7 @@ function menuAdminHeader($arr, $isCat = false) {
 		if(isset($v['items'])) {
 			$cat = true;
 		}
-		$menu .= (!$isCat ? "<div class=\"items\">" : "")."<a href=\"".$v['link']."\">".(isset($v['icon']) && !empty($v['icon']) ? "<i class=\"".$v['icon']."\"></i>" : "")."<span>".$v['title']."</span></a>";
+		$menu .= (!$isCat ? "<div class=\"items\">" : "")."<a href=\"".$v['link']."\"".($cat ? " class=\"subItem\"": "").">".(isset($v['icon']) && !empty($v['icon']) ? "<i class=\"".$v['icon']."\"></i>" : "")."<span>".$v['title']."</span></a>";
 		$menu .= ($cat ? "<div class=\"dropped\">" : "");
 		if($cat) {
 			$menu .= menuAdminHeader($v['items'], true);

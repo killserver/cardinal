@@ -25,6 +25,7 @@
 </table>
 <div class="btn btn-secondary add" onclick="AddToLang()">{L_"Добавить перевод"}</div>
 <script type="text/javascript">
+var disableAllEditors = true;
 function confirmClear(th) {
 	if (confirm("{L_"Вы подтверждаете сброс?(Данную операцию невозможно будет обратить)"}")) {
 		jQuery.post("./?pages=Languages&lang={initLang}&resetLang", "orLang="+jQuery(th).parent().parent().find("td").first().html(), function(data) {

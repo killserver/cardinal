@@ -10,6 +10,7 @@ class cardinalError {
 	protected static $_debug = false;
 	private static $_debugHandler = false;
 	public static $_echo = true;
+	private static $_isCli = false;
 
 	final function __construct() {
 		
@@ -44,39 +45,39 @@ class cardinalError {
 	
 	final public static function FriendlyErrorType($type) {
 		if($type==0) { // 0 // 
-			return 'E_CORE'; 
+			return (self::$_isCli ? "\e[0;41m" : '').'E_CORE'.(self::$_isCli ? "\e[0m": '');
 		} else if($type==E_ERROR) { // 1 // 
-			return 'E_ERROR'; 
+			return (self::$_isCli ? "\e[0;41m" : '').'E_ERROR'.(self::$_isCli ? "\e[0m": ''); 
 		} else if($type==E_WARNING) { // 2 // 
-			return 'E_WARNING'; 
+			return (self::$_isCli ? "\e[0;33m" : '').'E_WARNING'.(self::$_isCli ? "\e[0m": ''); 
 		} else if($type==E_PARSE) { // 4 // 
-			return 'E_PARSE'; 
+			return (self::$_isCli ? "\e[0;33m" : '').'E_PARSE'.(self::$_isCli ? "\e[0m": ''); 
 		} else if($type==E_NOTICE) { // 8 // 
-			return 'E_NOTICE'; 
+			return (self::$_isCli ? "\e[0;35m" : '').'E_NOTICE'.(self::$_isCli ? "\e[0m": ''); 
 		} else if($type==E_CORE_ERROR) { // 16 // 
-			return 'E_CORE_ERROR'; 
+			return (self::$_isCli ? "\e[0;41m" : '').'E_CORE_ERROR'.(self::$_isCli ? "\e[0m": ''); 
 		} else if($type==E_CORE_WARNING) { // 32 // 
-			return 'E_CORE_WARNING'; 
+			return (self::$_isCli ? "\e[0;33m" : '').'E_CORE_WARNING'.(self::$_isCli ? "\e[0m": ''); 
 		} else if($type==E_COMPILE_ERROR) { // 64 // 
-			return 'E_COMPILE_ERROR'; 
+			return (self::$_isCli ? "\e[0;41m" : '').'E_COMPILE_ERROR'.(self::$_isCli ? "\e[0m": ''); 
 		} else if($type==E_COMPILE_WARNING) { // 128 // 
-			return 'E_COMPILE_WARNING'; 
+			return (self::$_isCli ? "\e[0;33m" : '').'E_COMPILE_WARNING'.(self::$_isCli ? "\e[0m": ''); 
 		} else if($type==E_USER_ERROR) { // 256 // 
-			return 'E_USER_ERROR'; 
+			return (self::$_isCli ? "\e[0;41m" : '').'E_USER_ERROR'.(self::$_isCli ? "\e[0m": ''); 
 		} else if($type==E_USER_WARNING) { // 512 // 
-			return 'E_USER_WARNING'; 
+			return (self::$_isCli ? "\e[0;33m" : '').'E_USER_WARNING'.(self::$_isCli ? "\e[0m": ''); 
 		} else if($type==E_USER_NOTICE) { // 1024 // 
-			return 'E_USER_NOTICE'; 
+			return (self::$_isCli ? "\e[0;36m" : '').'E_USER_NOTICE'.(self::$_isCli ? "\e[0m": ''); 
 		} else if($type==E_STRICT) { // 2048 // 
-			return 'E_STRICT'; 
+			return (self::$_isCli ? "\e[0;34m" : '').'E_STRICT'.(self::$_isCli ? "\e[0m": ''); 
 		} else if($type==E_RECOVERABLE_ERROR) { // 4096 // 
-			return 'E_RECOVERABLE_ERROR'; 
+			return (self::$_isCli ? "\e[0;32m" : '').'E_RECOVERABLE_ERROR'.(self::$_isCli ? "\e[0m": ''); 
 		} else if($type==E_DEPRECATED) { // 8192 // 
-			return 'E_DEPRECATED';
+			return (self::$_isCli ? "\e[0;35m" : '').'E_DEPRECATED'.(self::$_isCli ? "\e[0m" : '');
 		} else if($type==E_USER_DEPRECATED) { // 16384 //
-			return 'E_USER_DEPRECATED';
+			return (self::$_isCli ? "\e[0;35m" : '').'E_USER_DEPRECATED'.(self::$_isCli ? "\e[0m" : '');
 		} else {
-			return $type;
+			return (self::$_isCli ? "\e[0;41m" : '').$type.(self::$_isCli ? "\e[0m" : '');
 		}
 	}
 	
@@ -133,6 +134,25 @@ class cardinalError {
 		}
 	return $ip;
 	}
+
+	final public static function is_cli() {
+		if(defined('STDIN')) {
+			return true;
+		}
+		if(php_sapi_name()==='cli') {
+			return true;
+		}
+		if(array_key_exists('SHELL', $_ENV)) {
+			return true;
+		}
+		if(empty($_SERVER['REMOTE_ADDR']) && !isset($_SERVER['HTTP_USER_AGENT']) && sizeof($_SERVER['argv'])>0) {
+			return true;
+		}
+		if(!array_key_exists('REQUEST_METHOD', $_SERVER)) {
+			return true;
+		}
+		return false;
+	}
 	
 	final public static function logException($e, $rollbackTransactions = true, $messagePrefix = '') {
 		try {
@@ -167,6 +187,12 @@ primary key `id`(`id`)
 				$db->doquery("INSERT INTO `".PREFIX_DB."error_log`(`times`, `ip`, `exception_type`, `message`, `filename`, `line`, `trace_string`, `request_state`) VALUES(UNIX_TIMESTAMP(), \"".self::getip()."\", \"".self::FriendlyErrorType($e->getCode())."\", \"".self::saves($messagePrefix . $e->getMessage())."\", \"".self::saves($file)."\", \"".$e->getLine()."\", \"".self::saves($e->getTraceAsString())."\", \"".self::saves(serialize($request), true)."\")");
 			}
 			if(self::$_echo) {
+				self::$_isCli = self::is_cli();
+				if(self::$_isCli) {
+					echo "[" . self::FriendlyErrorType($e->getCode()) . "] " . $e->getMessage() . " - " . self::saves($file) . " (" . $e->getLine() . ")\n[" . self::FriendlyErrorType($e->getCode()) . "]\n" . self::getExceptionTraceAsString($e);
+					echo "\n";
+					die();
+				}
 				if(!defined("ERROR_VIEW")) {
 					self::viewOnPage("<div style=\"text-decoration:underline;\"><div style=\"padding-top: 10px;text-transform: uppercase;\"><h1>Error!</h1> <b>[" . self::FriendlyErrorType($e->getCode()) . "]</b> level error. Error code <h2 style=\"display:inline-block;\">(" . self::NextId($db) . ")</h2>. Please, report developer</div></div>");
 				} else {
@@ -187,7 +213,7 @@ primary key `id`(`id`)
 						), $file);
 						self::viewOnPage($file);
 					} else {
-						self::viewOnPage("<div style=\"text-decoration:underline;\"><div style=\"padding-top: 10px;text-transform: uppercase;\">[" . self::FriendlyErrorType($e->getCode()) . "] " . $e->getMessage() . " - " . self::saves($file) . " (" . $e->getLine() . ")</div><br />\n<b>[" . self::FriendlyErrorType($e->getCode()) . "]</b></div><br />\n<span style=\"border: 2px dotted black;\">" . nl2br(self::saves(self::getExceptionTraceAsString($e))) . "</span></div>");
+						self::viewOnPage("<div style=\"text-decoration:underline;\"><div style=\"padding-top: 10px; text-transform: uppercase;\">[" . self::FriendlyErrorType($e->getCode()) . "] " . $e->getMessage() . " - " . self::saves($file) . " (" . $e->getLine() . ")</div><br />\n<b>[" . self::FriendlyErrorType($e->getCode()) . "]</b></div><br />\n<span style=\"border:0.1em dotted black;padding:0.5em;display:block;\">" . nl2br(self::saves(self::getExceptionTraceAsString($e))) . "</span></div>");
 					}
 				}
 			}

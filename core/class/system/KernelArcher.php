@@ -8,6 +8,7 @@ class KernelArcher {
 	private static $excl = array();
 	public static $editModel = array();
 	private $countCall = array();
+	public static $sortBy = array();
 	
 	function __construct($table, $model = false) {
 		$this->selectTable = $table;
@@ -108,7 +109,10 @@ class KernelArcher {
 		$model = $this->callArr($model, "TakeAddModel", array($model, $firstId, "countCall" => ""));
 		unset($model->{$firstId});
 		$list = $model->getArray();
-		if(isset($list['pathForUpload'])) {
+		if(isset($model->pathForUpload)) {
+			$uploads = $model->pathForUpload;
+			unset($model->pathForUpload);
+		} elseif(isset($list['pathForUpload'])) {
 			$uploads = $list['pathForUpload'];
 			unset($list['pathForUpload']);
 		} else {
@@ -125,19 +129,30 @@ class KernelArcher {
 					$viewI = 1;
 					$type = Files::reArrayFiles($type);
 					$types = array();
+					if(is_serialized($v)) {
+						$v = unserialize($v);
+					}
+					$counter = 0;
 					foreach($type as $ks => $vs) {
-						$upload = $this->UploadFile($model, $ks, $selectId, $vs, $uploads, $model->getAttribute($k, "allowUpload"), $viewI);
+						$upload = $this->UploadFile($model, $ks, $selectId, $vs, (is_array($uploads) && isset($uploads[$k]) ? $uploads[$k] : $uploads), $model->getAttribute($k, "allowUpload"), $viewI);
 						if(!empty($upload) || !empty($v)) {
-							$types[$ks] = (!$upload ? $v : $upload."?".time());
+							$types[$ks] = (!$upload ? (is_array($v) ? $v[$counter] : $v) : $upload."?".time());
 							$viewI++;
 						}
+						$counter++;
 					}
 					$type = $types;
 				} else {
 					$upload = $this->UploadFile($model, $k, $selectId, $type, $uploads, $model->getAttribute($k, "allowUpload"));
 					$type = (!$upload ? $v : $upload."?".time());
 				}
-			} else if(!empty($post)) {
+			} else if($model->getAttribute($k, "type")=="file" || $model->getAttribute($k, "type")=="fileArray") {
+				if(!empty($post)) {
+					$type = $post;
+				} else {
+					$type = $v;
+				}
+			} else if(!is_bool($v) || $post != $v) {
 				$type = $post;
 			} else {
 				$type = $v;
@@ -146,11 +161,7 @@ class KernelArcher {
 				$type = serialize($type);
 			}
 			$type = trim($type);
-			if(Validate::not_empty($type)) {
-				$model->{$k} = $type;
-			} else {
-				unset($model->{$k});
-			}
+			$model->{$k} = $type;
 		}
 		$model = $this->callArr($model, "TakeAddModel", array($model, $firstId, "countCall" => ""));
 		$getExclude = KernelArcher::excludeField("get", "Edit");
@@ -235,6 +246,7 @@ class KernelArcher {
 		$type = isset($file['key']) ? $file['type'] : $file[5];
 		$fileName = isset($file['fileName']) ? $file['fileName'] : "";
 		$file = isset($file['file']) ? $file['file'] : $file[3];
+		$fileName = uniqid().$fileName;
 		$path = ROOT_PATH.$path;
 		Files::$switchException = true;
 		//Files::$simulate = true;
@@ -264,7 +276,10 @@ class KernelArcher {
 		$models = $this->callArr($models, "TakeEditModel", array($models, $firstId, "countCall" => ""));
 		unset($model->{$firstId});
 		$list = $models->getArray();
-		if(isset($list['pathForUpload'])) {
+		if(isset($model->pathForUpload)) {
+			$uploads = $model->pathForUpload;
+			unset($model->pathForUpload);
+		} elseif(isset($list['pathForUpload'])) {
 			$uploads = $list['pathForUpload'];
 			unset($list['pathForUpload']);
 		} else {
@@ -273,6 +288,7 @@ class KernelArcher {
 		foreach($list as $k => $v) {
 			$files = $request->files->get($k, false);
 			$post = $request->post->get($k, false);
+			
 			$post = $this->rebuildData($post);
 			$files = $this->rebuildData($files);
 			if(!empty($files) && ($models->getAttribute($k, "type")=="file" || $models->getAttribute($k, "type")=="fileArray")) {
@@ -280,20 +296,31 @@ class KernelArcher {
 				if((!isset($type['error']) || is_array($type['error'])) && (!isset($type['name']) || is_array($type['name']))) {
 					$viewI = 1;
 					$type = Files::reArrayFiles($type);
+					if(is_serialized($v)) {
+						$v = unserialize($v);
+					}
+					$counter = 0;
 					$types = array();
 					foreach($type as $ks => $vs) {
-						$upload = $this->UploadFile($models, $ks, $selectId, $vs, $uploads, $models->getAttribute($k, "allowUpload"), $viewI);
+						$upload = $this->UploadFile($models, $ks, $selectId, $vs, (is_array($uploads) && isset($uploads[$k]) ? $uploads[$k] : $uploads), $models->getAttribute($k, "allowUpload"), $viewI);
 						if(!empty($upload) || !empty($v)) {
-							$types[$ks] = (!$upload ? $v : $upload."?".time());
+							$types[$ks] = (!$upload ? (is_array($v) ? $v[$counter] : $v) : $upload."?".time());
 							$viewI++;
 						}
+						$counter++;
 					}
 					$type = $types;
 				} else {
 					$upload = $this->UploadFile($models, $k, $selectId, $type, $uploads, $models->getAttribute($k, "allowUpload"));
 					$type = (!$upload ? $v : $upload."?".time());
 				}
-			} else if(!empty($post)) {
+			} else if($model->getAttribute($k, "type")=="file" || $model->getAttribute($k, "type")=="fileArray") {
+				if(!empty($post)) {
+					$type = $post;
+				} else {
+					$type = $v;
+				}
+			} else if(!is_bool($v) || $post != $v) {
 				$type = $post;
 			} else {
 				$type = $v;
@@ -302,11 +329,7 @@ class KernelArcher {
 				$type = serialize($type);
 			}
 			$type = trim($type);
-			if(Validate::not_empty($type)) {
-				$model->{$k} = $type;
-			} else {
-				unset($model->{$k});
-			}
+			$model->{$k} = $type;
 		}
 		$model = $this->callArr($model, "TakeEditModel", array($model, $firstId, "countCall" => ""));
 		$getExclude = KernelArcher::excludeField("get", "Edit");
@@ -434,12 +457,12 @@ class KernelArcher {
 				continue;
 			}
 			$type = $model->getAttribute($name, "type");
-			if($type=="image") {
+			if($type=="image" || $type=="file") {
 				$exp = explode("?", $val);
 				if((is_array($exp) && isset($exp[0]) && file_exists(ROOT_PATH.$exp[0])) || (file_exists(ROOT_PATH.$val))) {
 					unlink(ROOT_PATH.(is_array($exp) && isset($exp[0]) ? $exp[0] : $val));
 				}
-			} else if($type=="imageArray") {
+			} else if($type=="imageArray" || $type=="fileArray") {
 				$exp = explode(",", $val);
 				for($i=0;$i<sizeof($exp);$i++) {
 					$exps = explode("?", $exp[$i]);
@@ -588,14 +611,23 @@ class KernelArcher {
 		$open = defined("ADMINCP_DIRECTORY");
 		$retType = "";
 		switch($type) {
+			case "tinyint":
+			case "smallint":
+			case "mediumint":
 			case "int":
 			case "bigint":
-				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"numeric\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите&nbsp;".$name.($open ? "'}" : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"number\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите&nbsp;".$name.($open ? "'}" : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
+			break;
+			case "float":
+			case "double":
+			case "decimal":
+			case "real":
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"number\" step=\"0.01\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите&nbsp;".$name.($open ? "'}" : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
 			break;
 			case "enum":
 				$enum = explode(",", $val);
 				$enum = array_map("trim", $enum);
-				$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " disabled=\"disabled\"" : "")."><option value=\"\">".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."</option>";
+				$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " disabled=\"disabled\"" : "").">".(!defined("WITHOUT_NULL") ? "<option value=\"\">".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."</option>" : "");
 				for($i=0;$i<sizeof($enum);$i++) {
 					$retType .= "<option value=\"".($open ? "{L_'" : "").htmlspecialchars($enum[$i]).($open ? "'}" : "")."\"".(!empty($default) && $default==$enum[$i] ? " selected=\"selected\"" : "").">".($open ? "{L_'" : "").htmlspecialchars($enum[$i]).($open ? "'}" : "")."</option>";
 				}
@@ -603,7 +635,7 @@ class KernelArcher {
 			break;
 			case "array":
 				$enum = array_map("trim", $val);
-				$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " disabled=\"disabled\"" : "")."><option value=\"\">".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}</option>";
+				$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " disabled=\"disabled\"" : "").">".(!defined("WITHOUT_NULL") ? "<option value=\"\">".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}</option>" : "");
 				for($i=0;$i<sizeof($enum);$i++) {
 					$retType .= "<option value=\"".($open ? "{L_'" : "").htmlspecialchars($enum[$i])."".($open ? "'}" : "")."\"".(!empty($default) && $default==$enum[$i] ? " selected=\"selected'" : "").">".($open ? "{L_'" : "").htmlspecialchars($enum[$i])."".($open ? "'}" : "")."</option>";
 				}
@@ -612,12 +644,11 @@ class KernelArcher {
 			case "varchar":
 				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"text\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;{L_".$name."}\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
 			break;
+			case "image":
 			case "file":
 				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"file\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"{C_default_http_local}".$val."\" target=\"_blank\">".($open ? "{L_'" : "")."просмотреть".($open ? "'}" : "")."</a>" : "")."<br>";
 			break;
-			case "image":
-				$retType = (!empty($val) ? "<img src=\"{C_default_http_local}".$val."\" srcset=\"{C_default_http_local}".$val." 2x\" width=\"100%\">" : "")."<br>";
-			break;
+			case "imageArray":
 			case "fileArray":
 				$enum = explode(",", $val);
 				$enum = array_map("trim", $enum);
@@ -626,14 +657,6 @@ class KernelArcher {
 					$retType .= "<input class=\"form-control\" type=\"file\" name=\"".$name."[".$i."]\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"{C_default_http_local}".$enum[$i]."\" target=\"_blank\">".($open ? "{L_'" : "")."просмотреть".($open ? "'}" : "")."</a>" : "")."<br>";
 				}
 				$retType .= "</span><br><a href=\"javascript:addInputFile('".$name."')\">".($open ? "{L_'" : "")."Добавить".($open ? "'}" : "")."</a>";
-			break;
-			case "imageArray":
-				$enum = explode(",", $val);
-				$enum = array_map("trim", $enum);
-				$retType = "";
-				for($i=0;$i<sizeof($enum);$i++) {
-					$retType .= "<img src=\"".(!empty($val) ? "{C_default_http_local}".$enum[$i] : "")."\" srcset=\"{C_default_http_local}".$enum[$i]." 2x\" width=\"100%\"><br>";
-				}
 			break;
 			case "shorttext":
 			case "mediumtext":

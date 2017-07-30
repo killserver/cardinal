@@ -30,12 +30,23 @@ class Archer_Shield {
 		$h = $model->getComments();
 		$h = array_values($h);
 		$head = "";
+		$sortBy = array();
+		if(isset(KernelArcher::$sortBy) && is_array(KernelArcher::$sortBy) && sizeof(KernelArcher::$sortBy)>0) {
+			KernelArcher::$sortBy = array_values(KernelArcher::$sortBy);
+			for($i=0;$i<sizeof(KernelArcher::$sortBy);$i++) {
+				KernelArcher::$sortBy[$i] = "{L_\"".KernelArcher::$sortBy[$i]."\"}";
+			}
+		}
 		$counts = 0;
 		for($i=0;$i<sizeof($h);$i++) {
 			if($this->in_array_strpos($h[$i], $getExclude)) {
 				continue;
 			}
-			$head .= "<th>".$h[$i]."</th>";
+			$altName = str_replace(array("{L_\"", "\"}"), "", $h[$i]);
+			if(isset(KernelArcher::$sortBy) && is_array(KernelArcher::$sortBy) && sizeof(KernelArcher::$sortBy)>0 && in_array($h[$i], KernelArcher::$sortBy)) {
+				$sortBy[] = "'".$altName."'";
+			}
+			$head .= "<th data-altName=\"".$altName."\">".$h[$i]."</th>";
 			$counts++;
 		}
 		$head .= (!defined("ADMINCP_DIRECTORY") ? "<th>Options</th>" : "<th>{L_\"options\"}</th>");
@@ -52,6 +63,7 @@ class Archer_Shield {
 		$tpl = str_replace("{ArcherMind}", $head, $tpl);
 		$tpl = str_replace("{ArcherData}", $data, $tpl);
 		$tpl = str_replace("{ArcherPage}", $modelName, $tpl);
+		$tpl = str_replace("{ArcherSort}", implode(",", $sortBy), $tpl);
 		$tpl = str_replace("{ArcherTable}", str_replace(PREFIX_DB, "", $table), $tpl);
 		$tpl = str_replace("{ArcherNotTouch}", $counts, $tpl);
 		return $tpl;

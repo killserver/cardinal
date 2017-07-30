@@ -45,6 +45,12 @@
 	border-right: none 0;
 }
 
+#i-debug-panel li:before, #i-debug-panel li:after
+{
+	content: '';
+	display: none;
+}
+
 #i-debug-panel-list .show-hide-elem
 {
 	border-bottom: none 0 !important;

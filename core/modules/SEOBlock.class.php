@@ -107,24 +107,28 @@ class SEOBlock extends modules {
 		if(!file_exists(PATH_UPLOADS."robots.txt") && is_writable(PATH_UPLOADS)) {
 			$host = (class_exists("HTTP") && method_exists("HTTP", "getServer") ? HTTP::getServer('SERVER_NAME') : $_SERVER['SERVER_NAME']);
 			$path = (class_exists("HTTP") && method_exists("HTTP", "getServer") ? HTTP::getServer('PHP_SELF') : $_SERVER['PHP_SELF']);
-			$path = str_replace(array("uploads".DS."robots.txt", "uploads".(defined("DS_DB") ? DS_DB : "/")."robots.txt", "index.php"), "", $path);
+			if(strpos($path, "index.".ROOT_EX."/")!==false) {
+				$path = explode("index.".ROOT_EX."/", $path);
+				$path = current($path);
+			}
+			$path = str_replace(array("uploads".DS."robots.txt", "uploads".(defined("DS_DB") ? DS_DB : "/")."robots.txt", "index.".ROOT_EX), "", $path);
 			if(substr($path, 0, 1)=="/") {
 				$path = substr($path, 1);
 			}
 			$robots = "User-agent: *\n".
-					"Disallow: ".$path.(!defined("ADMINCP_DIRECTORY") ? "admincp.php" : ADMINCP_DIRECTORY)."/\n".
-					"Disallow: ".$path."cdn-cgi/\n".
-					"Disallow: ".$path."core/\n".
-					"Disallow: ".$path."changelog/\n".
-					"Disallow: ".$path."examples/\n".
-					"Disallow: ".$path."js/\n".
-					"Disallow: ".$path."skins/\n".
-					"Disallow: ".$path."version/\n".
-					"Disallow: ".$path."uploads/\n".
+					"Disallow: /".$path.(!defined("ADMINCP_DIRECTORY") ? "admincp.php" : ADMINCP_DIRECTORY)."/\n".
+					"Disallow: /".$path."cdn-cgi/\n".
+					"Disallow: /".$path."core/\n".
+					"Disallow: /".$path."changelog/\n".
+					"Disallow: /".$path."examples/\n".
+					"Disallow: /".$path."js/\n".
+					"Disallow: /".$path."skins/\n".
+					"Disallow: /".$path."version/\n".
+					"Disallow: /".$path."uploads/\n".
 					"\n".
 					"\n".
 					"Host: ".$host."\n".
-					"Sitemap: http://".$host.$path."sitemap.xml";
+					"Sitemap: http://".$host."/".$path."sitemap.xml";
 			file_put_contents(PATH_UPLOADS."robots.txt", $robots);
 		}
 		$dir = PATH_CACHE_SYSTEM;

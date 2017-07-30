@@ -246,6 +246,53 @@ class templates {
 		}
 	}
 
+	final public static function getElements($file) {
+		$tpl = self::load_templates($file);
+		foreach(self::$blocks as $name => $val) {
+			if(is_array($name)) {
+				continue;
+			}
+			if(!is_array($val) && strpos($tpl, "{".$name."}") !== false) {
+				$tpl = str_replace("{".$name."}", $val, $tpl);
+			} else {
+				$tpl = self::callback_array("#{(.+?)(\[|\.)(.+?)(\]|)}#", ("templates::getElementBlock"), $tpl);
+			}
+		}
+		preg_match_all("#{(.+?)(\[|\.)(.+?)(\]|)}#i", $tpl, $arr);
+		for($i=0;$i<sizeof($arr[0]);$i++) {
+			if(
+				stripos($arr[0][$i], "{C_")!==false  ||
+				stripos($arr[0][$i], "{R_")!==false  ||
+				stripos($arr[0][$i], "{L_")!==false  ||
+				stripos($arr[0][$i], "{if ")!==false ||
+				stripos($arr[0][$i], "{U_")!==false  ||
+				stripos($arr[0][$i], "{D_")!==false  ||
+				stripos($arr[0][$i], "{RP")!==false  ||
+				stripos($arr[0][$i], "{M_")!==false  ||
+				stripos($arr[0][$i], "{UL_")!==false ||
+				stripos($arr[0][$i], "{S_")!==false  ||
+				stripos($arr[0][$i], "{THEME}")!==false
+			) {
+				unset($arr[0][$i]);
+			}
+		}
+		$arr[0] = array_values($arr[0]);
+		return $arr[0];
+	}
+
+	final private static function getElementBlock($array) {
+		if(!isset(self::$blocks[$array[1]])) {
+			return $array[0];
+		}
+		if(is_array(self::$blocks[$array[1]])) {
+			$get = current(self::$blocks[$array[1]]);
+			if(isset($get[$array[3]])) {
+				return "array";
+			}
+			return "array";
+		}
+	}
+
 	/**
 	 * Set data for template
 	 * @access public
@@ -478,6 +525,9 @@ class templates {
 			case "time":
 				$ret = time();
 			break;
+			case "dirSkins":
+				$ret = self::$dir_skins;
+			break;
 			default:
 				$ret = $array[0];
 			break;
@@ -557,10 +607,12 @@ class templates {
 		} else {
 			$isset = modules::get_lang($array[2]);
 		}
-		if(!empty($isset)) {
+		if(!empty($isset) && $isset!='""') {
 			return $isset;
-		} else {
+		} else if($array[2]!='""') {
 			return $array[2];
+		} else {
+			return "";
 		}
 	}
 
@@ -738,7 +790,7 @@ class templates {
 		}
 		if($type=="tablet" && $mobileDetect->isTablet()) {
 			return 1;
-		} else if($type=="mobile" && ($mobileDetect->isMobile() && !$mobileDetect->isMobile())) {
+		} else if($type=="mobile" && ($mobileDetect->isMobile() && !$mobileDetect->isTablet())) {
 			return 1;
 		} else if($type=="desktop" && !($mobileDetect->isMobile() || $mobileDetect->isTablet())) {
 			return 1;
@@ -898,9 +950,10 @@ class templates {
 	 * @return array|mixed|NUll|string Result rebuild
      */
 	final private static function ecomp($tmp, $file = "") {
-		while(strpos($tmp, "///***")!==false && strpos($tmp, "***///")!==false) {
-			$tmp = nsubstr($tmp, 0, nstrpos($tmp, "///***")).nsubstr($tmp, nstrpos($tmp, "***///")+6, nstrlen($tmp));
-		}
+		$tmp = preg_replace("/\/\/\/\*\*\*(.+?)\*\*\*\/\/\//is", "", $tmp);
+		// while(strpos($tmp, "///***")!==false && strpos($tmp, "***///")!==false) {
+		//	$tmp = nsubstr($tmp, 0, nstrpos($tmp, "///***")).nsubstr($tmp, nstrpos($tmp, "***///")+6, nstrlen($tmp));
+		// }
 		$tmp = self::ParsePHP($tmp, $file);
 		$tmp = self::callback_array("#\{include (.+?)=['\"](.*?)['\"]\}#", ("templates::includeFile"), $tmp);
 		$tmp = preg_replace("~\{\#is_last\[(\"|)(.*?)(\"|)\]\}~", "\\1", $tmp);
@@ -932,7 +985,7 @@ class templates {
 		$tmp = str_replace("{login}", modules::get_user('username'), $tmp);
 		$tmp = str_replace("{addnews-link}", config::Select('link', 'add'), $tmp);
 		$tmp = str_replace("{lostpassword-link}", config::Select('link', 'recover'), $tmp);
-		$tmp = self::callback_array("#\{UL_(.*?)\[(.*?)\]\}#", ("templates::level"), $tmp);
+		$tmp = self::callback_array("#\{UL_(.*?)(|\[(.*?)\])\}#", ("templates::level"), $tmp);
 
 		$tmp = self::callback_array('#\[page=(.*?)\]([^[]*)\[/page\]#i', ("templates::nowpage"), $tmp);
 		$tmp = self::callback_array('#\[not-page=(.*?)\]([^[]*)\[/not-page\]#i', ("templates::npage"), $tmp);
@@ -1032,8 +1085,13 @@ class templates {
 	 * @return string Return "true" or "false"
      */
 	final private static function level($array) {
-		$array[2] = str_replace("\"", "", $array[2]);
-		return userlevel::check($array[1], $array[2]);
+		if(isset($array[3])) {
+			$array[3] = str_replace("\"", "", $array[3]);
+			return userlevel::check($array[1], $array[2]);
+		} else {
+			$is = userlevel::get($array[1]);
+			return ($is=="yes" ? "true" : "false");
+		}
 	}
 
 	/**
@@ -1453,7 +1511,7 @@ class templates {
 		$tpl = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tpl);
 		$tpl = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tpl);
 		$tpl = self::callback_array("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tpl);
-		$tpl = self::callback_array("#\{UL_(.*?)\[(.*?)\]\}#", ("templates::level"), $tpl);
+		$tpl = self::callback_array("#\{UL_(.*?)(|\[(.*?)\])\}#", ("templates::level"), $tpl);
 		$tpl = self::callback_array("#\{FMK_(['\"])(.*?)\[(.*?)\]\}#", ("templates::fmk"), $tpl);
 		$tpl = self::callback_array("#\{M_\[(.+?)\]\}#", ("templates::checkMobile"), $tpl);
 		$tpl = self::callback_array("#\{RP\[([a-zA-Z0-9\-_]+)\]\}#", ("templates::routeparam"), $tpl);
@@ -1867,7 +1925,9 @@ if(!$test) {
 		}
 		$html = preg_replace('#<!(.*?)\[(if|endif)(.*?)\](.*?)>#', '<#!$1[$2$3]$4>', $html);
 		$html = preg_replace('#<!-[^\[].+?->#s', '', $html);//ToDo: WTF?!
-		$html = preg_replace('@<\#!(.*?)\[(if|endif)(.*?)\](.*?)>@', '<!$1[$2$3]$4>', $html);
+		while(preg_match('#<\#!(.*?)\[(if|endif)(.*?)\](.*?)>#', $html)) {
+			$html = preg_replace('#<\#!(.*?)\[(if|endif)(.*?)\](.*?)>#', '<!$1[$2$3]$4>', $html);
+		}
 		$html = preg_replace('/[\r\n\t]+/', ' ', $html);
 		$html = preg_replace('/>[\s]*</', '><', $html); // Strip spacechars between tags
 		$html = preg_replace('/[\s]+/', ' ', $html); // Replace several spacechars with one space

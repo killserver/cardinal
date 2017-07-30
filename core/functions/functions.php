@@ -358,6 +358,22 @@ function is_serialized($data) {
 	return false;
 }
 
+function is_xml($string) {
+	if(!defined('LIBXML_COMPACT')) {
+		new Exception('libxml is required to use is_xml()');
+		die();
+	}
+	$internal_errors = libxml_use_internal_errors();
+	libxml_use_internal_errors(true);
+	$result = simplexml_load_string($string) !== false;
+	libxml_use_internal_errors($internal_errors);
+	return $result;
+}
+
+function is_html($string) {
+	return strlen(strip_tags($string)) < strlen($string);
+}
+
 if(!function_exists('is_iterable')) {
 	/**
 	 * Check wether or not a variable is iterable (i.e array or \Traversable)

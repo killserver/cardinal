@@ -282,6 +282,7 @@ class Core {
 			location(htmlspecialchars_decode(HTTP::getServer("HTTP_REFERER")));die();
 		}
 		$this->ParseLang();
+		Route::RegParam("lang", "ru");
 		$routeLang = HTTP::getServer(ROUTE_GET_URL);
 		preg_match("#/([a-zA-Z]+)/#", $routeLang, $arr);
 		if(isset($arr[1])) {
@@ -297,6 +298,7 @@ class Core {
 		} else if(isset($_COOKIE['langSet'])) {
 			lang::set_lang($_COOKIE['langSet']);
 			lang::init_lang();
+			Route::RegParam("lang", $_COOKIE['langSet']);
 		}
 		if(!$print) {
 			$echo = (templates::complited_assing_vars($echo, null));
@@ -353,7 +355,7 @@ class Core {
 			$datas = array_values($datas);
 			for($i=0;$i<sizeof($datas);$i++) {
 				for($is=0;$is<sizeof($datas[$i]);$is++) {
-					if(isset($datas[$i][$is]['access']) && $datas[$i][$is]['access']!=$level) {
+					if(isset($datas[$i][$is]['access']) && !$datas[$i][$is]['access']) {
 						break;
 					}
 					if(sizeof($datas[$i])==1) {

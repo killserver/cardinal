@@ -26,10 +26,14 @@ class DBObject {
 	private $selectAdd = array();
 	private $setAttrFor = array();
 	private $allowEmptyAttr = false;
+	private $pseudoFields = array();
 	
 	final private function UnSetAll(&$ret) {
 		if(isset($ret['loadedTable'])) {
 			unset($ret['loadedTable']);
+		}
+		if(isset($ret['pathForUpload'])) {
+			unset($ret['pathForUpload']);
 		}
 		if(isset($ret['where'])) {
 			unset($ret['where']);
@@ -46,6 +50,9 @@ class DBObject {
 		if(isset($ret['addWhereModel'])) {
 			unset($ret['addWhereModel']);
 		}
+		if(isset($ret['pseudoFields'])) {
+			unset($ret['pseudoFields']);
+		}
 		if(isset($ret['selectAdd'])) {
 			unset($ret['selectAdd']);
 		}
@@ -57,15 +64,18 @@ class DBObject {
 		}
 	}
 
-    final public function getArray() {
+	final public function getArray() {
 		$ret = get_object_vars($this);
 		$this->UnSetAll($ret);
 		$arr = array_keys($ret);
 		for($i=0;$i<sizeof($arr);$i++) {
 			$ret[$arr[$i]] = $this->ToType($ret[$arr[$i]]);
 		}
-        return $ret;
-    }
+		foreach($this->pseudoFields as $k => $v) {
+			$ret[$k] = $v;
+		}
+		return $ret;
+	}
 	
 	final public function ToType(&$var) {
 		if(is_array($var)) {
@@ -162,7 +172,7 @@ class DBObject {
 			$table = $this->loadedTable;
 		}
 		$this->getAttributes($table);
-		if(isset($this->Attributes[$name]) && isset($this->Attributes[$name]["comment"])) {
+		if(isset($this->pseudoFields[$name]) || (isset($this->Attributes[$name]) && isset($this->Attributes[$name]["comment"]))) {
 			if($empty === false) {
 				return (defined("ADMINCP_DIRECTORY") ? "{L_\"" : "").(!empty($this->Attributes[$name]["comment"]) ? $this->Attributes[$name]["comment"] : $name).(defined("ADMINCP_DIRECTORY") ? "\"}" : "");
 			} else {
@@ -196,6 +206,10 @@ class DBObject {
 		$this->orderBy[][$name] = $type;
 	}
 	
+	final public function Where($name, $to = "", $val = "", $type = "AND") {
+		$this->WhereTo($name, $to, $val, $type);
+	}
+	
 	final public function WhereTo($name, $to = "", $val = "", $type = "AND") {
 		if(empty($to)) {
 			$to = $name;
@@ -205,7 +219,7 @@ class DBObject {
 			$name = get_object_vars($this);
 			$name = key($name);
 		}
-		if(empty($val)) {
+		if($val==="") {
 			$val = $to;
 			if(is_numeric($to)) {
 				$to = "=";
@@ -342,11 +356,21 @@ class DBObject {
 		$rel = db::doquery("SELECT ".implode(", ", array_map(array(&$this, "getFieldForSelect"), $keys))." FROM `".$table."`".$where.$orderBy.$limit, true);
 		if(db::num_rows($rel) <= 1) {
 			$ret = db::fetch_object($rel, get_class($this));
+			if(is_object($ret)) {
+				foreach($this->pseudoFields as $k => $v) {
+					$ret->{$k} = $v;
+				}
+			}
 			db::free($rel);
 			return $ret;
 		} else {
 			$arr = array();
 			while($row = db::fetch_object($rel, get_class($this))) {
+				if(is_object($row)) {
+					foreach($this->pseudoFields as $k => $v) {
+						$row->{$k} = $v;
+					}
+				}
 				$arr[] = $row;
 			}
 			db::free($rel);
@@ -354,17 +378,21 @@ class DBObject {
 		}
 	}
 
-    final public function Time() {
-        $r = db::doquery("SELECT UNIX_TIMESTAMP() AS `time`");
-        return $r['time'];
-    }
+	final public function Time() {
+		if(db::connected()) {
+			$r = db::doquery("SELECT UNIX_TIMESTAMP() AS `time`");
+			return $r['time'];
+		} else {
+			return time();
+		}
+	}
 
-    final public function Insert($table = "") {
+	final public function Insert($table = "") {
 		if(empty($this->loadedTable) && empty($table)) {
 			throw new Exception("Table for insert is not set or empty");
 			die();
 		}
-        $arr = get_object_vars($this);
+		$arr = get_object_vars($this);
 		$this->UnSetAll($arr);
 		if(sizeof($arr)==0) {
 			throw new Exception("Fields is not set");
@@ -375,10 +403,10 @@ class DBObject {
 		} else {
 			$this->loadedTable = $table;
 		}
-        $key = array_keys($arr);
-        $val = array_values($arr);
-        return db::doquery("INSERT INTO `".$table."` (".implode(", ", array_map(array(&$this, "buildKeyIn"), $key)).") VALUES(".implode(", ", array_map(array(&$this, "buildValueIn"), $val)).")");
-    }
+		$key = array_keys($arr);
+		$val = array_values($arr);
+		return db::doquery("INSERT INTO `".$table."` (".implode(", ", array_map(array(&$this, "buildKeyIn"), $key)).") VALUES(".implode(", ", array_map(array(&$this, "buildValueIn"), $val)).")");
+	}
 	
 	final private function buildKeyIn($d) {
 		return "`".$d."`";
@@ -388,7 +416,7 @@ class DBObject {
 		return (preg_match("/^([a-zA-Z0-9-_]+)/", $d) && strpos($d, "(")!==false&&strpos($d, ")")!==false ? $d : "".str_replace("\\\\u", "\\u", db::escape($d))."");
 	}
 
-    final public function Update($table = "", $where = "", $orderBy = "", $limit = "") {
+	final public function Update($table = "", $where = "", $orderBy = "", $limit = "") {
 		if(empty($this->loadedTable) && empty($table)) {
 			throw new Exception("Table for update is not set or empty");
 			die();
@@ -397,7 +425,7 @@ class DBObject {
 			throw new Exception("Сonditions for update is not set or empty");
 			die();
 		}
-        $arr = get_object_vars($this);
+		$arr = get_object_vars($this);
 		$this->UnSetAll($arr);
 		if(sizeof($arr)==0) {
 			throw new Exception("Fields is not set");
@@ -417,16 +445,16 @@ class DBObject {
 		$where = $this->ReleaseWhere($where);
 		$orderBy = $this->ReleaseOrder($orderBy);
 		$limit = $this->ReleaseLimit($limit);
-        $key = array_keys($arr);
-        $val = array_values($arr);
-        return db::doquery("UPDATE `".$table."` SET ".implode(", ", array_map(array(&$this, "buildUpdateKV"), $key, $val)).$where.$orderBy.$limit);
-    }
+		$key = array_keys($arr);
+		$val = array_values($arr);
+		return db::doquery("UPDATE `".$table."` SET ".implode(", ", array_map(array(&$this, "buildUpdateKV"), $key, $val)).$where.$orderBy.$limit);
+	}
 	
 	final private function buildUpdateKV($k, $v) {
 		return "`".$k."` = ".(preg_match("/^([a-zA-Z0-9-_]+)/", $v) && strpos($v, "(")!==false&&strpos($v, ")")!==false ? $v : "".str_replace("\\\\u", "\\u", db::escape($v))."");
 	}
 
-    final public function Deletes($table = "", $where = "", $orderBy = "", $limit = "") {
+	final public function Deletes($table = "", $where = "", $orderBy = "", $limit = "") {
 		if(empty($this->loadedTable) && empty($table)) {
 			throw new Exception("Table for delete is not set or empty");
 			die();
@@ -447,8 +475,8 @@ class DBObject {
 			throw new Exception("Сonditions for delete is not set or empty");
 			die();
 		}
-        return db::doquery("DELETE FROM `".$table."` ".$where.$orderBy.$limit);
-    }
+		return db::doquery("DELETE FROM `".$table."` ".$where.$orderBy.$limit);
+	}
 	
 	final public function addField($name, $val = "") {
 		$this->{$name} = $val;
@@ -457,6 +485,16 @@ class DBObject {
 	
 	final public function removeField($name) {
 		unset($this->{$name});
+		return true;
+	}
+	
+	final public function addPseudoField($name, $val = "") {
+		$this->pseudoFields[$name] = $val;
+		return true;
+	}
+	
+	final public function removePseudoField($name) {
+		unset($this->pseudoFields[$name]);
 		return true;
 	}
 

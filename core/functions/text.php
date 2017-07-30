@@ -248,6 +248,16 @@ function nucfirst($text, $all = false) {
 	return $fc;
 }
 
+function nlcfirst($text, $all = false) {
+	$fc = strtolowers(nsubstr($text, 0, 1));
+	if(!$all) {
+		$fc .= nsubstr($text, 1);
+	} else {
+		$fc .= strtolowers(nsubstr($text, 1));
+	}
+	return $fc;
+}
+
 /*
  New on version 6.3
 */
@@ -361,16 +371,24 @@ function ToTranslit($var, $rep = false, $norm = false) {
 		return "";
 	}
 	$translate = lang::get_lang("translate");
+	if(!is_array($translate)) {
+		$translate = array();
+	}
+	$var = strtolowers($var);
+	$var = html_entity_decode($var);
 	if($rep) {
 		$lang = lang::get_lang('translate_en');
+		if(!is_array($lang)) {
+			$lang = array();
+		}
 		if($norm) {
 			$lang = array_flip($lang);
 		}
-		$translate = array_merge($lang, array("\\" => "", "/" => "", "$" => "", "#" => "", "@" => "", "!" => "", "%" => "", "^" => "", "&" => "", "*" => "", "(" => "", ")" => "", "?" => "", ":" => "", "=" => "", "+" => ""));
+		$translate = array_merge($lang, array("\\" => "", "/" => "", "$" => "", "#" => "", "@" => "", "!" => "", "%" => "", "^" => "", "&quot;" => "", "&" => "", "*" => "", "(" => "", ")" => "", "?" => "", ":" => "", "=" => "", "+" => "", "\"" => "'", "№" => ""));
 	} else {
-		$translate = array_merge($translate, array(" " => "_", "\\" => "", "/" => "", "'" => "", "$" => "", "#" => "", "@" => "", "!" => "", "%" => "", "^" => "", "&" => "", "*" => "", "(" => "", ")" => "", "," => "", "." => "", "?" => "", ":" => "", "=" => "", "+" => "", "\"" => "'"));
+		$translate = array_merge($translate, array(" " => "_", "\\" => "", "/" => "", "'" => "", "$" => "", "#" => "", "@" => "", "!" => "", "%" => "", "^" => "", "&quot;" => "", "&" => "", "*" => "", "(" => "", ")" => "", "," => "", "." => "", "?" => "", ":" => "", "=" => "", "+" => "", "\"" => "'", "№" => ""));
 	}
-return strtr(strtolowers($var), $translate);
+return strtr($var, $translate);
 }
 
 function plural_form($arr) {

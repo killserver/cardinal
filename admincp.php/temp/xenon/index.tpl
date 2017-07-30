@@ -55,7 +55,7 @@
 					
 				</div>
 				
-				[if {isUsers}==1]<a href="{C_default_http_host}admincp.php/?pages=Users" class="col-md-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-sm-12">
+				<a href="{C_default_http_host}admincp.php/?pages=Users" class="col-md-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-sm-12"[if {isUsers}==1] style="display:none;"[/if {isUsers}==1]>
 					
 					<div class="xe-widget xe-counter xe-counter-blue" data-count=".num" data-from="0" data-to="{users}" data-duration="3" data-easing="false">
 						<div class="xe-icon">
@@ -67,7 +67,7 @@
 						</div>
 					</div>
 				
-				</a>[/if {isUsers}==1]
+				</a>
 				
 				[if {is_messagesAdmin}==1]
 				<div class="col-sm-12">

@@ -7227,3 +7227,37 @@ pre {
   position: relative;
   top: -2px;
 }
+
+.btn-edit {
+  color: #ffffff;
+  background-color: #5a5b5c;
+  border-color: #4b4b4c;
+}
+
+.btn-edit:hover, .btn-edit:focus, .btn-edit:active, .btn-edit.active, .open > .dropdown-toggle.btn-edit {
+    color: #ffffff;
+    background-color: #4a4b4c;
+    border-color: #3c3d3e;
+}
+
+.btn.btn-savePage {
+  background-color: #2c2e2f;
+  color: #ffffff;
+}
+.btn.btn-savePage.btn-icon-standalone i {
+  background-color: #585b5d;
+  border-right-color: #585b5d;
+}
+.btn.btn-savePage.btn-icon-standalone.btn-icon-standalone-right i {
+  border-left-color: #585b5d;
+}
+.btn.btn-savePage:hover {
+  background-color: #1b1c1d;
+  text-color: #ffffff;
+}
+.btn.btn-blue.btn-icon-standalone:hover i {
+  border-right-color: #585b5d;
+}
+.btn.btn-blue.btn-icon-standalone.btn-icon-standalone-right:hover i {
+  border-left-color: #585b5d;
+}

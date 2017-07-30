@@ -25,6 +25,10 @@ class Main_Updater extends Main {
 	}
 
 	public function __construct() {
+		if(!userlevel::get("updates")) {
+			templates::assign_var("is_new", "0");
+			return;
+		}
 		$vid = parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/version.txt?'.date("d-m-Y-H"));
 		$if = cardinal_version($vid);
 		if($if) {

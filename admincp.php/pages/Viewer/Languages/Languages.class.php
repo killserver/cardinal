@@ -17,14 +17,16 @@ class Languages extends Core {
 		return $arr;
 	}
 	
-	function translate($text, $to) {
+	function translate($text, $to, $from = "") {
 		$ret = "";
-		if(!config::Select("apiKeyTranslate")) {
-			return $text;
-		}
 		$isArr = false;
 		if(is_array($text)) {
 			$orText = $text;
+			foreach($text as $k => $v) {
+				if(is_array($v)) {
+					unset($text[$k]);
+				}
+			}
 			$text = implode("[@]", $text);
 			$isArr = true;
 		}
@@ -32,7 +34,7 @@ class Languages extends Core {
 		for($i=0;$i<strlen($text);$i+=10000) {
 			$subText = substr($text, $i, 10000);
 			$p = new Parser("https://translate.yandex.net/api/v1.5/tr.json/translate");
-			$p->post(array("text" => $subText, "key" => config::Select("apiKeyTranslate"), "lang" => $to));
+			$p->post(array("text" => $subText, "key" => config::Select("apiKeyTranslate"), "lang" => (!empty($from) ? $from."-" : "").$to));
 			$resp = json_decode($p->get(), true);
 			if(isset($resp['message'])) {
 				$ret = "";
@@ -55,7 +57,8 @@ class Languages extends Core {
 	}
 	
 	function __construct() {
-		$langs = "ru";
+		$orLang = (modules::manifest_get("mainLang") ? modules::manifest_get("mainLang") : "ru");
+		$langs = $orLang;
 		if(Arr::get($_GET, "page", false)) {
 			if(Arr::get($_GET, "page")=="main") {
 				$support = lang::support();
@@ -83,7 +86,11 @@ class Languages extends Core {
 			lang::include_lang("install");
 			$this->ParseLang();
 			global $lang;
-			$arr = array_merge(array(), $lang);
+			if(is_array($lang)) {
+				$arr = array_merge(array(), $lang);
+			} else {
+				$arr = array();
+			}
 			$admin = ROOT_PATH.ADMINCP_DIRECTORY.DS."temp".DS.config::Select("skins", "admincp").DS;
 			$dir = read_dir($admin);
 			sort($dir);
@@ -118,7 +125,7 @@ class Languages extends Core {
 				if(!empty($translate)) {
 					$arr[$k] = $v = $translate;
 				}
-				$v = $this->translate($v, $newLang);
+				$v = $this->translate($v, $newLang, $orLang);
 				lang::Update($newLang, $k, $v);
 			}
 			return true;
@@ -128,7 +135,7 @@ class Languages extends Core {
 				new Errors();
 				die();
 			}
-			$langs = Arr::get($_GET, 'lang', 'ru');
+			$langs = Arr::get($_GET, 'lang', $orLang);
 			lang::set_lang($langs);
 		}
 		if(Arr::get($_GET, 'saveLang', false)) {

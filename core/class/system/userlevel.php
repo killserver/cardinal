@@ -126,6 +126,19 @@ class userlevel {
 		cache::Delete("userlevels");
 	}
 
+	final public static function is() {
+		$all = self::all();
+		$user = User::get("level");
+		$notFound = 0;
+		$list = func_get_args();
+		for($i=0;$i<sizeof($list);$i++) {
+			if($user!=$list[$i]) {
+				$notFound++;
+			}
+		}
+		return $notFound != sizeof($list);
+	}
+
 }
 
 ?>

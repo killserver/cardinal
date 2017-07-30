@@ -714,10 +714,13 @@ class db {
 
 		$trace = debug_backtrace();
 
-		$level = 4;
-		/*if (isset($trace[1]['function']) && $trace[1]['function'] == "query" ) $level = 1;
-		if (isset($trace[2]['function']) && $trace[2]['function'] == "doquery" ) $level = 2;*/
-		
+		$level = sizeof($trace)-1;
+		for($i=$level;$i>=0;$i--) {
+			if($trace[$i]['function']=="query" || $trace[$i]['function']=="doquery") {
+				$level = $i;
+				break;
+			}
+		}
 		if(defined("ROOT_PATH")) {
 			$trace[$level]['file'] = str_replace(ROOT_PATH, "", $trace[$level]['file']);
 		}
@@ -732,7 +735,7 @@ class db {
 				"file" => $trace[$level]['file'],
 				"line" => $trace[$level]['line'],
 			));
-			echo $tmp->completed_assing_vars("mysql_error", null);
+			echo $tmp->completed_assign_vars("mysql_error", null);
 		} else {
 			echo "<center><br />".$trace[$level]['file'].":".$trace[$level]['line']."<hr />Query:<br /><textarea cols=\"40\" rows=\"5\">".$query."</textarea><hr />[".$mysql_error_num."] ".$mysql_error."<br />";
 		}
