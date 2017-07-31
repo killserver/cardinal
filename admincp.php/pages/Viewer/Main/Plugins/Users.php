@@ -13,7 +13,12 @@ class Main_Users extends Main {
 			$vid = db::doquery("SELECT count(`id`) AS `id` FROM `".PREFIX_DB."users` WHERE `activ` LIKE \"yes\"");
 			$userCount += (isset($vid['id']) && $vid['id']>0 ? $vid['id'] : 0);
 		}
-		if($userCount>1) {
+		if(defined("WITHOUT_DB") && $userCount>2) {
+			templates::assign_var("isUsers", "0");
+			templates::assign_vars(array(
+				"users" => $userCount,
+			));
+		} elseif(!defined("WITHOUT_DB")) {
 			templates::assign_var("isUsers", "0");
 			templates::assign_vars(array(
 				"users" => $userCount,

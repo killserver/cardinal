@@ -2,6 +2,9 @@
 class Info {
 	
 	function __construct() {
+		if(defined("CLOSE_FUNCTION") && strpos(CLOSE_FUNCTION, "curl")!==false) {
+			return;
+		}
 		$parser = new Parser();
 		$parser->url("https://killserver.github.io/ForCardinal/pingSystem.txt");
 		$parser->timeout(1);

@@ -29,7 +29,7 @@ templates::set_skins("");
 
 function accessOnDefault($class) {
 	$classCheck = strtolowers($class);
-	if(in_array($class, array("Antivirus", "Archer", "ATextAdmin", "Core", "Editor", "Languages", "LogInAdmin", "Logs", "Main", "ModuleList", "Phpinfo", "Settings", "Shop", "Users")) && !userlevel::get($classCheck)) {
+	if(in_array($class, array("Antivirus", "Archer", "ATextAdmin", "Core", "Editor", "Languages", "LogInAdmin", "Logs", "Login", "Main", "ModuleList", "Phpinfo", "Settings", "Shop", "Users")) && !userlevel::get($classCheck)) {
 		return false;
 	}
 	return true;

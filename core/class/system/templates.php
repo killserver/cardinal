@@ -212,7 +212,7 @@ class templates {
 	 * @return mixed time with microseconds
      */
 	final private static function time() {
-		return microtime();
+		return microtime(true);
 	}
 
 	/**
@@ -2212,14 +2212,6 @@ if(!$test) {
 		self::$header = null;
 		self::$tmp = "";
 		self::$skins = "";
-	}
-
-	/**
-	 * Clear all templates
-	 * @access public
-     */
-	final public function __destruct() {
-		unset($this);
 	}
 
 }

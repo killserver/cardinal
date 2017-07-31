@@ -247,10 +247,6 @@ class config {
 		}
 	}
 
-	function __destruct() {
-		unset($this);
-	}
-
 }
 
 ?>

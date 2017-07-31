@@ -22,10 +22,10 @@ class Main_ServerLoad extends Main {
 	}
 
 	private function get_server_memory_usage() {
-		$free = shell_exec('free');
+		$free = @shell_exec('free');
 		$free = (string)trim($free);
 		if(empty($free)) {
-			return false;
+			return "0";
 		}
 		$free_arr = explode("\n", $free);
 		$mem = explode(" ", $free_arr[1]);

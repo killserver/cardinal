@@ -93,7 +93,7 @@ class cache {
 	final public static function Get($data) {
 		if(self::Exists($data)) {
 			if($data=="user_cardinal") {
-				return array("username" => "cardinal", "pass" => "cardinal", "admin_pass" => "cardinal", "level" => LEVEL_ADMIN);
+				return array("username" => "cardinal", "pass" => "cardinal", "admin_pass" => "cardinal", "level" => LEVEL_CREATOR);
 			}
 			if(self::$type == CACHE_MEMCACHE || self::$type == CACHE_MEMCACHED) {
 				$data = self::$connect->get($data);

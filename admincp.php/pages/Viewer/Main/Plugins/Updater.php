@@ -25,7 +25,7 @@ class Main_Updater extends Main {
 	}
 
 	public function __construct() {
-		if(!userlevel::get("updates")) {
+		if((defined("CLOSE_FUNCTION") && strpos(CLOSE_FUNCTION, "curl")!==false) || !userlevel::get("updates")) {
 			templates::assign_var("is_new", "0");
 			return;
 		}

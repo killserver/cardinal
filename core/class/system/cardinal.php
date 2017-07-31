@@ -383,10 +383,6 @@ class cardinal {
 		}
 	}
 
-	function __destruct() {
-		unset($this);
-	}
-
 }
 
 ?>

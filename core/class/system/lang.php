@@ -453,12 +453,5 @@ class lang {
 		return self::setLang($name, $val);
 	}
 
-    /**
-     * Destructor this class as object
-     */
-    function __destruct() {
-		unset($this);
-	}
-
 }
 ?>

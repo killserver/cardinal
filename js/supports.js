@@ -12,9 +12,23 @@ let cardinalEngine = {
 	getQuery: function(elemz, get) {
 		if(typeof(get)!="undefined") {
 			var gets = document.querySelector(elemz).querySelectorAll(get);
+			if(gets.length>1) {
+				gets.forEach(function(i, d) {
+					Object.keys(cardinalEngineElement).map(function(objectKey, index) {
+						i.prototype[objectKey] = cardinalEngineElement[objectKey];
+					});
+				});
+			}
 			return gets.length>1 ? gets : gets[0];
 		} else {
 			var gets = document.querySelectorAll(elemz);
+			if(gets.length>1) {
+				gets.forEach(function(i, d) {
+					Object.keys(cardinalEngineElement).map(function(objectKey, index) {
+						i.prototype[objectKey] = cardinalEngineElement[objectKey];
+					});
+				});
+			}
 			return gets.length>1 ? gets : gets[0];
 		}
 	},
@@ -211,23 +225,53 @@ let cardinalEngine = {
 };
 let cardinalEngineElement = {
 	HasClass: function(c) {
-		return ('classList' in document.documentElement ? this.classList.contains(c) : new RegExp("(^|\\s+)" + c + "(\\s+|$)").test(this.className));
+		if(typeof(this)=="object") {
+			this.forEach(function(i, d) {
+				i.HasClass(c);
+			});
+		} else {
+			return ('classList' in document.documentElement ? this.classList.contains(c) : new RegExp("(^|\\s+)" + c + "(\\s+|$)").test(this.className));
+		}
 	},
 	AddClass: function(c) {
-		('classList' in document.documentElement ? this.classList.add(c) : (!cardinalEngine.HasClass(this, c) ? this.className = this.className + ' ' + c : ""));
+		if(typeof(this)=="object") {
+			this.forEach(function(i, d) {
+				i.AddClass(c);
+			});
+		} else {
+			('classList' in document.documentElement ? this.classList.add(c) : (!cardinalEngine.HasClass(this, c) ? this.className = this.className + ' ' + c : ""));
+		}
 	},
 	RemoveClass: function(c) {
-		('classList' in document.documentElement ? this.classList.remove(c) : this.className = this.className.replace(new RegExp("(^|\\s+)" + c + "(\\s+|$)"), ' '));
+		if(typeof(this)=="object") {
+			this.forEach(function(i, d) {
+				i.RemoveClass(c);
+			});
+		} else {
+			('classList' in document.documentElement ? this.classList.remove(c) : this.className = this.className.replace(new RegExp("(^|\\s+)" + c + "(\\s+|$)"), ' '));
+		}
 	},
 	ToggleClass: function(c) {
-		var fn = cardinalEngine.HasClass(this, c) ? cardinalEngine.RemoveClass : cardinalEngine.AddClass;
-		fn(this, c);
+		if(typeof(this)=="object") {
+			this.forEach(function(i, d) {
+				i.ToggleClass(c);
+			});
+		} else {
+			var fn = cardinalEngine.HasClass(this, c) ? cardinalEngine.RemoveClass : cardinalEngine.AddClass;
+			fn(this, c);
+		}
 	},
 	AddEvent: function(type, handler) {
-		if(this.addEventListener) {
-			this.addEventListener(type, handler, false);
-		} else if(this.attachEvent) {
-			this.attachEvent("on"+type, handler);
+		if(typeof(this)=="object") {
+			this.forEach(function(i, d) {
+				i.AddEvent(type, handler);
+			});
+		} else {
+			if(this.addEventListener) {
+				this.addEventListener(type, handler, false);
+			} else if(this.attachEvent) {
+				this.attachEvent("on"+type, handler);
+			}
 		}
 	},
 	RemoveEvent: function(type, handler) {
@@ -254,10 +298,22 @@ let cardinalEngineElement = {
 		}
 	},
 	show: function() {
-		this.style.display = "";
+		if(typeof(this)=="object") {
+			this.forEach(function(i, d) {
+				i.show();
+			});
+		} else {
+			this.style.display = "";
+		}
 	},
 	hide: function() {
-		this.style.display = "none";
+		if(typeof(this)=="object") {
+			this.forEach(function(i, d) {
+				i.hide();
+			});
+		} else {
+			this.style.display = "none";
+		}
 	},
 	after: function(insert) {
 		this.insertAdjacentHTML('afterend', insert);
@@ -292,21 +348,63 @@ let cardinalEngineElement = {
 		return this.textContent;
 	},
 	is: function(check) {
-		var matches = function(el, selector) {
-			return (el.matches || el.matchesSelector || el.msMatchesSelector || el.mozMatchesSelector || el.webkitMatchesSelector || el.oMatchesSelector).call(el, selector);
-		};
-		return matches(this, check);
+		if(typeof(this)=="object") {
+			this.forEach(function(i, d) {
+				i.is(check);
+			});
+		} else {
+			var matches = function(el, selector) {
+				return (el.matches || el.matchesSelector || el.msMatchesSelector || el.mozMatchesSelector || el.webkitMatchesSelector || el.oMatchesSelector).call(el, selector);
+			};
+			return matches(this, check);
+		}
 	},
 	next: function() {
-		return this.nextElementSibling;
+		if(typeof(this)=="object") {
+			this.forEach(function(i, d) {
+				i.next();
+			});
+		} else {
+			return this.nextElementSibling;
+		}
 	},
 	offset: function() {
-		var rect = el.getBoundingClientRect();
-		return { top: rect.top + document.body.scrollTop, left: rect.left + document.body.scrollLeft };
+		if(typeof(this)=="object") {
+			this.forEach(function(i, d) {
+				i.offset();
+			});
+		} else {
+			var rect = el.getBoundingClientRect();
+			return { top: rect.top + document.body.scrollTop, left: rect.left + document.body.scrollLeft };
+		}
 	},
-	position: function() { return { left: this.offsetLeft, top: this.offsetTop }; },
-	prepend: function(el) { this.insertBefore(el, this.firstChild); },
-	remove: function() { this.parentNode.removeChild(this); },
+	position: function() {
+		if(typeof(this)=="object") {
+			this.forEach(function(i, d) {
+				i.position();
+			});
+		} else {
+			return { left: this.offsetLeft, top: this.offsetTop };
+		}
+	},
+	prepend: function(el) {
+		if(typeof(this)=="object") {
+			this.forEach(function(i, d) {
+				i.prepend(el);
+			});
+		} else {
+			this.insertBefore(el, this.firstChild);
+		}
+	},
+	remove: function() {
+		if(typeof(this)=="object") {
+			this.forEach(function(i, d) {
+				i.remove();
+			});
+		} else {
+			this.parentNode.removeChild(this);
+		}
+	},
 	html: function(set) {
 		if(typeof(set)!="undefined") {
 			return this.innerHTML = set;
@@ -355,173 +453,182 @@ cardinalEngineElement['fadeOut'] = function() {
 	};
 	tick();
 };
-var doc = document.createElement("div");
-doc.setAttribute("class", "spinner");
-var fixed = document.createElement("div");
-fixed.setAttribute("class", "loader");
-fixed.appendChild(doc);
-document.body.appendChild(fixed);
-cardinalEngine.addLoad(function() {
-	cardinal("div.loader").fadeOut();
-});
+if(typeof(removeLoader)=="undefined") {
+	var doc = document.createElement("div");
+	doc.setAttribute("class", "spinner");
+	var fixed = document.createElement("div");
+	fixed.setAttribute("class", "loader");
+	fixed.appendChild(doc);
+	var bodyDone = setInterval(function() {
+		if(document.body!=null) {
+			document.body.appendChild(fixed);
+			clearInterval(bodyDone);
+		}
+	})
+}
 function cardinal(elem) {
 	return cardinalEngine.getElem(elem);
 }
-cardinalEngine.executeForElements();
-cardinalEngine.execReady();
-cardinalEngine.AddEvent(window, 'scroll', function(e) {
-	var distanceY = window.pageYOffset || document.documentElement.scrollTop, header = ('querySelector' in document.documentElement ? document.querySelector(".header.isFixed") : document.getElementsByClassName("header isFixed")[0]);
-	var shrinkOn = header.offsetTop;
-	if(distanceY > shrinkOn) {
-		cardinalEngine.AddClass(header, "headFix");
-	} else {
-		if(cardinalEngine.HasClass(header, "headFix")) {
-			cardinalEngine.RemoveClass(header, "headFix");
+cardinalEngine.addLoad(function() {
+	cardinalEngine.AddEvent(window, 'scroll', function(e) {
+		var distanceY = window.pageYOffset || document.documentElement.scrollTop, header = ('querySelector' in document.documentElement ? document.querySelector(".header.isFixed") : document.getElementsByClassName("header isFixed")[0]);
+		var shrinkOn = header.offsetTop;
+		if(distanceY > shrinkOn) {
+			cardinalEngine.AddClass(header, "headFix");
+		} else {
+			if(cardinalEngine.HasClass(header, "headFix")) {
+				cardinalEngine.RemoveClass(header, "headFix");
+			}
 		}
+	});
+	var foced = ('querySelector' in document.documentElement ? document.querySelector(".header.isFixed") : document.getElementsByClassName("header isFixed")[0]);
+	if(foced!=null) {
+		cardinalEngine.AddEvent(foced, 'focus', function(e) {
+			cardinalEngine.AddClass(this, "focused");
+		});
+		cardinalEngine.AddEvent(foced, 'blur', function(e) {
+			if(cardinalEngine.HasClass(this, "focused")) {
+				cardinalEngine.RemoveClass(this, "focused");
+			}
+		});
+	}
+	if(typeof(removeLoader)=="undefined") {
+		cardinal("div.loader").fadeOut();
+	}
+	var animation = false, animationstring = 'animation', keyframeprefix = '', domPrefixes = 'Webkit Moz O ms Khtml'.split(' '), pfx  = '', elm = document.createElement('div');
+	if(elm.style.animationName!==undefined) {
+		animation = true;
+	}
+	if(animation===false) {
+		for(var i=0;i<domPrefixes.length;i++) {
+			if(elm.style[domPrefixes[i]+'AnimationName']!==undefined) {
+				pfx = domPrefixes[i];
+				animationstring = pfx+'Animation';
+				keyframeprefix = '-'+pfx.toLowerCase()+'-';
+				animation = true;
+				break;
+			}
+		}
+	}
+	if(animation) {
+		cardinalEngine.AddClass(document.body, "supportAnimation");
+		cardinalEngine.AddClass(document.body, "support"+keyframeprefix+"Animation");
+	}
+	if(!!document.createElement('canvas').getContext) {
+		cardinalEngine.AddClass(document.body, "supportCanvas");
+		if(!!document.createElement('canvas').getContext('2d').fillText == 'function') {
+			cardinalEngine.AddClass(document.body, "supportCanvasFillText");
+		}
+		var canvas = document.createElement('canvas');
+		var gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+		if(gl && gl instanceof WebGLRenderingContext) {
+			cardinalEngine.AddClass(document.body, "supportCanvasFillText");
+		}
+	}
+	if(!!document.createElement('video').canPlayType) {
+		cardinalEngine.AddClass(document.body, "supportVideo");
+		if(!!document.createElement("video").canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"')!="") {
+			cardinalEngine.AddClass(document.body, "supportVideoMP4");
+		}
+		if(!!document.createElement("video").canPlayType('video/ogg; codecs="theora, vorbis"')!="") {
+			cardinalEngine.AddClass(document.body, "supportVideoOGG");
+		}
+		if(!!document.createElement("video").canPlayType('video/webm; codecs="vp8, vorbis"')!="") {
+			cardinalEngine.AddClass(document.body, "supportVideoWEBM");
+		}
+	}
+	if('localStorage' in window && window['localStorage'] !== null) {
+		cardinalEngine.AddClass(document.body, "supportLocalStorage");
+	}
+	if(window.File && window.FileReader && window.FileList && window.Blob) {
+		cardinalEngine.AddClass(document.body, "supportFile");
+	}
+	if(!!window.Worker) {
+		cardinalEngine.AddClass(document.body, "supportWorker");
+	}
+	if(!!document.fonts) {
+		cardinalEngine.AddClass(document.body, "supportFontsLoader");
+	}
+	if(!!window.applicationCache) {
+		cardinalEngine.AddClass(document.body, "supportOffline");
+	}
+	if(!!navigator.geolocation) {
+		cardinalEngine.AddClass(document.body, "supportGeoLocation");
+	}
+	var i = document.createElement("input");
+	i.setAttribute("type", "search");
+	if(i.type !== "text") {
+		cardinalEngine.AddClass(document.body, "supportInputSearch");
+	}
+	var i = document.createElement("input");
+	i.setAttribute("type", "number");
+	if(i.type !== "text") {
+		cardinalEngine.AddClass(document.body, "supportInputNumber");
+	}
+	var i = document.createElement("input");
+	i.setAttribute("type", "range");
+	if(i.type !== "text") {
+		cardinalEngine.AddClass(document.body, "supportInputRange");
+	}
+	var i = document.createElement("input");
+	i.setAttribute("type", "tel");
+	if(i.type !== "text") {
+		cardinalEngine.AddClass(document.body, "supportInputTel");
+	}
+	var i = document.createElement("input");
+	i.setAttribute("type", "url");
+	if(i.type !== "text") {
+		cardinalEngine.AddClass(document.body, "supportInputUrl");
+	}
+	var i = document.createElement("input");
+	i.setAttribute("type", "email");
+	if(i.type !== "text") {
+		cardinalEngine.AddClass(document.body, "supportInputEmail");
+	}
+	var i = document.createElement("input");
+	i.setAttribute("type", "date");
+	if(i.type !== "text") {
+		cardinalEngine.AddClass(document.body, "supportInputDate");
+	}
+	var i = document.createElement("input");
+	i.setAttribute("type", "month");
+	if(i.type !== "text") {
+		cardinalEngine.AddClass(document.body, "supportInputMonth");
+	}
+	var i = document.createElement("input");
+	i.setAttribute("type", "week");
+	if(i.type !== "text") {
+		cardinalEngine.AddClass(document.body, "supportInputWeek");
+	}
+	var i = document.createElement("input");
+	i.setAttribute("type", "time");
+	if(i.type !== "text") {
+		cardinalEngine.AddClass(document.body, "supportInputTime");
+	}
+	var i = document.createElement("input");
+	i.setAttribute("type", "datetime");
+	if(i.type !== "text") {
+		cardinalEngine.AddClass(document.body, "supportInputDatetime");
+	}
+	var i = document.createElement("input");
+	i.setAttribute("type", "datetime-local");
+	if(i.type !== "text") {
+		cardinalEngine.AddClass(document.body, "supportInputDatetimeLocal");
+	}
+	var i = document.createElement("input");
+	if('placeholder' in i) {
+		cardinalEngine.AddClass(document.body, "supportInputPlaceholder");
+	}
+	var i = document.createElement("input");
+	if('autofocus' in i) {
+		cardinalEngine.AddClass(document.body, "supportInputAutofocus");
+	}
+	if(!!document.getItems) {
+		cardinalEngine.AddClass(document.body, "supportMicrodata");
+	}
+	if(!!(window.history && history.pushState)) {
+		cardinalEngine.AddClass(document.body, "supportHistory");
 	}
 });
-var foced = ('querySelector' in document.documentElement ? document.querySelector(".header.isFixed") : document.getElementsByClassName("header isFixed")[0]);
-if(foced!=null) {
-	cardinalEngine.AddEvent(foced, 'focus', function(e) {
-		cardinalEngine.AddClass(this, "focused");
-	});
-	cardinalEngine.AddEvent(foced, 'blur', function(e) {
-		if(cardinalEngine.HasClass(this, "focused")) {
-			cardinalEngine.RemoveClass(this, "focused");
-		}
-	});
-}
-var animation = false, animationstring = 'animation', keyframeprefix = '', domPrefixes = 'Webkit Moz O ms Khtml'.split(' '), pfx  = '', elm = document.createElement('div');
-if(elm.style.animationName!==undefined) {
-	animation = true;
-}    
-if(animation===false) {
-	for(var i=0;i<domPrefixes.length;i++) {
-		if(elm.style[domPrefixes[i]+'AnimationName']!==undefined) {
-			pfx = domPrefixes[i];
-			animationstring = pfx+'Animation';
-			keyframeprefix = '-'+pfx.toLowerCase()+'-';
-			animation = true;
-			break;
-		}
-	}
-}
-if(animation) {
-	cardinalEngine.AddClass(document.body, "supportAnimation");
-	cardinalEngine.AddClass(document.body, "support"+keyframeprefix+"Animation");
-}
-if(!!document.createElement('canvas').getContext) {
-	cardinalEngine.AddClass(document.body, "supportCanvas");
-	if(!!document.createElement('canvas').getContext('2d').fillText == 'function') {
-		cardinalEngine.AddClass(document.body, "supportCanvasFillText");
-	}
-	var canvas = document.createElement('canvas');
-	var gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-	if(gl && gl instanceof WebGLRenderingContext) {
-		cardinalEngine.AddClass(document.body, "supportCanvasFillText");
-	}
-}
-if(!!document.createElement('video').canPlayType) {
-	cardinalEngine.AddClass(document.body, "supportVideo");
-	if(!!document.createElement("video").canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"')!="") {
-		cardinalEngine.AddClass(document.body, "supportVideoMP4");
-	}
-	if(!!document.createElement("video").canPlayType('video/ogg; codecs="theora, vorbis"')!="") {
-		cardinalEngine.AddClass(document.body, "supportVideoOGG");
-	}
-	if(!!document.createElement("video").canPlayType('video/webm; codecs="vp8, vorbis"')!="") {
-		cardinalEngine.AddClass(document.body, "supportVideoWEBM");
-	}
-}
-if('localStorage' in window && window['localStorage'] !== null) {
-	cardinalEngine.AddClass(document.body, "supportLocalStorage");
-}
-if(window.File && window.FileReader && window.FileList && window.Blob) {
-	cardinalEngine.AddClass(document.body, "supportFile");
-}
-if(!!window.Worker) {
-	cardinalEngine.AddClass(document.body, "supportWorker");
-}
-if(!!document.fonts) {
-	cardinalEngine.AddClass(document.body, "supportFontsLoader");
-}
-if(!!window.applicationCache) {
-	cardinalEngine.AddClass(document.body, "supportOffline");
-}
-if(!!navigator.geolocation) {
-	cardinalEngine.AddClass(document.body, "supportGeoLocation");
-}
-var i = document.createElement("input");
-i.setAttribute("type", "search");
-if(i.type !== "text") {
-	cardinalEngine.AddClass(document.body, "supportInputSearch");
-}
-var i = document.createElement("input");
-i.setAttribute("type", "number");
-if(i.type !== "text") {
-	cardinalEngine.AddClass(document.body, "supportInputNumber");
-}
-var i = document.createElement("input");
-i.setAttribute("type", "range");
-if(i.type !== "text") {
-	cardinalEngine.AddClass(document.body, "supportInputRange");
-}
-var i = document.createElement("input");
-i.setAttribute("type", "tel");
-if(i.type !== "text") {
-	cardinalEngine.AddClass(document.body, "supportInputTel");
-}
-var i = document.createElement("input");
-i.setAttribute("type", "url");
-if(i.type !== "text") {
-	cardinalEngine.AddClass(document.body, "supportInputUrl");
-}
-var i = document.createElement("input");
-i.setAttribute("type", "email");
-if(i.type !== "text") {
-	cardinalEngine.AddClass(document.body, "supportInputEmail");
-}
-var i = document.createElement("input");
-i.setAttribute("type", "date");
-if(i.type !== "text") {
-	cardinalEngine.AddClass(document.body, "supportInputDate");
-}
-var i = document.createElement("input");
-i.setAttribute("type", "month");
-if(i.type !== "text") {
-	cardinalEngine.AddClass(document.body, "supportInputMonth");
-}
-var i = document.createElement("input");
-i.setAttribute("type", "week");
-if(i.type !== "text") {
-	cardinalEngine.AddClass(document.body, "supportInputWeek");
-}
-var i = document.createElement("input");
-i.setAttribute("type", "time");
-if(i.type !== "text") {
-	cardinalEngine.AddClass(document.body, "supportInputTime");
-}
-var i = document.createElement("input");
-i.setAttribute("type", "datetime");
-if(i.type !== "text") {
-	cardinalEngine.AddClass(document.body, "supportInputDatetime");
-}
-var i = document.createElement("input");
-i.setAttribute("type", "datetime-local");
-if(i.type !== "text") {
-	cardinalEngine.AddClass(document.body, "supportInputDatetimeLocal");
-}
-var i = document.createElement("input");
-if('placeholder' in i) {
-	cardinalEngine.AddClass(document.body, "supportInputPlaceholder");
-}
-var i = document.createElement("input");
-if('autofocus' in i) {
-	cardinalEngine.AddClass(document.body, "supportInputAutofocus");
-}
-if(!!document.getItems) {
-	cardinalEngine.AddClass(document.body, "supportMicrodata");
-}
-if(!!(window.history && history.pushState)) {
-	cardinalEngine.AddClass(document.body, "supportHistory");
-}
+cardinalEngine.executeForElements();
+cardinalEngine.readyLoad();

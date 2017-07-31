@@ -180,7 +180,7 @@ if(!defined("PERMISSION_PHP") && file_exists(PATH_MEDIA."phpINtmp.lock")) {
 	define("PERMISSION_PHP", true);
 }
 
-$Timer = microtime();
+$Timer = microtime(true);
 
 require_once(ROOT_PATH."core".DS."functions.".ROOT_EX);
 
