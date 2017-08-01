@@ -28,15 +28,21 @@ templates::dir_skins(ADMINCP_DIRECTORY."/temp/".$skin);
 templates::set_skins("");
 
 function accessOnDefault($class) {
+	if(defined("DEVELOPER_MODE")) {
+		return true;
+	}
 	$classCheck = strtolowers($class);
-	if(in_array($class, array("Antivirus", "Archer", "ATextAdmin", "Core", "Editor", "Languages", "LogInAdmin", "Logs", "Login", "Main", "ModuleList", "Phpinfo", "Settings", "Shop", "Users")) && !userlevel::get($classCheck)) {
+	if(in_array($class, array("Core", "Errors"))) {
+		return true;
+	}
+	if(!in_array($class, array("Antivirus", "Archer", "ATextAdmin", "Editor", "LogInAdmin", "Logs", "Login", "Main", "ModuleList", "Phpinfo", "Settings", "Shop", "Users")) && userlevel::get($classCheck)===false) {
 		return false;
 	}
 	return true;
 }
 function cardinalAutoloadAdmin($class) {
     global $in_page;
-    if(strpos($class, "/")===false&&strpos($class, "\\")===false&&!class_exists($class,false)&&!accessOnDefault($class)&&file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS.$class.DS.$class.".class.".ROOT_EX)) {
+    if(strpos($class, "/")===false&&strpos($class, "\\")===false&&!class_exists($class,false)&&accessOnDefault($class)!==false&&file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS.$class.DS.$class.".class.".ROOT_EX)) {
         include_once(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS.$class.DS.$class.".class.".ROOT_EX);
     } else if(strpos($class, "_")===false) {
         $in_page = "Errors";
