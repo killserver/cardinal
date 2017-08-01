@@ -173,6 +173,9 @@ if(!defined("DEVELOPER_MODE") && file_exists(PATH_MEDIA."develop.lock")) {
 if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."isFrame.lock")) {
 	define("WITHOUT_DB", true);
 }
+if(!defined("ENABLED_SUPPORTS") && file_exists(PATH_MEDIA."enabledSupports.lock")) {
+	define("ENABLED_SUPPORTS", true);
+}
 if(!defined("ERROR_VIEW") && file_exists(PATH_MEDIA."error.lock")) {
 	define("ERROR_VIEW", true);
 }

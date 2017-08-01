@@ -276,7 +276,7 @@ if(!$clear) {
 	unset($dprm);
 	$header .= '<meta name="viewport" content="'.config::Select("viewport").'" />'."\n";
 	$header .= '<meta http-equiv="imagetoolbar" content="no" />'."\n";
-	$header .= '<script type="text/javascript" src="{C_default_http_host}js/supports.js" async="true"></script>'."\n";
+	$header .= (defined("ENABLED_SUPPORTS") ? '<script type="text/javascript" src="{C_default_http_host}js/supports.js" async="true"></script>'."\n" : "");
 	$header .= '<!-- saved from url=(0014)about:internet -->'."\n";
 	$header .= '<meta name="apple-mobile-web-app-capable" content="yes">'."\n";
 	$header .= '<meta name="format-detection" content="telephone=no">'."\n";
