@@ -28,7 +28,7 @@
 var disableAllEditors = true;
 function confirmClear(th) {
 	if (confirm("{L_"Вы подтверждаете сброс?(Данную операцию невозможно будет обратить)"}")) {
-		jQuery.post("./?pages=Languages&lang={initLang}&resetLang", "orLang="+jQuery(th).parent().parent().find("td").first().html(), function(data) {
+		jQuery.post("./?pages=Languages&lang={initLang}&resetLang=true", "orLang="+jQuery(th).parent().parent().find("td").first().html(), function(data) {
 			jQuery(th).parent().parent().remove();
 		});
 	}
@@ -41,7 +41,7 @@ function saveLang(th) {
 		ret.push(encodeURIComponent(this.name) + "=" + encodeURIComponent($(this).val()));
 	});
 	ret = ret.join("&").replace(/%20/g, "+");
-	jQuery.post("./?pages=Languages&lang={initLang}&saveLang", ret, function(data) {
+	jQuery.post("./?pages=Languages&lang={initLang}&saveLang=true", ret, function(data) {
 		jQuery(elem).find("input").each(function() {
 			jQuery(this).parent().html(jQuery(this).val());
 		});
@@ -80,7 +80,7 @@ function AddToLang() {
 jQuery(".changed").change(function() {
 	var orig = jQuery(this).parent().parent().children("td").first().html();
 	var translate = jQuery(this).val();
-	jQuery.post("./?pages=Languages&lang={initLang}&saveLang", "orLang="+orig+"&translate="+translate, function(data) {
+	jQuery.post("./?pages=Languages&lang={initLang}&saveLang=true", "orLang="+orig+"&translate="+translate, function(data) {
 		toastr.options = {
 			"closeButton": false,
 			"debug": false,

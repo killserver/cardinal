@@ -37,12 +37,12 @@ class Archer extends Core {
 		$orderBy = $request->get->get("orderBy", false);
 		$orderTo = $request->get->get("orderTo", "ASC");
 		$removePrefix = false;
-		if(strpos($typeUni, PREFIX_DB)!==false) {
+		if(defined("PREFIX_DB") && !empty(PREFIX_DB) && strpos($typeUni, PREFIX_DB)!==false) {
 			$typeUni = str_replace(PREFIX_DB, "", $typeUni);
 			$removePrefix = true;
 		}
 		$upFirst = (function_exists("nucfirst") ? nucfirst($typeUni) : $this->nucfirst($typeUni));
-		if($removePrefix) {
+		if(defined("PREFIX_DB") && !empty(PREFIX_DB)) {
 			$typeUni = PREFIX_DB.$typeUni;
 		}
 		switch($page) {
@@ -137,6 +137,25 @@ class Archer extends Core {
 				$model = modules::loadModels("Model".$upFirst, $typeUni);
 				$model->SetTable($typeUni);
 				$model->SetLimit(-1);
+				if($request->get->get("ShowPages", false)) {
+					if(strpos($_SERVER['REQUEST_URI'], "page=")!==false) {
+						$now = substr($_SERVER['REQUEST_URI'], 0, strpos($_SERVER['REQUEST_URI'], "&page="));
+					} else {
+						$now = $_SERVER['REQUEST_URI'];
+					}
+					$pager = new pager($request->get->get("page", 1)-1, $model->getMax(), 10, $now, "&page=", 3);
+					$get = $pager->get();
+					$get = array_values($get);
+					for($i=0;$i<sizeof($get);$i++) {
+						templates::assign_vars($get[$i], "pager", "page".$i);
+					}
+					templates::assign_var("prevLinkPager", $pager->prevLink());
+					templates::assign_var("nextLinkPager", $pager->nextLink());
+					$limit = $pager->getLimit();
+					$model->SetLimit($limit[1]);
+					$model->SetOffset($limit[0]);
+					$model->OrderByTo("id", "ASC");
+				}
 				if(isset($_GET['catid'])) {
 					$model->WhereTo("catId", intval($_GET['catid']));
 				}
@@ -148,7 +167,11 @@ class Archer extends Core {
 				templates::assign_var("LinkOrderBy", (empty($orderBy) ? $model->getFirst() : $orderBy));
 				templates::assign_var("LinkorderTo", $orderTo);
 				$univ = new KernelArcher($typeUni, $model);
-				$tpl = $univ->TraceOn("Shield", "ArcherMain");
+				if($request->get->get("ShowPages", false)) {
+					$tpl = $univ->TraceOn("Shield", "ArcherMainTable");
+				} else {
+					$tpl = $univ->TraceOn("Shield", "ArcherMain");
+				}
 				$univ->Shield($model, array(&$this, "View"), $tpl, false);
 			break;
 		}

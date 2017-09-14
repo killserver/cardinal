@@ -34,10 +34,25 @@ class cardinal {
                 define("IS_BOT", true);
             }
         }
-		$otime = config::Select("cardinal_time");
-		if($otime <= time()-12*60*60) {
-			include_dir(PATH_CRON_FILES, ".".ROOT_EX);
-			config::Update("cardinal_time", time());
+		if(!defined("WITHOUT_DB")) {
+			$otime = config::Select("cardinal_time");
+			if($otime >= time()-12*60*60) {
+				include_dir(PATH_CRON_FILES, ".".ROOT_EX);
+				config::Update("cardinal_time", time());
+			}
+		} elseif(is_writable(PATH_CACHE)) {
+			if(file_exists(PATH_CACHE."cron.txt")) {
+				$otime = filemtime(PATH_CACHE."cron.txt");
+			} else {
+				$otime = time();
+			}
+			if($otime >= time()-12*60*60) {
+				include_dir(PATH_CRON_FILES, ".".ROOT_EX, true);
+				if(file_exists(PATH_CACHE."cron.txt")) {
+					unlink(PATH_CACHE."cron.txt");
+				}
+				file_put_contents(PATH_CACHE."cron.txt", "");
+			}
 		}
 	}
 
@@ -144,12 +159,12 @@ class cardinal {
 			// it's lifetime are. Best to just dynamically create on.
 			$path = ini_get("session.save_path").DS."session_".substr($timeout, 0, 5)."sec";
 			if(!file_exists($path)) {
-				if(!mkdir($path, 0777)) {
-					trigger_error("Failed to create session save path directory '$path'. Check permissions.", E_USER_ERROR);
+				if(!@mkdir($path, 0777)) {
+					trigger_error("Failed to create session save path directory '".$path."'. Check permissions.", E_USER_ERROR);
 					die();
 				}
 			}
-			if (!is_writable(session_save_path())) {
+			if(!is_writable(session_save_path())) {
 				trigger_error('Session path "'.session_save_path().'" is not writable for PHP!', E_USER_ERROR);
 				die();
 			}
@@ -166,7 +181,7 @@ class cardinal {
 			// Start the session!
 			if(function_exists("session_status") && defined("PHP_SESSION_NONE") && session_status() == PHP_SESSION_NONE) {
 				$session = session_start();
-			} else if(session_id() == '') {
+			} else if(!Arr::get($_COOKIE, "PHPSESSID") || session_id() == '') {
 				$session = session_start();
 			}
 
@@ -318,6 +333,7 @@ class cardinal {
 					"pass" => User::create_pass("'.$pass.'"),
 					"admin_pass" => cardinal::create_pass("'.$pass.'"),
 					"level" => LEVEL_CREATOR,
+					"avatar" => "http://img2.wikia.nocookie.net/__cb20130512094126/sword-art-online/pl/images/thumb/a/a4/Akihiko_Kayaba.png/500px-Akihiko_Kayaba.png",
 				),';
 			$rand = rand(8, 20);
 			$pass = self::randomPassword($rand, 1, "lower_case,upper_case,numbers,special_symbols");
@@ -329,6 +345,7 @@ class cardinal {
 					"pass" => User::create_pass("'.$pass.'"),
 					"admin_pass" => cardinal::create_pass("'.$pass.'"),
 					"level" => LEVEL_CUSTOMER,
+					"avatar" => "http://img2.wikia.nocookie.net/__cb20130512094126/sword-art-online/pl/images/thumb/a/a4/Akihiko_Kayaba.png/500px-Akihiko_Kayaba.png",
 				),';
 			$users .= PHP_EOL.'));';
 			file_put_contents(PATH_MEDIA."users.php", $users);

@@ -27,7 +27,7 @@ if(!defined("PATH_CACHE_TEMP")) {
 	define("PATH_CACHE_TEMP", ROOT_PATH."core".DS."cache".DS."tmp".DS);
 }
 if(!defined("PATH_CACHE_LANGS")) {
-	define("PATH_CACHE_LANGS", ROOT_PATH.'core'.DS.'cache'.DS.'system'.DS);
+	define("PATH_CACHE_LANGS", ROOT_PATH.'core'.DS.'cache'.DS.'lang'.DS);
 }
 if(!defined("PATH_FUNCTIONS")) {
 	define("PATH_FUNCTIONS", ROOT_PATH."core".DS."functions".DS);

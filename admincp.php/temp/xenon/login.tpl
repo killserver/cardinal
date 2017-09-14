@@ -18,7 +18,7 @@
 	<link rel="stylesheet" href="assets/xenon/css/xenon-forms.css?1">
 	<link rel="stylesheet" href="assets/xenon/css/xenon-components.css?13">
 	<link rel="stylesheet" href="assets/xenon/css/xenon-skins.css?1">
-	<link rel="stylesheet" href="assets/xenon/css/custom.css?1">
+	<link rel="stylesheet" href="assets/xenon/css/custom.css?{S_time}">
 
 	<script src="assets/xenon/js/jquery-1.11.1.min.js?1"></script>
 
@@ -30,7 +30,7 @@
 	
 	
 </head>
-<body class="page-body login-page">
+<body class="page-body login-page bgFon">
 
 	
 	<div class="login-container">
@@ -60,11 +60,11 @@
 							
 							messages: {
 								username: {
-									required: 'Please enter your username.'
+									required: '{L_"Пожалуйста введите имя пользователя"}.'
 								},
 								
 								passwd: {
-									required: 'Please enter your password.'
+									required: '{L_"Пожалуйста введите пароль"}.'
 								}
 							},
 							
@@ -114,7 +114,7 @@
 												}
 																							else
 												{
-													toastr.error(resp.errors, "Invalid Login!", opts);
+													toastr.error(resp.errors, "{L_"Не корректно введены данные!"}", opts);
 													$passwd.select();
 												}
 																						}
@@ -143,27 +143,26 @@
 					<div class="login-header">
 						<a href="#" class="logo">
 							<img src="assets/xenon/images/logo@2x.png" alt="" width="80" />
-							<span>log in</span>
+							<span>{L_"Вход"}</span>
 						</a>
 						
-						<p>Dear user, log in to access the admin area!</p>
+						<p>{L_"Уважаемый пользователь, авторизируйтесь в админ-панели!"}</p>
 					</div>
 	
 					
 					<div class="form-group">
-						<label class="control-label" for="username">Username</label>
+						<label class="control-label" for="username">{L_"Имя пользователя"}</label>
 						<input type="text" class="form-control input-dark" name="username" id="username" autocomplete="off" />
 					</div>
 					
 					<div class="form-group">
-						<label class="control-label" for="passwd">Password</label>
+						<label class="control-label" for="passwd">{L_"Пароль"}</label>
 						<input type="password" class="form-control input-dark" name="passwd" id="passwd" autocomplete="off" />
 					</div>
 					
 					<div class="form-group">
 						<button type="submit" class="btn btn-dark  btn-block text-left">
-							<i class="fa-lock"></i>
-							Log In
+							<i class="fa-lock"></i>{L_"Войти"}
 						</button>
 					</div>
 					

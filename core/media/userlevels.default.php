@@ -7,7 +7,6 @@ if(!defined("IS_CORE")) {
 $userlevels = array_replace($userlevels, array(
 	"5" => array(
 		"access_admin" => "yes",
-		"access_core" => "yes",
 		"access_antivirus" => "yes",
 		"access_atextadmin" => "yes",
 		"access_editor" => "yes",
@@ -25,7 +24,6 @@ $userlevels = array_replace($userlevels, array(
 	),
 	"4" => array(
 		"access_admin" => "yes",
-		"access_core" => "yes",
 		"access_antivirus" => "yes",
 		"access_atextadmin" => "yes",
 		"access_editor" => "yes",

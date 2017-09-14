@@ -531,4 +531,91 @@ class Debug {
 		}
 	}
 	
+	
+	private static $breakpoint;
+	private static $breakpoint_start;
+	private static $start_time;
+	private static $stop_time;
+	
+	final private static function GetPartTime() {
+		$part_time = explode(' ', microtime());
+		return $part_time[1].substr($part_time[0], 1);
+	}
+
+	final private static function StartTime() {
+		self::$start_time = self::GetPartTime();
+	}
+
+	final private static function EndTime() {
+		self::$stop_time = self::GetPartTime();
+	}
+	
+	final public static function StartBreakPoint() {
+		$back = debug_backtrace();
+		self::$breakpoint_start = array("time" => self::GetPartTime(), "start" => isset($back[0]) ? $back[0] : array());
+	}
+	
+	final public static function StopBreakPoint($data = "") {
+		$breakpoint_stop = self::GetPartTime();
+		$back = debug_backtrace();
+		$arr = array();
+		$arr = array_merge($arr, self::$breakpoint_start);
+		$arr = array_merge($arr, array("time" => bcsub($breakpoint_stop, self::$breakpoint_start["time"], 4), "data" => isset($back[0]) ? $back[0] : array()));
+		if($data!=="") {
+			$arr['dataSend'] = $data;
+		}
+		self::$breakpoint[] = $arr;
+	}
+
+	const LOG_LEVEL_NONE = 0;
+	const LOG_LEVEL_INFO = 1;
+	const LOG_LEVEL_WARNING = 2;
+	const LOG_LEVEL_ERROR = 3;
+	public static function getLevelError($val) {
+		switch ($val) {
+			case self::LOG_LEVEL_NONE:
+				$ret = "NONE";
+				break;
+			case self::LOG_LEVEL_INFO:
+				$ret = "INFO";
+				break;
+			case self::LOG_LEVEL_WARNING:
+				$ret = "WARNING";
+				break;
+			case self::LOG_LEVEL_ERROR:
+				$ret = "ERROR";
+				break;
+			default:
+				$ret = "UNDEFINED";
+				break;
+		}
+		return $ret;
+	}
+
+	final public static function Log($mess, $level = self::LOG_LEVEL_INFO, $file = "debug_log.txt") {
+		$debug = debug_backtrace();
+		$mess = "{".date("H:i:s d-m-Y")."} [".self::getLevelError($level)."] ".$mess." - ".str_replace(ROOT_PATH, "", $debug[0]['file'])." [".$debug[0]['line']."]";
+		if(defined("PATH_LOGS") && is_writable(PATH_LOGS)) {
+			file_put_contents(PATH_LOGS.$file, $mess.PHP_EOL, FILE_APPEND);
+		}
+	}
+	
+	public function __destruct() {
+		self::EndTime();
+		$time = bcsub(self::$stop_time, self::$start_time, 4);
+		print("<div class=\"debug\" style=\"display: table; margin: 0px auto; padding: 1em; border: 0.1em dashed #333;\">");
+		print("<p>Generation script - ". $time. " second</p>");
+		if(sizeof(self::$breakpoint)>0) {
+			for($i=0;$i<sizeof(self::$breakpoint);$i++) {
+				$value = self::$breakpoint[$i];
+				$file = str_replace(ROOT_PATH, "", $value['start']['file']);
+				$endFile = str_replace(ROOT_PATH, "", $value['data']['file']);
+				print("<p>".$file." [".$value['start']['line']."] ".($file!=$endFile ? "- ".$endFile : "~ "). " [".$value['data']['line']."] block - ". $value['time']. " second</p>");
+				if(isset($value['dataSend'])) {
+					print("<p>Data send:<pre>".self::_dump($value['dataSend'])."</pre></p>");
+				}
+			}
+		}
+		print("</div>");
+	}
 }

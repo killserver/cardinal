@@ -510,6 +510,33 @@ global $mobileDetect;
 	} else {
 		return false;
 	}
+}
 
+function pageBar($total, $current, $prefix = "", $postfix = "") {
+	$pageBar = "";
+	if($total <= 5) {
+		for ($i = 1; $i <= $total; $i ++)
+			if ($current != $i)
+				$pageBar .= " <a href=\"{$prefix}{$i}{$postfix}\">{$i}</a>";
+			else
+				$pageBar .= " <span>{$i}</span>";
+	} else {
+		for($i=1;$i<=$total;$i++) {
+			if($i <= 2 || ($i >= ($current - 2) && $i <= ($current + 2)) || $i >= ($total - 1)) {
+				if(($i == $current - 2) && ($current - 2 > 3)) {
+					$pageBar .= ' ...';
+				}
+				if($i != $current) {
+					$pageBar .= " <a href=\"{$prefix}{$i}{$postfix}\">{$i}</a>";
+				} else {
+					$pageBar .= " <span>{$i}</span>";
+				}
+				if(($i == $current + 2) && ($current + 2 < $total - 2)) {
+					$pageBar .= ' ...';
+				}
+			}
+		}
+	}
+	return $pageBar;
 }
 ?>

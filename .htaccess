@@ -234,7 +234,7 @@ FileETag None
 	</Files>
 
 	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteRule ^(.+)\.(\d+)\.(bmp|css|cur|gif|ico|jpe?g|js|png|svgz?|webp|webmanifest)$ $1.$3 [L]
+	RewriteRule ^(.+)\.(\d+)\.(pdf|bmp|css|cur|gif|ico|jpe?g|wjpe?g|js|png|svgz?|webp|manifest|webmanifest)$ $1.$3 [L]
 	RewriteRule ^robots.txt$ uploads/robots.txt [L]
 	RewriteRule ^changelog.txt$ changelog.php [L]
 	RewriteCond %{REQUEST_FILENAME} !-d

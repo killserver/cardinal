@@ -17,7 +17,7 @@ echo "403 ERROR";
 die();
 }
 
-class cache {
+class cache implements ArrayAccess {
 
 	private static $type = CACHE_NONE;
 	private static $connect = false;
@@ -130,9 +130,14 @@ class cache {
 		return self::$live_time;
 	}
 
-	final public static function Exists($data) {
+	final public static function Exists($data, $autoclean = false) {
 		if($data=="user_cardinal") {
 			return true;
+		}
+		if($autoclean) {
+			if((self::Mtime($data)+self::Get_timelive())<time()) {
+				self::Delete($data);
+			}
 		}
 		if(self::$type == CACHE_MEMCACHE || self::$type == CACHE_MEMCACHED) {
 			if(@(self::$connect->get($data))) {
@@ -263,6 +268,26 @@ class cache {
 				}
 			}
 		}
+	}
+	
+	public function offsetSet($offset, $value) {
+		if(is_null($offset)) {
+			self::Set("", $value);
+		} else {
+			self::Set($offset, $value);
+		}
+    }
+	
+	public function offsetExists($offset) {
+		return self::Exists($offset);
+	}
+	
+	public function offsetUnset($offset) {
+		self::Delete($offset);
+	}
+	
+	public function offsetGet($offset) {
+		return self::Exists($offset) ? self::Get($offset) : null;
 	}
 
 	final public function __destruct() {

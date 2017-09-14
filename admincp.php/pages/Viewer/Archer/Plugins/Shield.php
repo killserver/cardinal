@@ -59,6 +59,23 @@ class Archer_Shield {
 			}
 			$data .= "<td>{".$modelName.".".$d[$i]."}</td>";
 		}
+		$addition = "";
+		if(Arr::get($_GET, "Where", false)) {
+			$addition .= "&Where=".Arr::get($_GET, "Where");
+		}
+		if(Arr::get($_GET, "WhereData", false)) {
+			$addition .= "&WhereData=".Arr::get($_GET, "WhereData");
+		}
+		if(Arr::get($_GET, "ShowPages", false)) {
+			$addition .= "&ShowPages=".Arr::get($_GET, "ShowPages");
+		}
+		if(Arr::get($_GET, "orderBy", false)) {
+			$addition .= "&orderBy=".Arr::get($_GET, "orderBy");
+		}
+		if(Arr::get($_GET, "orderTo", false)) {
+			$addition .= "&orderTo=".Arr::get($_GET, "orderTo");
+		}
+		$tpl = str_replace("{addition}", $addition, $tpl);
 		$tpl = str_replace("{ArcherFirst}", $first, $tpl);
 		$tpl = str_replace("{ArcherMind}", $head, $tpl);
 		$tpl = str_replace("{ArcherData}", $data, $tpl);

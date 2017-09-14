@@ -18,7 +18,7 @@
 	<link rel="stylesheet" href="assets/xenon/css/xenon-forms.css?1">
 	<link rel="stylesheet" href="assets/xenon/css/xenon-components.css?13">
 	<link rel="stylesheet" href="assets/xenon/css/xenon-skins.css?1">
-	<link rel="stylesheet" href="assets/xenon/css/custom.css?1">
+	<link rel="stylesheet" href="assets/xenon/css/custom.css?{S_time}">
 
 	<script src="assets/xenon/js/jquery-1.11.1.min.js?1"></script>
 
@@ -30,7 +30,7 @@
 	
 	
 </head>
-<body class="page-body lockscreen-page">
+<body class="page-body lockscreen-page bgFon">
 
 	<div class="login-container">
 	
@@ -63,7 +63,7 @@
 							
 							messages: {
 								passwd: {
-									required: 'Please enter your password.'
+									required: '{L_"Пожалуйста введите пароль"}.'
 								}
 							},
 							
@@ -112,7 +112,7 @@
 												}
 												else
 												{
-													toastr.error(resp.errors, "Invalid Login!", opts);
+													toastr.error(resp.errors, "{L_"Не корректно введены данные!"}", opts);
 													$passwd.select();
 												}
 											}
@@ -131,18 +131,18 @@
 					<input type="hidden" name="method" value="login" />
 					<div class="user-thumb">
 						<a href="#">
-							<img src="http://img2.wikia.nocookie.net/__cb20130512094126/sword-art-online/pl/images/thumb/a/a4/Akihiko_Kayaba.png/500px-Akihiko_Kayaba.png" class="img-responsive img-circle" />
+							<img src="{U_avatar}" class="img-responsive img-circle" />
 						</a>
 					</div>
 					
 					<div class="form-group">
-						<h3>Welcome back, {U_username}!</h3>
-						<p>Enter your password to access the admin.</p>
+						<h3>{L_"Добро пожаловать обратно"}, {U_username}!</h3>
+						<p>{L_"Введите пароль для доступа в админ-панель."}</p>
 						
 						<div class="input-group">
-							<input type="password" class="form-control input-dark" name="passwd" id="passwd" placeholder="Password" autocomplete="off" />
+							<input type="password" class="form-control input-dark" name="passwd" id="passwd" placeholder="{L_"Пароль"}" autocomplete="off" />
 							<span class="input-group-btn">
-								<button type="submit" class="btn btn-primary">Log In</button>
+								<button type="submit" class="btn btn-primary">{L_"Войти"}</button>
 							</span>
 						</div>
 					</div>

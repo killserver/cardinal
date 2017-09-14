@@ -112,9 +112,6 @@ class KernelArcher {
 		if(isset($model->pathForUpload)) {
 			$uploads = $model->pathForUpload;
 			unset($model->pathForUpload);
-		} elseif(isset($list['pathForUpload'])) {
-			$uploads = $list['pathForUpload'];
-			unset($list['pathForUpload']);
 		} else {
 			$uploads = str_Replace(ROOT_PATH, "", PATH_UPLOADS);
 		}
@@ -177,13 +174,23 @@ class KernelArcher {
 		}
 		cardinal::RegAction("Добавление данных в Арчере. Модель \"".$modelName."\"");
 		$model->Insert();
+		$addition = "";
+		if(Arr::get($_GET, "ShowPages", false)) {
+			$addition .= "&ShowPages=".Arr::get($_GET, "ShowPages");
+		}
+		if(Arr::get($_GET, "orderBy", false)) {
+			$addition .= "&orderBy=".Arr::get($_GET, "orderBy");
+		}
+		if(Arr::get($_GET, "orderTo", false)) {
+			$addition .= "&orderTo=".Arr::get($_GET, "orderTo");
+		}
 		if(!empty($objTemplate)) {
 			if(isset($_GET['type'])) {
-				location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']), 3, false);
+				location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition, 3, false);
 			}
 			$this->UnlimitedBladeWorks($objTemplate, $template, $load);
 		} else if(isset($_GET['type'])) {
-			location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']));
+			location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition);
 		}
 	}
 	
@@ -246,12 +253,19 @@ class KernelArcher {
 		$type = isset($file['key']) ? $file['type'] : $file[5];
 		$fileName = isset($file['fileName']) ? $file['fileName'] : "";
 		$file = isset($file['file']) ? $file['file'] : $file[3];
+		if(isset($file['type'])) {
+			$typeFile = $file['type'];
+			$typeFile = explode("/", $typeFile);
+			$typeFile = end($typeFile);
+		} else {
+			$typeFile = "";
+		}
 		$fileName = uniqid().$fileName;
 		$path = ROOT_PATH.$path;
 		Files::$switchException = true;
 		//Files::$simulate = true;
 		if(is_array($file)) {
-			return Files::saveFile($file, $fileName, $path);
+			return Files::saveFile($file, $fileName.".".$typeFile, $path);
 		} else {
 			return false;
 		}
@@ -279,12 +293,11 @@ class KernelArcher {
 		if(isset($model->pathForUpload)) {
 			$uploads = $model->pathForUpload;
 			unset($model->pathForUpload);
-		} elseif(isset($list['pathForUpload'])) {
-			$uploads = $list['pathForUpload'];
-			unset($list['pathForUpload']);
 		} else {
 			$uploads = "uploads".DS;
 		}
+		$delArray = $request->post->get("deleteArray", "");
+		$delArray = array_map(function($v) { return explode(",", $v); }, ($delArray));
 		foreach($list as $k => $v) {
 			$files = $request->files->get($k, false);
 			$post = $request->post->get($k, false);
@@ -301,10 +314,22 @@ class KernelArcher {
 					}
 					$counter = 0;
 					$types = array();
+					/////////
+					///
+					if(isset($delArray[$k])) {
+						for($countFilesArray=0;$countFilesArray<sizeof($delArray[$k]);$countFilesArray++) {
+							if(!empty($delArray[$k][$countFilesArray]) && isset($v[$delArray[$k][$countFilesArray]])) {
+								unset($v[$delArray[$k][$countFilesArray]]);
+							}
+						}
+						$v = array_values($v);
+					}
+					///
+					/////////
 					foreach($type as $ks => $vs) {
 						$upload = $this->UploadFile($models, $ks, $selectId, $vs, (is_array($uploads) && isset($uploads[$k]) ? $uploads[$k] : $uploads), $models->getAttribute($k, "allowUpload"), $viewI);
 						if(!empty($upload) || !empty($v)) {
-							$types[$ks] = (!$upload ? (is_array($v) ? $v[$counter] : $v) : $upload."?".time());
+							$types[$ks] = (!$upload ? (is_array($v) && isset($v[$counter]) ? $v[$counter] : $v) : $upload."?".time());
 							$viewI++;
 						}
 						$counter++;
@@ -345,13 +370,23 @@ class KernelArcher {
 		}
 		cardinal::RegAction("Обновление данных в Арчере. Модель \"".$modelName."\". ИД: \"".$selectId."\"");
 		$model->Update();
+		$addition = "";
+		if(Arr::get($_GET, "ShowPages", false)) {
+			$addition .= "&ShowPages=".Arr::get($_GET, "ShowPages");
+		}
+		if(Arr::get($_GET, "orderBy", false)) {
+			$addition .= "&orderBy=".Arr::get($_GET, "orderBy");
+		}
+		if(Arr::get($_GET, "orderTo", false)) {
+			$addition .= "&orderTo=".Arr::get($_GET, "orderTo");
+		}
 		if(!empty($objTemplate)) {
 			if(isset($_GET['type'])) {
-				location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']), 3, false);
+				location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition, 3, false);
 			}
 			$this->UnlimitedBladeWorks($objTemplate, $template, $load);
 		} else if(isset($_GET['type'])) {
-			location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']));
+			location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition);
 		}
 	}
 	
@@ -363,6 +398,16 @@ class KernelArcher {
 		$model = $model->Select();
 		$model->SetTable($this->selectTable);
 		$model = $this->callArr($model, "EditModel", array($model));
+		$list = $model->getArray();
+		foreach($list as $k => $v) {
+			if($model->getAttribute($k, "type")=="fileArray" || $model->getAttribute($k, "type")=="imageArray") {
+				$t = unserialize($v);
+				if(isset($t[0]) && is_array($t[0])) {
+					$t = array();
+				}
+				$model->{$k} = $list[$k] = implode(",", $t);
+			}
+		}
 		$list = $model->getArray();
 		$firstId = current($list);
 		if(empty($firstId)) {
@@ -474,13 +519,17 @@ class KernelArcher {
 		}
 		cardinal::RegAction("Удаление данных в Арчере. Модель \"".$modelName."\". ИД: \"".$first."\"");
 		$list = $model->Deletes();
+		$addition = "";
+		if(Arr::get($_GET, "ShowPages", false)) {
+			$addition .= "&ShowPages=".Arr::get($_GET, "ShowPages");
+		}
 		if(!empty($objTemplate)) {
 			if(isset($_GET['type'])) {
-				location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']), 3, false);
+				location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition, 3, false);
 			}
 			$this->UnlimitedBladeWorks($objTemplate, $template, $load);
 		} else if(isset($_GET['type'])) {
-			location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']));
+			location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition);
 		}
 	}
 	
@@ -646,15 +695,31 @@ class KernelArcher {
 			break;
 			case "image":
 			case "file":
-				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"file\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"{C_default_http_local}".$val."\" target=\"_blank\">".($open ? "{L_'" : "")."просмотреть".($open ? "'}" : "")."</a>" : "")."<br>";
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"file\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"{C_default_http_local}".$val."\"".($type=="image" ? " class=\"showPreview\"" : "")." target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "")."<br>";
+			break;
+			case "imageAccess":
+			case "fileAccess":
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"text\" name=\"".$name."\" disabled=\"disabled\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"{C_default_http_local}".$val."\"".($type=="image" ? " class=\"showPreview\"" : "")." target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "")."<br>";
 			break;
 			case "imageArray":
 			case "fileArray":
+				$retType = '<input type="hidden" name="deleteArray['.$name.']">';
 				$enum = explode(",", $val);
 				$enum = array_map("trim", $enum);
-				$retType = "<span id=\"inputForFile\">";
+				$retType .= "<span id=\"inputForFile\">";
 				for($i=0;$i<sizeof($enum);$i++) {
-					$retType .= "<input class=\"form-control\" type=\"file\" name=\"".$name."[".$i."]\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"{C_default_http_local}".$enum[$i]."\" target=\"_blank\">".($open ? "{L_'" : "")."просмотреть".($open ? "'}" : "")."</a>" : "")."<br>";
+					$retType .= "<div class='array'><div class='col-sm-10'><input class=\"form-control\" type=\"file\" name=\"".$name."[".$i."]\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "")."></div><div class='col-sm-2'><a class='btn btn-red btn-block fa-remove' onclick='removeInputFile(this,\"".$name."\",\"".$i."\")'></a></div>".(!empty($val) ? "<div class='col-sm-12'><a href=\"{C_default_http_local}".$enum[$i]."\" class=\"showPreview\" target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a></div>" : "")."</div>";
+				}
+				$retType .= "</span><br><a href=\"javascript:addInputFile('".$name."')\">".($open ? "{L_'" : "")."Добавить".($open ? "'}" : "")."</a>";
+			break;
+			case "imageArrayAccess":
+			case "fileArrayAccess":
+				$retType = '<input type="hidden" name="deleteArray['.$name.']">';
+				$enum = explode(",", $val);
+				$enum = array_map("trim", $enum);
+				$retType .= "<span id=\"inputForFile\">";
+				for($i=0;$i<sizeof($enum);$i++) {
+					$retType .= "<div class='array'><div class='col-sm-10'><input class=\"form-control\" type=\"text\" disabled=\"disabled\" name=\"".$name."[".$i."]\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "")."></div><div class='col-sm-2'><a class='btn btn-red btn-block fa-remove' onclick='removeInputFile(this,\"".$name."\",\"".$i."\")'></a></div>".(!empty($val) ? "<div class='col-sm-12'><a href=\"{C_default_http_local}".$enum[$i]."\" class=\"showPreview\" target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a></div>" : "")."</div>";
 				}
 				$retType .= "</span><br><a href=\"javascript:addInputFile('".$name."')\">".($open ? "{L_'" : "")."Добавить".($open ? "'}" : "")."</a>";
 			break;

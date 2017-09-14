@@ -76,7 +76,7 @@ class db_mysqli extends DriverParam implements drivers {
 		$this->mc->options(MYSQLI_INIT_COMMAND, "SET NAMES '".$charset."'");
 		$this->mc->options(MYSQLI_INIT_COMMAND, "SET CHARACTER SET '".$charset."'");
 		try {
-			if(!$this->mc->real_connect($host, $user, $pass, $db, $port, false, MYSQLI_CLIENT_COMPRESS)) {
+			if(!@$this->mc->real_connect($host, $user, $pass, $db, $port, false, MYSQLI_CLIENT_COMPRESS)) {
 				if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
 					HTTP::echos();
 				}

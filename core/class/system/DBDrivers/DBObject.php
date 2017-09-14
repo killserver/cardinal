@@ -16,17 +16,19 @@ echo "403 ERROR";
 die();
 }
 
-class DBObject {
+class DBObject implements ArrayAccess {
 	
 	private $loadedTable = "";
 	private $where = array();
 	private $limit = 1;
+	private $offset = 0;
 	private $orderBy = array();
 	private $Attributes = array();
 	private $selectAdd = array();
 	private $setAttrFor = array();
 	private $allowEmptyAttr = false;
 	private $pseudoFields = array();
+	private $multiple = false;
 	
 	final private function UnSetAll(&$ret) {
 		if(isset($ret['loadedTable'])) {
@@ -35,11 +37,17 @@ class DBObject {
 		if(isset($ret['pathForUpload'])) {
 			unset($ret['pathForUpload']);
 		}
+		if(isset($ret['multiple'])) {
+			unset($ret['multiple']);
+		}
 		if(isset($ret['where'])) {
 			unset($ret['where']);
 		}
 		if(isset($ret['limit'])) {
 			unset($ret['limit']);
+		}
+		if(isset($ret['offset'])) {
+			unset($ret['offset']);
 		}
 		if(isset($ret['orderBy'])) {
 			unset($ret['orderBy']);
@@ -75,6 +83,58 @@ class DBObject {
 			$ret[$k] = $v;
 		}
 		return $ret;
+	}
+	
+	final public function getClean($th = "") {
+		if($th==="") {
+			$th = $this;
+		}
+		if(!is_array($th)) {
+			if(isset($th->loadedTable)) {
+				unset($th->loadedTable);
+			}
+			if(isset($th->pathForUpload)) {
+				unset($th->pathForUpload);
+			}
+			if(isset($th->multiple)) {
+				unset($th->multiple);
+			}
+			if(isset($th->where)) {
+				unset($th->where);
+			}
+			if(isset($th->limit)) {
+				unset($th->limit);
+			}
+			if(isset($th->offset)) {
+				unset($th->offset);
+			}
+			if(isset($th->orderBy)) {
+				unset($th->orderBy);
+			}
+			if(isset($th->Attributes)) {
+				unset($th->Attributes);
+			}
+			if(isset($th->addWhereModel)) {
+				unset($th->addWhereModel);
+			}
+			if(isset($th->pseudoFields)) {
+				unset($th->pseudoFields);
+			}
+			if(isset($th->selectAdd)) {
+				unset($th->selectAdd);
+			}
+			if(isset($th->setAttrFor)) {
+				unset($th->setAttrFor);
+			}
+			if(isset($th->allowEmptyAttr)) {
+				unset($th->allowEmptyAttr);
+			}
+		} else {
+			for($i=0;$i<sizeof($th);$i++) {
+				$th[$i] = $th[$i]->getClean();
+			}
+		}
+		return $th;
 	}
 	
 	final public function ToType(&$var) {
@@ -194,12 +254,23 @@ class DBObject {
 		return $ret;
 	}
 	
-	final public function SetLimit($limit) {
+	final public function SetLimit($limit, $move = false) {
 		if((!is_numeric($limit) || $limit == 0) && strpos($limit, ",")===false) {
 			throw new Exception("Error numeric from limit");
 			die();
 		}
+		if($move!==false) {
+			$limit = $move.", ".$limit;
+		}
 		$this->limit = $limit;
+	}
+	
+	final public function SetOffset($offset) {
+		if((!is_numeric($offset) || $offset < -1)) {
+			throw new Exception("Error numeric from offset");
+			die();
+		}
+		$this->offset = $offset;
 	}
 	
 	final public function OrderByTo($name, $type = "DESC") {
@@ -274,6 +345,19 @@ class DBObject {
 		return (!empty($limits) ? " LIMIT ".$limits." " : "");
 	}
 	
+	final private function ReleaseOffset($offset = "") {
+		$offsets = "";
+		if(!empty($offset)) {
+			$offsets = $offset;
+		} elseif(!empty($this->offset)) {
+			$offsets = $this->offset;
+		}
+		if($offsets<1) {
+			$offsets = "";
+		}
+		return (!empty($offsets) ? " OFFSET ".$offsets." " : "");
+	}
+	
 	final public function getFirst() {
 		$ret = get_object_vars($this);
 		$this->UnSetAll($ret);
@@ -332,7 +416,7 @@ class DBObject {
 		}
 	}
 	
-	final public function Select($table = "", $where = "", $orderBy = "", $limit = "") {
+	final public function Select($table = "", $where = "", $orderBy = "", $limit = "", $offset = "") {
 		if(empty($this->loadedTable) && empty($table)) {
 			throw new Exception("Table for select is not set or empty");
 			die();
@@ -353,8 +437,9 @@ class DBObject {
 		$where = $this->ReleaseWhere($where);
 		$orderBy = $this->ReleaseOrder($orderBy);
 		$limit = $this->ReleaseLimit($limit);
-		$rel = db::doquery("SELECT ".implode(", ", array_map(array(&$this, "getFieldForSelect"), $keys))." FROM `".$table."`".$where.$orderBy.$limit, true);
-		if(db::num_rows($rel) <= 1) {
+		$offset = $this->ReleaseOffset($offset);
+		$rel = db::doquery("SELECT ".implode(", ", array_map(array(&$this, "getFieldForSelect"), $keys))." FROM `".$table."`".$where.$orderBy.$limit.$offset, true);
+		if(!$this->multiple && db::num_rows($rel) <= 1) {
 			$ret = db::fetch_object($rel, get_class($this));
 			if(is_object($ret)) {
 				foreach($this->pseudoFields as $k => $v) {
@@ -376,6 +461,61 @@ class DBObject {
 			db::free($rel);
 			return $arr;
 		}
+	}
+
+	final public function multiple($val = "") {
+		$this->multiple = ($val === "" ? (!$this->multiple ? true : false) : $val);
+	}
+
+	final public function getSelectQuery($table = "", $where = "", $orderBy = "", $limit = "", $offset = "") {
+		if(empty($this->loadedTable) && empty($table)) {
+			throw new Exception("Table for select is not set or empty");
+			die();
+		}
+		$keys = get_object_vars($this);
+		$this->UnSetAll($keys);
+		$keys = array_keys($keys);
+		if(sizeof($keys)==0) {
+			throw new Exception("Fields is not set");
+			die();
+		}
+		if(empty($table)) {
+			$table = $this->loadedTable;
+		} else {
+			$this->loadedTable = $table;
+		}
+		$keys = array_merge($keys, $this->selectAdd);
+		$where = $this->ReleaseWhere($where);
+		$orderBy = $this->ReleaseOrder($orderBy);
+		$limit = $this->ReleaseLimit($limit);
+		$offset = $this->ReleaseOffset($offset);
+		return "SELECT ".implode(", ", array_map(array(&$this, "getFieldForSelect"), $keys))." FROM `".$table."`".$where.$orderBy.$limit.$offset;
+	}
+
+	final public function getMax($table = "", $where = "", $orderBy = "", $limit = "", $offset = "") {
+		if(empty($this->loadedTable) && empty($table)) {
+			throw new Exception("Table for select is not set or empty");
+			die();
+		}
+		$keys = get_object_vars($this);
+		$this->UnSetAll($keys);
+		$keys = array_keys($keys);
+		if(sizeof($keys)==0) {
+			throw new Exception("Fields is not set");
+			die();
+		}
+		if(empty($table)) {
+			$table = $this->loadedTable;
+		} else {
+			$this->loadedTable = $table;
+		}
+		$keys = array_merge($keys, $this->selectAdd);
+		$where = $this->ReleaseWhere($where);
+		$orderBy = $this->ReleaseOrder($orderBy);
+		$limit = $this->ReleaseLimit($limit);
+		$offset = $this->ReleaseOffset($offset);
+		$rel = db::doquery("SELECT COUNT(".current($keys).") AS `max` FROM `".$table."`".$where.$orderBy.$limit.$offset);
+		return $rel['max'];
 	}
 
 	final public function Time() {
@@ -496,6 +636,26 @@ class DBObject {
 	final public function removePseudoField($name) {
 		unset($this->pseudoFields[$name]);
 		return true;
+	}
+	
+	public function offsetSet($offset, $value) {
+		if(is_null($offset)) {
+			$this->nulled[] = $value;
+		} else {
+			$this->{$offset} = $value;
+		}
+    }
+	
+	public function offsetExists($offset) {
+		return isset($this->{$offset});
+	}
+	
+	public function offsetUnset($offset) {
+		unset($this->{$offset});
+	}
+	
+	public function offsetGet($offset) {
+		return isset($this->{$offset}) ? $this->{$offset} : null;
 	}
 
 }

@@ -19,7 +19,7 @@ class SEOBlock extends modules {
 		$title = (isset($meta['title']) ? $meta['title'] : (isset($seoBlock['ogp']['title']) ? $seoBlock['ogp']['title'] : (isset($seoBlock['og']['title']) ? $seoBlock['og']['title'] : (isset($seoBlock['main']['title']) ? $seoBlock['main']['title'] : "{L_sitename}"))));
 		$titleHead = (isset($meta['title']) ? $meta['title'] : (isset($seoBlock['ogp']['title']) ? $seoBlock['ogp']['title'] : (isset($seoBlock['og']['title']) ? $seoBlock['og']['title'] : (isset($seoBlock['main']['title']) ? $seoBlock['main']['title'] : ""))));
 		$description = (isset($meta['description']) ? $meta['description'] : (isset($seoBlock['ogp']['description']) ? $seoBlock['ogp']['description'] : (isset($seoBlock['og']['description']) ? $seoBlock['og']['description'] : (isset($seoBlock['main']['description']) ? $seoBlock['main']['description'] : "{L_s_description}"))));
-		$imageCheck = (isset($seoBlock['ogp']['image']) && (file_exists(ROOT_PATH.$seoBlock['ogp']['image']) || file_exists($seoBlock['ogp']['image']) || file_exists(config::Select("default_http_host").$seoBlock['ogp']['image']))) || (isset($seoBlock['main']['image_src']) && (file_exists(ROOT_PATH.$seoBlock['main']['image_src']) || file_exists($seoBlock['main']['image_src']) || file_exists(config::Select("default_http_host").$seoBlock['main']['image_src']))) || file_exists(ROOT_PATH."logo.jpg");
+		$imageCheck = (isset($seoBlock['ogp']['image']) && (file_exists(ROOT_PATH.$seoBlock['ogp']['image']) || file_exists($seoBlock['ogp']['image']) || file_exists(config::Select("default_http_host").$seoBlock['ogp']['image']))) || (isset($seoBlock['main']['image_src']) && (file_exists(ROOT_PATH.$seoBlock['main']['image_src']) || file_exists($seoBlock['main']['image_src']) || file_exists(config::Select("default_http_host").$seoBlock['main']['image_src']))) || file_exists(ROOT_PATH."logo.jpg") || file_exists(ROOT_PATH."logo.png");
 		$type = (isset($seoBlock['ogp']['type']) ? $seoBlock['ogp']['type'] : (isset($seoBlock['og']['type']) ? $seoBlock['og']['type'] : "website"));
 		$link = (isset($meta['canonicalLink']) ? $meta['canonicalLink'] : (isset($meta['link']) ? $meta['link'] : (isset($seoBlock['og']['link']) ? $seoBlock['og']['link'] : (isset($seoBlock['ogp']['link']) ? $seoBlock['ogp']['link'] : (isset($seoBlock['main']['canonical']) ? $seoBlock['main']['canonical'] : (isset($seoBlock['main']['link']) ? $seoBlock['main']['link'] : (isset($seoBlock['main']['url']) ? $seoBlock['main']['url'] : "")))))));
 		$keywords = (isset($meta['keywords']) ? $meta['keywords'] : (isset($seoBlock['ogp']['keywords']) ? $seoBlock['ogp']['keywords'] : (isset($seoBlock['og']['keywords']) ? $seoBlock['og']['keywords'] : (isset($seoBlock['main']['keywords']) ? $seoBlock['main']['keywords'] : ""))));
@@ -39,6 +39,8 @@ class SEOBlock extends modules {
 				$imageLink = (strpos($cLink, "/")!==false ? "{C_default_http_host}".$seoBlock['main']['image_src'] : (strpos($seoBlock['main']['image_src'], "http")!==false ? $seoBlock['main']['image_src'] : ""));
 			} else if(file_exists(ROOT_PATH."logo.jpg")) {
 				$imageLink = "{C_default_http_host}logo.jpg";
+			} else if(file_exists(ROOT_PATH."logo.png")) {
+				$imageLink = "{C_default_http_host}logo.png";
 			} else {
 				$imageCheck = false;
 			}
@@ -104,7 +106,12 @@ class SEOBlock extends modules {
 	}
 	
 	function seoFinder() {
-		if(!file_exists(PATH_UPLOADS."robots.txt") && is_writable(PATH_UPLOADS)) {
+		if(!defined("DEVELOPER_MODE") && defined("PATH_CACHE_SYSTEM") && file_exists(PATH_CACHE_SYSTEM."seoBlockDev.lock")) {
+			unlink(PATH_CACHE_SYSTEM."seoBlockDev.lock");
+		} elseif(!defined("DEVELOPER_MODE") && file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."seoBlockDev.lock")) {
+			unlink(ROOT_PATH."core".DS."cache".DS."system".DS."seoBlockDev.lock");
+		}
+		if(!defined("DEVELOPER_MODE") && !file_exists(PATH_UPLOADS."robots.txt") && is_writable(PATH_UPLOADS)) {
 			$host = (class_exists("HTTP") && method_exists("HTTP", "getServer") ? HTTP::getServer('SERVER_NAME') : $_SERVER['SERVER_NAME']);
 			$path = (class_exists("HTTP") && method_exists("HTTP", "getServer") ? HTTP::getServer('PHP_SELF') : $_SERVER['PHP_SELF']);
 			if(strpos($path, "index.".ROOT_EX."/")!==false) {
@@ -118,6 +125,7 @@ class SEOBlock extends modules {
 			$robots = "User-agent: *\n".
 					"Disallow: /".$path.(!defined("ADMINCP_DIRECTORY") ? "admincp.php" : ADMINCP_DIRECTORY)."/\n".
 					"Disallow: /".$path."cdn-cgi/\n".
+					"Disallow: /".$path."cgi-bin/\n".
 					"Disallow: /".$path."core/\n".
 					"Disallow: /".$path."changelog/\n".
 					"Disallow: /".$path."examples/\n".
@@ -125,11 +133,38 @@ class SEOBlock extends modules {
 					"Disallow: /".$path."skins/\n".
 					"Disallow: /".$path."version/\n".
 					"Disallow: /".$path."uploads/\n".
+					"Disallow: /".$path."*utm_medium=rooms*\n".
+					"Disallow: /".$path."*tab=*\n".
+					"Disallow: /".$path."*gclid=*\n".
+					"Disallow: /".$path."*yclid=*\n".
+					"Disallow: /".$path."*utm_trafmaguid=*\n".
+					"Disallow: /".$path."*kits_costs*\n".
+					"\n".
+					"User-agent: Yahoo\n".
+					"Disallow: /".$path."\n".
+					"\n".
+					"User-agent: MJ12bot\n".
+					"Disallow: /".$path."\n".
+					"\n".
+					"User-agent: Mediapartners-Google\n".
+					"Disallow: /".$path."\n".
+					"\n".
+					"User-agent: AhrefsBot\n".
+					"Disallow: /".$path."\n".
 					"\n".
 					"\n".
 					"Host: ".$host."\n".
 					"Sitemap: http://".$host."/".$path."sitemap.xml";
 			file_put_contents(PATH_UPLOADS."robots.txt", $robots);
+		} elseif(!file_exists(PATH_UPLOADS."robots.txt") && is_writable(PATH_UPLOADS)) {
+			$robots = "User-agent: *\n".
+					"Disallow: /".$path;
+			file_put_contents(PATH_UPLOADS."robots.txt", $robots);
+			if(!defined("DEVELOPER_MODE") && defined("PATH_CACHE_SYSTEM") && file_exists(PATH_CACHE_SYSTEM."seoBlockDev.lock")) {
+				file_put_contents(PATH_CACHE_SYSTEM."seoBlockDev.lock", "");
+			} elseif(!defined("DEVELOPER_MODE") && file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."seoBlockDev.lock")) {
+				file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."seoBlockDev.lock", "");
+			}
 		}
 		$dir = PATH_CACHE_SYSTEM;
 		$file = $dir."seoBlock.lock";
@@ -138,7 +173,7 @@ class SEOBlock extends modules {
 			return false;
 		}
 		if(!file_exists($file)) {
-			db::query("CREATE TABLE `".PREFIX_DB."seoBlock` ( `sId` int(11) not null auto_increment, `sPage` varchar(255) not null, `sLang` varchar(255) not null, `sTitle` varchar(255) not null, `sMetaDescr` varchar(255) not null, `sMetaKeywords` varchar(255) not null, `sMetaRobots` varchar(255) not null, `sRedirect` varchar(255) not null, `sImage` varchar(255) not null, primary key `id`(`sId`), fulltext `lang`(`sLang`), fulltext `page`(`sPage`), fulltext `title`(`sTitle`), fulltext `metaDescr`(`sMetaDescr`), fulltext `metaKeywords`(`sMetaKeywords`) ) CHARSET=utf8 ENGINE=MyISAM;");
+			db::query("CREATE TABLE IF NOT EXISTS {{seoBlock}} ( `sId` int(11) not null auto_increment, `sPage` varchar(255) not null, `sLang` varchar(255) not null, `sTitle` varchar(255) not null, `sMetaDescr` varchar(255) not null, `sMetaKeywords` varchar(255) not null, `sMetaRobots` varchar(255) not null, `sRedirect` varchar(255) not null, `sImage` varchar(255) not null, primary key `id`(`sId`), fulltext `lang`(`sLang`), fulltext `page`(`sPage`), fulltext `title`(`sTitle`), fulltext `metaDescr`(`sMetaDescr`), fulltext `metaKeywords`(`sMetaKeywords`) ) CHARSET=utf8 ENGINE=MyISAM;");
 			file_put_contents($file, "");
 		}
 		$uri = (class_exists("HTTP") && method_exists("HTTP", "getServer") ? HTTP::getServer('REQUEST_URI') : $_SERVER['REQUEST_URI']);
@@ -153,9 +188,9 @@ class SEOBlock extends modules {
 				}
 			}
 			$tmp = $this->init_templates();
-			$db->doquery("SELECT * FROM `".PREFIX_DB."seoBlock` WHERE `sLang` LIKE \"".$match[3]."\" AND `sPage` LIKE \"/".(isset($match[4]) && !empty($match[4]) ? $match[4] : "")."\"", true);
+			$db->doquery("SELECT * FROM {{seoBlock}} WHERE `sLang` LIKE \"".$match[3]."\" AND `sPage` LIKE \"/".(isset($match[4]) && !empty($match[4]) ? $match[4] : "")."\"", true);
 			if($db->num_rows()==0) {
-				$rows = $db->select_query("SELECT * FROM `".PREFIX_DB."seoBlock` WHERE `sLang` LIKE \"".$match[3]."\" ORDER BY `sPage` DESC", true);
+				$rows = $db->select_query("SELECT * FROM {{seoBlock}} WHERE `sLang` LIKE \"".$match[3]."\" ORDER BY `sPage` DESC", true);
 				$ret = false;
 				for($i=0;$i<sizeof($rows);$i++) {
 					if(preg_match("#^".($rows[$i]['sPage'])."#is", $uri)) {

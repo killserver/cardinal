@@ -68,13 +68,21 @@ class pager {
 							$this->pages[$c_link]['prev'] = 0;
 							$this->pages[$c_link]['next'] = 1;
 							if(empty($this->links['next'])) {
-								$this->links['next'] = $j;
+								if($route) {
+									$this->links['next'] = $this->Route(array($url_page, "".$p_page."=".$j.""));
+								} else {
+									$this->links['next'] = $url_page.$p_page.$j;
+								}
 							}
 						} else if($j==($rpp-1)) {
 							$this->pages[$c_link]['prev'] = 1;
 							$this->pages[$c_link]['next'] = 0;
 							if(empty($this->links['prev'])) {
-								$this->links['prev'] = $j;
+								if($route) {
+									$this->links['prev'] = ($j==1 ? $this->Route(array($url_page, "")) : $this->Route(array($url_page, "".$p_page."=".$j."")));
+								} else {
+									$this->links['prev'] = ($j==1 ? $url_page : $url_page.$p_page.$j);
+								}
 							}
 						} else {
 							$this->pages[$c_link]['prev'] = 0;
@@ -152,13 +160,21 @@ class pager {
 							$this->pages[$c_link]['prev'] = 0;
 							$this->pages[$c_link]['next'] = 1;
 							if(empty($this->links['next'])) {
-								$this->links['next'] = $j;
+								if($route) {
+									$this->links['next'] = $this->Route(array($url_page, "".$p_page."=".$j.""));
+								} else {
+									$this->links['next'] = $url_page.$p_page.$j;
+								}
 							}
 						} else if($j==($rpp-1)) {
 							$this->pages[$c_link]['prev'] = 1;
 							$this->pages[$c_link]['next'] = 0;
 							if(empty($this->links['prev'])) {
-								$this->links['prev'] = $j;
+								if($route) {
+									$this->links['prev'] = ($j==1 ? $this->Route(array($url_page, "")) : $this->Route(array($url_page, "".$p_page."=".$j."")));
+								} else {
+									$this->links['prev'] = ($j==1 ? $url_page : $url_page.$p_page.$j);
+								}
 							}
 						} else {
 							$this->pages[$c_link]['prev'] = 0;
@@ -195,7 +211,7 @@ class pager {
 				if($rpp!=$enpages_count) {
 					$this->pages[$c_link]['is_link'] = 0;
 					$this->pages[$c_link]['now'] = 0;
-					$this->pages[$c_link]['title'] = "".$nav_prefix;
+					$this->pages[$c_link]['title'] = "...";
 					$c_link++;
 					$this->pages[$c_link]['is_link'] = 1;
 					if($route) {
@@ -218,6 +234,10 @@ class pager {
 	
 	final public function limit() {
 		return "LIMIT ".$this->limits[0].",".$this->limits[1];
+	}
+	
+	final public function getLimit() {
+		return $this->limits;
 	}
 	
 	final public function prevLink() {

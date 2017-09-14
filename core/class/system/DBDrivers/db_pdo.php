@@ -57,8 +57,7 @@ class db_pdo extends DriverParam implements drivers {
 			die();
 		}
 		try {
-			
-			$this->mc = new PDO("mysql:host=".$host.";port=".$port.";dbname=".$db.";charset=".$charset, $user, $pass);
+			$this->mc = @new PDO("mysql:host=".$host.";port=".$port.";dbname=".$db.";charset=".$charset, $user, $pass);
 			$this->mc->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
 			$this->mc->query("SET NAMES '".$charset."'");
 			$this->mc->query("SET CHARACTER SET '".$charset."'");

@@ -30,7 +30,7 @@ if(!defined("ROOT_EX") && strpos($phpEx, '/') === false) {
 /**
  * Class lang
  */
-class lang {
+class lang implements ArrayAccess {
 
     /**
      * @var bool|string Set language
@@ -451,6 +451,30 @@ class lang {
      */
     public function __set($name, $val) {
 		return self::setLang($name, $val);
+	}
+	
+	public function offsetSet($offset, $value) {
+		if(is_null($offset)) {
+			self::setLang("", $value);
+		} else {
+			self::setLang($offset, $value);
+		}
+    }
+	
+	public function offsetExists($offset) {
+		$lang = self::get_lang($offset);
+		return !empty($lang);
+	}
+	
+	public function offsetUnset($offset) {
+	global $lang;
+		if(isset($lang[$offset])) {
+			unset($lang[$offset]);
+		}
+	}
+	
+	public function offsetGet($offset) {
+		return self::get_lang($offset);
 	}
 
 }

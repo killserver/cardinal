@@ -323,6 +323,14 @@ class Core {
 			$dh->close();
 			}
 		}
+		templates::assign_var("count_Yui", "false");
+		if(file_exists(PATH_CACHE."yui.txt")) {
+			$datas = file_get_contents(PATH_CACHE."yui.txt");
+			$data = json_decode($datas, true);
+			if(sizeof($data)>0) {
+				templates::assign_var("count_Yui", "true");
+			}
+		}
 		templates::assign_var("count_unmoder", $this->unmoder());
 		templates::assign_var("title_admin", $this->title());
 		$links = array();

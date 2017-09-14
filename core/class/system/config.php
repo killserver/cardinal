@@ -16,7 +16,7 @@ echo "403 ERROR";
 die();
 }
 
-class config {
+class config implements ArrayAccess {
 
 	private static $config = array();
 	private static $default = false;
@@ -245,6 +245,26 @@ class config {
 		} else {
 			return false;
 		}
+	}
+	
+	public function offsetSet($offset, $value) {
+		if(is_null($offset)) {
+			self::$config[] = $value;
+		} else {
+			self::$config[$offset] = $value;
+		}
+    }
+	
+	public function offsetExists($offset) {
+		return isset(self::$config[$offset]);
+	}
+	
+	public function offsetUnset($offset) {
+		unset(self::$config[$offset]);
+	}
+	
+	public function offsetGet($offset) {
+		return isset(self::$config[$offset]) ? self::$config[$offset] : null;
 	}
 
 }

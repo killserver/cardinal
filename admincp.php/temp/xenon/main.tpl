@@ -26,6 +26,7 @@
 		var defaultTime = {S_time};
 		var default_link = "{C_default_http_host}";
 		var default_admin_link = "{C_default_http_host}{D_ADMINCP_DIRECTORY}/";
+		var default_localadmin_link = "{C_default_http_local}{D_ADMINCP_DIRECTORY}/";
 		var selectLang = "[if {RP[lang]}==""]{C_lang}[else {RP[lang]}==""]{RP[lang]}[/if {RP[lang]}==""]";
 	</script>
 
@@ -299,15 +300,16 @@
 					</li>
 					
 					<li class="dropdown hover-line">
-						<a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+						<a href="{C_default_http_host}" class="dropdown-toggle" aria-expanded="true" title="{L_"Перейти на сайт"}" alt="{L_"Перейти на сайт"}">
 							<i class="fa-paper-plane"></i>
 						</a>
-						<ul class="dropdown-menu messages">
-							<li class="external">
-								<a href="{C_default_http_host}">{L_"Перейти на сайт"}</a>
-							</li>
-						</ul>
 					</li>
+					
+					[if {count_Yui}==true]<li class="dropdown hover-line">
+						<a href="#" onclick="jQuery('#modal-yui').modal('show', {backdrop: 'static'});" title="{L_"Панель запуска Yui"}" alt="{L_"Панель запуска Yui"}">
+							<i class="fa-info"></i>
+						</a>
+					</li>[/if {count_Yui}==true]
 					
 					[if {count_unmoder}>=1]<li class="dropdown hover-line">
 						<a href="#" data-toggle="dropdown">
@@ -457,6 +459,17 @@
 		</div>
 	</div>
 
+	<div class="modal fade" id="modal-yui" data-backdrop="static">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header"><h4 class="modal-title">{L_"Панель запуска Yui"}</h4></div>
+				<div class="modal-body">
+					<button type="button" class="btn btn-info" data-demo="data-demo" data-demo-this="1" data-dismiss="modal">{L_"Запустить обучение для этой страницы"}</button>
+					<button type="button" class="btn btn-red" data-demo="data-demo" data-demo-this="0" data-dismiss="modal">{L_"Запустить полный курс обучения"}</button>
+				</div>
+			</div>
+		</div>
+	</div>
 
 	<div class="page-loading-overlay">
 		<div class="loader-2"></div>

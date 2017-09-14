@@ -29,9 +29,9 @@ die();
 require_once(ROOT_PATH."core".DS."loadConfig.".ROOT_EX);
 
 $useNew = false;
-function require_dir($dir = "", $modules = "", $mod = false) { include_dir($dir, $modules, $mod); }
+function require_dir($dir = "", $modules = "", $force = false) { include_dir($dir, $modules, $force); }
 
-function include_dir($dir = "", $modules = "", $mod = false) {
+function include_dir($dir = "", $modules = "", $force = false) {
 global $useNew;
 	if(empty($dir)) {
 		$dir = PATH_FUNCTIONS;
@@ -46,7 +46,12 @@ global $useNew;
 		if($dh = dir($dir)) {
 			while(($file = $dh->read()) !== false) {
 				$strip_path = str_replace(ROOT_PATH, "", PATH_MODULES);
-				if($file != "index.".ROOT_EX && $file != "." && $file != ".." && strpos($file, $modules) !== false && ($inc ? modules::load_modules($strip_path.$file, $modules) : true)) {
+				if($file != "index.".ROOT_EX && $file != "." && $file != ".." && strpos($file, $modules) !== false) {
+					if($inc && !modules::load_modules($strip_path.$file, $modules)) {
+						if(!$force) {
+							continue;
+						}
+					}
 					if($useNew) {
 						$class = str_replace($modules, "", $file);
 						require_once($dir.$class.DS.$file);
@@ -72,26 +77,28 @@ if(file_exists(PATH_MEDIA."config.route.global.".ROOT_EX)) {
 if(file_exists(PATH_MEDIA."config.route.".ROOT_EX)) {
 	require_once(PATH_MEDIA."config.route.".ROOT_EX);
 }
-include_dir(PATH_MODULES, ".2.class.".ROOT_EX, true);
-include_dir(PATH_MODULES, ".class.".ROOT_EX, true);
+include_dir(PATH_MODULES, ".2.class.".ROOT_EX);
+include_dir(PATH_MODULES, ".class.".ROOT_EX);
 include_dir();
 
 if(file_exists(ROOT_PATH.".htaccess") && defined("DEVELOPER_MODE")) {
 	$file = file_get_contents(ROOT_PATH.".htaccess");
 	if(strpos($file, "# Add htaccess")===false) {
-		chmod(ROOT_PATH.".htaccess", 0777);
-		$file = "# Add htaccess\n<IfModule pagespeed_module>\n\tModPagespeed off\n</IfModule>\n\n".$file;
-		file_put_contents(ROOT_PATH.".htaccess", $file);
-		chmod(ROOT_PATH.".htaccess", 0644);
+		if(@chmod(ROOT_PATH.".htaccess", 0777)) {
+			$file = "# Add htaccess\n<IfModule pagespeed_module>\n\tModPagespeed off\n</IfModule>\n\n".$file;
+			file_put_contents(ROOT_PATH.".htaccess", $file);
+		}
+		@chmod(ROOT_PATH.".htaccess", 0644);
 	}
 } else if(file_exists(ROOT_PATH.".htaccess") && !defined("DEVELOPER_MODE")) {
 	$file = file_get_contents(ROOT_PATH.".htaccess");
 	if(strpos($file, "# Add htaccess")!==false) {
-		chmod(ROOT_PATH.".htaccess", 0777);
-		$fLen = strlen("# Add htaccess\n<IfModule pagespeed_module>\n\tModPagespeed on\n</IfModule>\n\n");
-		$file = substr($file, $fLen);
-		file_put_contents(ROOT_PATH.".htaccess", $file);
-		chmod(ROOT_PATH.".htaccess", 0644);
+		if(@chmod(ROOT_PATH.".htaccess", 0777)) {
+			$fLen = strlen("# Add htaccess\n<IfModule pagespeed_module>\n\tModPagespeed on\n</IfModule>\n\n");
+			$file = substr($file, $fLen);
+			file_put_contents(ROOT_PATH.".htaccess", $file);
+		}
+		@chmod(ROOT_PATH.".htaccess", 0644);
 	}
 }
 $error = error_get_last();

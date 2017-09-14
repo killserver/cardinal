@@ -89,3 +89,8 @@ function hide_loading_bar()
 	$loading_bar.addClass('progress-is-hidden');
 	$pct.width(0).data('pct', 0);
 }
+
+if(jQuery(".bgFon").length>0) {
+	var rand = 1 - 0.5 + Math.random() * (12 - 1 + 1);
+	jQuery(".bgFon").css("backgroundColor", "url('https://raw.githubusercontent.com/killserver/ForCardinal/master/bg/"+Math.round(rand)+".jpg')");
+}

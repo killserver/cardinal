@@ -103,12 +103,23 @@ if(function_exists("ob_implicit_flush")) {
 
 ini_set('scream.enabled', false);
 
+$targets = array('PHP_SELF', 'HTTP_USER_AGENT', 'HTTP_REFERER', 'QUERY_STRING', 'REQUEST_URI', 'PATH_INFO');
+foreach($targets as $target) {
+	if(isset($_SERVER[$target]) && substr($_SERVER[$target], -5)=="debug") {
+		$_SERVER[$target] = substr($_SERVER[$target], 0, -5);
+	}
+}
 if(defined("DEBUG") || isset($_GET['debug'])) {
 	ini_set('display_errors', 1);
 	error_reporting(E_ALL);
 	if(!defined("DEBUG_ACTIVATED")) {
 		define("DEBUG_ACTIVATED", true);
 	}
+} else {
+	error_reporting(E_ALL ^ E_WARNING ^ E_DEPRECATED ^ E_NOTICE);
+	ini_set('error_reporting', E_ALL ^ E_WARNING ^ E_DEPRECATED ^ E_NOTICE);
+	ini_set('display_errors', true);
+	ini_set('html_errors', false);
 }
 
 if(!defined('PHP_VERSION_ID')) {
@@ -153,6 +164,9 @@ if(!defined("ROOT_PATH")) {
 	define("ROOT_PATH", dirname(__FILE__).DS);
 }
 $phpEx = substr(strrchr(__FILE__, '.'), 1);
+if(empty($phpEx)) {
+    $phpEx = "php";
+}
 if(!defined("ROOT_EX") && strpos($phpEx, '/') === false) {
 	define("ROOT_EX", $phpEx);
 }
@@ -210,6 +224,15 @@ $langInit = new lang();
 $lang = $langInit->init_lang();
 if(!defined("WITHOUT_DB")) {
 	defines::add("CRON_TIME", config::Select("cardinal_time"));
+	defines::init();
+	new cardinal();
+} elseif(is_writable(PATH_CACHE)) {
+	if(file_exists(PATH_CACHE."cron.txt")) {
+		$otime = filemtime(PATH_CACHE."cron.txt");
+	} else {
+		$otime = time();
+	}
+	defines::add("CRON_TIME", $otime);
 	defines::init();
 	new cardinal();
 } else {
@@ -275,8 +298,8 @@ header("X-Content-Type-Options: SAMEORIGIN");
 header("X-XSS-Protection: 1; mode=block");
 header('Cache-Control: max-age');
 header("Cardinal: ".cardinal::SaveCardinal(VERSION));
-ini_set("pcre.backtrack_limit", 1200000);
-ini_set("pcre.recursion_limit", 1200000);
+ini_set("pcre.backtrack_limit", 120000000);
+ini_set("pcre.recursion_limit", 120000000);
 if(function_exists("header_remove")) {
 	header_remove('x-powered-by');
 } else {

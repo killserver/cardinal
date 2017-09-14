@@ -308,12 +308,19 @@ class HTTP {
 	
 	final public static function Location($link, $time = 0, $exit = true, $code = 302) {
 		if(defined("PHP_SAPI") && (PHP_SAPI != 'cgi-fcgi')) {
-			self::StatusHeader($code);
+			$status = self::StatusHeader($code);
+			header("HTTP/2.0 ".$code." ".$status);
 		}
 		if($time == 0) {
-			header("Location: ".self::ClearLocation($link), true, $code);
+			if(function_exists("header_remove")) {
+				header_remove("Location");
+			}
+			header("Location: ".self::ClearLocation($link));
 		} else {
-			header("Refresh: ".$time."; url=".self::ClearLocation($link), true, $code);
+			if(function_exists("header_remove")) {
+				header_remove("Refresh");
+			}
+			header("Refresh: ".$time."; url=".self::ClearLocation($link));
 		}
 		if($exit) {
 			exit();

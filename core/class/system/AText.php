@@ -12,7 +12,7 @@ class AText {
 		}
 		$dirCache = (defined("PATH_CACHE_SYSTEM") ? PATH_CACHE_SYSTEM : ROOT_PATH.'core'.DS.'cache'.DS.'system'.DS);
 		if(file_exists($dirCache) && is_writable($dirCache) && !file_exists($dirCache."aText.lock")) {
-			db::query("CREATE TABLE IF NOT EXISTS `".(defined("PREFIX_DB") ? PREFIX_DB : "")."aText` ( `aId` int not null auto_increment, `lang` varchar(255) not null, `page` varchar(255) not null, `text` longtext not null, primary key `id`(`aId`), fulltext `page`(`page`), fulltext `lang`(`lang`), fulltext `text`(`text`(200)) ) ENGINE=MyISAM;");
+			db::query("CREATE TABLE IF NOT EXISTS {{aText}} ( `aId` int not null auto_increment, `lang` varchar(255) not null, `page` varchar(255) not null, `text` longtext not null, primary key `id`(`aId`), fulltext `page`(`page`), fulltext `lang`(`lang`), fulltext `text`(`text`(200)) ) ENGINE=MyISAM;");
 			file_put_contents($dirCache."aText.lock", "");
 		}
 		$this->uri = str_replace(array($_SERVER['PHP_SELF']."?", $_SERVER['PHP_SELF']."/"), "", $_SERVER['REQUEST_URI']);
@@ -38,7 +38,7 @@ class AText {
 		}
 		$dirCache = (defined("PATH_CACHE_SYSTEM") ? PATH_CACHE_SYSTEM : ROOT_PATH.'core'.DS.'cache'.DS.'system'.DS);
 		if(file_exists($dirCache) && is_writable($dirCache) && !file_exists($dirCache."aText.lock")) {
-			db::query("CREATE TABLE IF NOT EXISTS `".(defined("PREFIX_DB") ? PREFIX_DB : "")."aText` ( `aId` int not null auto_increment, `lang` varchar(255) not null, `page` varchar(255) not null, `text` longtext not null, primary key `id`(`aId`), fulltext `page`(`page`), fulltext `lang`(`lang`), fulltext `text`(`text`(200)) ) ENGINE=MyISAM;");
+			db::query("CREATE TABLE IF NOT EXISTS {{aText}} ( `aId` int not null auto_increment, `lang` varchar(255) not null, `page` varchar(255) not null, `text` longtext not null, primary key `id`(`aId`), fulltext `page`(`page`), fulltext `lang`(`lang`), fulltext `text`(`text`(200)) ) ENGINE=MyISAM;");
 			file_put_contents($dirCache."aText.lock", "");
 			return true;
 		} else if(file_exists($dirCache."aText.lock")) {
@@ -79,6 +79,8 @@ class AText {
 			}
 			if(isset($file[$this->uri])) {
 				return true;
+			} elseif(isset($file['*'])) {
+				return true;
 			} else {
 				return false;
 			}
@@ -96,11 +98,13 @@ class AText {
 			} catch(Exception $ex) {
 				$file = array();
 			}
+			$arr = array();
 			if(isset($file[$this->uri])) {
-				return json_decode($file[$this->uri], true);
-			} else {
-				return array();
+				$arr = $file[$this->uri];
+			} elseif(isset($file['*'])) {
+				$arr = $file['*'];
 			}
+			return $arr;
 		} else {
 			return array();
 		}
@@ -108,18 +112,20 @@ class AText {
 	
 	function get() {
 		if(!$this->cacheExist($this->uri)) {
-			db::doquery("SELECT `text` FROM `".(defined("PREFIX_DB") ? PREFIX_DB : "")."aText` WHERE ".(!empty($this->lang) ? "`lang` LIKE \"".$this->lang."\" AND " : "")."`page` LIKE \"".$this->uri."%\" LIMIT 1", true);
+			db::doquery("SELECT `text`, `page` FROM {{aText}} WHERE ".(!empty($this->lang) ? "`lang` LIKE \"".$this->lang."\" AND " : "")."(`page` LIKE \"".$this->uri."%\" OR `page` LIKE '*') LIMIT 1", true);
 			if(db::num_rows()==1) {
 				$row = db::fetch_assoc();
 				if(isset($row['text'])) {
 					$this->text = unserialize($row['text']);
-					$this->cacheSave($this->text);
+					$this->cacheSave(array($row['page']."" => $this->text));
 				}
 			}
 		} else {
 			$row = $this->cacheRead();
 			if(isset($row['text'])) {
 				$this->text = unserialize($row['text']);
+			} else {
+				$this->text = $row;
 			}
 		}
 		return $this;
@@ -137,14 +143,26 @@ class AText {
 	function __getHTML($tmp = false) {
 		if($tmp!==false) {
 			$keys = array_keys($this->text);
-			for($i=0;$i<sizeof($keys);$i++) {
-				$tmp->assign_vars(array("textInfo".($i+1) => $this->text[$keys[$i]]));
+			if(sizeof($keys)==0) {
+				for($i=1;$i<=30;$i++) {
+					$tmp->assign_vars(array("textInfo".($i) => ""));
+				}
+			} else {
+				for($i=0;$i<sizeof($keys);$i++) {
+					$tmp->assign_vars(array("textInfo".($i+1) => $this->text[$keys[$i]]));
+				}
 			}
 			return true;
 		} else {
 			$keys = array_keys($this->text);
-			for($i=0;$i<sizeof($keys);$i++) {
-				templates::assign_vars(array("textInfo".($i+1) => $this->text[$keys[$i]]));
+			if(sizeof($keys)==0) {
+				for($i=1;$i<=30;$i++) {
+					templates::assign_vars(array("textInfo".($i) => ""));
+				}
+			} else {
+				for($i=0;$i<sizeof($keys);$i++) {
+					templates::assign_vars(array("textInfo".($i+1) => $this->text[$keys[$i]]));
+				}
 			}
 			return true;
 		}

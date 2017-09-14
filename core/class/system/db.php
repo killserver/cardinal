@@ -539,6 +539,20 @@ class db {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
+		if(strpos($query, '{{') !== false && defined("PREFIX_DB")) {
+			if(preg_match("/CREATE|DROP/", $query)) {
+				$query = str_replace(array('{{', '}}'), array("`".PREFIX_DB, "`"), $query);
+			} else {
+				$arr = self::getTables();
+				$arr = array_keys($arr);
+				for($i=0;$i<sizeof($arr);$i++) {
+					$t = str_replace(PREFIX_DB, "", $arr[$i]);
+					$query = str_replace(array('{{'.$arr[$i].'}}', '{{'.$t.'}}'), "`".PREFIX_DB . $t."`", $query);
+				}
+			}
+		} else if(strpos($query, '{{') !== false) {
+			$query = str_replace(array("{{", "}}"), "`", $query);
+		}
 		$stime = self::time();
 		self::$qid = $return = self::$driver->query($query);
 		$etime = self::time()-$stime;
@@ -739,9 +753,6 @@ class db {
 		} else {
 			echo "<center><br />".$trace[$level]['file'].":".$trace[$level]['line']."<hr />Query:<br /><textarea cols=\"40\" rows=\"5\">".$query."</textarea><hr />[".$mysql_error_num."] ".$mysql_error."<br />";
 		}
-		if(!is_bool($tmp)) {
-            $tmp->__destruct();
-        }
 		exit();
 	}
 	

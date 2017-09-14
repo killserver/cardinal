@@ -24,7 +24,7 @@ $lang = array_merge($lang, array(
 	"lang_ini" => "ru",
 	"site_name" => "Cardinal Engine",
 	"sitename" => "Cardinal Engine",
-	"s_description" => "Ещё один сайт на Cardinal Engine",
+	"s_description" => "Сайт на Cardinal Engine",
 	"adminpanel" => "Админ-панель",
 	"save" => "Сохранить",
 	"alert_parser" => "<b><font color=\"red\">!!!ВНИМАНИЕ!!!</font></b><br />Данным парсером поддерживаются только разрешенные сервисы, список которых Вы можете найти нажав на кнопку \"Поддерживаемые сервисы\"",

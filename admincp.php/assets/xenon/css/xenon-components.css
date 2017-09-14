@@ -2962,10 +2962,9 @@ button.toast-close-button {
   display: inline-block !important;
 }
 .login-page {
-  background: #2c2e2f;
+  background: #5f6365;
   color: #fff;
   /*padding-top: 150px;*/
-  background: url('http://wallpapercave.com/wp/rY06luP.jpg');
   background-repeat: no-repeat;
   -webkit-background-size: cover;
   -moz-background-size: cover;
@@ -3312,10 +3311,9 @@ button.toast-close-button {
   box-shadow: 0px 5px 20px 1px #2c2e2f;
 }
 .lockscreen-page {
-  background: #2c2e2f;
+  background: #5f6365;
   color: #fff;
   /*padding-top: 250px;*/
-  background: url('http://wallpapercave.com/wp/rY06luP.jpg');
   background-repeat: no-repeat;
   -webkit-background-size: cover;
   -moz-background-size: cover;

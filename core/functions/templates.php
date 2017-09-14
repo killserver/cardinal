@@ -129,6 +129,9 @@ global $user;
 			}
 		}
 	}
+	if(isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && userlevel::get("admin") && Arr::get($_GET, "noShowAdmin", false)===false) {
+		$sRet .= '<script type="text/javascript">if(typeof jQuery!=undefined){jQuery(document).ready(function(){var nowAdminCardinal=jQuery(".adminCoreCardinal").html();function createNormalAdmin(){var elemsFirst=[];var elems=[];var width=0;var userWidth=jQuery(".adminCoreCardinal>.user").width();var linkAdmin=jQuery(".adminCoreCardinal>.linkToAdmin").width();jQuery(".adminCoreCardinal>.items").each(function(i,k) {elemsFirst.push(jQuery(k));});for(var i=0;i<elemsFirst.length;i++) {var widthEl=elemsFirst[i].width();if(jQuery(window).width()-userWidth-linkAdmin-270<width){elems.push(elemsFirst[i]);jQuery(elemsFirst[i]).remove();}width+=widthEl;}if(elems.length>0){jQuery(".adminCoreCardinal>.user").before("<div class=\'more\'><div class=\'elems\'></div></div>");for(var i=0;i<elems.length;i++){jQuery(".adminCoreCardinal>.more>.elems").append(elems[i]);}}}jQuery(window).resize(function(){jQuery(".adminCoreCardinal").html(nowAdminCardinal);createNormalAdmin()});createNormalAdmin();});}</script>';
+	}
 	unset($all, $js, $user);
 return $sRet;
 }
@@ -145,7 +148,7 @@ function releaseSeo($meta = array(), $return = false, $clear = true) {
 global $seoBlock;
 	$title = (isset($meta['title']) ? $meta['title'] : (isset($seoBlock['ogp']['title']) ? $seoBlock['ogp']['title'] : (isset($seoBlock['og']['title']) ? $seoBlock['og']['title'] : (isset($seoBlock['main']['title']) ? $seoBlock['main']['title'] : "{L_sitename}"))));
 	$description = (isset($meta['description']) ? $meta['description'] : (isset($seoBlock['ogp']['description']) ? $seoBlock['ogp']['description'] : (isset($seoBlock['og']['description']) ? $seoBlock['og']['description'] : (isset($seoBlock['main']['description']) ? $seoBlock['main']['description'] : "{L_s_description}"))));
-	$imageCheck = (isset($seoBlock['ogp']['image']) && (file_exists(ROOT_PATH.$seoBlock['ogp']['image']) || file_exists($seoBlock['ogp']['image']) || file_exists(config::Select("default_http_host").$seoBlock['ogp']['image']))) || (isset($seoBlock['main']['image_src']) && (file_exists(ROOT_PATH.$seoBlock['main']['image_src']) || file_exists($seoBlock['main']['image_src']) || file_exists(config::Select("default_http_host").$seoBlock['main']['image_src']))) || file_exists(ROOT_PATH."logo.jpg");
+	$imageCheck = (isset($seoBlock['ogp']['image']) && (file_exists(ROOT_PATH.$seoBlock['ogp']['image']) || file_exists($seoBlock['ogp']['image']) || file_exists(config::Select("default_http_host").$seoBlock['ogp']['image']))) || (isset($seoBlock['main']['image_src']) && (file_exists(ROOT_PATH.$seoBlock['main']['image_src']) || file_exists($seoBlock['main']['image_src']) || file_exists(config::Select("default_http_host").$seoBlock['main']['image_src']))) || file_exists(ROOT_PATH."logo.jpg") || file_exists(ROOT_PATH."logo.png");
 	$type = (isset($seoBlock['ogp']['type']) ? $seoBlock['ogp']['type'] : (isset($seoBlock['og']['type']) ? $seoBlock['og']['type'] : "website"));
 	$link = (isset($meta['canonicalLink']) ? $meta['canonicalLink'] : (isset($meta['link']) ? $meta['link'] : (isset($seoBlock['og']['link']) ? $seoBlock['og']['link'] : (isset($seoBlock['ogp']['link']) ? $seoBlock['ogp']['link'] : (isset($seoBlock['main']['canonical']) ? $seoBlock['main']['canonical'] : (isset($seoBlock['main']['link']) ? $seoBlock['main']['link'] : (isset($seoBlock['main']['url']) ? $seoBlock['main']['url'] : "")))))));
 	$keywords = (isset($meta['keywords']) ? $meta['keywords'] : (isset($seoBlock['ogp']['keywords']) ? $seoBlock['ogp']['keywords'] : (isset($seoBlock['og']['keywords']) ? $seoBlock['og']['keywords'] : (isset($seoBlock['main']['keywords']) ? $seoBlock['main']['keywords'] : ""))));
@@ -165,6 +168,8 @@ global $seoBlock;
 			$imageLink = (strpos($cLink, "/")!==false ? "{C_default_http_host}".$seoBlock['main']['image_src'] : (strpos($seoBlock['main']['image_src'], "http")!==false ? $seoBlock['main']['image_src'] : ""));
 		} else if(file_exists(ROOT_PATH."logo.jpg")) {
 			$imageLink = "{C_default_http_host}logo.jpg";
+		} else if(file_exists(ROOT_PATH."logo.png")) {
+			$imageLink = "{C_default_http_host}logo.png";
 		} else {
 			$imageCheck = false;
 		}
@@ -255,8 +260,10 @@ function headers($array = array(), $clear = false, $no_js = false) {
 	$header .= "<meta name=\"generator\" content=\"Cardinal ".VERSION."\" />\n";
 	$header .= "<meta name=\"author\" content=\"".(isset($array['author']) ? $array['author'] : "Cardinal ".VERSION)."\" />\n";
 	$header .= "<meta name=\"copyright\" content=\"{L_sitename}\" />\n";
-	if(!isset($array['meta']) || !array_key_exists("robots", $array['meta'])) {
+	if(!defined("DEVELOPER_MODE") && !isset($array['meta']) || !array_key_exists("robots", $array['meta'])) {
 		$header .= "<meta name=\"robots\" content=\"all\" />\n";
+	} elseif(defined("DEVELOPER_MODE")) {
+		$header .= "<meta name=\"robots\" content=\"noindex, nofollow\" />\n";
 	}
 	if(file_exists(ROOT_PATH."favicon.ico")) {
 		$header .= "<link href=\"{C_default_http_host}favicon.ico\" rel=\"shortcut icon\" type=\"image/x-icon\" />\n";
@@ -276,14 +283,25 @@ if(!$clear) {
 	unset($dprm);
 	$header .= '<meta name="viewport" content="'.config::Select("viewport").'" />'."\n";
 	$header .= '<meta http-equiv="imagetoolbar" content="no" />'."\n";
-	$header .= (defined("ENABLED_SUPPORTS") ? '<script type="text/javascript" src="{C_default_http_host}js/supports.js" async="true"></script>'."\n" : "");
+	$header .= '<meta http-equiv="url" content="{C_default_http_host}">'."\n";
+	$header .= '<meta http-equiv="cleartype" content="on">'."\n";
+	$header .= '<meta http-equiv="X-UA-Compatible" content="IE=edge">'."\n";
+	$header .= (defined("ENABLED_SUPPORTS") ? '<script type="text/javascript" src="{C_default_http_host}js/supports.min.js" async="true"></script>'."\n" : "");
 	$header .= '<!-- saved from url=(0014)about:internet -->'."\n";
 	$header .= '<meta name="apple-mobile-web-app-capable" content="yes">'."\n";
 	$header .= '<meta name="format-detection" content="telephone=no">'."\n";
 	$header .= '<meta name="format-detection" content="address=no">'."\n";
-	$header .= '<meta http-equiv="url" content="{C_default_http_host}">'."\n";
-	$header .= '<meta http-equiv="cleartype" content="on">'."\n";
-	$header .= '<meta http-equiv="X-UA-Compatible" content="IE=edge">'."\n";
+	$header .= '<meta name="google" value="notranslate">'."\n";
+	$header .= '<meta name="skype_toolbar" content="skype_toolbar_parser_compatible">'."\n";
+	$header .= '<meta name="msapplication-tap-highlight" content="no">'."\n";
+	$header .= '<meta name="renderer" content="webkit">'."\n";
+	$header .= '<meta name="x5-fullscreen" content="true">'."\n";
+	$header .= '<meta name="rating" content="General">'."\n";
+	$support = lang::support();
+	for($i=1;$i<sizeof($support);$i++) {
+		$clearLang = nsubstr($support[$i], 4, -3);
+		$header .= '<link rel="alternate" href="{C_default_http_host}'.$clearLang.'/" hreflang="'.$clearLang.'">'."\n";
+	}
 	$header .= "<script type=\"text/javascript\">\n".
 		"	var username = \"{U_username}\";\n".
 		"	var default_link = \"{C_default_http_host}\";\n".
@@ -353,7 +371,9 @@ if(!$clear) {
 	}
 	if(isset($array['meta'])) {
 		foreach($array['meta'] as $name => $val) {
-			if(is_array($val)) continue;
+			if(is_array($val) || ($name == "robots" && defined("DEVELOPER_MODE"))) {
+				continue;
+			}
 			$header .= "<meta name=\"".$name."\" content=\"".$val."\" />\n";
 		}
 	}
@@ -394,7 +414,9 @@ if(!$clear) {
 		if($editor!==false && Arr::get($editor, "class", false)) {
 			$editPage = "{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=".$editor['class'].(isset($editor['page']) ? "&".$editor['page'] : "");
 		}
-		$header .= "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\"><link rel=\"stylesheet\" href=\"{C_default_http_local}skins/admin.css?{S_time}\"><div class=\"adminCoreCardinal\"><a href=\"{C_default_http_local}\" class=\"logo\"></a><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/\" class=\"linkToAdmin\">{L_'adminpanel'}</a>".menuAdminHeader($newMenu).(!empty($editPage) ? "<div class=\"items\"><a href=\"".$editPage."\"><i class=\"fa-edit\"></i><span>{L_'Редактировать на этой странице'}</span></a></div>":"")."<div class=\"user\"><span>{U_username}</span><div class=\"dropped\"><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Login&out\"><i class=\"fa-user-times\"></i>{L_'logout'}</a></div></div></div>";
+		$header .= "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\"><link rel=\"stylesheet\" href=\"{C_default_http_local}skins/admin.{S_time}.css\">";
+		$menu = "<div class=\"adminCoreCardinal\"><a href=\"{C_default_http_local}\" class=\"logo\"></a><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/\" class=\"linkToAdmin\">{L_'adminpanel'}</a>".menuAdminHeader($newMenu).(!empty($editPage) ? "<div class=\"items\"><a href=\"".$editPage."\"><i class=\"fa-edit\"></i><span>{L_'Редактировать на этой странице'}</span></a></div>":"")."<div class=\"user\"><span>{U_username}</span><div class=\"dropped\"><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Login&out\"><i class=\"fa-user-times\"></i>{L_'logout'}</a></div></div></div>";
+		templates::add_modules($menu, "body|after");
 	}
 	unset($array);
 return $header;
