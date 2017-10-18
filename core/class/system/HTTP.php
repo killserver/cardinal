@@ -315,12 +315,16 @@ class HTTP {
 			if(function_exists("header_remove")) {
 				header_remove("Location");
 			}
-			header("Location: ".self::ClearLocation($link));
+			$link = self::ClearLocation($link);
+			$link = cardinalEvent::execute("HTTP::Location", $link);
+			header("Location: ".$link);
 		} else {
 			if(function_exists("header_remove")) {
 				header_remove("Refresh");
 			}
-			header("Refresh: ".$time."; url=".self::ClearLocation($link));
+			$link = self::ClearLocation($link);
+			$link = cardinalEvent::execute("HTTP::Location", $link);
+			header("Refresh: ".$time."; url=".$link);
 		}
 		if($exit) {
 			exit();
@@ -361,6 +365,7 @@ class HTTP {
 	
 	final public static function echos($echo = "", $die = false) {
 		$echo = cardinal::callbacks("echo", $echo, "call");
+		$echo = cardinalEvent::execute("HTTP::echos", $echo);
 		if(!empty($echo)) {
 			echo $echo;
 			unset($echo);

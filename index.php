@@ -20,6 +20,7 @@
  *
 */
 if(strpos($_SERVER['PATH_INFO'], "/favicon.ico")!==false || strpos($_SERVER['REQUEST_URI'], "/favicon.ico")!==false) {
+	header("HTTP/2.0 404 Not found");
 	die();
 }
 
@@ -133,23 +134,10 @@ if($active) {
 	HTTP::echos($obj);
 }
 unset($page, $class, $method, $file, $is_file);
-if(defined("DEBUG")) {
-	ini_set('display_errors', 1);
-	error_reporting(E_ALL);
-}
 $Timer = microtime()-$Timer;
-$tplTime = templates::$time;
-$gzip = templates::$gzip;
-$gActive = templates::$gzipActive;
-$dbTime = db::$time;
-$dbNum = db::$num;
-$list = array("targets","target","phpEx","protocol","route","cache","lang","user","config_templates","server","pages","active","load","obj","templates","db");
+$list = array("targets","session","manifest","Timer","config","target","phpEx","protocol","route","cache","lang","user","config_templates","server","pages","active","load","obj","templates","db");
 for($i=0;$i<sizeof($list);$i++) {
 	unset($GLOBALS[$list[$i]]);
 }
-if(defined("DEBUG_ACTIVATED")) {
-	Debug::DebugAll(null, true);
-}
-GzipOut($gzip, $gActive);
 HTTP::echos();
 ?>

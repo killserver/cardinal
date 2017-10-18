@@ -45,7 +45,7 @@ if(!defined("PATH_HOOKS")) {
 	define("PATH_HOOKS", ROOT_PATH."core".DS."modules".DS."hooks".DS);
 }
 if(!defined("PATH_LOAD_LIBRARY")) {
-	define("PATH_LOAD_LIBRARY", ROOT_PATH."core".DS."modules".DS);
+	define("PATH_LOAD_LIBRARY", ROOT_PATH."core".DS."modules".DS."library".DS);
 }
 if(!defined("PATH_LOADED_CONTENT")) {
 	define("PATH_LOADED_CONTENT", ROOT_PATH."core".DS."modules".DS);

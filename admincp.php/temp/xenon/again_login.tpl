@@ -16,7 +16,7 @@
 	<link rel="stylesheet" href="assets/xenon/css/bootstrap.css?1">
 	<link rel="stylesheet" href="assets/xenon/css/xenon-core.css?1">
 	<link rel="stylesheet" href="assets/xenon/css/xenon-forms.css?1">
-	<link rel="stylesheet" href="assets/xenon/css/xenon-components.css?13">
+	<link rel="stylesheet" href="assets/xenon/css/xenon-components.css?14">
 	<link rel="stylesheet" href="assets/xenon/css/xenon-skins.css?1">
 	<link rel="stylesheet" href="assets/xenon/css/custom.css?{S_time}">
 
@@ -31,7 +31,7 @@
 	
 </head>
 <body class="page-body lockscreen-page bgFon">
-
+	<span class="imgHere"></span>
 	<div class="login-container">
 	
 		<div class="row">
@@ -169,7 +169,6 @@
 
 
 	<!-- JavaScripts initializations and stuff -->
-	<script src="assets/xenon/js/xenon-custom.js?1"></script>
-
+	<script src="assets/xenon/js/xenon-custom.js?2"></script>
 </body>
 </html>

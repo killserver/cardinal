@@ -14,6 +14,7 @@
 class page {
 	
 	function __construct() {
+		header("HTTP/2.0 404 Not Found");
 		templates::error("{L_error_page}", "{L_error}");
 	}
 	

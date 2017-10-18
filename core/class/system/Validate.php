@@ -585,6 +585,10 @@ class Validate {
 		return false;
 	}
 	
+	final public static function json($str) {
+		return !preg_match('/[^,:{}\\[\\]0-9.\\-+Eaeflnr-u \\n\\r\\t]/', preg_replace('/"(\\.|[^"\\\\])*"/', '', $str));
+	}
+	
 }
 
 ?>

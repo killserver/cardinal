@@ -327,11 +327,17 @@ class db {
 	
 	final public static function getTable($name) {
 		$list = self::getTables();
+		if(defined("PREFIX_DB") && !empty(PREFIX_DB) && isset($list[PREFIX_DB.$name])) {
+			$name = PREFIX_DB.$name;
+		}
 		return (isset($list[$name]) ? $list[$name] : false);
 	}
 	
 	final public static function getColumnForTable($name, $field) {
 		$list = self::getTables();
+		if(defined("PREFIX_DB") && !empty(PREFIX_DB) && isset($list[PREFIX_DB.$name])) {
+			$name = PREFIX_DB.$name;
+		}
 		return (isset($list[$name]) && isset($list[$name][$field]) ? $list[$name][$field] : false);
 	}
 
@@ -485,8 +491,11 @@ class db {
      * @param string $table Needed table
      * @return string Int value last id element in table
      */
-    final public static function last_id($table) {
-		$table = self::doquery("SHOW TABLE STATUS LIKE '".$table."'");
+    final public static function last_id($table, $withoutPrefix = false) {
+		if(!$withoutPrefix && defined("PREFIX_DB") && !empty(PREFIX_DB)) {
+			$table = PREFIX_DB.$table;
+		}
+		$table = self::doquery("SHOW TABLE STATUS LIKE ".$table);
 		return $table['Auto_increment'];
 	}
 

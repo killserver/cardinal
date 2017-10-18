@@ -58,7 +58,7 @@ class Debug {
 			ini_set('xdebug.collect_params', 3);
 		}
 		if($mode!==DEBUG_MODE_ONLY_DEBUG) {
-			self::DebugAll($mode, $echo);
+			register_shutdown_function("Debug::DebugAll", $mode, $echo);
 		}
 	}
 	

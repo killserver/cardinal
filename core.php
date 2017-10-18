@@ -84,6 +84,7 @@ $manifest = array(
 	"applyParam" => array(),
 	"gzip" => false,
 	"session_destroy" => true,
+	"jscss" => array(),
 );
 
 if(function_exists("ob_start")) {
@@ -109,7 +110,7 @@ foreach($targets as $target) {
 		$_SERVER[$target] = substr($_SERVER[$target], 0, -5);
 	}
 }
-if(defined("DEBUG") || isset($_GET['debug'])) {
+if(defined("DEBUG") || isset($_GET['debug']) || isset($_COOKIE['cardinal_debug'])) {
 	ini_set('display_errors', 1);
 	error_reporting(E_ALL);
 	if(!defined("DEBUG_ACTIVATED")) {
@@ -305,4 +306,5 @@ if(function_exists("header_remove")) {
 } else {
 	header('X-Powered-By:');
 }
+register_shutdown_function("GzipOut", $gzip, $gActive);
 ?>

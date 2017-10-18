@@ -19,6 +19,9 @@ class Languages extends Core {
 	
 	function translate($text, $to, $from = "") {
 		$ret = "";
+		if(!config::Select("apiKeyTranslate")) {
+			return $text;
+		}
 		$isArr = false;
 		if(is_array($text)) {
 			$orText = $text;
@@ -121,7 +124,11 @@ class Languages extends Core {
 			}
 			$arr['lang_ini'] = $newLang;
 			foreach($arr as $k => $v) {
-				$translate = lang::get_lang($v);
+				if(!is_array($v)) {
+					$translate = lang::get_lang($v);
+				} else {
+					$translate = "";
+				}
 				if(!empty($translate)) {
 					$arr[$k] = $v = $translate;
 				}

@@ -30,6 +30,26 @@ class DBObject implements ArrayAccess {
 	private $pseudoFields = array();
 	private $multiple = false;
 	
+	final public function getInstance() {
+		$th = clone $this;
+		$rt = get_object_vars($th);
+		foreach($rt as $k => $v) {
+			$th->{$k} = "";
+		}
+		$th->loadedTable = "";
+		$th->where = array();
+		$th->limit = 1;
+		$th->offset = 0;
+		$th->orderBy = array();
+		$th->Attributes = array();
+		$th->selectAdd = array();
+		$th->setAttrFor = array();
+		$th->allowEmptyAttr = false;
+		$th->pseudoFields = array();
+		$th->multiple = false;
+		return $th;
+	}
+	
 	final private function UnSetAll(&$ret) {
 		if(isset($ret['loadedTable'])) {
 			unset($ret['loadedTable']);
@@ -70,6 +90,37 @@ class DBObject implements ArrayAccess {
 		if(isset($ret['allowEmptyAttr'])) {
 			unset($ret['allowEmptyAttr']);
 		}
+	}
+	
+	final private function addPrefixTable($query, $addSave = "`") {
+		if($addSave===false) {
+			$save = "";
+		} else if($addSave===true) {
+			$save = "`";
+		} else {
+			$save = $addSave;
+		}
+		if(strpos($query, '{{') !== false && defined("PREFIX_DB") && !empty(PREFIX_DB)) {
+			if(preg_match("/CREATE|DROP/", $query)) {
+				$query = str_replace(array('{{', '}}'), array($save.PREFIX_DB, $save), $query);
+			} else {
+				$arr = self::getTables();
+				$arr = array_keys($arr);
+				for($i=0;$i<sizeof($arr);$i++) {
+					$t = str_replace(PREFIX_DB, "", $arr[$i]);
+					$query = str_replace(array('{{'.$arr[$i].'}}', '{{'.$t.'}}'), $save.PREFIX_DB.$t.$save, $query);
+				}
+			}
+		} else if(strpos($query, '{{') !== false) {
+			$query = str_replace(array("{{", "}}"), $save, $query);
+		} else if($addSave===false) {
+			$query = $save.$query.$save;
+		}
+		return $query;
+	}
+	
+	final public function addPrefix($query) {
+		return $this->addPrefixTable($query, true);
 	}
 
 	final public function getArray() {
@@ -162,7 +213,7 @@ class DBObject implements ArrayAccess {
 				throw new Exception("Table for get comments is not set or empty");
 				die();
 			}
-			db::doquery("SHOW FULL COLUMNS FROM ".$table, true);
+			db::doquery("SHOW FULL COLUMNS FROM ".$this->addPrefixTable($table), true);
 			while($row = db::fetch_assoc()) {
 				$last = strpos($row['Type'], "(")!==false ? strpos($row['Type'], "(") : strlen($row['Type']);
 				$typeData = array();
@@ -378,7 +429,7 @@ class DBObject implements ArrayAccess {
 		if(empty($name)) {
 			$name = $this->loadedTable;
 		}
-		$row = db::doquery("SELECT EXISTS(SELECT 1 FROM `information_schema`.`tables` WHERE `table_schema` = '".db::$dbName."' AND `table_name` = '".$name."') AS `exists`");
+		$row = db::doquery("SELECT EXISTS(SELECT 1 FROM `information_schema`.`tables` WHERE `table_schema` = '".db::$dbName."' AND `table_name` = '".$this->addPrefixTable($name, false)."') AS `exists`");
 		if(!isset($row['exists']) || $row['exists'] != 1) {
 			throw new Exception("Table is not exists");
 			die();
@@ -388,7 +439,7 @@ class DBObject implements ArrayAccess {
 		} else {
 			$this->loadedTable = $name;
 		}
-		$row = db::select_query("SHOW COLUMNS FROM `".db::$dbName."`.`".$name."`");
+		$row = db::select_query("SHOW COLUMNS FROM `".db::$dbName."`.".$this->addPrefixTable($name));
 		foreach($row as $k => $v) {
 			$this->{$v['Field']} = "";
 		}
@@ -438,7 +489,7 @@ class DBObject implements ArrayAccess {
 		$orderBy = $this->ReleaseOrder($orderBy);
 		$limit = $this->ReleaseLimit($limit);
 		$offset = $this->ReleaseOffset($offset);
-		$rel = db::doquery("SELECT ".implode(", ", array_map(array(&$this, "getFieldForSelect"), $keys))." FROM `".$table."`".$where.$orderBy.$limit.$offset, true);
+		$rel = db::doquery("SELECT ".implode(", ", array_map(array(&$this, "getFieldForSelect"), $keys))." FROM ".$this->addPrefixTable($table).$where.$orderBy.$limit.$offset, true);
 		if(!$this->multiple && db::num_rows($rel) <= 1) {
 			$ret = db::fetch_object($rel, get_class($this));
 			if(is_object($ret)) {
@@ -489,7 +540,7 @@ class DBObject implements ArrayAccess {
 		$orderBy = $this->ReleaseOrder($orderBy);
 		$limit = $this->ReleaseLimit($limit);
 		$offset = $this->ReleaseOffset($offset);
-		return "SELECT ".implode(", ", array_map(array(&$this, "getFieldForSelect"), $keys))." FROM `".$table."`".$where.$orderBy.$limit.$offset;
+		return "SELECT ".implode(", ", array_map(array(&$this, "getFieldForSelect"), $keys))." FROM ".$this->addPrefixTable($table).$where.$orderBy.$limit.$offset;
 	}
 
 	final public function getMax($table = "", $where = "", $orderBy = "", $limit = "", $offset = "") {
@@ -514,7 +565,7 @@ class DBObject implements ArrayAccess {
 		$orderBy = $this->ReleaseOrder($orderBy);
 		$limit = $this->ReleaseLimit($limit);
 		$offset = $this->ReleaseOffset($offset);
-		$rel = db::doquery("SELECT COUNT(".current($keys).") AS `max` FROM `".$table."`".$where.$orderBy.$limit.$offset);
+		$rel = db::doquery("SELECT COUNT(".current($keys).") AS `max` FROM ".$this->addPrefixTable($table).$where.$orderBy.$limit.$offset);
 		return $rel['max'];
 	}
 
@@ -545,7 +596,7 @@ class DBObject implements ArrayAccess {
 		}
 		$key = array_keys($arr);
 		$val = array_values($arr);
-		return db::doquery("INSERT INTO `".$table."` (".implode(", ", array_map(array(&$this, "buildKeyIn"), $key)).") VALUES(".implode(", ", array_map(array(&$this, "buildValueIn"), $val)).")");
+		return db::doquery("INSERT INTO ".$this->addPrefixTable($table)." (".implode(", ", array_map(array(&$this, "buildKeyIn"), $key)).") VALUES(".implode(", ", array_map(array(&$this, "buildValueIn"), $val)).")");
 	}
 	
 	final private function buildKeyIn($d) {
@@ -587,7 +638,7 @@ class DBObject implements ArrayAccess {
 		$limit = $this->ReleaseLimit($limit);
 		$key = array_keys($arr);
 		$val = array_values($arr);
-		return db::doquery("UPDATE `".$table."` SET ".implode(", ", array_map(array(&$this, "buildUpdateKV"), $key, $val)).$where.$orderBy.$limit);
+		return db::doquery("UPDATE ".$this->addPrefixTable($table)." SET ".implode(", ", array_map(array(&$this, "buildUpdateKV"), $key, $val)).$where.$orderBy.$limit);
 	}
 	
 	final private function buildUpdateKV($k, $v) {
@@ -615,7 +666,7 @@ class DBObject implements ArrayAccess {
 			throw new Exception("Сonditions for delete is not set or empty");
 			die();
 		}
-		return db::doquery("DELETE FROM `".$table."` ".$where.$orderBy.$limit);
+		return db::doquery("DELETE FROM ".$this->addPrefixTable($table)." ".$where.$orderBy.$limit);
 	}
 	
 	final public function addField($name, $val = "") {

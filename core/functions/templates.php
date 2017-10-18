@@ -47,7 +47,7 @@ return $te;
 }
 
 function create_js($clear = false) {
-global $user;
+global $user, $manifest;
 	$css = $js = array();
 	$sRet = "";
 	$js_list = modules::manifest_get(array("create_js", "min"));
@@ -88,7 +88,10 @@ global $user;
 		if($js) {
 			$js = implode(",", $js);
 		}
-		$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}core/class/min/index.php?g=general&charset=".config::Select("charset").(sizeof($js)>0 ? "&f=".implode(",", $js) : "")."&".time()."\"></script>\n";
+		//$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}core/class/min/index.php?g=general&charset=".config::Select("charset").(sizeof($js)>0 ? "&f=".implode(",", $js) : "")."&".time()."\"></script>\n";
+		for($i=0;$i<sizeof($js);$i++) {
+			$sRet = "<script type=\"text/javascript\" src=\"".$js[$i].AmperOr($js[$i]).time()."\"></script>\n";
+		}
 	}
 	$all = modules::manifest_get(array("create_js", "full"));
 	if(is_array($all)) {
@@ -109,7 +112,10 @@ global $user;
 		}
 	}
 	if(isset($js_list) && is_array($js_list) && sizeof($js_list)>0) {
-		$sRet .= "<script type=\"text/javascript\" async=\"async\" src=\"{C_default_http_host}core/class/min/index.php?g=general&charset=".config::Select("charset").(sizeof($js_list)>0 ? "&f=".implode(",", $js_list) : "")."&amp;".time()."\"></script>\n";
+		//$sRet .= "<script type=\"text/javascript\" async=\"async\" src=\"{C_default_http_host}core/class/min/index.php?g=general&charset=".config::Select("charset").(sizeof($js_list)>0 ? "&f=".implode(",", $js_list) : "")."&amp;".time()."\"></script>\n";
+		for($i=0;$i<sizeof($js_list);$i++) {
+			$sRet .= "<script type=\"text/javascript\" src=\"".$js_list[$i].AmperOr($js_list[$i]).time()."\"></script>\n";
+		}
 	}
 	$all = modules::manifest_get(array("create_css", "full"));
 	if(is_array($all)) {
@@ -130,7 +136,29 @@ global $user;
 		}
 	}
 	if(isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && userlevel::get("admin") && Arr::get($_GET, "noShowAdmin", false)===false) {
-		$sRet .= '<script type="text/javascript">if(typeof jQuery!=undefined){jQuery(document).ready(function(){var nowAdminCardinal=jQuery(".adminCoreCardinal").html();function createNormalAdmin(){var elemsFirst=[];var elems=[];var width=0;var userWidth=jQuery(".adminCoreCardinal>.user").width();var linkAdmin=jQuery(".adminCoreCardinal>.linkToAdmin").width();jQuery(".adminCoreCardinal>.items").each(function(i,k) {elemsFirst.push(jQuery(k));});for(var i=0;i<elemsFirst.length;i++) {var widthEl=elemsFirst[i].width();if(jQuery(window).width()-userWidth-linkAdmin-270<width){elems.push(elemsFirst[i]);jQuery(elemsFirst[i]).remove();}width+=widthEl;}if(elems.length>0){jQuery(".adminCoreCardinal>.user").before("<div class=\'more\'><div class=\'elems\'></div></div>");for(var i=0;i<elems.length;i++){jQuery(".adminCoreCardinal>.more>.elems").append(elems[i]);}}}jQuery(window).resize(function(){jQuery(".adminCoreCardinal").html(nowAdminCardinal);createNormalAdmin()});createNormalAdmin();});}</script>';
+		$sRet .= '<script type="text/javascript" src="{C_default_http_local}skins/admin.min.js"></script>';
+	}
+	if(sizeof($manifest['jscss'])>0) {
+		if(isset($manifest['jscss']['css']) && isset($manifest['jscss']['css']['link']) && is_array($manifest['jscss']['css']['link']) && sizeof($manifest['jscss']['css']['link'])>0) {
+			foreach($manifest['jscss']['css']['link'] as $v) {
+				$header .= "<link href=\"".$v."\" rel=\"stylesheet\" type=\"text/css\">\n";
+			}
+		}
+		if(isset($manifest['jscss']['css']) && isset($manifest['jscss']['css']['full']) && is_array($manifest['jscss']['css']['full']) && sizeof($manifest['jscss']['css']['full'])>0) {
+			foreach($manifest['jscss']['css']['full'] as $v) {
+				$header .= "<style type=\"text/css\">".$v."</style>\n";
+			}
+		}
+		if(isset($manifest['jscss']['js']) && isset($manifest['jscss']['js']['link']) && is_array($manifest['jscss']['js']['link']) && sizeof($manifest['jscss']['js']['link'])>0) {
+			foreach($manifest['jscss']['js']['link'] as $v) {
+				$header .= "<script type=\"text/javascript\" src=\"".$v."\"></script>\n";
+			}
+		}
+		if(isset($manifest['jscss']['js']) && isset($manifest['jscss']['js']['full']) && is_array($manifest['jscss']['js']['full']) && sizeof($manifest['jscss']['js']['full'])>0) {
+			foreach($manifest['jscss']['js']['full'] as $v) {
+				$header .= "<script type=\"text/javascript\">".$v."</script>\n";
+			}
+		}
 	}
 	unset($all, $js, $user);
 return $sRet;
@@ -239,7 +267,7 @@ function createForm($inputs, $to = "", $head = "") {
 		if(!isset($inputs[$i])) {
 			continue;
 		}
-		$form .= "<div>".(isset($inputs[$i]['name']) ? "<label for=\"input".$i."\">".$inputs[$i]['name']."</label>" : "").(isset($inputs[$i]['html']) && $inputs[$i]['html']=="textarea" ? "<textarea id=\"input".$i."\" name=\"inputData[".$i."]\"".(isset($inputs[$i]['attr']) ? " ".$inputs[$i]['attr'] : "")."></textarea>" : "<input id=\"input".$i."\" type=\"".(isset($inputs[$i]['type']) ? $inputs[$i]['type'] : "text")."\" name=\"inputData[".$i."]\"".(isset($inputs[$i]['placeholder']) ? " placeholder=\"".$inputs[$i]['placeholder']."\"" : "").(isset($inputs[$i]['required']) ? " required=\"required\"" : "")."".(isset($inputs[$i]['attr']) ? " ".$inputs[$i]['attr'] : "").">")."</div>";
+		$form .= "<div".(isset($inputs[$i]['className']) ? " class=\"".$inputs[$i]['className']."\"" : "").">".(isset($inputs[$i]['name']) ? "<label for=\"input".$i."\">".$inputs[$i]['name']."</label>" : "").(isset($inputs[$i]['html']) && $inputs[$i]['html']=="textarea" ? "<textarea id=\"input".$i."\" name=\"inputData[".$i."]\"".(isset($inputs[$i]['attr']) ? " ".$inputs[$i]['attr'] : "")."></textarea>" : "<input id=\"input".$i."\" type=\"".(isset($inputs[$i]['type']) ? $inputs[$i]['type'] : "text")."\" name=\"inputData[".$i."]\"".(isset($inputs[$i]['placeholder']) ? " placeholder=\"".$inputs[$i]['placeholder']."\"" : "").(isset($inputs[$i]['required']) ? " required=\"required\"" : "")."".(isset($inputs[$i]['attr']) ? " ".$inputs[$i]['attr'] : "").">")."</div>";
 	}
 	$form .= "<div><input type=\"submit\"".(isset($inputs['submit']['value']) ? " value=\"".$inputs['submit']['value']."\"" : "")."></div>";
 	$form .= "</form>";
@@ -260,7 +288,7 @@ function headers($array = array(), $clear = false, $no_js = false) {
 	$header .= "<meta name=\"generator\" content=\"Cardinal ".VERSION."\" />\n";
 	$header .= "<meta name=\"author\" content=\"".(isset($array['author']) ? $array['author'] : "Cardinal ".VERSION)."\" />\n";
 	$header .= "<meta name=\"copyright\" content=\"{L_sitename}\" />\n";
-	if(!defined("DEVELOPER_MODE") && !isset($array['meta']) || !array_key_exists("robots", $array['meta'])) {
+	if(!defined("DEVELOPER_MODE") && (!isset($array['meta']) || !array_key_exists("robots", $array['meta']))) {
 		$header .= "<meta name=\"robots\" content=\"all\" />\n";
 	} elseif(defined("DEVELOPER_MODE")) {
 		$header .= "<meta name=\"robots\" content=\"noindex, nofollow\" />\n";
@@ -332,9 +360,6 @@ if(!$clear) {
 	} else {
 		$rss = true;
 	}
-	if($rss && !empty($link_rss)) {
-		$header .= "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"{L_sitename}\" href=\"{C_default_http_host}".$link_rss."\" />\n";
-	}
 /*if(isset($array['title']) && isset($array['meta']['watch']) && $user['id'] == 1) {
 	$header .= "<link rel=\"alternate\" type=\"application/json+oembed\" href=\"{C_default_http_host}oembed?url={C_default_http_host}?watch%26v=".$array['meta']['watch']."&format=json\" title=\"".$array['title']."\" />\n";
 	$header .= "<link rel=\"alternate\" type=\"text/xml+oembed\" href=\"{C_default_http_host}oembed?url={C_default_http_host}?watch%26v=".$array['meta']['watch']."&type=xml\" title=\"".$array['title']."\" />\n";
@@ -342,6 +367,7 @@ if(!$clear) {
 	$header .= modules::use_modules("watch", $array);
 
 	if($rss && !empty($link_rss)) {
+		$header .= "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"{L_sitename}\" href=\"{C_default_http_host}".$link_rss."\" />\n";
 		$header .= "<meta name=\"application-name\" content=\"{L_sitename}\" />\n".
 			"<meta name=\"msapplication-TileColor\" content=\"#e0161d\"/>\n".
 			"<meta name=\"msapplication-notification\" content=\"frequency=30;polling-uri=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=1;polling-uri2=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=2;polling-uri3=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=3;polling-uri4=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=4;polling-uri5=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=5; cycle=1\"/>\n\n";
@@ -415,11 +441,52 @@ if(!$clear) {
 			$editPage = "{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=".$editor['class'].(isset($editor['page']) ? "&".$editor['page'] : "");
 		}
 		$header .= "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\"><link rel=\"stylesheet\" href=\"{C_default_http_local}skins/admin.{S_time}.css\">";
-		$menu = "<div class=\"adminCoreCardinal\"><a href=\"{C_default_http_local}\" class=\"logo\"></a><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/\" class=\"linkToAdmin\">{L_'adminpanel'}</a>".menuAdminHeader($newMenu).(!empty($editPage) ? "<div class=\"items\"><a href=\"".$editPage."\"><i class=\"fa-edit\"></i><span>{L_'Редактировать на этой странице'}</span></a></div>":"")."<div class=\"user\"><span>{U_username}</span><div class=\"dropped\"><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Login&out\"><i class=\"fa-user-times\"></i>{L_'logout'}</a></div></div></div>";
-		templates::add_modules($menu, "body|after");
+		$menu = "<div class=\"adminCoreCardinal\"><a href=\"{C_default_http_local}\" class=\"logo\"></a><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/\" class=\"linkToAdmin\">{L_'adminpanel'}</a>".(!empty($editPage) ? "<div class=\"items\"><a href=\"".$editPage."\"><i class=\"fa-edit\"></i><span>{L_'Редактировать'}</span></a></div>":"").menuAdminHeader($newMenu)."<div class=\"user\"><span>{U_username}</span><div class=\"dropped\"><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Login&out\"><i class=\"fa-user-times\"></i>{L_'logout'}</a></div></div></div>";
+		cardinalEvent::setData($menu);
+		cardinalEvent::addListener("templates::display", "addAdminPanelToPage");
 	}
 	unset($array);
 return $header;
+}
+
+function addAdminPanelToPage($page, $data) {
+	if(defined("ADMINCP_POSITION_BOTTOM")) {
+		$data = preg_replace("#<body(.+?)>#", "<body$1 data-body=\"bottom\">", $data);
+		$data = str_replace("adminCoreCardinal", "adminCoreCardinal bottom", $data);
+	}
+	if(preg_match('#<body(.+?)class=([\'"])(.+?)([\'"])(.+?)>#i', $data)) {
+		$data = preg_replace('#<body(.+?)class=([\'"])(.+?)([\'"])(.+?)>#i', '<body$1class=$2$3 adminbarCardinal$4$5>', $data);
+	} else {
+		$data = preg_replace('#<body(.+?)>#', '<body$1 class="adminbarCardinal">', $data);
+	}
+	$data = preg_replace("#<body(.+?)>#", "<body$1 data-body=\"top\">", $data);
+	$data = str_replace("</body>", templates::view($page)."</body>", $data);
+	return $data;
+}
+
+function regCssJs($js, $type, $mark = false, $name = "") {
+global $manifest;
+	if(is_array($js)) {
+		foreach($js as $v) {
+			regCssJs($v, $type, $mark, $name);
+		}
+	} else if(is_string($js)) {
+		if(!isset($manifest['jscss'][$type])) {
+			$manifest['jscss'][$type] = array();
+		}
+		if(!isset($manifest['jscss'][$type]['link'])) {
+			$manifest['jscss'][$type]['link'] = array();
+		}
+		if(!isset($manifest['jscss'][$type]['full'])) {
+			$manifest['jscss'][$type]['full'] = array();
+		}
+		$jsCheck = parse_url($js);
+		if(isset($jsCheck['path'])) {
+			$manifest['jscss'][$type]['link'][$name] = $js.($mark ? AmperOr($js).time() : "");
+		} else {
+			$manifest['jscss'][$type]['full'][$name] = $js.($mark ? AmperOr($js).time() : "");
+		}
+	}
 }
 
 function adminPanelVsort(&$array) {

@@ -40,6 +40,20 @@
 					</div>
 				
 				</span>
+				
+				<span id="debug" class="col-md-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-sm-12"[if {debugpanelshow}==false] style="display:none;"[/if {debugpanelshow}==false]>
+					
+					<div class="xe-widget xe-counter xe-counter-orange">
+						<div class="xe-icon">
+							<i class="fa-cogs"></i>
+						</div>
+						<div class="xe-label">
+							<strong class="num">{L_"Активировать"}</strong>
+							<span>{L_"Debug Panel"}</span>
+						</div>
+					</div>
+				
+				</span>
 			
 				<div class="col-md-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-sm-12"[if {uptime_visible}==false] style="display:none;"[/if {uptime_visible}==false]>
 					
@@ -105,6 +119,22 @@ jQuery(document).ready(function() {
 	jQuery("#cachephp").click(function() {
 		jQuery.post("./?pages=Main&clear&tmp", function(data) {
 			toastr.info(data, "{L_"Clear Cache Templates"}");
+		});
+	});
+	if({debugPanel}==1) {
+		jQuery("#debug .num").html("{L_"Деактивировать"}");
+	}
+	jQuery("#debug").click(function() {
+		jQuery.post("./?pages=Main&debugPanel=true", function(data) {
+			var states;
+			if(jQuery("#debug .num").html()=="{L_"Активировать"}") {
+				jQuery("#debug .num").html("{L_"Деактивировать"}");
+				states = "{L_"деактивирована"}";
+			} else {
+				jQuery("#debug .num").html("{L_"Активировать"}");
+				states = "{L_"активирована"}";
+			}
+			toastr.info(data, "{L_"Debug Panel"} "+states);
 		});
 	});
 });

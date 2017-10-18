@@ -90,7 +90,10 @@ function hide_loading_bar()
 	$pct.width(0).data('pct', 0);
 }
 
-if(jQuery(".bgFon").length>0) {
-	var rand = 1 - 0.5 + Math.random() * (12 - 1 + 1);
-	jQuery(".bgFon").css("backgroundColor", "url('https://raw.githubusercontent.com/killserver/ForCardinal/master/bg/"+Math.round(rand)+".jpg')");
-}
+jQuery(document).ready(function() {
+	if(jQuery(".bgFon").length>0 && jQuery(".bgFon > span.imgHere").length>0) {
+		var rand = 1 - 0.5 + Math.random() * (12 - 1 + 1);
+		jQuery(".bgFon").css("backgroundColor", "#000");
+		jQuery(".bgFon > span.imgHere").css("backgroundImage", "url('https://raw.githubusercontent.com/killserver/ForCardinal/master/bg/"+Math.round(rand)+".jpg')");
+	}
+});

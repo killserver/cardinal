@@ -93,6 +93,7 @@ class templates {
 	private static $typeTpl = "tpl";
 	private static $mainTpl = "main";
 	private static $pathToCache = "";
+	private static $mainSkins = "";
 
 	/**
 	 * templates constructor.
@@ -121,6 +122,9 @@ class templates {
 		}
 		if(defined("MOBILE") && MOBILE && isset($config['skins_mobile'])) {
 			self::$skins = $config['skins_mobile'];
+		}
+		if(file_exists(PATH_SKINS.self::$skins.DS."functions.".PHP_EX)) {
+			include_once(PATH_SKINS.self::$skins.DS."functions.".PHP_EX);
 		}
 	}
 
@@ -196,6 +200,10 @@ class templates {
 	final public static function set_skins($skin) {
 		self::$skins = $skin;
 	}
+	
+	final public static function set_mainSkins($skin) {
+		self::$mainSkins = $skin;
+	}
 
 	/**
 	 * Get skin
@@ -204,6 +212,11 @@ class templates {
      */
 	final public static function get_skins() {
 		return self::$skins;
+	}
+	
+	
+	final public static function get_mainSkins() {
+		return self::$mainSkins;
 	}
 
 	/**
@@ -2033,14 +2046,14 @@ if(!$test) {
 	final public static function display() {
 	global $lang;
 		$time = self::time();
-		if(!file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.self::$mainTpl.".".self::$typeTpl)) {
+		if(!file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.self::$mainTpl.".".self::$typeTpl) && !file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$mainSkins.DS.self::$mainTpl.".".self::$typeTpl)) {
 			self::ErrorTemplate("error templates", ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.self::$mainTpl.".".self::$typeTpl);
 			return;
 		}
 		if(file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."lang".DS."tpl.".ROOT_EX)) {
 			include_once(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."lang".DS."tpl.".ROOT_EX);
 		}
-		$h = self::completed_assign_vars(self::$mainTpl);
+		$h = self::completed_assign_vars(self::$mainTpl, (!empty(self::$mainSkins) ? self::$mainSkins : "null"));
 		if(file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."login.".self::$typeTpl)) {
 			$l = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."login.".self::$typeTpl);
 			$l = iconv("cp1251", modules::get_config('charset'), $l);
@@ -2132,6 +2145,7 @@ if(!$test) {
 			}
 			$h = preg_replace("#<html(.*?)>#is", "<html lang=\"".$lang."\"$1>", $h);
 		}
+		$h = cardinalEvent::execute("templates::display", $h);
 		HTTP::echos($h);
 		unset($h, $body, $lang);
 		self::clean();

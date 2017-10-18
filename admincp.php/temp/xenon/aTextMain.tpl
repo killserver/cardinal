@@ -20,7 +20,7 @@
 	<td>{aText.page}</td>
 	<td>
 		<a href="./?pages=ATextAdmin&mod=Edit&viewId={aText.aId}" class="btn btn-turquoise">{L_edit}</a><br>
-		<a href="./?pages=ATextAdmin&mod=Delete&viewId={aText.aId}" onclick="confirmDelete();" class="btn btn-red">{L_delete}</a>
+		<a href="./?pages=ATextAdmin&mod=Delete&viewId={aText.aId}" onclick="return confirmDelete();" class="btn btn-red">{L_delete}</a>
 	</td>
 </tr>[/foreach]
 </tbody>

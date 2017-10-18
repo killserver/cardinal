@@ -31,6 +31,23 @@ class Main extends Core {
 		if(!db::connected()) {
 			$message .= "<div><div class=\"label label-warning\">{L_\"Обратите внимание\"}</div>&nbsp;{L_\"Подключение к базе данных - отсутствует\"}.&nbsp;{L_\"Рекомендуется создать подключение для активации СЕО-модуля.\"}</div>";
 		}
+		if(Arr::get($_GET, "debugPanel", false)) {
+			if(isset($_COOKIE['cardinal_debug'])) {
+				HTTP::set_cookie("cardinal_debug", "", true);
+			} else {
+				HTTP::set_cookie("cardinal_debug", "true");
+			}
+			return;
+		}
+		if(userlevel::get("debugpanel")) {
+			templates::assign_var("debugpanelshow", "1");
+		} else {
+			templates::assign_var("debugpanelshow", "0");
+		}
+		templates::assign_var("debugPanel", "0");
+		if(isset($_COOKIE['cardinal_debug'])) {
+			templates::assign_var("debugPanel", "1");
+		}
 		if(!empty($message)) {
 			templates::assign_var("is_messagesAdmin", "1");
 			templates::assign_var("messagesAdmin", $message);

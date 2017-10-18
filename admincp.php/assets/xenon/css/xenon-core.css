@@ -6265,6 +6265,7 @@ label.radio-inline input[type="radio"] {
 }
 nav.navbar {
   border: 0;
+  z-index: 5;
 }
 nav.navbar form > .btn {
   margin-bottom: 0;

@@ -120,7 +120,7 @@ class KernelArcher {
 			$post = $request->post->get($k, false);
 			$post = $this->rebuildData($post);
 			$files = $this->rebuildData($files);
-			if(!empty($files) && ($model->getAttribute($k, "type")=="file" || $model->getAttribute($k, "type")=="fileArray")) {
+			if(!empty($files) && ($model->getAttribute($k, "type")=="imageAccess" || $model->getAttribute($k, "type")=="fileAccess" || $model->getAttribute($k, "type")=="file" || $model->getAttribute($k, "type")=="fileArray" || $model->getAttribute($k, "type")=="image" || $model->getAttribute($k, "type")=="imageArray")) {
 				$type = $files;
 				if((!isset($type['error']) || is_array($type['error'])) && (!isset($type['name']) || is_array($type['name']))) {
 					$viewI = 1;
@@ -143,7 +143,7 @@ class KernelArcher {
 					$upload = $this->UploadFile($model, $k, $selectId, $type, $uploads, $model->getAttribute($k, "allowUpload"));
 					$type = (!$upload ? $v : $upload."?".time());
 				}
-			} else if($model->getAttribute($k, "type")=="file" || $model->getAttribute($k, "type")=="fileArray") {
+			} else if($model->getAttribute($k, "type")=="imageAccess" || $model->getAttribute($k, "type")=="fileAccess" || $model->getAttribute($k, "type")=="file" || $model->getAttribute($k, "type")=="fileArray" || $model->getAttribute($k, "type")=="image" || $model->getAttribute($k, "type")=="imageArray") {
 				if(!empty($post)) {
 					$type = $post;
 				} else {
@@ -199,7 +199,14 @@ class KernelArcher {
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
+		$listOld = get_object_vars($model);
 		$model->loadTable($this->selectTable);
+		$listNew = get_object_vars($model);
+		foreach($listNew as $k => $v) {
+			if(!array_key_exists($k, $listOld)) {
+				unset($model->{$k});
+			}
+		}
 		$model = $this->callArr($model, "AddModel", array($model));
 		$list = $model->getArray();
 		$this->AddBlocks("AddData", $list);
@@ -304,7 +311,7 @@ class KernelArcher {
 			
 			$post = $this->rebuildData($post);
 			$files = $this->rebuildData($files);
-			if(!empty($files) && ($models->getAttribute($k, "type")=="file" || $models->getAttribute($k, "type")=="fileArray")) {
+			if(!empty($files) && ($models->getAttribute($k, "type")=="imageAccess" || $models->getAttribute($k, "type")=="fileAccess" || $models->getAttribute($k, "type")=="file" || $models->getAttribute($k, "type")=="fileArray" || $models->getAttribute($k, "type")=="image" || $models->getAttribute($k, "type")=="imageArray")) {
 				$type = $files;
 				if((!isset($type['error']) || is_array($type['error'])) && (!isset($type['name']) || is_array($type['name']))) {
 					$viewI = 1;
@@ -339,7 +346,7 @@ class KernelArcher {
 					$upload = $this->UploadFile($models, $k, $selectId, $type, $uploads, $models->getAttribute($k, "allowUpload"));
 					$type = (!$upload ? $v : $upload."?".time());
 				}
-			} else if($model->getAttribute($k, "type")=="file" || $model->getAttribute($k, "type")=="fileArray") {
+			} else if($model->getAttribute($k, "type")=="imageAccess" || $model->getAttribute($k, "type")=="fileAccess" || $model->getAttribute($k, "type")=="file" || $model->getAttribute($k, "type")=="fileArray" || $model->getAttribute($k, "type")=="image" || $model->getAttribute($k, "type")=="imageArray") {
 				if(!empty($post)) {
 					$type = $post;
 				} else {

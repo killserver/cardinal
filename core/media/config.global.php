@@ -119,13 +119,13 @@ if(!defined("UPLOAD_ALL")) {
 }
 
 if(!defined("VERSION")) {
-	define("VERSION", "7.0");
+	define("VERSION", "7.1");
 }
 if(!defined("VERSION_ADMIN_STYLE")) {
 	define("VERSION_ADMIN_STYLE", "1.2");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "70015");
+	define("INTVERSION", "70145");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "6.5");
@@ -177,13 +177,12 @@ $config = array_merge($config, array(
 	"default_http_mobyhost" => "",
 	"uses" => array(
 		"Minify" => "2.1.7",
-		"Mobile Detect" => "2.8.24",
-		"PHPMailer" => "5.2.22",
+		"Mobile Detect" => "2.8.26",
+		"PHPMailer" => "6.0.1",
 		"Sypex Geo" => "2.2.3",
 		"StopSpam" => "1.0",
-		"PEAR" => "1.10.1",
+		"PEAR" => "1.10.5",
 		"Archive Tar" => "1.0",
-		"elFinder" => "2.1",
 		"Spyc" => "1.0",
 	),
 ));
