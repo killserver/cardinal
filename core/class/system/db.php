@@ -306,17 +306,19 @@ class db {
 		}
 	}
 	
-	final public static function getTables() {
+	final public static function getTables($columns = true) {
 		if(sizeof(self::$loadedTable)==0 && self::connected()) {
 			$loaded = array();
 			$sel = db::doquery("SHOW FULL TABLES", true);
 			while($row = db::fetch_assoc($sel)) {
-				$res = db::query("SHOW COLUMNS FROM `".$row['Tables_in_'.strtolower(self::$dbName)]."`");
 				$loaded[$row['Tables_in_'.strtolower(self::$dbName)]] = array();
-				while($roz = db::fetch_assoc($res)) {
-					$loaded[$row['Tables_in_'.strtolower(self::$dbName)]][$roz['Field']] = $roz['Field'];
+				if($columns) {
+					$res = db::query("SHOW COLUMNS FROM `".$row['Tables_in_'.strtolower(self::$dbName)]."`");
+					while($roz = db::fetch_assoc($res)) {
+						$loaded[$row['Tables_in_'.strtolower(self::$dbName)]][$roz['Field']] = $roz['Field'];
+					}
+					$loaded[$row['Tables_in_'.strtolower(self::$dbName)]] = array_values($loaded[$row['Tables_in_'.strtolower(self::$dbName)]]);
 				}
-				$loaded[$row['Tables_in_'.strtolower(self::$dbName)]] = array_values($loaded[$row['Tables_in_'.strtolower(self::$dbName)]]);
 			}
 			self::$loadedTable = $loaded;
 			return self::$loadedTable;
@@ -495,7 +497,7 @@ class db {
 		if(!$withoutPrefix && defined("PREFIX_DB") && !empty(PREFIX_DB)) {
 			$table = PREFIX_DB.$table;
 		}
-		$table = self::doquery("SHOW TABLE STATUS LIKE ".$table);
+		$table = self::doquery("SHOW TABLE STATUS LIKE '".$table."'");
 		return $table['Auto_increment'];
 	}
 
@@ -548,11 +550,11 @@ class db {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
-		if(strpos($query, '{{') !== false && defined("PREFIX_DB")) {
+		if(strpos($query, '{{') !== false && defined("PREFIX_DB") && !empty(PREFIX_DB)) {
 			if(preg_match("/CREATE|DROP/", $query)) {
 				$query = str_replace(array('{{', '}}'), array("`".PREFIX_DB, "`"), $query);
 			} else {
-				$arr = self::getTables();
+				$arr = self::getTables(false);
 				$arr = array_keys($arr);
 				for($i=0;$i<sizeof($arr);$i++) {
 					$t = str_replace(PREFIX_DB, "", $arr[$i]);

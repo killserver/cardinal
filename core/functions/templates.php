@@ -141,22 +141,22 @@ global $user, $manifest;
 	if(sizeof($manifest['jscss'])>0) {
 		if(isset($manifest['jscss']['css']) && isset($manifest['jscss']['css']['link']) && is_array($manifest['jscss']['css']['link']) && sizeof($manifest['jscss']['css']['link'])>0) {
 			foreach($manifest['jscss']['css']['link'] as $v) {
-				$header .= "<link href=\"".$v."\" rel=\"stylesheet\" type=\"text/css\">\n";
+				$sRet .= "<link href=\"".$v."\" rel=\"stylesheet\" type=\"text/css\">\n";
 			}
 		}
 		if(isset($manifest['jscss']['css']) && isset($manifest['jscss']['css']['full']) && is_array($manifest['jscss']['css']['full']) && sizeof($manifest['jscss']['css']['full'])>0) {
 			foreach($manifest['jscss']['css']['full'] as $v) {
-				$header .= "<style type=\"text/css\">".$v."</style>\n";
+				$sRet .= "<style type=\"text/css\">".$v."</style>\n";
 			}
 		}
 		if(isset($manifest['jscss']['js']) && isset($manifest['jscss']['js']['link']) && is_array($manifest['jscss']['js']['link']) && sizeof($manifest['jscss']['js']['link'])>0) {
 			foreach($manifest['jscss']['js']['link'] as $v) {
-				$header .= "<script type=\"text/javascript\" src=\"".$v."\"></script>\n";
+				$sRet .= "<script type=\"text/javascript\" src=\"".$v."\"></script>\n";
 			}
 		}
 		if(isset($manifest['jscss']['js']) && isset($manifest['jscss']['js']['full']) && is_array($manifest['jscss']['js']['full']) && sizeof($manifest['jscss']['js']['full'])>0) {
 			foreach($manifest['jscss']['js']['full'] as $v) {
-				$header .= "<script type=\"text/javascript\">".$v."</script>\n";
+				$sRet .= "<script type=\"text/javascript\">".$v."</script>\n";
 			}
 		}
 	}
@@ -164,6 +164,8 @@ global $user, $manifest;
 return $sRet;
 }
 
+// <meta type="og:image" content="http://site.ru/image.jpg">
+// addSeo("image", "http://site.ru/image.jpg");
 function addSeo($name, $val, $type = "main") {
 global $seoBlock;
 	if(!isset($seoBlock[$type]) || !is_array($seoBlock[$type])) {
@@ -364,7 +366,6 @@ if(!$clear) {
 	$header .= "<link rel=\"alternate\" type=\"application/json+oembed\" href=\"{C_default_http_host}oembed?url={C_default_http_host}?watch%26v=".$array['meta']['watch']."&format=json\" title=\"".$array['title']."\" />\n";
 	$header .= "<link rel=\"alternate\" type=\"text/xml+oembed\" href=\"{C_default_http_host}oembed?url={C_default_http_host}?watch%26v=".$array['meta']['watch']."&type=xml\" title=\"".$array['title']."\" />\n";
 }*/
-	$header .= modules::use_modules("watch", $array);
 
 	if($rss && !empty($link_rss)) {
 		$header .= "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"{L_sitename}\" href=\"{C_default_http_host}".$link_rss."\" />\n";
@@ -451,19 +452,36 @@ return $header;
 
 function addAdminPanelToPage($page, $data) {
 	if(defined("ADMINCP_POSITION_BOTTOM")) {
-		$data = preg_replace("#<body(.+?)>#", "<body$1 data-body=\"bottom\">", $data);
+		$data = preg_replace("#<body(.*?)>#", "<body$1 data-body=\"bottom\">", $data);
 		$data = str_replace("adminCoreCardinal", "adminCoreCardinal bottom", $data);
 	}
-	if(preg_match('#<body(.+?)class=([\'"])(.+?)([\'"])(.+?)>#i', $data)) {
-		$data = preg_replace('#<body(.+?)class=([\'"])(.+?)([\'"])(.+?)>#i', '<body$1class=$2$3 adminbarCardinal$4$5>', $data);
+	if(preg_match('#<body(.*?)>#i', $data)) {
+		$data = preg_replace_callback('#<body(.*?)>#i', "callBackAdminPanelToPage", $data);
+	} elseif(preg_match('/<body(.*?)>/', $data)) {
+		$data = preg_replace('/<body(.*?)>/', '<body$1class="adminbarCardinal">', $data);
 	} else {
-		$data = preg_replace('#<body(.+?)>#', '<body$1 class="adminbarCardinal">', $data);
+		$data = str_replace('<body>', '<body class="adminbarCardinal">', $data);
 	}
-	$data = preg_replace("#<body(.+?)>#", "<body$1 data-body=\"top\">", $data);
+	$data = preg_replace("#<body(.*?)>#i", "<body$1 data-body=\"top\">", $data);
 	$data = str_replace("</body>", templates::view($page)."</body>", $data);
 	return $data;
 }
 
+function callBackAdminPanelToPage($arr) {
+	$ret = $arr[0];
+	if(isset($arr[1])) {
+		$or = $arr[1];
+		if(preg_match('#class=[\'"].+?[\'"]#', $arr[1], $match)) {
+			$arr[1] = preg_replace('#class=([\'"])(.+?)([\'"])#', "class=$1$2 adminbarCardinal$3", $arr[1]);
+		} else {
+			$arr[1] .= " class=\"adminbarCardinal\"";
+		}
+		$ret = str_replace($or, $arr[1], $arr[0]);
+	}
+	return $ret;
+}
+
+// regCssJs("{THEME}/jquery.js", "js", true)
 function regCssJs($js, $type, $mark = false, $name = "") {
 global $manifest;
 	if(is_array($js)) {
@@ -481,10 +499,18 @@ global $manifest;
 			$manifest['jscss'][$type]['full'] = array();
 		}
 		$jsCheck = parse_url($js);
-		if(isset($jsCheck['path'])) {
-			$manifest['jscss'][$type]['link'][$name] = $js.($mark ? AmperOr($js).time() : "");
+		if(!empty($name)) {
+			if(isset($jsCheck['path'])) {
+				$manifest['jscss'][$type]['link'][$name] = $js.($mark ? AmperOr($js).time() : "");
+			} else {
+				$manifest['jscss'][$type]['full'][$name] = $js.($mark ? AmperOr($js).time() : "");
+			}
 		} else {
-			$manifest['jscss'][$type]['full'][$name] = $js.($mark ? AmperOr($js).time() : "");
+			if(isset($jsCheck['path'])) {
+				$manifest['jscss'][$type]['link'][] = $js.($mark ? AmperOr($js).time() : "");
+			} else {
+				$manifest['jscss'][$type]['full'][] = $js.($mark ? AmperOr($js).time() : "");
+			}
 		}
 	}
 }

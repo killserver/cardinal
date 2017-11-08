@@ -1,3 +1,3 @@
 <?php
-$js[] = "http://code.jquery.com/jquery-2.1.0.min.js";
+$js[] = "https://code.jquery.com/jquery-3.1.0.min.js";
 ?>

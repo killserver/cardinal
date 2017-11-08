@@ -188,6 +188,9 @@ if(!defined("DEVELOPER_MODE") && file_exists(PATH_MEDIA."develop.lock")) {
 if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."isFrame.lock")) {
 	define("WITHOUT_DB", true);
 }
+if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."oldPrinciple.lock")) {
+	define("CHECK_MOD_ADMIN", false);
+}
 if(!defined("ENABLED_SUPPORTS") && file_exists(PATH_MEDIA."enabledSupports.lock")) {
 	define("ENABLED_SUPPORTS", true);
 }
@@ -306,5 +309,8 @@ if(function_exists("header_remove")) {
 } else {
 	header('X-Powered-By:');
 }
-register_shutdown_function("GzipOut", $gzip, $gActive);
+if(defined("DEBUG_ACTIVATED")) {
+	Debug::activation(720, true);
+}
+register_shutdown_function("GzipOut", templates::$gzip, templates::$gzipActive);
 ?>

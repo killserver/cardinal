@@ -6,6 +6,7 @@ if(!defined("IS_CORE")) {
 
 $adminCore = array_merge($adminCore, array(
 	"CoreDataTables.php" => true,
+	"CoreMainChange.php" => true,
 ));
 
 ?>

@@ -3312,13 +3312,13 @@ button.toast-close-button {
   }
 }
 .login-container {
-  max-width: 500px;
+  max-width: 550px;
   margin: 0 auto;
   position: absolute;
   left: 35%;
-  left: calc(50% - 500px / 2);
+  left: calc(50% - 510px / 2);
   top: 25%;
-  width: 490px;
+  width: 500px;
   background: rgba(44, 46, 47, 0.9);
   padding: 20px 30px 0px;
   border-radius: 6px;
@@ -3368,8 +3368,9 @@ background-image:-webkit-linear-gradient(rgba(255,255,255,0.9),rgba(255,255,255,
 .lockscreen-page .lockcreen-form .form-group {
   position: relative;
   float: left;
-  width: 75%;
+  width: 100%;
   padding-left: 30px;
+  padding-right: 30px;
 }
 .lockscreen-page .lockcreen-form .form-group h3 {
   margin: 0;
@@ -3497,6 +3498,7 @@ background-image:-webkit-linear-gradient(rgba(255,255,255,0.9),rgba(255,255,255,
   .lockscreen-page .lockcreen-form .form-group {
     padding-left: 0;
     text-align: center;
+    padding-right: 0;
   }
 }
 .xe-widget {

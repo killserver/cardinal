@@ -29,6 +29,7 @@ class DBObject implements ArrayAccess {
 	private $allowEmptyAttr = false;
 	private $pseudoFields = array();
 	private $multiple = false;
+	private $usedCache = false;
 	
 	final public function getInstance() {
 		$th = clone $this;
@@ -48,6 +49,27 @@ class DBObject implements ArrayAccess {
 		$th->pseudoFields = array();
 		$th->multiple = false;
 		return $th;
+	}
+	
+	final public function useCache($cache = true) {
+		self::$usedCache = $cache;
+		return true;
+	}
+	
+	final private function clearCache($table) {
+		if(!defined("PATH_CACHE_SYSTEM") || empty(PATH_CACHE_SYSTEM)) {
+			return false;
+		}
+		if(is_dir(PATH_CACHE_SYSTEM)) {
+			if($dh = dir(PATH_CACHE_SYSTEM)) {
+				while(($file = $dh->read()) !== false) {
+					if(strpos($file, $table."_") !== false) {
+						unlink(PATH_CACHE_SYSTEM.$file);
+					}
+				}
+			}
+		}
+		return true;
 	}
 	
 	final private function UnSetAll(&$ret) {
@@ -489,7 +511,21 @@ class DBObject implements ArrayAccess {
 		$orderBy = $this->ReleaseOrder($orderBy);
 		$limit = $this->ReleaseLimit($limit);
 		$offset = $this->ReleaseOffset($offset);
-		$rel = db::doquery("SELECT ".implode(", ", array_map(array(&$this, "getFieldForSelect"), $keys))." FROM ".$this->addPrefixTable($table).$where.$orderBy.$limit.$offset, true);
+		$table = $this->addPrefixTable($table);
+		$sql = "SELECT ".implode(", ", array_map(array(&$this, "getFieldForSelect"), $keys))." FROM ".$table.$where.$orderBy.$limit.$offset;
+		if(defined("PATH_CACHE_SYSTEM") && !empty(PATH_CACHE_SYSTEM)) {
+			$fileCache = PATH_CACHE_SYSTEM.$table."_".md5($sql).".cache";
+		}
+		$cached = false;
+		if(defined("PATH_CACHE_SYSTEM") && !empty(PATH_CACHE_SYSTEM) && file_exists(PATH_CACHE_SYSTEM) && is_writeable(PATH_CACHE_SYSTEM) && is_bool(self::$usedCache) && self::$usedCache===true) {
+			$cached = true;
+		}
+		if($cached && isset($fileCache) && file_exists($fileCache)) {
+			$file = file_get_contents($fileCache);
+			$result = unserialize($file);
+			return $result;
+		}
+		$rel = db::doquery($sql, true);
 		if(!$this->multiple && db::num_rows($rel) <= 1) {
 			$ret = db::fetch_object($rel, get_class($this));
 			if(is_object($ret)) {
@@ -498,6 +534,10 @@ class DBObject implements ArrayAccess {
 				}
 			}
 			db::free($rel);
+			if($cached && isset($fileCache)) {
+				$cacheData = serialize($ret);
+				file_put_contents($fileCache, $cacheData);
+			}
 			return $ret;
 		} else {
 			$arr = array();
@@ -510,6 +550,10 @@ class DBObject implements ArrayAccess {
 				$arr[] = $row;
 			}
 			db::free($rel);
+			if($cached && isset($fileCache)) {
+				$cacheData = serialize($arr);
+				file_put_contents($fileCache, $cacheData);
+			}
 			return $arr;
 		}
 	}
@@ -596,7 +640,9 @@ class DBObject implements ArrayAccess {
 		}
 		$key = array_keys($arr);
 		$val = array_values($arr);
-		return db::doquery("INSERT INTO ".$this->addPrefixTable($table)." (".implode(", ", array_map(array(&$this, "buildKeyIn"), $key)).") VALUES(".implode(", ", array_map(array(&$this, "buildValueIn"), $val)).")");
+		$table = $this->addPrefixTable($table);
+		$this->clearCache($table);
+		return db::doquery("INSERT INTO ".$table." (".implode(", ", array_map(array(&$this, "buildKeyIn"), $key)).") VALUES(".implode(", ", array_map(array(&$this, "buildValueIn"), $val)).")");
 	}
 	
 	final private function buildKeyIn($d) {
@@ -638,7 +684,9 @@ class DBObject implements ArrayAccess {
 		$limit = $this->ReleaseLimit($limit);
 		$key = array_keys($arr);
 		$val = array_values($arr);
-		return db::doquery("UPDATE ".$this->addPrefixTable($table)." SET ".implode(", ", array_map(array(&$this, "buildUpdateKV"), $key, $val)).$where.$orderBy.$limit);
+		$table = $this->addPrefixTable($table);
+		$this->clearCache($table);
+		return db::doquery("UPDATE ".$table." SET ".implode(", ", array_map(array(&$this, "buildUpdateKV"), $key, $val)).$where.$orderBy.$limit);
 	}
 	
 	final private function buildUpdateKV($k, $v) {
@@ -666,7 +714,9 @@ class DBObject implements ArrayAccess {
 			throw new Exception("Сonditions for delete is not set or empty");
 			die();
 		}
-		return db::doquery("DELETE FROM ".$this->addPrefixTable($table)." ".$where.$orderBy.$limit);
+		$table = $this->addPrefixTable($table);
+		$this->clearCache($table);
+		return db::doquery("DELETE FROM ".$table." ".$where.$orderBy.$limit);
 	}
 	
 	final public function addField($name, $val = "") {

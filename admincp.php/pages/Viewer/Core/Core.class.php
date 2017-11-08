@@ -307,22 +307,6 @@ class Core {
 			HTTP::echos(templates::view($echo));
 			return;
 		}
-		$dir = ROOT_PATH."core".DS."media".DS."smiles".DS;
-		if(is_dir($dir)) {
-			if($dh = dir($dir)) {
-				$i=1;
-				while(($file = $dh->read()) !== false) {
-					if(strpos($file, ".gif") !== false && $file != "." && $file != "..") {
-						$sm = strtr($file, array(".gif" => ""));
-						templates::assign_vars(array(
-							"smile" => $sm,
-						), "smiles", "smile_".$i);
-						$i++;
-					}
-				}
-			$dh->close();
-			}
-		}
 		templates::assign_var("count_Yui", "false");
 		if(file_exists(PATH_CACHE."yui.txt")) {
 			$datas = file_get_contents(PATH_CACHE."yui.txt");

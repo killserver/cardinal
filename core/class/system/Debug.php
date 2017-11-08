@@ -42,6 +42,11 @@ class Debug {
 	private static $charset = "utf-8";
 	private static $echoDebug = false;
 	private static $limitOnView = 1024;
+	private static $disableShow = false;
+
+	final public static function activShow($show = true) {
+		self::$disableShow = (!$show);
+	}
 	
 	final public static function echoDebugMode($mode = "") {
 		if($mode!=="") {
@@ -340,7 +345,9 @@ class Debug {
 	}
 	
 	public static function viewOnPage($data) {
-		echo $data;
+		if(!self::$disableShow) {
+			echo $data;
+		}
 	}
 	
 	final public static function limitOnView($limit = "") {

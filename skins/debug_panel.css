@@ -27,6 +27,7 @@
 	margin: 0;
 	line-height: 2;
 	list-style: none;
+	display: table;
 }
 
 #i-debug-panel-list li:first-child {
@@ -197,6 +198,7 @@
 #i-debug-panel .panel
 {
 	padding: 30px 5px 10px 5px;
+	background: transparent;
 }
 
 #i-debug-panel .panel li

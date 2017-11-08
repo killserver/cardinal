@@ -146,7 +146,7 @@ class Languages extends Core {
 			lang::set_lang($langs);
 		}
 		if(Arr::get($_GET, 'saveLang', false)) {
-			if(Arr::get($_POST, 'orLang', false) && Arr::get($_POST, 'translate', false) && lang::Update($langs, urldecode(Arr::get($_POST, 'orLang')), urldecode(Arr::get($_POST, 'translate')))) {
+			if(Arr::get($_POST, 'orLang', false) && Arr::get($_POST, 'translate', false) && lang::Update($langs, rawurldecode(Arr::get($_POST, 'orLang')), rawurldecode(Arr::get($_POST, 'translate')))) {
 				$ret = "1";
 			} else {
 				$ret = "0";
@@ -155,7 +155,7 @@ class Languages extends Core {
 			die();
 		}
 		if(Arr::get($_GET, 'resetLang', false)) {
-			if(Arr::get($_POST, 'orLang', false) && lang::LangReset($langs, urldecode(Arr::get($_POST, 'orLang')))) {
+			if(Arr::get($_POST, 'orLang', false) && lang::LangReset($langs, rawurldecode(Arr::get($_POST, 'orLang')))) {
 				$ret = "1";
 			} else {
 				$ret = "0";

@@ -140,11 +140,6 @@
 				<form method="post" role="form" id="login" class="login-form fade-in-effect" autocomplete="off">
 					<input type="hidden" name="method" id="method" value="login" />
 					<div class="login-header">
-						<a href="#" class="logo">
-							<img src="assets/xenon/images/logo@2x.png" alt="" width="80" />
-							<span>{L_"Вход"}</span>
-						</a>
-						
 						<p>{L_"Уважаемый пользователь, авторизируйтесь в админ-панели!"}</p>
 					</div>
 	

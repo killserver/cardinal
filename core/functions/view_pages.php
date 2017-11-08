@@ -33,20 +33,34 @@ global $manifest;
 	}
 	if(array_key_exists($page, $manifest['before_ini_class'])) {
 		$pages = $manifest['before_ini_class'][$page];
+		$args = array();
+		if(isset($pages['set'])) {
+			$args = (isset($pages['args']) ? $pages['args'] : array());
+			$pages = $pages['set'];
+		}
 		if(is_array($pages) && !isset($pages['object'])) {
 			foreach($pages as $p) {
+				$args = array();
+				if(isset($p['set'])) {
+					$args = (isset($p['args']) ? $p['args'] : array());
+					$p = $p['set'];
+				}
 				if(isset($p[0]) && is_object($p[0]) && method_exists($p[0], $p[1])) {
-					$p[0]->$p[1]();
+					$fn = $p[1];
+					$p[0]->$fn($args);
 				}
 				if(!isset($p['object']) || !is_object($p['object']) || !method_exists($p['object'], $p['func'])) {
 					continue;
 				}
-				$p['object']->$p['func']();
+				$fn = $p['func'];
+				$p['object']->$fn($args);
 			}
 		} else if(isset($pages['object']) && is_object($pages['object']) && method_exists($pages['object'], $pages['func'])) {
-			$pages['object']->$pages['func']();
+			$fn = $pages['func'];
+			$pages['object']->$fn($args);
 		} else if(isset($pages[0]) && is_object($pages[0]) && method_exists($pages[0], $pages[1])) {
-			$pages[0]->$pages[1]();
+			$fn = $pages[1];
+			$pages[0]->$fn($args);
 		}
 		unset($pages);
 	}
@@ -54,20 +68,34 @@ global $manifest;
 		include_once(PATH_PAGES.$manifest['pages'][$page]);
 		if(array_key_exists($page, $manifest['after_ini_class'])) {
 			$page = $manifest['after_ini_class'][$page];
+			$args = array();
+			if(isset($pages['set'])) {
+				$args = (isset($pages['args']) ? $pages['args'] : array());
+				$pages = $pages['set'];
+			}
 			if(is_array($page) && !isset($page['object'])) {
 				foreach($page as $p) {
+					$args = array();
+					if(isset($p['set'])) {
+						$args = (isset($p['args']) ? $p['args'] : array());
+						$p = $p['set'];
+					}
 					if(isset($p[0]) && is_object($p[0]) && method_exists($p[0], $p[1])) {
-						$p[0]->$p[1]();
+						$fn = $p[1];
+						$p[0]->$fn($args);
 					}
 					if(!isset($p['object']) || !is_object($p['object']) || !method_exists($p['object'], $p['func'])) {
 						continue;
 					}
-					$p['object']->$p['func']();
+					$fn = $p['func'];
+					$p['object']->$fn($args);
 				}
 			} else if(isset($page['object']) && is_object($page['object']) && method_exists($page['object'], $page['func'])) {
-				$page['object']->$page['func']();
+				$fn = $page['func'];
+				$page['object']->$fn($args);
 			} else if(isset($page[0]) && is_object($page[0]) && method_exists($page[0], $page[1])) {
-				$page[0]->$page[1]();
+				$fn = $page[1];
+				$page[0]->$fn($args);
 			}
 			unset($page);
 		}
@@ -75,26 +103,46 @@ global $manifest;
 	}
 	if(array_key_exists($page, $manifest['class_pages'])) {
 		$pages = $manifest['class_pages'][$page];
+		$args = array();
+		if(isset($pages['set'])) {
+			$args = (isset($pages['args']) ? $pages['args'] : array());
+			$pages = $pages['set'];
+		}
 		if(isset($pages['object']) && is_object($pages['object']) && method_exists($pages['object'], $pages['func'])) {
-			$pages['object']->$pages['func']();
+			$fn = $page['func'];
+			$pages['object']->$fn($args);
 		}
 		if(isset($pages[0]) && is_object($pages[0]) && method_exists($pages[0], $pages[1])) {
-			$pages[0]->$pages[1]();
+			$fn = $pages[1];
+			$pages[0]->$fn($args);
 		}
 		unset($pages);
 		if(array_key_exists($page, $manifest['after_ini_class'])) {
 			$page = $manifest['after_ini_class'][$page];
+			$args = array();
+			if(isset($page['set'])) {
+				$args = (isset($page['args']) ? $page['args'] : array());
+				$page = $page['set'];
+			}
 			if(is_array($page) && !isset($page['object'])) {
 				foreach($page as $p) {
+					$args = array();
+					if(isset($p['set'])) {
+						$args = (isset($p['args']) ? $p['args'] : array());
+						$p = $p['set'];
+					}
 					if(!isset($p['object']) || !is_object($p['object']) || !method_exists($p['object'], $p['func'])) {
 						continue;
 					}
-					$p['object']->$p['func']();
+					$fn = $p['func'];
+					$p['object']->$fn($args);
 				}
 			} else if(isset($page['object']) && is_object($page['object']) && method_exists($page['object'], $page['func'])) {
-				$page['object']->$page['func']();
+				$fn = $page['func'];
+				$page['object']->$fn($args);
 			} else if(isset($page[0]) && is_object($page[0]) && method_exists($page[0], $page[1])) {
-				$page[0]->$page[1]();
+				$fn = $page[1];
+				$page[0]->$fn($args);
 			}
 			unset($page);
 		}
@@ -137,47 +185,82 @@ global $manifest;
 			if(array_key_exists("default", $manifest['class_pages'])) {
 				if(array_key_exists("default", $manifest['before_ini_class'])) {
 					$pages = $manifest['before_ini_class']["default"];
+					$args = array();
+					if(isset($pages['set'])) {
+						$args = (isset($pages['args']) ? $pages['args'] : array());
+						$pages = $pages['set'];
+					}
 					if(is_array($pages) && !isset($pages['object'])) {
 						foreach($pages as $p) {
+							$args = array();
+							if(isset($p['set'])) {
+								$args = (isset($p['args']) ? $p['args'] : array());
+								$p = $p['set'];
+							}
 							if(isset($p[0]) && is_object($p[0]) && method_exists($p[0], $p[1])) {
-								$p[0]->$p[1]();
+								$fn = $p[1];
+								$p[0]->$fn($args);
 							}
 							if(!isset($p['object']) || !is_object($p['object']) || !method_exists($p['object'], $p['func'])) {
 								continue;
 							}
-							$p['object']->$p['func']();
+							$fn = $p['func'];
+							$p['object']->$fn($args);
 						}
 					} else if(isset($pages['object']) && is_object($pages['object']) && method_exists($pages['object'], $pages['func'])) {
-						$pages['object']->$pages['func']();
+						$fn = $pages['func'];
+						$pages['object']->$fn($args);
 					} else if(isset($pages[0]) && is_object($pages[0]) && method_exists($pages[0], $pages[1])) {
-						$pages[0]->$pages[1]();
+						$fn = $pages[1];
+						$pages[0]->$fn($args);
 					}
 					unset($pages);
 				}
 				$pages = $manifest['class_pages']["default"];
+				$args = array();
+				if(isset($pages['set'])) {
+					$args = (isset($pages['args']) ? $pages['args'] : array());
+					$pages = $pages['set'];
+				}
 				if(isset($pages['object']) && is_object($pages['object']) && method_exists($pages['object'], $pages['func'])) {
-					$pages['object']->$pages['func']();
+					$fn = $pages['func'];
+					$pages['object']->$fn($args);
 				}
 				if(isset($pages[0]) && is_object($pages[0]) && method_exists($pages[0], $pages[1])) {
-					$pages[0]->$pages[1]();
+					$fn = $pages[1];
+					$pages[0]->$fn($args);
 				}
 				unset($pages);
 				if(array_key_exists("default", $manifest['after_ini_class'])) {
 					$page = $manifest['after_ini_class']["default"];
+					$args = array();
+					if(isset($page['set'])) {
+						$args = (isset($page['args']) ? $page['args'] : array());
+						$page = $page['set'];
+					}
 					if(is_array($page) && !isset($page['object'])) {
 						foreach($page as $p) {
+							$args = array();
+							if(isset($p['set'])) {
+								$args = (isset($p['args']) ? $p['args'] : array());
+								$p = $p['set'];
+							}
 							if(isset($p[0]) && is_object($p[0]) && method_exists($p[0], $p[1])) {
-								$p[0]->$p[1]();
+								$fn = $p[1];
+								$p[0]->$fn($args);
 							}
 							if(!isset($p['object']) || !is_object($p['object']) || !method_exists($p['object'], $p['func'])) {
 								continue;
 							}
-							$p['object']->$p['func']();
+							$fn = $p['func'];
+							$p['object']->$fn($args);
 						}
 					} else if(isset($page['object']) && is_object($page['object']) && method_exists($page['object'], $page['func'])) {
-						$page['object']->$page['func']();
+						$fn = $page['func'];
+						$page['object']->$fn($args);
 					} else if(isset($page[0]) && is_object($page[0]) && method_exists($page[0], $page[1])) {
-						$page[0]->$page[1]();
+						$fn = $page[1];
+						$page[0]->$fn($args);
 					}
 					unset($page);
 				}
@@ -188,20 +271,34 @@ global $manifest;
 	}
 	if(array_key_exists($page, $manifest['after_ini_class'])) {
 		$page = $manifest['after_ini_class'][$page];
+		$args = array();
+		if(isset($page['set'])) {
+			$args = (isset($page['args']) ? $page['args'] : array());
+			$page = $page['set'];
+		}
 		if(is_array($page) && !isset($page['object'])) {
 			foreach($page as $p) {
+				$args = array();
+				if(isset($p['set'])) {
+					$args = (isset($p['args']) ? $p['args'] : array());
+					$p = $p['set'];
+				}
 				if(isset($p[0]) && is_object($p[0]) && method_exists($p[0], $p[1])) {
-					$p[0]->$p[1]();
+					$fn = $p[1];
+					$p[0]->$fn($args);
 				}
 				if(!isset($p['object']) || !is_object($p['object']) || !method_exists($p['object'], $p['func'])) {
 					continue;
 				}
-				$p['object']->$p['func']();
+				$fn = $page['func'];
+				$p['object']->$fn($args);
 			}
 		} else if(isset($page['object']) && is_object($page['object']) && method_exists($page['object'], $page['func'])) {
-			$page['object']->$page['func']();
+			$fn = $page['func'];
+			$page['object']->$fn($args);
 		} else if(isset($page[0]) && is_object($page[0]) && method_exists($page[0], $page[1])) {
-			$page[0]->$page[1]();
+			$fn = $page[1];
+			$page[0]->$fn($args);
 		}
 		unset($page);
 	}

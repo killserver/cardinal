@@ -188,7 +188,7 @@ class SEOBlock extends modules {
 				}
 			}
 			$tmp = $this->init_templates();
-			$db->doquery("SELECT * FROM {{seoBlock}} WHERE `sLang` LIKE \"".$match[3]."\" AND `sPage` LIKE \"/".(isset($match[4]) && !empty($match[4]) ? $match[4] : "")."\"", true);
+			$db->doquery("SELECT * FROM {{seoBlock}} WHERE (`sLang` LIKE \"".$match[3]."\" AND `sPage` LIKE \"/".(isset($match[4]) && !empty($match[4]) ? $match[4] : "")."\") OR `sPage` LIKE \"/".(isset($match[4]) && !empty($match[4]) ? $match[4] : "")."\"", true);
 			if($db->num_rows()==0) {
 				$rows = $db->select_query("SELECT * FROM {{seoBlock}} WHERE `sLang` LIKE \"".$match[3]."\" ORDER BY `sPage` DESC", true);
 				$ret = false;

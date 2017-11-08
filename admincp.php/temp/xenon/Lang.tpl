@@ -78,8 +78,8 @@ function AddToLang() {
 	console.log(jQuery("#example-1").find("tr").last().after("<tr><td class=\"col-md-5\"><input type=\"text\" name=\"orLang\" class=\"col-md-12\"></td><td class=\"col-md-5\"><textarea class=\"col-md-8\" name=\"translate\" style=\"height:100px;\"></textarea></td><td class=\"col-md-2\"><a href=\"#\" onclick=\"saveLang(this);return false;\" class=\"btn btn-secondary btn-sm save\">{L_"Сохранить"}</a></td></tr>"));
 }
 jQuery(".changed").change(function() {
-	var orig = jQuery(this).parent().parent().children("td").first().html();
-	var translate = jQuery(this).val();
+	var orig = encodeURIComponent(jQuery(this).parent().parent().children("td").first().html());
+	var translate = encodeURIComponent(jQuery(this).val());
 	jQuery.post("./?pages=Languages&lang={initLang}&saveLang=true", "orLang="+orig+"&translate="+translate, function(data) {
 		toastr.options = {
 			"closeButton": false,
@@ -108,7 +108,7 @@ jQuery(".changed").change(function() {
 </script>
 <script>
 jQuery(document).ready(function($){	
-	$("#example-1").dataTable({
+	jQuery("#example-1").dataTable({
 		language: {
 			"processing": "{L_"Подождите"}...",
 			"search": "{L_"Поиск"}:",
@@ -130,7 +130,16 @@ jQuery(document).ready(function($){
 				"sortAscending": ": {L_"активировать для сортировки столбца по возрастанию"}",
 				"sortDescending": ": {L_"активировать для сортировки столбца по убыванию"}"
 			}
-		}
+		},
+		aLengthMenu: [
+			[10, 25, 50, 100, -1], [10, 25, 50, 100, "{L_"Всё"}"]
+		],
+		"aoColumnDefs": [{
+			'bSortable': false,
+			'aTargets': [
+				2
+			]
+		}]
 	});
 });
 </script>

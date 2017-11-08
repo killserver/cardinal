@@ -32,9 +32,9 @@
 
 	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 </head>
-<body class="page-body">
+<body class="page-body {C_defaultAdminSkin}">
 
-	<div class="settings-pane">
+	[if {C_accessChangeSkin}==true]<div class="settings-pane">
 			
 		<a href="#" data-toggle="settings-pane" data-animate="true">
 			&times;
@@ -209,7 +209,7 @@
 		
 		</div>
 		
-	</div>
+	</div>[/if {C_accessChangeSkin}==true]
 	
 	<div class="page-container"><!-- add class "sidebar-collapsed" to close sidebar by default, "chat-visible" to make chat appear always -->
 			
@@ -224,12 +224,12 @@
 					
 					<!-- logo -->
 					<div class="logo">
-						<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}?pages=main" class="logo-expanded">
-							<img src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/images/logo@2x.png" width="80" alt="" />
+						<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=main" class="logo-expanded">
+							<img src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/{C_logoAdminMain}" width="80" alt="" />
 						</a>
 						
-						<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}?pages=main" class="logo-collapsed">
-							<img src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/images/logo-collapsed@2x.png" width="40" alt="" />
+						<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=main" class="logo-collapsed">
+							<img src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/{C_logoAdminMobile}" width="40" alt="" />
 						</a>
 					</div>
 					
@@ -246,11 +246,11 @@
 					</div>
 					
 					<!-- This will open the popup with user profile settings, you can use for any purpose, just be creative -->
-					<div class="settings-icon">
+					[if {C_accessChangeSkin}==true]<div class="settings-icon">
 						<a href="#" data-toggle="settings-pane" data-animate="true">
 							<i class="linecons-cog"></i>
 						</a>
-					</div>
+					</div>[/if {C_accessChangeSkin}==true]
 					
 								
 				</header>
@@ -506,7 +506,6 @@
 	
 	<!-- Imported styles on this page -->
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/toastr/toastr.min.css?1">
-	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/dropzone/css/dropzone.css">
 	{css_list}
 	<!-- Bottom Scripts -->
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/bootstrap.min.js?1"></script>
@@ -515,8 +514,6 @@
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/joinable.js?2"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-api.js?1"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-toggles.js?1"></script>
-	<!--script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/ckeditor/ckeditor.js?1"></script-->
-	<!--script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/ckeditor/adapters/jquery.js"></script-->
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/tinymce/tinymce.min.js?{S_time}"></script>
 
 	{js_list}
@@ -574,6 +571,5 @@
 	<!-- JavaScripts initializations and stuff -->
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-custom.js?1"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/toastr/toastr.min.js?1"></script>
-	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/dropzone/dropzone.min.js"></script>
 </body>
 </html>

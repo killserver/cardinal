@@ -11,9 +11,9 @@
 					</div>
 				</a>[/if {is_new}==1]
 
-				{include templates="MainServerLoad"}
+				[if {showLoads}==1]{include templates="MainServerLoad"}[/if {showLoads}==1]
 				
-				<span id="cache" class="col-md-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-sm-12">
+				<span id="cache" class="col-md-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-sm-12"[if {clearCache}==0] style="display:none;"[/if {clearCache}==0]>
 					
 					<div class="xe-widget xe-counter xe-counter-purple" data-count=".num" data-from="0" data-to="{CacheSize}" data-suffix="{CacheSizeS}" data-duration="3" data-easing="false">
 						<div class="xe-icon">
@@ -27,7 +27,7 @@
 				
 				</span>
 				
-				<span id="cachephp" class="col-md-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-sm-12">
+				<span id="cachephp" class="col-md-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-sm-12"[if {clearCache}==0] style="display:none;"[/if {clearCache}==0]>
 					
 					<div class="xe-widget xe-counter xe-counter-purple" data-count=".num" data-from="0" data-to="{CachePHPSize}" data-suffix="{CachePHPSizeS}" data-duration="3" data-easing="false">
 						<div class="xe-icon">
@@ -41,7 +41,7 @@
 				
 				</span>
 				
-				<span id="debug" class="col-md-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-sm-12"[if {debugpanelshow}==false] style="display:none;"[/if {debugpanelshow}==false]>
+				<span id="debug" class="col-md-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-sm-12"[if {debugpanelshow}==0] style="display:none;"[/if {debugpanelshow}==0]>
 					
 					<div class="xe-widget xe-counter xe-counter-orange">
 						<div class="xe-icon">

@@ -29,6 +29,7 @@ class Login extends Core {
 		}
 		$resp = array('accessGranted' => false, 'errors' => '');
 		if(isset($_POST['do_login'])) {
+			Debug::activShow(false);
 			$check = false;
 			if((Arr::get($_POST, 'username', false)) && (Arr::get($_POST, 'passwd', false))) {
 				$given_username = Arr::get($_POST, 'username', "");

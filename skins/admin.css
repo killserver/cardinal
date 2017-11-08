@@ -5,7 +5,6 @@
 	top: 0px;
 	left: 0px;
 	width: 100%;
-	width: 100vw;
 	display: table;
 	z-index: 99999999999999;
 	color: #fff;
@@ -41,6 +40,7 @@ body[data-body] {
 	padding-top: 0px !important;
 }
 .adminCoreCardinal.bottom {
+	position: -webkit-sticky;
 	position: sticky;
 	bottom: 0px;
 	top: auto;

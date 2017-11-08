@@ -303,7 +303,7 @@ class KernelArcher {
 		} else {
 			$uploads = "uploads".DS;
 		}
-		$delArray = $request->post->get("deleteArray", "");
+		$delArray = $request->post->get("deleteArray", array());
 		$delArray = array_map(function($v) { return explode(",", $v); }, ($delArray));
 		foreach($list as $k => $v) {
 			$files = $request->files->get($k, false);

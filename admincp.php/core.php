@@ -28,7 +28,7 @@ templates::dir_skins(ADMINCP_DIRECTORY."/temp/".$skin);
 templates::set_skins("");
 
 function accessOnDefault($class) {
-	if(defined("DEVELOPER_MODE")) {
+	if(defined("CHECK_MOD_ADMIN") || defined("DEVELOPER_MODE")) {
 		return true;
 	}
 	$classCheck = strtolowers($class);

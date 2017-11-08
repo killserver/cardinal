@@ -123,8 +123,16 @@ class templates {
 		if(defined("MOBILE") && MOBILE && isset($config['skins_mobile'])) {
 			self::$skins = $config['skins_mobile'];
 		}
-		if(file_exists(PATH_SKINS.self::$skins.DS."functions.".PHP_EX)) {
-			include_once(PATH_SKINS.self::$skins.DS."functions.".PHP_EX);
+		if(!defined("PHP_EX")) {
+			$phpEx = substr(strrchr(__FILE__, '.'), 1);
+			if(empty($phpEx)) {
+				$phpEx = "php";
+			}
+		} else {
+			$phpEx = PHP_EX;
+		}
+		if(file_exists(PATH_SKINS.self::$skins.DS."functions.".$phpEx)) {
+			include_once(PATH_SKINS.self::$skins.DS."functions.".$phpEx);
 		}
 	}
 
@@ -306,6 +314,7 @@ class templates {
 		}
 	}
 
+	private static $assignVarI = 0;
 	/**
 	 * Set data for template
 	 * @access public
@@ -313,18 +322,23 @@ class templates {
 	 * @param string $value Value data for template
 	 * @param string $block Block data for create array
      */
-	final public static function assign_var($name, $value, $block = "") {
+	final public static function assign_var($name, $value, $block = "", $id = "") {
 		if(empty($block)) {
 			self::$blocks[$name] = $value;
+		} else if(!empty($id)) {
+			self::$blocks[$block][$id][$name] = $value;
 		} else {
-			self::$blocks[$block][$name] = $value;
+			self::$blocks[$block][self::$assignVarI][$name] = $value;
+			self::$assignVarI++;
 		}
 	}
 	
-	final public static function resetVar($name, $block = "") {
-		if(empty($block)) {
+	final public static function resetVar($name, $block = "", $id = "") {
+		if(empty($block) && isset(self::$blocks[$name])) {
 			unset(self::$blocks[$name]);
-		} else {
+		} else if(!empty($id) && isset(self::$blocks[$block][$id][$name])) {
+			unset(self::$blocks[$block][$id][$name]);
+		} else if(isset(self::$blocks[$block][$name])) {
 			unset(self::$blocks[$block][$name]);
 		}
 	}
@@ -795,7 +809,7 @@ class templates {
      */
     final private static function checkMobileExec($type) {
 	global $mobileDetect;
-		if(!in_array($type, array('desktop', 'tablet', 'mobile'))) {
+		if(!in_array($type, array('desktop', 'tablet', 'mobile', 'iOS', 'androidOS'))) {
 			throw trigger_error("ERROR check type device");
 		}
 		if(!is_object($mobileDetect)) {
@@ -806,6 +820,10 @@ class templates {
 		} else if($type=="mobile" && ($mobileDetect->isMobile() && !$mobileDetect->isTablet())) {
 			return 1;
 		} else if($type=="desktop" && !($mobileDetect->isMobile() || $mobileDetect->isTablet())) {
+			return 1;
+		} else if($type=="iOS" && $mobileDetect->isiOS()) {
+			return 1;
+		} else if($type=="androidOS" && $mobileDetect->isAndroidOS()) {
 			return 1;
 		} else {
 			return 0;
@@ -1582,6 +1600,7 @@ if(!$test) {
 		$tpl = self::callback_array("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
 		$tpl = self::callback_array("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
 		$tpl = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $tpl);
+		$tpl = self::callback_array("#\{IMG_[\"'](.+?)[\"']\}#", ("templates::imageRes"), $tpl);
 		if(strpos($tpl, "[clear]") !== false) {
 			foreach($array_use as $name => $val) {
 				unset(self::$blocks[$name]);
@@ -1590,6 +1609,111 @@ if(!$test) {
 			$tpl = str_replace("[clear]", "", $tpl);
 		}
 		return $tpl;
+	}
+	
+	final private static function imageRes($arrData) {
+		$arr = array();
+		$exp = explode("&", $arrData[1]);
+		$arr['link'] = $exp[0];
+		for($i=1;$i<sizeof($exp);$i++) {
+			$exps = explode("=", $exp[$i]);
+			$arr[$exps[0]] = (isset($exps[1]) ? $exps[1] : "");
+		}
+
+
+		$filename_ROOT_PATH = ROOT_PATH.$arr['link'];
+		if(substr(decoct(fileperms($filename_ROOT_PATH)), -4) != 0777) {
+			@chmod($filename_ROOT_PATH, 0777);
+		}
+		$size_img = getimagesize($filename_ROOT_PATH);
+		$src_ratio = $size_img[0] / $size_img[1];
+
+		if(isset($arr['height']) && !isset($arr['width'])) {
+			$ratio = $arr['height'] / $size_img[1];
+			$setWidth = $size_img[0] * $ratio;
+		}
+		if(!isset($arr['height']) && isset($arr['width'])) {
+			$ratio = $arr['width'] / $size_img[0];
+			$setHeight = $size_img[1] * $ratio;
+		}
+
+		$resizeWidth = (isset($arr['width']) ? $arr['width'] : (isset($setWidth) ? $setWidth : $size_img[0]));
+		$resizeHeight = (isset($arr['height']) ? $arr['height'] : (isset($setHeight) ? $setHeight : $size_img[1]));
+		if(!isset($arr['width'])) {
+			$arr['width'] = $resizeWidth;
+		}
+		if(!isset($arr['height'])) {
+			$arr['height'] = $resizeHeight;
+		}
+		$trimWidth = $resizeWidth;
+		$trimHeight = $resizeHeight;
+
+		$sizeImgWidth = $size_img[0];
+		$sizeImgHeight = $size_img[1];
+
+
+		if(isset($arr['scale'])) {
+			$ratio = $arr['height'] / $sizeImgHeight;
+			$sizeImgHeight = $sizeImgWidth * $ratio;
+		}
+
+		$resizeHeight = floor($resizeWidth / $src_ratio);
+		$dest_imgs = imagecreatetruecolor($resizeWidth, $resizeHeight);
+		$image_type = $size_img[2];
+		if($image_type == IMAGETYPE_JPEG) {
+			$src_img = imagecreatefromjpeg($filename_ROOT_PATH);
+		} elseif($image_type == IMAGETYPE_GIF) {
+			$src_img = imagecreatefromgif($filename_ROOT_PATH);
+		} elseif($image_type == IMAGETYPE_PNG) {
+			$src_img = imagecreatefrompng($filename_ROOT_PATH);
+		}
+		imagecopyresampled($dest_imgs, $src_img, 0, 0, 0, 0, $resizeWidth, $resizeHeight, $size_img[0], $size_img[1]);
+		imagedestroy($src_img);
+		$dest_img = imagecreatetruecolor($arr['width'], $arr['height']);
+		imagecopy($dest_img, $dest_imgs, 0, 0, 0, 0, $sizeImgWidth, $sizeImgHeight);
+
+		$thumb = imagecreatetruecolor($trimWidth, $trimHeight);
+		imagealphablending($thumb, false);
+		imagesavealpha($thumb, true);
+		$transparentindex = imagecolorallocatealpha($thumb, 255, 255, 255, 127);
+		imagefill($thumb, 0, 0, $transparentindex);
+		$bgc = imagecolorallocate($thumb, 255, 255, 255);
+		imagefilledrectangle($thumb, 0, 0, $trimWidth, $trimHeight, $bgc);
+		if(isset($arr['posX']) && $arr['posX']>=0 && $arr['posX']<=100) {
+			$posX = round(($arr['width'] - $trimWidth) * $arr['posX'] / 100);
+		} else {
+			$posX = round(($arr['width'] - $trimWidth) / 2);
+		}
+		if(isset($arr['posY']) && $arr['posY']>=0 && $arr['posY']<=100) {
+			$posY = round(($resizeHeight - $trimHeight) * $arr['posY'] / 100);
+		} else {
+			$posY = round(($resizeHeight - $trimHeight) / 2);
+		}
+		imagecopy($thumb, $dest_img, 0, 0, $resizeWidth, $resizeHeight, $trimWidth, $trimHeight);
+		$compression = 70;
+
+		$exp = explode(".", $filename_ROOT_PATH);
+		$type = end($exp);
+		$filename_ROOT_PATH = str_replace(".".$type, "", $filename_ROOT_PATH);
+		if(isset($arr['width'])) {
+			$filename_ROOT_PATH .= "_w".$arr['width'];
+		}
+		if(isset($arr['height'])) {
+			$filename_ROOT_PATH .= "_h".$arr['height'];
+		}
+		$filename_ROOT_PATH .= ".".$type;
+
+		ob_start();
+		if($image_type == IMAGETYPE_JPEG) {
+			imagejpeg($thumb, $filename_ROOT_PATH, $compression);
+		} elseif($image_type == IMAGETYPE_GIF) {
+			imagegif($thumb, $filename_ROOT_PATH, $compression);
+		} elseif($image_type == IMAGETYPE_PNG) {
+			imagepng($thumb, $filename_ROOT_PATH);
+		}
+		ob_get_clean();
+		$file = str_replace(ROOT_PATH, "", $filename_ROOT_PATH);
+		return $file;
 	}
 
 	final private static function fors($data) {
