@@ -100,6 +100,9 @@ if(!function_exists("RandomCompat_strlen")) {
 		if(!is_string($binary_string)) {
 			throw new TypeError('RandomCompat_strlen() expects a string');
 		}
+		if(function_exists('mb_strlen')) {
+			return mb_strlen($binary_string, '8bit');
+		}
 		return strlen($binary_string);
 	}
 }
@@ -168,8 +171,7 @@ if(!function_exists('random_bytes')) {
             throw new Exception('Length must be greater than 0');
         }
         $buf = mcrypt_create_iv($bytes, MCRYPT_DEV_URANDOM);
-		$strBuf = (defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING ? mb_strlen($buf, '8bit') : strlen($buf));
-        if($buf !== false && RandomCompat_strlen($strBuf) === $bytes) {
+        if($buf !== false && RandomCompat_strlen($buf) === $bytes) {
             return $buf;
         }
         throw new Exception('Could not gather sufficient random data');

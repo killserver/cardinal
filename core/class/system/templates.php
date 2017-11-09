@@ -1619,9 +1619,35 @@ if(!$test) {
 			$exps = explode("=", $exp[$i]);
 			$arr[$exps[0]] = (isset($exps[1]) ? $exps[1] : "");
 		}
+		if(strpos($arr['link'], "?")!==false) {
+			$arr['link'] = explode("?", $arr['link']);
+			$arr['link'] = current($arr['link']);
+		}
+		if(substr($arr['link'], 0, 1)=="/") {
+			$arr['link'] = substr($arr['link'], 1);
+		}
 
 
-		$filename_ROOT_PATH = ROOT_PATH.$arr['link'];
+		$filename_ROOT_PATH = str_replace("\/", "/", ROOT_PATH.$arr['link']);
+		if(!file_exists($filename_ROOT_PATH)) {
+			return $arr['link'];
+		}
+
+		$exp = explode(".", $filename_ROOT_PATH);
+		$type = end($exp);
+		$checkFile = str_replace(".".$type, "", $filename_ROOT_PATH);
+		if(isset($arr['width'])) {
+			$checkFile .= "_w".round($arr['width']);
+		}
+		if(isset($arr['height'])) {
+			$checkFile .= "_h".round($arr['height']);
+		}
+		$checkFile .= ".".$type;
+		if(file_exists($checkFile)) {
+			return str_replace(ROOT_PATH, "", $checkFile);
+		}
+
+
 		if(substr(decoct(fileperms($filename_ROOT_PATH)), -4) != 0777) {
 			@chmod($filename_ROOT_PATH, 0777);
 		}
@@ -1667,18 +1693,16 @@ if(!$test) {
 		} elseif($image_type == IMAGETYPE_PNG) {
 			$src_img = imagecreatefrompng($filename_ROOT_PATH);
 		}
+		imagealphablending( $dest_imgs, false );
+		imagesavealpha( $dest_imgs, true );
 		imagecopyresampled($dest_imgs, $src_img, 0, 0, 0, 0, $resizeWidth, $resizeHeight, $size_img[0], $size_img[1]);
 		imagedestroy($src_img);
 		$dest_img = imagecreatetruecolor($arr['width'], $arr['height']);
+		imagealphablending( $dest_img, false );
+		imagesavealpha( $dest_img, true );
 		imagecopy($dest_img, $dest_imgs, 0, 0, 0, 0, $sizeImgWidth, $sizeImgHeight);
 
 		$thumb = imagecreatetruecolor($trimWidth, $trimHeight);
-		imagealphablending($thumb, false);
-		imagesavealpha($thumb, true);
-		$transparentindex = imagecolorallocatealpha($thumb, 255, 255, 255, 127);
-		imagefill($thumb, 0, 0, $transparentindex);
-		$bgc = imagecolorallocate($thumb, 255, 255, 255);
-		imagefilledrectangle($thumb, 0, 0, $trimWidth, $trimHeight, $bgc);
 		if(isset($arr['posX']) && $arr['posX']>=0 && $arr['posX']<=100) {
 			$posX = round(($arr['width'] - $trimWidth) * $arr['posX'] / 100);
 		} else {
@@ -1689,17 +1713,19 @@ if(!$test) {
 		} else {
 			$posY = round(($resizeHeight - $trimHeight) / 2);
 		}
-		imagecopy($thumb, $dest_img, 0, 0, $resizeWidth, $resizeHeight, $trimWidth, $trimHeight);
-		$compression = 70;
+		imagealphablending( $thumb, false );
+		imagesavealpha( $thumb, true );
+		imagecopyresampled($thumb, $dest_img, 0, 0, 0, 0, $trimWidth, $trimHeight, $trimWidth, $trimHeight);
+		$compression = (isset($arr['compress']) && $arr['compress']>0 && $arr['compress']<=100  ? intval($arr['compress']) : 60);
 
 		$exp = explode(".", $filename_ROOT_PATH);
 		$type = end($exp);
 		$filename_ROOT_PATH = str_replace(".".$type, "", $filename_ROOT_PATH);
 		if(isset($arr['width'])) {
-			$filename_ROOT_PATH .= "_w".$arr['width'];
+			$filename_ROOT_PATH .= "_w".round($arr['width']);
 		}
 		if(isset($arr['height'])) {
-			$filename_ROOT_PATH .= "_h".$arr['height'];
+			$filename_ROOT_PATH .= "_h".round($arr['height']);
 		}
 		$filename_ROOT_PATH .= ".".$type;
 
@@ -1709,6 +1735,7 @@ if(!$test) {
 		} elseif($image_type == IMAGETYPE_GIF) {
 			imagegif($thumb, $filename_ROOT_PATH, $compression);
 		} elseif($image_type == IMAGETYPE_PNG) {
+			//header("content-type:image/png");
 			imagepng($thumb, $filename_ROOT_PATH);
 		}
 		ob_get_clean();

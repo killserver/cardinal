@@ -2,6 +2,9 @@ AddDefaultCharset UTF-8
 Options -Indexes
 
 php_value mbstring.func_overload 4
+php_value upload_max_filesize 15M
+php_value post_max_size 15M
+php_value max_file_uploads 15
 
 <IfModule mod_http2.c>
 	# for a https server
@@ -52,7 +55,7 @@ php_value mbstring.func_overload 4
     ExpiresByType image/gif                             "access plus 1 month"
     ExpiresByType image/jpeg                            "access plus 1 month"
     ExpiresByType image/png                             "access plus 1 month"
-    ExpiresByType image/svg+xml                         "access plus 1 month"
+    ExpiresByType image/svg+xml                         "access plus 1 hour"
     ExpiresByType image/webp                            "access plus 1 month"
     ExpiresByType video/mp4                             "access plus 1 month"
     ExpiresByType video/ogg                             "access plus 1 month"
@@ -234,7 +237,7 @@ FileETag None
 	</Files>
 
 	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteRule ^(.+)\.(\d+)\.(pdf|bmp|css|cur|gif|ico|jpe?g|wjpe?g|js|png|svgz?|webp|manifest|webmanifest)$ $1.$3 [L]
+	RewriteRule ^(.+)\.(\d+)\.(pdf|bmp|css|cur|gif|ico|jpe?g|wjpe?g|js|png|svgz?|webp|manifest|webmanifest)$ $1.$3 [L,E=versioncache:1]
 	RewriteRule ^robots.txt$ uploads/robots.txt [L]
 	RewriteRule ^changelog.txt$ changelog.php [L]
 	RewriteCond %{REQUEST_FILENAME} !-d

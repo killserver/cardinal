@@ -80,6 +80,9 @@ if(file_exists(PATH_MEDIA."config.route.".ROOT_EX)) {
 include_dir(PATH_MODULES, ".2.class.".ROOT_EX);
 include_dir(PATH_MODULES, ".class.".ROOT_EX);
 include_dir();
+if(file_exists(ROOT_PATH.".env")) {
+	loadConfig(ROOT_PATH.".env");
+}
 
 if(file_exists(ROOT_PATH.".htaccess") && defined("DEVELOPER_MODE")) {
 	$file = file_get_contents(ROOT_PATH.".htaccess");
