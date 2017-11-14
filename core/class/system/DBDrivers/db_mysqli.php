@@ -30,7 +30,7 @@ class db_mysqli extends DriverParam implements drivers {
 	}
 	public function check_connect($host, $user, $pass) {
 		try {
-			$mysqli = new mysqli($host, $user, $pass);
+			$mysqli = new mysqli("p:".$host, $user, $pass);
 			$ret = empty($mysqli->connect_error);
 			if($ret) {
 				$mysqli->close();
@@ -43,7 +43,7 @@ class db_mysqli extends DriverParam implements drivers {
 	public function exists_db($host, $user, $pass, $db) {
 		if($this->check_connect()) {
 			try {
-				$mysqli = new mysqli($host, $user, $pass, $db);
+				$mysqli = new mysqli("p:".$host, $user, $pass, $db);
 				$ret = empty($mysqli->connect_error);
 				if($ret) {
 					$mysqli->close();
@@ -76,7 +76,7 @@ class db_mysqli extends DriverParam implements drivers {
 		$this->mc->options(MYSQLI_INIT_COMMAND, "SET NAMES '".$charset."'");
 		$this->mc->options(MYSQLI_INIT_COMMAND, "SET CHARACTER SET '".$charset."'");
 		try {
-			if(!@$this->mc->real_connect($host, $user, $pass, $db, $port, false, MYSQLI_CLIENT_COMPRESS)) {
+			if(!@$this->mc->real_connect("p:".$host, $user, $pass, $db, $port, false, MYSQLI_CLIENT_COMPRESS)) {
 				if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
 					HTTP::echos();
 				}
@@ -103,6 +103,7 @@ class db_mysqli extends DriverParam implements drivers {
 				}
 				die();
 			}
+			$this->mc->set_charset($charset);
 			$this->connecten = true;
 			$this->mc->autocommit(false);
 		} catch(Exception $e) {

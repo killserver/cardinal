@@ -29,7 +29,7 @@ class DBObject implements ArrayAccess {
 	private $allowEmptyAttr = false;
 	private $pseudoFields = array();
 	private $multiple = false;
-	private $usedCache = false;
+	private static $usedCache = false;
 	
 	final public function getInstance() {
 		$th = clone $this;
@@ -126,7 +126,7 @@ class DBObject implements ArrayAccess {
 			if(preg_match("/CREATE|DROP/", $query)) {
 				$query = str_replace(array('{{', '}}'), array($save.PREFIX_DB, $save), $query);
 			} else {
-				$arr = self::getTables();
+				$arr = db::getTables();
 				$arr = array_keys($arr);
 				for($i=0;$i<sizeof($arr);$i++) {
 					$t = str_replace(PREFIX_DB, "", $arr[$i]);

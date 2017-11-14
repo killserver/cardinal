@@ -44,15 +44,25 @@ class Main extends Core {
 		} else {
 			templates::assign_var("debugpanelshow", "0");
 		}
-		if(userlevel::get("showLoads")) {
+		if(userlevel::get("showloads")) {
 			templates::assign_var("showLoads", "1");
 		} else {
 			templates::assign_var("showLoads", "0");
 		}
-		if(userlevel::get("clearCache")) {
-			templates::assign_var("clearCache", "1");
+		if(userlevel::get("clearcache_all")) {
+			templates::assign_var("clearCacheAll", "1");
 		} else {
-			templates::assign_var("clearCache", "0");
+			templates::assign_var("clearCacheAll", "0");
+		}
+		if(userlevel::get("clearcache_data")) {
+			templates::assign_var("clearCacheData", "1");
+		} else {
+			templates::assign_var("clearCacheData", "0");
+		}
+		if(userlevel::get("clearcache_tmp")) {
+			templates::assign_var("clearCacheTmp", "1");
+		} else {
+			templates::assign_var("clearCacheTmp", "0");
 		}
 		templates::assign_var("debugPanel", "0");
 		if(isset($_COOKIE['cardinal_debug'])) {

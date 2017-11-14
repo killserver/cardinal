@@ -287,7 +287,7 @@ cardinal::InstallFirst();
 if(defined("WITHOUT_DB") || !defined("INSTALLER")) {
 	if(!defined("WITHOUT_DB") && !defined("IS_CRON_FILE") && isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], $config['default_http_hostname'])===false) {
 		header("HTTP/1.1 301 Moved Permanently");
-		header("Location: http://".$config['default_http_hostname'].$_SERVER['REQUEST_URI']);
+		header("Location: ".HTTP::$protocol."://".$config['default_http_hostname'].$_SERVER['REQUEST_URI']);
 	die();
 	}
 	User::PathUsers(PATH_CACHE_SYSTEM);
@@ -312,5 +312,5 @@ if(function_exists("header_remove")) {
 if(defined("DEBUG_ACTIVATED")) {
 	Debug::activation(720, true);
 }
-register_shutdown_function("GzipOut", templates::$gzip, templates::$gzipActive);
+register_shutdown_function("GzipOut");
 ?>

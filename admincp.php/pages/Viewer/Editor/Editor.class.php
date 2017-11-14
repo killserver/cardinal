@@ -4,6 +4,8 @@ class Editor extends Core {
 
 	function __construct() {
 		if(Arr::get($_GET, 'tree', false)) {
+			Debug::activShow(false);
+			templates::gzip(false);
 			$root = ROOT_PATH;
 			$_POST['dir'] = urldecode($_POST['dir']);
 			if(file_exists($root.$_POST['dir'])) {
@@ -30,15 +32,25 @@ class Editor extends Core {
 			die();
 		}
 		if(Arr::get($_GET, 'load', false)) {
-			echo (file_get_contents(ROOT_PATH.Arr::get($_GET, 'load')));
+			Debug::activShow(false);
+			templates::gzip(false);
+			$load = substr(Arr::get($_GET, 'load'), 1);
+			header("content-type: text/plain");
+			$file = file_get_contents(ROOT_PATH.$load);
+			$file = str_replace("<?", "<\?", $file);
+			echo $file;
 			die();
 		}
 		if(Arr::get($_GET, 'save', false)) {
+			Debug::activShow(false);
+			templates::gzip(false);
 			file_put_contents(ROOT_PATH.Arr::get($_GET, 'save'), Arr::get($_POST, 'data'));
 			echo "done";
 			die();
 		}
 		if(Arr::get($_GET, 'getType', false)) {
+			Debug::activShow(false);
+			templates::gzip(false);
 			$types = array(
 				".htaccess" => "apache_conf",
 				".conf" => "apache_conf",

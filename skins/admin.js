@@ -1,5 +1,5 @@
 var checkedAdmin = setInterval(function() {
-	if(typeof jQuery!=undefined) {
+	if(typeof jQuery!==undefined) {
 		jQuery(document).ready(function(){
 			jQuery("body").addClass("adminbarCardinal");
 			var nowAdminCardinal = jQuery(".adminCoreCardinal").html();
@@ -22,8 +22,8 @@ var checkedAdmin = setInterval(function() {
 				}
 				if(elems.length > 0){
 					jQuery(".adminCoreCardinal > .user").before("<div class=\'more\'><div class=\'elems\'></div></div>");
-					for(var i=0;i<elems.length;i++){
-						jQuery(".adminCoreCardinal > .more > .elems").append(elems[i]);
+					for(var iz=0;iz<elems.length;iz++){
+						jQuery(".adminCoreCardinal > .more > .elems").append(elems[iz]);
 					}
 				}
 				clearInterval(checkedAdmin);

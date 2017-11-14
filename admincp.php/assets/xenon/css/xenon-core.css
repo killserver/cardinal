@@ -722,6 +722,8 @@ body {
   -webkit-box-shadow: 0 1px 0 rgba(0,1,1,.08), inset 0 1px 0 #ededed;
   -moz-box-shadow: 0 1px 0 rgba(0,1,1,.08), inset 0 1px 0 #ededed;
   box-shadow: 0 1px 0 rgba(0,1,1,.08), inset 0 1px 0 #ededed;
+  position: relative;
+  z-index: 6;
 }
 @media screen and (max-width: 768px) {
   .page-container .main-content .page-title {

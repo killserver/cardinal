@@ -10,17 +10,18 @@
 	
 	<title>Xenon - Homepage</title>
 
-	<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Arimo:400,700,400italic">
-	<link rel="stylesheet" href="assets/xenon/css/fonts/linecons/css/linecons.css?1">
-	<link rel="stylesheet" href="assets/xenon/css/fonts/fontawesome/css/font-awesome.min.css?1">
-	<link rel="stylesheet" href="assets/xenon/css/bootstrap.css?1">
-	<link rel="stylesheet" href="assets/xenon/css/xenon-core.css?1">
-	<link rel="stylesheet" href="assets/xenon/css/xenon-forms.css?1">
-	<link rel="stylesheet" href="assets/xenon/css/xenon-components.css?14">
-	<link rel="stylesheet" href="assets/xenon/css/xenon-skins.css?1">
-	<link rel="stylesheet" href="assets/xenon/css/custom.css?{S_time}">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Arimo:400,700,400italic">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/fonts/linecons/css/linecons.css?1">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/fonts/fontawesome/css/font-awesome.min.css?1">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/bootstrap.css?1">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-core.css?1">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-forms.css?1">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-components.css?14">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-skins.css?1">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/custom.css?{S_time}">
+	{css_list}
 
-	<script src="assets/xenon/js/jquery-1.11.1.min.js?1"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/jquery-1.11.1.min.js?1"></script>
 
 	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!--[if lt IE 9]>
@@ -88,7 +89,7 @@
 									};
 								
 								$.ajax({
-									url: "{C_default_http_host}admincp.php/?pages=login",
+									url: "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=login",
 									method: 'POST',
 									dataType: 'json',
 									data: {
@@ -108,7 +109,7 @@
 												if(resp.accessGranted)
 												{
 													// Redirect after successful login page (when progress bar reaches 100%)
-													window.location.href = '{C_default_http_host}admincp.php/{ref}';
+													window.location.href = '{C_default_http_host}{D_ADMINCP_DIRECTORY}/{ref}';
 												}
 												else
 												{
@@ -158,17 +159,17 @@
 			});
 	</script>
 	<!-- Bottom Scripts -->
-	<script src="assets/xenon/js/bootstrap.min.js?1"></script>
-	<script src="assets/xenon/js/TweenMax.min.js?1"></script>
-	<script src="assets/xenon/js/resizeable.js?1"></script>
-	<script src="assets/xenon/js/joinable.js?1"></script>
-	<script src="assets/xenon/js/xenon-api.js?1"></script>
-	<script src="assets/xenon/js/xenon-toggles.js?1"></script>
-	<script src="assets/xenon/js/jquery-validate/jquery.validate.min.js?1"></script>
-	<script src="assets/xenon/js/toastr/toastr.min.js?1"></script>
-
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/bootstrap.min.js?1"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/TweenMax.min.js?1"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/resizeable.js?1"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/joinable.js?1"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-api.js?1"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-toggles.js?1"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/jquery-validate/jquery.validate.min.js?1"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/toastr/toastr.min.js?1"></script>
 
 	<!-- JavaScripts initializations and stuff -->
-	<script src="assets/xenon/js/xenon-custom.js?2"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-custom.js?2"></script>
+	{js_list}
 </body>
 </html>

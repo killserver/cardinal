@@ -56,6 +56,19 @@ if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."config.".ROOT_EX) && file_e
 		require_once(PATH_MEDIA."config.client.".ROOT_EX);
 	}
 	require_once(PATH_MEDIA."config.global.".ROOT_EX);
+	$protocol = "http";
+	if(
+		   (isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+		|| (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && !empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')
+		|| (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && !empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] == 'on')
+		|| (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
+		|| (isset($_SERVER['HTTP_X_FORWARDED_PORT']) && $_SERVER['HTTP_X_FORWARDED_PORT'] == 443)
+		|| (isset($_SERVER['REQUEST_SCHEME']) && $_SERVER['REQUEST_SCHEME'] == 'https')
+		|| (isset($_SERVER['CF_VISITOR']) && $_SERVER['CF_VISITOR'] == '{"scheme":"https"}')
+		|| (isset($_SERVER['HTTP_CF_VISITOR']) && $_SERVER['HTTP_CF_VISITOR'] == '{"scheme":"https"}')
+	) {
+		$protocol = "https";
+	}
 	if(defined("WITHOUT_DB")) {
 		$host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua");
 		$hostMD5 = substr(md5($host), 0, 6);
@@ -76,7 +89,7 @@ if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."config.".ROOT_EX) && file_e
 			$config = array_merge($config, array(
 				"default_http_local" => $link,
 				"default_http_hostname" => $host,
-				"default_http_host" => HTTP::$protocol."://".$host.$link,
+				"default_http_host" => $protocol."://".$host.$link,
 			));
 			unset($link);
 		}
@@ -96,7 +109,7 @@ if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."config.".ROOT_EX) && file_e
 		} else {
 			$link = "/";
 		}
-		header("Location: ".(isset($_SERVER['HTTP_HOST']) ? "http://".$_SERVER['HTTP_HOST'] : "").$link."install.".ROOT_EX);
+		header("Location: ".(isset($_SERVER['HTTP_HOST']) ? $protocol."://".$_SERVER['HTTP_HOST'] : "").$link."install.".ROOT_EX);
 		unset($link);
 		die();
 	}

@@ -20,8 +20,8 @@
     </div>
   </div>
 </span>
-<script src="http://themes.laborator.co/xenon/assets/js/devexpress-web-14.1x/js/globalize.min.js" id="script-resource-8"></script>
-<script src="http://themes.laborator.co/xenon/assets/js/devexpress-web-14.1x/js/dx.chartjs.js" id="script-resource-9"></script>
+<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/devexpress-web-14.1x/js/globalize.min.js" id="script-resource-8"></script>
+<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/devexpress-web-14.1x/js/dx.chartjs.js" id="script-resource-9"></script>
 <script[if {cpuUseVisible}=="0"||{memUseVisible}=="0"] type="text/notimplemented"[/if {cpuUseVisible}=="0"||{memUseVisible}=="0"]>
 var cpuUse = $("#cpu-usage-gauge").dxCircularGauge({
   scale: {

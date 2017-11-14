@@ -1623,12 +1623,11 @@ if(!$test) {
 			$arr['link'] = explode("?", $arr['link']);
 			$arr['link'] = current($arr['link']);
 		}
-		if(substr($arr['link'], 0, 1)=="/") {
-			$arr['link'] = substr($arr['link'], 1);
+		$filename_ROOT_PATH = str_replace("\/", "/", $arr['link']);
+		if(substr($filename_ROOT_PATH, 0, 1)=="/") {
+			$filename_ROOT_PATH = substr($filename_ROOT_PATH, 1);
 		}
-
-
-		$filename_ROOT_PATH = str_replace("\/", "/", ROOT_PATH.$arr['link']);
+		$filename_ROOT_PATH = rawurldecode(ROOT_PATH.$filename_ROOT_PATH);
 		if(!file_exists($filename_ROOT_PATH)) {
 			return $arr['link'];
 		}
@@ -1641,6 +1640,9 @@ if(!$test) {
 		}
 		if(isset($arr['height'])) {
 			$checkFile .= "_h".round($arr['height']);
+		}
+		if(!isset($arr['width']) && !isset($arr['height'])) {
+			$checkFile .= ".min";
 		}
 		$checkFile .= ".".$type;
 		if(file_exists($checkFile)) {
@@ -1663,14 +1665,8 @@ if(!$test) {
 			$setHeight = $size_img[1] * $ratio;
 		}
 
-		$resizeWidth = (isset($arr['width']) ? $arr['width'] : (isset($setWidth) ? $setWidth : $size_img[0]));
-		$resizeHeight = (isset($arr['height']) ? $arr['height'] : (isset($setHeight) ? $setHeight : $size_img[1]));
-		if(!isset($arr['width'])) {
-			$arr['width'] = $resizeWidth;
-		}
-		if(!isset($arr['height'])) {
-			$arr['height'] = $resizeHeight;
-		}
+		$resizerWidth = $resizeWidth = (isset($arr['width']) ? $arr['width'] : (isset($setWidth) ? $setWidth : $size_img[0]));
+		$resizerHeight = $resizeHeight = (isset($arr['height']) ? $arr['height'] : (isset($setHeight) ? $setHeight : $size_img[1]));
 		$trimWidth = $resizeWidth;
 		$trimHeight = $resizeHeight;
 
@@ -1697,7 +1693,7 @@ if(!$test) {
 		imagesavealpha( $dest_imgs, true );
 		imagecopyresampled($dest_imgs, $src_img, 0, 0, 0, 0, $resizeWidth, $resizeHeight, $size_img[0], $size_img[1]);
 		imagedestroy($src_img);
-		$dest_img = imagecreatetruecolor($arr['width'], $arr['height']);
+		$dest_img = imagecreatetruecolor($resizerWidth, $resizerHeight);
 		imagealphablending( $dest_img, false );
 		imagesavealpha( $dest_img, true );
 		imagecopy($dest_img, $dest_imgs, 0, 0, 0, 0, $sizeImgWidth, $sizeImgHeight);
@@ -1721,11 +1717,17 @@ if(!$test) {
 		$exp = explode(".", $filename_ROOT_PATH);
 		$type = end($exp);
 		$filename_ROOT_PATH = str_replace(".".$type, "", $filename_ROOT_PATH);
+		$set = false;
 		if(isset($arr['width'])) {
+			$set = true;
 			$filename_ROOT_PATH .= "_w".round($arr['width']);
 		}
 		if(isset($arr['height'])) {
+			$set = true;
 			$filename_ROOT_PATH .= "_h".round($arr['height']);
+		}
+		if(!$set) {
+			$filename_ROOT_PATH .= ".min";
 		}
 		$filename_ROOT_PATH .= ".".$type;
 
@@ -1740,6 +1742,8 @@ if(!$test) {
 		}
 		ob_get_clean();
 		$file = str_replace(ROOT_PATH, "", $filename_ROOT_PATH);
+		$file = rawurlencode($file);
+		$file = str_replace("%2F", "/", $file);
 		return $file;
 	}
 
@@ -1756,20 +1760,38 @@ if(!$test) {
 		return $sub;
 	}
 
-	final public static function loadObject($obj) {
-		if(!is_object($obj)) {
-			self::ErrorTemplate("First parameter is not object");
+	final public static function loadObject($obj, $name = "") {
+		if(!is_object($obj) && !is_array($obj)) {
+			self::ErrorTemplate("First parameter is not object and not array");
 			die();
 		}
-		$arr = get_class_vars($obj);
+		if(is_object($obj)) {
+			$arr = get_object_vars($obj);
+		} else {
+			$arr = $obj;
+		}
+		if(empty($name)) {
+			if(is_array($obj) && isset($obj[0]) && is_object($obj[0])) {
+				$name = get_class($obj[0]);
+			} else if(is_object($obj)) {
+				$name = get_class($obj);
+			}
+		}
+		if(empty($name)) {
+			self::ErrorTemplate("Name is not set");
+			die();
+		}
 		$i = 0;
 		foreach($arr as $k => $v) {
-			if(is_object($v) && $v instanceof DBObject) {
+			if(is_array($arr) && is_object($v) && $v instanceof DBObject && !empty($name)) {
+				$v = $v->getArray();
+				self::assign_vars($v, $name, $k.$i);
+			} else if(is_object($v) && $v instanceof DBObject) {
 				$v = $v->getArray();
 				self::loadObject($v);
 			} else if(is_object($v)) {
 				self::loadObject($v);
-			} else if(is_array($v)) {
+			} else if(is_array($arr)) {
 				self::assign_vars($v, $k, $k.$i);
 			} else {
 				self::assign_var($k, $v);

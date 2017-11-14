@@ -271,6 +271,12 @@ class Core {
 			location("{C_default_http_host}".ADMINCP_DIRECTORY."/?pages=Login".(!empty($ref) ? "&ref=".$ref : ""));
 			return;
 		}
+		if(Route::param("lang")!="") {
+			$langs = Route::param("lang");
+		} else {
+			$langs = config::Select("lang");
+		}
+		templates::assign_var("langPanel", $langs);
 		if(Arr::get($_GET, "setLanguage", false) && strpos(HTTP::getServer("HTTP_REFERER"), config::Select("default_http_host"))!==false && strpos(HTTP::getServer("HTTP_REFERER"), ADMINCP_DIRECTORY)!==false) {
 			$support = lang::support();
 			for($i=0;$i<sizeof($support);$i++) {

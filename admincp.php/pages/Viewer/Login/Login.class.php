@@ -20,6 +20,39 @@ die();
 }
 
 class Login extends Core {
+	
+	private static $js = array();
+	private static $css = array();
+
+	protected static function InsertList($name, $js = "", $type = "js") {
+		if($type=="js") {
+			if(is_array($name)) {
+				$jssn = array_values($name);
+				$jssv = array_values($name);
+				for($o=0;$o<sizeof($jssv);$o++) {
+					self::$js[$jssn[$o]] = $jssv[$o];
+				}
+				return true;
+			} else if(is_string($name)) {
+				self::$js[$name] = $js;
+			} else {
+				return self::$js;
+			}
+		} else if($type=="css") {
+			if(is_array($name)) {
+				$cssn = array_keys($name);
+				$cssv = array_values($name);
+				for($o=0;$o<sizeof($cssn);$o++) {
+					self::$css[$cssn[$o]] = $cssv[$o];
+				}
+				return true;
+			} else if(is_string($name)) {
+				self::$css[$name] = $js;
+			} else {
+				return self::$css;
+			}
+		}
+	}
 
 	function __construct() {
 	global $user, $users;
@@ -27,6 +60,12 @@ class Login extends Core {
 			HTTP::set_cookie(COOK_ADMIN_USER, "", true);
 			HTTP::set_cookie(COOK_ADMIN_PASS, "", true);
 		}
+		if(Route::param("lang")!="") {
+			$lang = Route::param("lang");
+		} else {
+			$lang = config::Select("lang");
+		}
+		templates::assign_var("langPanel", $lang);
 		$resp = array('accessGranted' => false, 'errors' => '');
 		if(isset($_POST['do_login'])) {
 			Debug::activShow(false);
@@ -70,12 +109,32 @@ class Login extends Core {
 			HTTP::echos(json_encode($resp));
 			return;
 		}
+		$echos = "";
 		templates::assign_var("ref", (isset($_GET['ref']) && !empty($_GET['ref']) && strpos($_GET['ref'], "http")===false ? urldecode($_GET['ref']) : "?pages=main"));
 		if(isset($_COOKIE['is_admin_login']) && !empty($user['username'])) {
-			echo templates::view(templates::complited_assing_vars("again_login", null));
+			$echos = templates::view(templates::complited_assing_vars("again_login", null));
 		} else {
-			echo templates::view(templates::complited_assing_vars("login", null));
+			$echos = templates::view(templates::complited_assing_vars("login", null));
 		}
+		$js_echo = "";
+		if(sizeof(self::$js)>0) {
+			$js = array_values(self::$js);
+			for($o=0;$o<sizeof($js);$o++) {
+				$html = new html();
+				$js_echo .= $html->open("script")->type("text/javascript")->src($js[$o])->cont("")->close()->get_html();
+			}
+		}
+		$echos = str_replace("{js_list}", $js_echo, $echos);
+		$css_echo = "";
+		if(sizeof(self::$css)>0) {
+			$css = array_values(self::$css);
+			for($o=0;$o<sizeof($css);$o++) {
+				$html = new html();
+				$css_echo .= $html->open("link", 2)->type("text/css")->href($css[$o])->rel("stylesheet")->cont("")->close()->get_html();
+			}
+		}
+		$echos = str_replace("{css_list}", $css_echo, $echos);
+		echo $echos;
 	}
 
 }
