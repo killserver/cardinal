@@ -35,6 +35,14 @@ if(is_array($config) && sizeof($config)>0 && isset($config["default_http_local"]
 	exit();
 }
 
+if(isset($_GET['noShowAdmin'])) {
+	unset($_GET['noShowAdmin']);
+	if(strpos($_SERVER['QUERY_STRING'], "noShowAdmin")!==false) {
+		$_SERVER['QUERY_STRING'] = htmlspecialchars_decode($_SERVER['QUERY_STRING']);
+		$_SERVER['QUERY_STRING'] = preg_replace("#noShowAdmin=(.+?)(\&|)#", "", $_SERVER['QUERY_STRING']);
+	}
+}
+
 if(isset($_SERVER['QUERY_STRING'])) {
 	$server = $_SERVER['QUERY_STRING'];
 } else {

