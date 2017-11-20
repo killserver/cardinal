@@ -46,7 +46,7 @@ global $config, $Timer, $manifest, $session;
 		$s .="\n<!-- Затрачено оперативной памяти ".round((memory_get_peak_usage()-MEMORY_GET)/(1024*1024),2)." MB -->";
 	}
 	header("Last-Modified: " . date('r', time()) ." GMT");
-	if((function_exists("ob_get_length") && ob_get_length()>0) && isset($config['gzip']) && $config['gzip'] != "yes" && isset($manifest['gzip']) && $manifest['gzip'] != true) {
+	if((function_exists("ob_get_length") && ob_get_length()>0) && (config::Select('gzip') != "yes" || isset($manifest['gzip']) && !$manifest['gzip'])) {
 		if($debug) {
 			echo $s;
 		}

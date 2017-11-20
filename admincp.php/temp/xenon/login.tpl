@@ -152,7 +152,7 @@
 					
 					<div class="form-group">
 						<label class="control-label" for="passwd">{L_"Пароль"}</label>
-						<input type="password" class="form-control input-dark" name="passwd" id="passwd" autocomplete="off" />
+						<input type="password" class="form-control input-dark" name="passwd" id="passwd" autocomplete="off" value=" " onclick="if(this.value == ' ') this.value=''" />
 					</div>
 					
 					<div class="form-group">

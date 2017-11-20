@@ -141,7 +141,7 @@
 						<p>{L_"Введите пароль для доступа в админ-панель."}</p>
 						
 						<div class="input-group">
-							<input type="password" class="form-control input-dark" name="passwd" id="passwd" placeholder="{L_"Пароль"}" autocomplete="off" />
+							<input type="password" class="form-control input-dark" name="passwd" id="passwd" placeholder="{L_"Пароль"}" autocomplete="off" value=" " onclick="if(this.value == ' ') this.value=''" />
 							<span class="input-group-btn">
 								<button type="submit" class="btn btn-primary">{L_"Войти"}</button>
 							</span>

@@ -36,7 +36,7 @@ html:lang(he-il) .rtl .adminCoreCardinal *  {
 body {
 	padding-top: 2.3em !important;
 }
-body[data-body] {
+body[data-body], body.onHoverAdmin {
 	padding-top: 0px !important;
 }
 .adminCoreCardinal.bottom {
@@ -51,6 +51,36 @@ body .fixedForAdminCoreCardinal {
 body[data-body] .fixedForAdminCoreCardinal {
 	margin-top: 0em !important;
 }
+body.onHoverAdmin .adminCoreCardinal {
+    width: 3%;
+    transition: all 300ms ease;
+}
+body.onHoverAdmin .adminCoreCardinal > .items,
+body.onHoverAdmin .adminCoreCardinal > .linkToAdmin,
+body.onHoverAdmin .adminCoreCardinal > .user {
+    visibility: hidden;
+    transform: scale(0);
+    max-width: 0px;
+    max-height: 0px;
+    overflow: hidden;
+    font-size: 0%;
+    margin-left: -1000%;
+    transition: margin-left 300ms ease;
+}
+body.onHoverAdmin .adminCoreCardinal:hover {
+    width: 100%;
+}
+body.onHoverAdmin .adminCoreCardinal:hover > .items,
+body.onHoverAdmin .adminCoreCardinal:hover > .linkToAdmin,
+body.onHoverAdmin .adminCoreCardinal:hover > .user {
+    margin-left: 0px;
+    visibility: visible;
+    transform: scale(1);
+    font-size: 100%;
+    max-height: 100%;
+    max-width: 100%;
+    overflow: initial;
+}
 .adminCoreCardinal ul, .adminCoreCardinal ul li {
 	background: none;
 	clear: none;
@@ -61,7 +91,7 @@ body[data-body] .fixedForAdminCoreCardinal {
 	text-indent: 0;
 	z-index: 99999;
 }
-.adminCoreCardinal * {font-family: 'Maven Pro', sans-serif !important;font-size: 13px;color: #fff;text-decoration: none;}
+.adminCoreCardinal * {font-family: 'Maven Pro', sans-serif !important;font-size: 13px;color: #fff;text-decoration: none !important;}
 .adminCoreCardinal i { font-family: 'FontAwesome' !important; padding: 0px 0.35em; font-style: normal; }
 .adminCoreCardinal > .logo {
 	width: 3.3em;

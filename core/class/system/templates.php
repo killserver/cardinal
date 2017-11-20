@@ -94,6 +94,7 @@ class templates {
 	private static $mainTpl = "main";
 	private static $pathToCache = "";
 	private static $mainSkins = "";
+	private static $accessEmpty = false;
 
 	/**
 	 * templates constructor.
@@ -211,6 +212,10 @@ class templates {
 	
 	final public static function set_mainSkins($skin) {
 		self::$mainSkins = $skin;
+	}
+
+	final public static function accessNull($val = true) {
+		self::$accessEmpty = $val;
 	}
 
 	/**
@@ -618,7 +623,7 @@ class templates {
 		if(!empty($isset)) {
 			return $isset;
 		} else {
-			return $array[0];
+			return (self::$accessEmpty ? $isset : $array[0]);
 		}
 	}
 

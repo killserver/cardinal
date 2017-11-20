@@ -1,5 +1,5 @@
 var checkedAdmin = setInterval(function() {
-	if(typeof jQuery!==undefined) {
+	if(typeof(jQuery)!=="undefined") {
 		jQuery(document).ready(function(){
 			jQuery("body").addClass("adminbarCardinal");
 			var nowAdminCardinal = jQuery(".adminCoreCardinal").html();

@@ -14,12 +14,26 @@
 	-o-border-radius: 3px 0 0 3px;
 	-ms-border-radius: 3px 0 0 3px;
 	-khtml-border-radius: 3px 0 0 3px;
-	overflow: auto;
+	overflow: hidden;
 	max-height: 80%;
 	max-width: 56%;
 	z-index: 10000;
 }
+@media(min-width:900px) and (max-width:1200px) {
+	#i-debug-panel {
+		max-width: 80%;
+	}
+}
+@media(max-width:900px) {
+	#i-debug-panel {
+		max-width: 100%;
+	}
+}
 
+#i-debug-panel ul {
+	display: table;
+	width: 100%;
+}
 #i-debug-panel ul,
 #i-debug-panel li
 {
@@ -27,7 +41,6 @@
 	margin: 0;
 	line-height: 2;
 	list-style: none;
-	display: table;
 }
 
 #i-debug-panel-list li:first-child {
@@ -95,6 +108,7 @@
 	text-align: left;
 	vertical-align: top;
 	border: 1px dotted #424242;
+	min-width: 6em;
 }
 
 #i-debug-panel table td.center
@@ -199,6 +213,10 @@
 {
 	padding: 30px 5px 10px 5px;
 	background: transparent;
+	margin: 0px;
+	overflow: auto;
+	max-width: 100%;
+	max-height: 76.8vh;
 }
 
 #i-debug-panel .panel li

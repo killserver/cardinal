@@ -2,9 +2,9 @@ AddDefaultCharset UTF-8
 Options -Indexes
 
 php_value mbstring.func_overload 4
-php_value upload_max_filesize 15M
-php_value post_max_size 15M
-php_value max_file_uploads 15
+php_value upload_max_filesize 200M
+php_value post_max_size 200M
+php_value max_file_uploads 80
 
 <IfModule mod_http2.c>
 	# for a https server
@@ -206,7 +206,7 @@ FileETag None
 	RewriteCond %{HTTP_HOST} ^www\.(.*)$
 	RewriteRule ^(.*)$ http://%1/$1 [L,R=301]
 	RewriteRule ^(.*)index\.(php|html|phtml|htm|php3|php4|php5|phps|pl|cgi?)$ /$1 [R=301,NC,L]
-	<IfModule brotli_module>
+	<IfModule brotli_module.c>
 		# Serve brotli compressed CSS files if they exist
 		# and the client accepts brotli.
 		RewriteCond "%{HTTP:Accept-encoding}" "brotli"

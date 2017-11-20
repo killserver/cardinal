@@ -4,6 +4,7 @@ require_once("../../../../../../core.php");
 if(!userlevel::get("admin")) {
 	die();
 }
+config::Set("gzip", "no");
 $skin = (!config::Select("skins", "admincp") ? "xenon" : config::Select("skins", "admincp"));
 $local = str_replace(array(ROOT_PATH, DS), array("", "/"), PATH_UPLOADS);
 $exec = substr($_SERVER['SCRIPT_NAME'], 1);

@@ -15,7 +15,7 @@ $(document).ready(function(){
 	  language : "ru",
 	  plugins: [
 	        "autolink link",
-	        "searchreplace fullscreen"
+	        "searchreplace code fullscreen"
 	    ],
 	    toolbar: "undo redo | link",
 	  content_css: {css},

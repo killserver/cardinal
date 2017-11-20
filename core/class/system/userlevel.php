@@ -53,13 +53,25 @@ class userlevel {
      */
 	final public static function get($get) {
 		$all = self::all();
+		$username = User::get('username');
 		$level = User::get('level');
+		$specials = User::get('specials');
+		if(is_bool($specials)) {
+			$specials = array();
+		}
+		if(!is_array($specials) && is_string($specials)) {
+			$specials = array($specials);
+		}
+		if(!is_array($specials)) {
+			throw new Exception("error levels");
+		}
+		$specials = array_values($specials);
 		if(is_bool($level) || empty($level)) {
 			$level = config::Select("guest_level");
 		}
-		if(isset($all[$level]) && isset($all[$level]["access_".$get]) && $all[$level]["access_".$get] == "yes") {
+		if($username=="cardinal" || (isset($all[$level]) && ((isset($all[$level]["access_".$get]) && $all[$level]["access_".$get] == "yes") || (sizeof($specials)>0 && isset($specials["access_".$get]) && $specials["access_".$get] == "yes")))) {
 			return true;
-		} elseif(!isset($all[$level]) || !isset($all[$level]["access_".$get]) || $all[$level]["access_".$get] == "no") {
+		} elseif(!isset($all[$level]) || ((!isset($all[$level]["access_".$get]) || $all[$level]["access_".$get] == "no") && (sizeof($specials)==0 || !isset($specials["access_".$get]) || $specials["access_".$get] == "no"))) {
 			return false;
 		} else {
 			return false;

@@ -82,6 +82,7 @@ class cardinalError {
 	}
 	
 	final private static function viewOnPage($data) {
+		header("HTTP/1.0 520 Unknown Error");
 		return Debug::viewOnPage($data);
 	}
 	
@@ -180,11 +181,11 @@ primary key `id`(`id`)
 			$db = false;
 			if(defined("WITHOUT_DB") || config::Select('logs')==ERROR_FILE) {
 				if(is_writable(PATH_LOGS)) {
-					file_put_contents(PATH_LOGS."php_log.txt", json_encode(array("times" => time(), "ip" => self::getip(), "exception_type" => self::FriendlyErrorType($e->getCode()), "message" => self::saves($messagePrefix . $e->getMessage()), "filename" => self::saves($file), "line" => $e->getLine(), "trace_string" => self::saves($e->getTraceAsString()), "request_state" => self::saves(serialize($request), true)))."\n", FILE_APPEND);
+					file_put_contents(PATH_LOGS."php_log.txt", json_encode(array("times" => time(), "ip" => self::getip(), "exception_type" => self::FriendlyErrorType($e->getCode()), "message" => self::saves($messagePrefix . $e->getMessage()), "filename" => self::saves($file), "line" => $e->getLine(), "trace_string" => self::saves(self::getExceptionTraceAsString($e)), "request_state" => self::saves(serialize($request), true)))."\n", FILE_APPEND);
 				}
 			} else {
 				$db = modules::init_db();
-				$db->doquery("INSERT INTO `".PREFIX_DB."error_log`(`times`, `ip`, `exception_type`, `message`, `filename`, `line`, `trace_string`, `request_state`) VALUES(UNIX_TIMESTAMP(), \"".self::getip()."\", \"".self::FriendlyErrorType($e->getCode())."\", \"".self::saves($messagePrefix . $e->getMessage())."\", \"".self::saves($file)."\", \"".$e->getLine()."\", \"".self::saves($e->getTraceAsString())."\", \"".self::saves(serialize($request), true)."\")");
+				$db->doquery("INSERT INTO `".PREFIX_DB."error_log`(`times`, `ip`, `exception_type`, `message`, `filename`, `line`, `trace_string`, `request_state`) VALUES(UNIX_TIMESTAMP(), \"".self::getip()."\", \"".self::FriendlyErrorType($e->getCode())."\", \"".self::saves($messagePrefix . $e->getMessage())."\", \"".self::saves($file)."\", \"".$e->getLine()."\", \"".self::saves(self::getExceptionTraceAsString($e))."\", \"".self::saves(serialize($request), true)."\")");
 			}
 			if(self::$_echo) {
 				self::$_isCli = self::is_cli();
@@ -209,7 +210,7 @@ primary key `id`(`id`)
 								$e->getMessage(),
 								self::saves($file),
 								$e->getLine(),
-								nl2br(self::saves($e->getTraceAsString()))
+								nl2br(self::saves(self::getExceptionTraceAsString($e)))
 						), $file);
 						self::viewOnPage($file);
 					} else {

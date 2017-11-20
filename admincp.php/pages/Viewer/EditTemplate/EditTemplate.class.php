@@ -24,6 +24,7 @@ class EditTemplate extends Core {
 			}
 			$File = file_get_contents($Patch);
 			$File = preg_replace("/{C_default_http_local}/","/",$File);
+			$File = preg_replace("/{THEME}\//", config::Select("default_http_local")."skins/{C_skins[skins]}/", $File);
 			$File = htmlspecialchars($File);
 			templates::assign_var("File", $File);
 			templates::assign_var("css", json_encode($sRet));
