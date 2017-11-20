@@ -18,6 +18,8 @@ class Yui extends Core {
 					$data = $arr;
 				}
 			}
+			Debug::activShow(false);
+			templates::$gzip=false;
 			echo json_encode($data);
 			die();
 		}

@@ -31,6 +31,8 @@ class Main_Cache extends Main {
 					unlink($path.$files[$i]);
 				}
 			}
+			Debug::activShow(false);
+			templates::$gzip=false;
 			echo "Done";
 			die();
 		}
@@ -49,6 +51,8 @@ class Main_Cache extends Main {
 					unlink($path.$files[$i]);
 				}
 			}
+			Debug::activShow(false);
+			templates::$gzip=false;
 			echo "Done";
 			die();
 		}

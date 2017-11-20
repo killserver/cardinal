@@ -38,6 +38,8 @@ class Main_ServerLoad extends Main {
 
 	function __construct() {
 		if(isset($_GET['getServerLoad'])) {
+			Debug::activShow(false);
+			templates::$gzip=false;
 			HTTP::echos(json_encode(array($this->get_server_load(), $this->get_server_memory_usage())));
 			die();
 		}

@@ -151,6 +151,8 @@ class Languages extends Core {
 			} else {
 				$ret = "0";
 			}
+			Debug::activShow(false);
+			templates::$gzip=false;
 			HTTP::echos($ret);
 			die();
 		}
@@ -160,6 +162,8 @@ class Languages extends Core {
 			} else {
 				$ret = "0";
 			}
+			Debug::activShow(false);
+			templates::$gzip=false;
 			HTTP::echos($ret);
 			die();
 		}

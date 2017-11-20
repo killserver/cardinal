@@ -2027,7 +2027,7 @@ body.chat-open .user-info-navbar a[data-toggle="chat"] {
   padding: 0;
   border: 1px solid #ffffff;
   border-top: 0;
-  border-bottom: 0;
+  /* border-bottom: 0; */
   display: block;
   float: left;
 }
@@ -5074,7 +5074,7 @@ label.cbr-inline + .cbr-inline {
 .panel-group .panel .panel-heading a[data-toggle="collapse"]:before {
   float: right;
   display: block;
-  content: '–';
+  content: 'â€“';
   font-size: 18px;
   width: 25px;
   text-align: right;
@@ -5936,7 +5936,7 @@ blockquote small {
   width: 10%;
 }
 .dataTables_wrapper tr .yadcf-filter-wrapper .yadcf-filter-wrapper-inner .yadcf-filter-range-number-seperator:after {
-  content: '–';
+  content: 'â€“';
   color: #979898;
   font-size: 11px;
   font-weight: normal;
@@ -6267,7 +6267,7 @@ label.radio-inline input[type="radio"] {
 }
 nav.navbar {
   border: 0;
-  z-index: 5;
+  z-index: 7;
 }
 nav.navbar form > .btn {
   margin-bottom: 0;
