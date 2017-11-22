@@ -1701,7 +1701,7 @@ if(!$test) {
 		$dest_img = imagecreatetruecolor($resizerWidth, $resizerHeight);
 		imagealphablending( $dest_img, false );
 		imagesavealpha( $dest_img, true );
-		imagecopy($dest_img, $dest_imgs, 0, 0, 0, 0, $sizeImgWidth, $sizeImgHeight);
+		imagecopyresampled($dest_img, $dest_imgs, 0, 0, 0, 0, $resizerWidth, $resizerHeight, $resizeWidth, $resizeHeight);
 
 		$thumb = imagecreatetruecolor($trimWidth, $trimHeight);
 		if(isset($arr['posX']) && $arr['posX']>=0 && $arr['posX']<=100) {
@@ -2185,6 +2185,7 @@ if(!$test) {
 				} catch(Exception $ex) {}
 			}
 		}
+		header("HTTP/1.0 520 Unknown Error");
 		if(file_exists(PATH_SKINS."ErrorTpl.".self::$typeTpl)) {
 			$file = file_get_contents(PATH_SKINS."ErrorTpl.".self::$typeTpl);
 			$file = str_replace("{msg}", $msg, $file);

@@ -721,6 +721,7 @@ class db {
      * @param array $arr Info of query
      */
     final public static function error($arr) {
+		header("HTTP/1.0 520 Unknown Error");
 		$mysql_error = $arr['mysql_error'];
 		$mysql_error_num = $arr['mysql_error_num'];
 		$query = $arr['query'];

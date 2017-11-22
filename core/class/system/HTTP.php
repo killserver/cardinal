@@ -125,7 +125,7 @@ class HTTP {
 		}
 		$ret = false;
 		if($save) {
-			if((version_compare(PHP_VERSION_ID, '70000', '>=')) || strpos("localhost", $domain)!==false || strpos("127.0.0.1", $domain)!==false) {
+			if((version_compare(PHP_VERSION_ID, '70000', '>=')) || strpos($domain, "localhost")!==false || strpos($domain, "127.0.0.1")!==false || strpos(self::getServer("SERVER_ADDR"), "127.0.0.1")!==false) {
 				$ret = setcookie($name, $value, $time, "/");
 			} else {
 				if(version_compare(PHP_VERSION, '5.2', '<')) {

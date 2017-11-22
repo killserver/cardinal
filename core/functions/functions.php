@@ -45,12 +45,14 @@ global $config;
 		throw new Exception("Error load config file. Path is not set");
 		die();
 	}
-	if(!file_exists($file) && !file_exists(ROOT_PATH.$file)) {
+	if(!file_exists($file) && (defined("ROOT_PATH") && !file_exists(ROOT_PATH.$file))) {
 		throw new Exception("Error load config file. File is not exists");
 		die();
 	}
-	if(!file_exists($file)) {
+	if(defined("ROOT_PATH") && !file_exists($file)) {
 		$file = ROOT_PATH.$file;
+	} else {
+		$file = dirname(__FILE__).DIRECTORY_SEPARATOR.$file;
 	}
 	
 	$autodetect = ini_get('auto_detect_line_endings');
@@ -516,22 +518,23 @@ global $mobileDetect;
 
 function pageBar($total, $current, $prefix = "", $postfix = "") {
 	$pageBar = "";
-	if($total <= 5) {
-		for ($i = 1; $i <= $total; $i ++)
-			if ($current != $i)
-				$pageBar .= " <a href=\"{$prefix}{$i}{$postfix}\">{$i}</a>";
-			else
-				$pageBar .= " <span>{$i}</span>";
+	if($total<=5) {
+		for($i=1; $i<=$total; $i++)
+			if ($current != $i) {
+				$pageBar .= " <a href=\"".$prefix.$i.$postfix."\">".$i."</a>";
+			} else {
+				$pageBar .= " <span>".$i."</span>";
+			}
 	} else {
 		for($i=1;$i<=$total;$i++) {
-			if($i <= 2 || ($i >= ($current - 2) && $i <= ($current + 2)) || $i >= ($total - 1)) {
-				if(($i == $current - 2) && ($current - 2 > 3)) {
+			if($i<=2 || ($i>=($current-2) && $i<=($current+2)) || $i>=($total-1)) {
+				if(($i == $current-2) && ($current-2 > 3)) {
 					$pageBar .= ' ...';
 				}
 				if($i != $current) {
-					$pageBar .= " <a href=\"{$prefix}{$i}{$postfix}\">{$i}</a>";
+					$pageBar .= " <a href=\"".$prefix.$i.$postfix."\">".$i."</a>";
 				} else {
-					$pageBar .= " <span>{$i}</span>";
+					$pageBar .= " <span>".$i."</span>";
 				}
 				if(($i == $current + 2) && ($current + 2 < $total - 2)) {
 					$pageBar .= ' ...';
@@ -541,4 +544,10 @@ function pageBar($total, $current, $prefix = "", $postfix = "") {
 	}
 	return $pageBar;
 }
+
+function callAjax() {
+	templates::$gzip = false;
+	Debug::activShow(false);
+}
+
 ?>
