@@ -28,12 +28,14 @@ global $manifest;
 		}
 	} else {
 		if(isset($manifest['functions'][$func_name]) && is_callable($manifest['functions'][$func_name])) {
-			$func_name = $manifest['functions'][$func_name];
+			$func_names = $manifest['functions'][$func_name];
+		} else if(is_callable('or_' . $func_name)) {
+			$func_names = 'or_' . $func_name;
 		} else {
-			$func_name = 'or_' . $func_name;
+			$func_names = $func_name;
 		}
-		if(is_callable($func_name)) {
-			$result = call_user_func_array($func_name, $func_arg);
+		if(is_callable($func_names)) {
+			$result = call_user_func_array($func_names, $func_arg);
 		}
 	}
 	return $result;

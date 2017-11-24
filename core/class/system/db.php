@@ -561,7 +561,8 @@ class db {
 					$query = str_replace(array('{{'.$arr[$i].'}}', '{{'.$t.'}}'), "`".PREFIX_DB . $t."`", $query);
 				}
 			}
-		} else if(strpos($query, '{{') !== false) {
+		}
+		if(strpos($query, '{{') !== false) {
 			$query = str_replace(array("{{", "}}"), "`", $query);
 		}
 		$stime = self::time();
@@ -838,7 +839,7 @@ class db {
      * Close connection
      */
     function __destruct() {
-		self::close();
+		//self::close();
 	}
 
 }

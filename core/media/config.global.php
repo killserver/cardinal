@@ -119,13 +119,13 @@ if(!defined("UPLOAD_ALL")) {
 }
 
 if(!defined("VERSION")) {
-	define("VERSION", "7.4");
+	define("VERSION", "7.5");
 }
 if(!defined("VERSION_ADMIN_STYLE")) {
-	define("VERSION_ADMIN_STYLE", "1.4");
+	define("VERSION_ADMIN_STYLE", "1.5");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "70437");
+	define("INTVERSION", "70502");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "6.5");

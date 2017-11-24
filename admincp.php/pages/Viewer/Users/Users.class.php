@@ -16,7 +16,7 @@ class Users extends Core {
 			$activ = "no";
 		}
 		cardinal::RegAction("Добавление нового пользователя \"".$name."\"");
-		db::doquery("INSERT INTO `".PREFIX_DB."users` SET `username` = \"".$name."\", `alt_name` = \"".ToTranslit($name)."\", `pass` = \"".$pass."\", `admin_pass` = \"".$admin_pass."\", `email` = \"".$email."\", `light` = \"".$password."\", `level` = \"".$level."\", `activ` = \"".$activ."\", `time_reg` = UNIX_TIMESTAMP()");
+		db::doquery("INSERT INTO {{users}} SET `username` = \"".$name."\", `alt_name` = \"".ToTranslit($name)."\", `pass` = \"".$pass."\", `admin_pass` = \"".$admin_pass."\", `email` = \"".$email."\", `light` = \"".$password."\", `level` = \"".$level."\", `activ` = \"".$activ."\", `time_reg` = UNIX_TIMESTAMP()");
 		location("./?pages=Users");
 		return;
 	}
@@ -35,7 +35,7 @@ class Users extends Core {
 			$activ = "no";
 		}
 		cardinal::RegAction("Обновление данных пользователя \"".$name."\"");
-		db::doquery("UPDATE `".PREFIX_DB."users` SET `username` = \"".$name."\", `alt_name` = \"".ToTranslit($name)."\", `pass` = \"".$pass."\", `admin_pass` = \"".$admin_pass."\", `email` = \"".$email."\", `light` = \"".$password."\", `level` = \"".$level."\", `activ` = \"".$activ."\" WHERE `id` = ".$id);
+		db::doquery("UPDATE {{users}} SET `username` = \"".$name."\", `alt_name` = \"".ToTranslit($name)."\", `pass` = \"".$pass."\", `admin_pass` = \"".$admin_pass."\", `email` = \"".$email."\", `light` = \"".$password."\", `level` = \"".$level."\", `activ` = \"".$activ."\" WHERE `id` = ".$id);
 		location("./?pages=Users");
 		return;
 	}
@@ -64,12 +64,12 @@ class Users extends Core {
 				return;
 			}
 			cardinal::RegAction("Удаление пользователя с ИД \"".intval($_GET['id'])."\"");
-			db::doquery("DELETE FROM `".PREFIX_DB."users` WHERE `id` = ".intval($_GET['id']));
+			db::doquery("DELETE FROM {{users}} WHERE `id` = ".intval($_GET['id']));
 			location("./?pages=Users");
 			return;
 		}
 		if(isset($_GET['mod']) && $_GET['mod']=="Edit" && isset($_GET['id']) && is_numeric($_GET['id']) && $_GET['id']>0) {
-			$row = db::doquery("SELECT `username`, `light`, `level`, `email`, `activ` FROM `".PREFIX_DB."users` WHERE `id` = ".intval($_GET['id']));
+			$row = db::doquery("SELECT `username`, `light`, `level`, `email`, `activ` FROM {{users}} WHERE `id` = ".intval($_GET['id']));
 			if(sizeof($_POST)>0) {
 				$this->Edit($row, intval($_GET['id']));
 				return;
@@ -94,7 +94,7 @@ class Users extends Core {
 			}
 		}
 		templates::assign_var("search_ip", $searchIP);
-		db::doquery("SELECT `id`, `username`, `level`, `email`, `activ` FROM `".PREFIX_DB."users`".(!empty($searchIP) ? " WHERE `reg_ip` LIKE \"%".$searchIP."%\" OR `last_ip` LIKE \"%".$searchIP."%\"" : ""), true);
+		db::doquery("SELECT `id`, `username`, `level`, `email`, `activ` FROM {{users}}".(!empty($searchIP) ? " WHERE `reg_ip` LIKE \"%".$searchIP."%\" OR `last_ip` LIKE \"%".$searchIP."%\"" : ""), true);
 		while($row = db::fetch_assoc()) {
 			$row['avatar'] = "http://www.gravatar.com/avatar/".md5(strtolower(trim($row['email'])))."?&s=103";
 			templates::assign_vars($row, "users", $row['id']);

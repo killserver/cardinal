@@ -344,7 +344,7 @@ class modules {
 			$cache = self::init_cache();
 			if(!$cache->exists("load_hooks")) {
 				$db = self::init_db();
-				$db->doquery("SELECT `module` FROM `".PREFIX_DB."modules` WHERE `activ` LIKE \"yes\" AND `file` LIKE \"core%".$module.".class.".ROOT_EX."\"", true);
+				$db->doquery("SELECT `module` FROM {{modules}} WHERE `activ` LIKE \"yes\" AND `file` LIKE \"core%".$module.".class.".ROOT_EX."\"", true);
 				self::$load_hooks = array();
 				while($row = $db->fetch_assoc()) {
 					self::$load_hooks[$row['module']] = true;
@@ -397,7 +397,7 @@ class modules {
 			$cache = self::init_cache();
 			if(!$cache->exists("load_modules")) {
 				$db = self::init_db();
-				$db->doquery("SELECT `file` FROM `".PREFIX_DB."modules` WHERE `activ` LIKE \"yes\" AND `file` LIKE \"core%\"", true);
+				$db->doquery("SELECT `file` FROM {{modules}} WHERE `activ` LIKE \"yes\" AND `file` LIKE \"core%\"", true);
 				self::$load_modules = array();
 				while($row = $db->fetch_assoc()) {
 					self::$load_modules[$row['file']] = true;
@@ -505,6 +505,78 @@ class modules {
 				return false;
 			}
 		}
+	}
+
+	final public static function create_table($table_name, $fields, $force = false) {
+		$db = self::init_db();
+		if($force) {
+			$db->query("DROP TABLE IF EXISTS {{".$table_name."}};");
+		}
+		$db->query("CREATE TABLE IF NOT EXISTS {{".$table_name."}} (".$fields.") ENGINE=MyISAM;");
+		return true;
+	}
+	
+	final public static function drop_table($table_name) {
+		$db = self::init_db();
+		$db->query("DROP TABLE IF EXISTS {{".$table_name."}};");
+		return true;
+	}
+	
+	final public static function add_fields($table_name, array $fields) {
+		$db = self::init_db();
+		$exists = $db->getTable($table_name);
+		foreach($fields as $k => $v) {
+			if($exists && !in_array($k, $db->getTable($table_name))) {
+				$db->query("ALTER TABLE {{".$table_name."}} ADD `".$k."` ".(strpos($v, "CHARACTER")!==false ? $v : $v." CHARACTER SET ".self::get_config("db", "charset")." COLLATE ".self::get_config("db", "charset")."_general_ci"));
+			}
+		}
+		return true;
+	}
+	
+	final public static function remove_fields($table_name, array $fields) {
+		$db = self::init_db();
+		$exists = $db->getTable($table_name);
+		foreach($fields as $k => $v) {
+			if($exists && in_array($v, $db->getTable($table_name))) {
+				$db->query("ALTER TABLE {{".$table_name."}} DROP COLUMN `".$v."`");
+			}
+		}
+		return true;
+	}
+	
+	final public static function modify_fields($table_name, array $fields) {
+		$db = self::init_db();
+		$exists = $db->getTable($table_name);
+		foreach($fields as $k => $v) {
+			if($exists && in_array($k, $db->getTable($table_name))) {
+				$db->query("ALTER TABLE {{".$table_name."}} CHANGE `".$k."` `".$k."` ".(strpos($v, "CHARACTER")!==false ? $v : $v." CHARACTER SET ".self::get_config("db", "charset")." COLLATE ".self::get_config("db", "charset")."_general_ci"));
+			}
+		}
+		return true;
+	}
+
+	final public static function initialize($class) {
+		$arr = array();
+		if(file_exists(PATH_CACHE_SYSTEM."modules.json")) {
+			$file = file_get_contents(PATH_CACHE_SYSTEM."modules.json");
+			$arrs = json_decode($file, true);
+			$arr = array_merge($arr, $arrs);
+		}
+		if(!isset($arr[$class]) && class_exists($class, false) && method_exists($class, "installation")) {
+			call_user_func_array(array(&$class, "installation"), array());
+			$arr[$class] = array("installTime" => time(), "version" => (property_exists($class, "version") ? $class::$version : "0.1"));
+			file_put_contents(PATH_CACHE_SYSTEM."modules.json", json_encode($arr));
+			cardinal::RegAction("Установка модуля \"".$class."\" версии ".(property_exists($class, "version") ? $class::$version : "0.1"));
+		}
+		if(isset($arr[$class]) && class_exists($class, false) && isset($arr[$class]['version']) && property_exists($class, "version") && $class::$version > $arr[$class]['version']) {
+			if(method_exists($class, "updater")) {
+				call_user_func_array(array(&$class, "updater"), array());
+			}
+			$arr[$class] = array_merge($arr[$class], array("updateTime" => time(), "version" => $class::$version));
+			file_put_contents(PATH_CACHE_SYSTEM."modules.json", json_encode($arr));
+			cardinal::RegAction("Обновление модуля \"".$class."\" с версии ".$arr[$class]['version']." до версии ".$class::$version);
+		}
+		return true;
 	}
 
 }

@@ -20,7 +20,7 @@ die();
 
 abstract class DriverParam {
 
-	private $mc;
+	//private $mc;
 	public $connecten;
 	public $type_driver;
 	public static $subname;

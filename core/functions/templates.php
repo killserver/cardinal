@@ -515,6 +515,38 @@ global $manifest;
 	}
 }
 
+function unRegCssJs($js, $type, $mark = false, $name = "") {
+global $manifest;
+	if(is_array($js)) {
+		foreach($js as $v) {
+			unRegCssJs($v, $type, $mark, $name);
+		}
+	} else if(is_string($js)) {
+		$jsCheck = parse_url($js);
+		if(!empty($name)) {
+			if(isset($jsCheck['path']) && isset($manifest['jscss'][$type]['link'][$name])) {
+				unset($manifest['jscss'][$type]['link'][$name]);
+			} else if(isset($manifest['jscss'][$type]['full'][$name])) {
+				unset($manifest['jscss'][$type]['full'][$name]);
+			}
+		} else {
+			if(isset($jsCheck['path']) && isset($manifest['jscss'][$type]['link']) && is_array($manifest['jscss'][$type]['link']) && sizeof($manifest['jscss'][$type]['link'])>0) {
+				for($i=0;$i<sizeof($manifest['jscss'][$type]['link']);$i++) {
+					if(strpos($manifest['jscss'][$type]['link'][$i], $js)!==false) {
+						unset($manifest['jscss'][$type]['link'][$i]);
+					}
+				}
+			} else if(isset($manifest['jscss'][$type]['full']) && is_array($manifest['jscss'][$type]['full']) && sizeof($manifest['jscss'][$type]['full'])>0) {
+				for($i=0;$i<sizeof($manifest['jscss'][$type]['full']);$i++) {
+					if(strpos($manifest['jscss'][$type]['full'][$i], $js)!==false) {
+						unset($manifest['jscss'][$type]['full'][$i]);
+					}
+				}
+			}
+		}
+	}
+}
+
 function adminPanelVsort(&$array) {
 	$arrs = array();
 	foreach($array as $key => $val) {

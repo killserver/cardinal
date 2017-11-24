@@ -140,7 +140,7 @@ class db_mysqli extends DriverParam implements drivers {
 		return $this->mc->insert_id;
 	}
 	public function escape($str) {
-		return "'".$this->mc->escape_string($str)."'";
+		return "'".$this->mc->real_escape_string($str)."'";
 	}
 	public function num_fields() {
 		return $this->mc->field_count;

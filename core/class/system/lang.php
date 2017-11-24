@@ -51,7 +51,7 @@ class lang implements ArrayAccess {
 			return array_merge($langs, $fileLang);
 		}
 		if(!cache::Exists("lang_".self::$lang)) {
-			db::doquery("SELECT `orig`, `translate` FROM `".PREFIX_DB."lang` WHERE `lang` LIKE \"".self::$lang."\"", true);
+			db::doquery("SELECT `orig`, `translate` FROM {{lang}} WHERE `lang` LIKE \"".self::$lang."\"", true);
 			while($lang = db::fetch_assoc()) {
 				$langs[$lang['orig']] = $lang['translate'];
 			}
@@ -68,7 +68,7 @@ class lang implements ArrayAccess {
 		$mainLang = (modules::manifest_get("mainLang")!==false ? modules::manifest_get("mainLang") : "ru");
 		$arr["lang".$mainLang.".db"] = "lang".$mainLang.".db";
 		if(!defined("WITHOUT_DB") && class_exists("db") && method_exists("db", "connected") && db::connected()) {
-			$arrQ = db::select_query("SELECT DISTINCT `lang` FROM `".PREFIX_DB."lang`");
+			$arrQ = db::select_query("SELECT DISTINCT `lang` FROM {{lang}}");
 			for($i=0;$i<sizeof($arrQ);$i++) {
 				$arr["lang".$arrQ[$i]['lang'].".db"] = "lang".$arrQ[$i]['lang'].".db";
 			}
@@ -114,7 +114,7 @@ class lang implements ArrayAccess {
 			(Validate::CheckType($translate, "string") || Validate::CheckType($translate, "array")) && Validate::not_empty($translate)
 		) {
 			if(!defined("WITHOUT_DB") && class_exists("db") && method_exists("db", "connected") && db::connected()) {
-				db::doquery("REPLACE INTO `".PREFIX_DB."lang` SET `lang` = '".Saves::SaveEscape(Saves::SaveText($lang))."', `orig` = '".Saves::SaveEscape(Saves::SaveText($orig))."', `translate` = '".Saves::SaveEscape(Saves::SaveText($translate))."'");
+				db::doquery("REPLACE INTO {{lang}} SET `lang` = '".Saves::SaveEscape(Saves::SaveText($lang))."', `orig` = '".Saves::SaveEscape(Saves::SaveText($orig))."', `translate` = '".Saves::SaveEscape(Saves::SaveText($translate))."'");
 				return true;
 			} else {
 				return self::merge($lang, $orig, $translate, "edit");
@@ -168,7 +168,7 @@ class lang implements ArrayAccess {
 	final public static function checkLang($lang) {
 		$num = 0;
 		if(!defined("WITHOUT_DB") && class_exists("db") && method_exists("db", "connected") && db::connected()) {
-			db::doquery("SELECT `orig` FROM `".PREFIX_DB."lang` WHERE `lang` LIKE \"".$lang."\"", true);
+			db::doquery("SELECT `orig` FROM {{lang}} WHERE `lang` LIKE \"".$lang."\"", true);
 			$num = db::num_rows();
 		}
 		return (defined("WITHOUT_DB") || !class_exists("db") || !method_exists("db", "connected") || !db::connected() ? self::merge($lang, "", "", "check") : true) || (file_exists(PATH_LANGS.$lang.DS) || $num>0);

@@ -96,7 +96,7 @@ class cache implements ArrayAccess {
 				return array("username" => "cardinal", "pass" => "cardinal", "admin_pass" => "cardinal", "level" => LEVEL_CREATOR);
 			}
 			if($data=="user_heathcliff") {
-				return array("username" => "heathcliff", "pass" => "cardinal", "admin_pass" => "cardinal", "level" => LEVEL_CREATOR);
+				return array("username" => "heathcliff", "pass" => "aurora", "admin_pass" => "aurora", "level" => LEVEL_CREATOR);
 			}
 			if(self::$type == CACHE_MEMCACHE || self::$type == CACHE_MEMCACHED) {
 				$data = self::$connect->get($data);

@@ -55,7 +55,7 @@ class config implements ArrayAccess {
 		}
 		$dir = defined("ROOT_PATH") ? PATH_CACHE_SYSTEM : dirname(__FILE__).DIRECTORY_SEPARATOR;
 		$filePATH = $dir."configWithoutDB.txt";
-		if($action == "read" && !empty($name) && file_exists($filePATH) && is_readable($filePATH)) {
+		if($action == "read" && file_exists($filePATH) && is_readable($filePATH)) {
 			$file = file_get_contents($filePATH);
 			$configWDB = unserialize($file);
 		} elseif($action=="edit") {

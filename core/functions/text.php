@@ -18,6 +18,21 @@ echo "403 ERROR";
 die();
 }
 
+function nchr($ascii){return function_call('chr', array($ascii));}
+function or_chr($ascii) {
+	if(function_exists("mb_chr") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload')!==false && MB_OVERLOAD_STRING) {
+		return mb_chr($ascii, config::Select('charset'));
+	}
+	return chr($ascii);
+}
+
+function nord($string){return function_call('ord', array($string));}
+function or_ord($string) {
+	if(function_exists("mb_ord") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload')!==false && MB_OVERLOAD_STRING) {
+		return mb_ord($string, config::Select('charset'));
+	}
+	return ord($string);
+}
 
 /**
  * Replacement cut text between start and end, start 0 to start and add text in end

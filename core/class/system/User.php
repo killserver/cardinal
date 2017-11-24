@@ -58,7 +58,10 @@ class User {
 	global $user, $users, $db;
 		$user = $users = array();
 		$userLoad = false;
-		if(file_exists(PATH_MEDIA."users.".ROOT_EX)) {
+		if(isset($_SERVER['HTTP_HOST']) && file_exists(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX)) {
+			include(PATH_MEDIA."users.".ROOT_EX);
+			$userLoad = true;
+		} else if(file_exists(PATH_MEDIA."users.".ROOT_EX)) {
 			include(PATH_MEDIA."users.".ROOT_EX);
 			$userLoad = true;
 		} else if(file_exists(PATH_MEDIA."users.default.".ROOT_EX)) {
@@ -105,7 +108,7 @@ class User {
 					}
 				}
 				if(class_exists("db", false) && method_exists("db", "connected") && db::connected() && method_exists("db", "getTable") && !(!db::getTable("users"))) {
-					db::doquery("SELECT * FROM `".PREFIX_DB."users` WHERE `username` LIKE \"".$username."\" AND `".$where."` LIKE \"".$password."\"", true);
+					db::doquery("SELECT * FROM {{users}} WHERE `username` LIKE \"".$username."\" AND `".$where."` LIKE \"".$password."\"", true);
 					if(db::num_rows()==0 && self::API($username, "checkExists")) {
 						$user = self::API($username, "load");
 						cache::Set("user_".$username, $user);
@@ -117,7 +120,7 @@ class User {
 						$user = db::fetch_assoc();
 						cache::Set("user_".$username, $user);
 						$authorize = true;
-						db::doquery("UPDATE `".PREFIX_DB."users` SET `last_activ` = UNIX_TIMESTAMP(), `last_ip` = \"".HTTP::getip()."\" WHERE `id` = ".$user['id']);
+						db::doquery("UPDATE {{users}} SET `last_activ` = UNIX_TIMESTAMP(), `last_ip` = \"".HTTP::getip()."\" WHERE `id` = ".$user['id']);
 						if(!defined("IS_AUTH")) {
 							define("IS_AUTH", true);
 						}
@@ -166,7 +169,7 @@ class User {
 	final public static function checkExists($login) {
 	global $db;
 		if((isset($db) && !is_bool($db) && method_exists($db, "connected") && $db->connected() && method_exists($db, "getTable") && !(!$db->getTable("users"))) || !defined("WITHOUT_DB")) {
-			$users = db::doquery("SELECT COUNT(`username`) AS `uid` FROM `".PREFIX_DB."users` WHERE `username` LIKE \"".$login."\"");
+			$users = db::doquery("SELECT COUNT(`username`) AS `uid` FROM {{users}} WHERE `username` LIKE \"".$login."\"");
 			$ret = (is_array($users) && sizeof($users) > 0 && isset($users['uid']) ? true : false);
 		} else {
 			$users = array();
@@ -256,7 +259,7 @@ class User {
 		}
 		if((isset($db) && !is_bool($db) && method_exists($db, "connected") && $db->connected() && method_exists($db, "getTable") && !(!$db->getTable("users"))) || !defined("WITHOUT_DB")) {
 			$loadIsDb = true;
-			$sql = db::doquery("SELECT `id`, `pass`, `light` FROM `".PREFIX_DB."users` WHERE `username` LIKE \"".$login."\" AND (`light` LIKE \"".$pass."\" OR `".$where."` LIKE \"".create_pass($pass)."\")", true);
+			$sql = db::doquery("SELECT `id`, `pass`, `light` FROM {{users}} WHERE `username` LIKE \"".$login."\" AND (`light` LIKE \"".$pass."\" OR `".$where."` LIKE \"".create_pass($pass)."\")", true);
 			$num = db::num_rows($sql);
 		} else {
 			$users = array();
@@ -334,7 +337,7 @@ class User {
 			$insert['last_ip'] = "`last_ip` = \"".$ip."\"";
 			$insert['activ'] = "`activ` = \"".$active."\"";
 			$insert = modules::change_db('reg', $insert);
-			db::doquery("INSERT INTO `".PREFIX_DB."users` SET ".implode(", ", $insert));
+			db::doquery("INSERT INTO {{users}} SET ".implode(", ", $insert));
 			return true;
 		} else {
 			$users = array();
@@ -399,7 +402,7 @@ class User {
 			}
 		}
 		if((class_exists("db", false) && method_exists("db", "connected") && db::connected() && method_exists("db", "getTable") && !(!db::getTable("users"))) || !defined("WITHOUT_DB")) {
-			db::doquery("UPDATE `".PREFIX_DB."users` SET ".implode(", ", array_map("User::mapForUpdate", array_values($list)))." WHERE `username` LIKE \"".$id."\" LIMIT 1");
+			db::doquery("UPDATE {{users}} SET ".implode(", ", array_map("User::mapForUpdate", array_values($list)))." WHERE `username` LIKE \"".$id."\" LIMIT 1");
 		} else {
 			$users = array();
 			if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {

@@ -39,7 +39,7 @@ die();
 			break;
 			case "TakeAdd":
 				$model = modules::loadModels("ModelaText", (defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
-				$model->SetTable((defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
+				$model->SetTable("{{aText}}");
 				$model->page = Saves::SaveOld($request->post->get("page"), true);
 				$post = $request->post->get("descr");
 				$post = array_map("trim", $post);
@@ -58,7 +58,7 @@ die();
 			break;
 			case "TakeEdit":
 				$model = modules::loadModels("ModelaText", (defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
-				$model->SetTable((defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
+				$model->SetTable("{{aText}}");
 				$model->SetLimit(1);
 				$model->WhereTo($viewId);
 				
@@ -87,7 +87,7 @@ die();
 			break;
 			case "Edit":
 				$model = modules::loadModels("ModelaText", (defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
-				$model->SetTable((defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
+				$model->SetTable("{{aText}}");
 				$model->SetLimit(1);
 				$model->WhereTo($viewId);
 				$model = $model->Select();
@@ -103,7 +103,7 @@ die();
 			break;
 			case "Delete":
 				$model = modules::loadModels("ModelaText", (defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
-				$model->SetTable((defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
+				$model->SetTable("{{aText}}");
 				$model->SetLimit(1);
 				$model->WhereTo($viewId);
 				$sel = $model->Select();
@@ -119,7 +119,7 @@ die();
 			break;
 			default:
 				$model = modules::loadModels("ModelaText", (defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
-				$model->SetTable((defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
+				$model->SetTable("{{aText}}");
 				$model->SetLimit(-1);
 				$list = $model->Select();
 				if(is_array($list)) {

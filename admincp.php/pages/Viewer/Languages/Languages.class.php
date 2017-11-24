@@ -104,7 +104,7 @@ class Languages extends Core {
 					$arr[$match[2][$i]] = $match[2][$i];
 				}
 			}
-			$admin = ROOT_PATH."skins".DS;
+			$admin = PATH_SKINS;
 			$dir = read_dir($admin);
 			for($z=0;$z<sizeof($dir);$z++) {
 				$file = file_get_contents($admin.$dir[$z]);
@@ -113,7 +113,7 @@ class Languages extends Core {
 					$arr[$match[2][$i]] = $match[2][$i];
 				}
 			}
-			$admin = ROOT_PATH."skins".DS.config::Select("skins", "skins").DS;
+			$admin = PATH_SKINS.config::Select("skins", "skins").DS;
 			$dir = read_dir($admin);
 			for($z=0;$z<sizeof($dir);$z++) {
 				$file = file_get_contents($admin.$dir[$z]);

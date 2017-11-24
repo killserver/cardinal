@@ -30,6 +30,7 @@ if(version_compare(PHP_VERSION, '5.1.2', '>=')) {
 	}
 }
 
+$host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua");
 if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."config.".ROOT_EX) && file_exists(PATH_MEDIA."db.".ROOT_EX)) {
 	$config = array();
 	if(file_exists(PATH_MEDIA."config.client.".ROOT_EX)) {
@@ -43,7 +44,13 @@ if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."config.".ROOT_EX) && file_e
 	if(file_exists(PATH_MEDIA."config.install.".ROOT_EX)) {
 		require_once(PATH_MEDIA."config.install.".ROOT_EX);
 	}
+	if(file_exists(PATH_MEDIA."config.".str_replace("www.", "", $host).".".ROOT_EX)) {
+		require_once(PATH_MEDIA."config.".str_replace("www.", "", $host).".".ROOT_EX);
+	}
 	require_once(PATH_MEDIA."db.".ROOT_EX);
+	if(file_exists(PATH_MEDIA."db.".str_replace("www.", "", $host).".".ROOT_EX)) {
+		require_once(PATH_MEDIA."db.".str_replace("www.", "", $host).".".ROOT_EX);
+	}
 } else {
 	if(!defined("WITHOUT_DB")) {
 		define("INSTALLER", true);
@@ -70,7 +77,6 @@ if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."config.".ROOT_EX) && file_e
 		$protocol = "https";
 	}
 	if(defined("WITHOUT_DB")) {
-		$host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua");
 		$hostMD5 = substr(md5($host), 0, 6);
 		define("COOK_USER", "username_".$hostMD5);
 		define("COOK_PASS", "password_".$hostMD5);
@@ -99,8 +105,14 @@ if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."config.".ROOT_EX) && file_e
 		if(file_exists(PATH_MEDIA."config.install.".ROOT_EX)) {
 			require_once(PATH_MEDIA."config.install.".ROOT_EX);
 		}
+		if(file_exists(PATH_MEDIA."config.".str_replace("www.", "", $host).".".ROOT_EX)) {
+			require_once(PATH_MEDIA."config.".str_replace("www.", "", $host).".".ROOT_EX);
+		}
 		if(file_exists(PATH_MEDIA."db.".ROOT_EX)) {
 			require_once(PATH_MEDIA."db.".ROOT_EX);
+		}
+		if(file_exists(PATH_MEDIA."db.".str_replace("www.", "", $host).".".ROOT_EX)) {
+			require_once(PATH_MEDIA."db.".str_replace("www.", "", $host).".".ROOT_EX);
 		}
 	}
 	if(!defined("WITHOUT_DB") && !defined("IS_INSTALLER") && (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], "install")===false)) {

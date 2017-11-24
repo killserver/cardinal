@@ -18,7 +18,9 @@ echo "403 ERROR";
 die();
 }
 
-define("IS_CRON", true);
+if(!defined("IS_CRON")) {
+	define("IS_CRON", true);
+}
 
 class cardinal {
 
@@ -232,7 +234,7 @@ class cardinal {
 		} else {
 			$ref = "";
 		}
-		db::doquery("INSERT INTO `".PREFIX_DB."hackers` SET `ip` = \"".HTTP::getip()."\", `page` = \"".urlencode($page)."\", `post` = \"".urlencode(self::amper($_POST))."\", `get` = \"".urlencode(self::amper($_GET))."\"".$ref.", `activ` = \"yes\"");
+		db::doquery("INSERT INTO {{hackers}} SET `ip` = \"".HTTP::getip()."\", `page` = \"".urlencode($page)."\", `post` = \"".urlencode(self::amper($_POST))."\", `get` = \"".urlencode(self::amper($_GET))."\"".$ref.", `activ` = \"yes\"");
 		location("{C_default_http_host}?hacker");
 	}
 	
@@ -316,7 +318,7 @@ class cardinal {
 	
 	final public static function InstallFirst() {
 		if(!file_exists(PATH_MEDIA."users.php") && is_writable(PATH_MEDIA)) {
-			$rand = rand(5, 20);
+			$rand = rand(15, 35);
 			$pass = self::randomPassword($rand, 1, "lower_case,upper_case,numbers,special_symbols");
 			if(is_array($pass) && sizeof($pass)>0) {
 				$pass = current($pass);
@@ -358,7 +360,7 @@ class cardinal {
 		$log = "";
 		if(!defined("WITHOUT_DB") || db::connected()) {
 			if(!file_exists($dir."logInAdmin.lock") && is_writable($dir)) {
-				db::query("CREATE TABLE IF NOT EXISTS `".PREFIX_DB."logInAdmin` ( `lId` int not null auto_increment, `lIp` varchar(255) not null, `lTime` int(11) not null, `lAction` longtext not null, primary key `id`(`lId`), fulltext `ip`(`lIp`), fulltext `action`(`lAction`), key `time`(`lTime`) ) ENGINE=MyISAM;");
+				db::query("CREATE TABLE IF NOT EXISTS {{logInAdmin}} ( `lId` int not null auto_increment, `lIp` varchar(255) not null, `lTime` int(11) not null, `lAction` longtext not null, primary key `id`(`lId`), fulltext `ip`(`lIp`), fulltext `action`(`lAction`), key `time`(`lTime`) ) ENGINE=MyISAM;");
 				file_put_contents($dir."logInAdmin.lock", "");
 				$log = "DB";
 			} else if(file_exists($dir."logInAdmin.lock")) {
@@ -380,8 +382,8 @@ class cardinal {
 		}
 		$ip = HTTP::getip();
 		if($log==="DB") {
-			db::query("DELETE FROM `".PREFIX_DB."logInAdmin` WHERE `lTime` < (UNIX_TIMESTAMP()-(".$maxDaysForLog."*24*60*60))");
-			db::query("INSERT INTO `".PREFIX_DB."logInAdmin` SET `lIp` = \"".$ip."\", `lAction` = \"".Saves::SaveOld($action, true)."\", `lTime` = UNIX_TIMESTAMP()");
+			db::query("DELETE FROM {{logInAdmin}} WHERE `lTime` < (UNIX_TIMESTAMP()-(".$maxDaysForLog."*24*60*60))");
+			db::query("INSERT INTO {{logInAdmin}} SET `lIp` = \"".$ip."\", `lAction` = \"".Saves::SaveOld($action, true)."\", `lTime` = UNIX_TIMESTAMP()");
 		} elseif($log==="FILE") {
 			if(file_exists($file) && is_readable($file) && is_writable($file)) {
 				$read = file($file);
