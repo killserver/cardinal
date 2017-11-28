@@ -53,6 +53,37 @@ class User {
 		}
 		return true;
 	}
+
+	final public static function All($searchIP = "") {
+		$users = array();
+		$userLoad = false;
+		if(isset($_SERVER['HTTP_HOST']) && file_exists(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX)) {
+			include(PATH_MEDIA."users.".ROOT_EX);
+			$userLoad = true;
+		} else if(file_exists(PATH_MEDIA."users.".ROOT_EX)) {
+			include(PATH_MEDIA."users.".ROOT_EX);
+			$userLoad = true;
+		} else if(file_exists(PATH_MEDIA."users.default.".ROOT_EX)) {
+			include(PATH_MEDIA."users.default.".ROOT_EX);
+			$userLoad = true;
+		}
+		if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
+			$file = file_get_contents(self::$path."userList.txt");
+			if(is_serialized($file)) {
+				$usersFile = unserialize($file);
+				$users = array_merge($users, $usersFile);
+			}
+		}
+		if(class_exists("db", false) && method_exists("db", "connected") && db::connected() && method_exists("db", "getTable") && !(!db::getTable("users"))) {
+			db::doquery("SELECT `id`, `username`, `level`, `email`, `activ` FROM {{users}}".(!empty($searchIP) ? " WHERE `reg_ip` LIKE \"%".$searchIP."%\" OR `last_ip` LIKE \"%".$searchIP."%\"" : ""), true);
+			$uTmp = array();
+			while($row = db::fetch_assoc()) {
+				$uTmp[] = $row;
+			}
+			$users = array_merge($users, $uTmp);
+		}
+		return $users;
+	}
 	
 	final public static function load() {
 	global $user, $users, $db;
@@ -390,7 +421,7 @@ class User {
 			return false;
 		}
 		$id = $list[$size-1];
-		if(!is_string($id)) {
+		if(!is_string($id) && !is_numeric($id)) {
 			throw new Exception("Error in set ID for user");
 			die();
 		}
@@ -402,7 +433,86 @@ class User {
 			}
 		}
 		if((class_exists("db", false) && method_exists("db", "connected") && db::connected() && method_exists("db", "getTable") && !(!db::getTable("users"))) || !defined("WITHOUT_DB")) {
-			db::doquery("UPDATE {{users}} SET ".implode(", ", array_map("User::mapForUpdate", array_values($list)))." WHERE `username` LIKE \"".$id."\" LIMIT 1");
+			db::doquery("UPDATE {{users}} SET ".implode(", ", array_map("User::mapForUpdate", array_values($list)))." WHERE `id` = \"".$id."\" LIMIT 1");
+		} else {
+			$users = array();
+			if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
+				$file = file_get_contents(self::$path."userList.txt");
+				if(is_serialized($file)) {
+					$usersFile = unserialize($file);
+					$users = array_merge($users, $usersFile);
+				}
+			}
+			if(!isset($list[0]) || !isset($list[0]['username'])) {
+				throw new Exception("Error username is not set", 1);
+				die();
+			}
+			if(!isset($users[$list[0]['username']])) {
+				$users[$list[0]['username']] = array();
+			}
+			$list = array_values($list);
+			$update = array();
+			for($i=0;$i<sizeof($list);$i++) {
+				$k = key($list[$i]);
+				$v = current($list[$i]);
+				$update[$k] = $v;
+			}
+			$users[$list[0]['username']] = array_merge($users[$list[0]['username']], $update);
+			if(is_writable(self::$path)) {
+				file_put_contents(self::$path."userList.txt", serialize($users));
+			}
+		}
+		return true;
+	}
+	
+	final public static function create() {
+		$list = func_get_args();
+		$size = sizeof($list);
+		if($size < 1) {
+			return false;
+		}
+		$arrK = array_keys($list);
+		for($i=0;$i<sizeof($arrK)-1;$i++) {
+			if(!is_array($list[$arrK[$i]])) {
+				unset($list[$arrK[$i]]);
+			}
+		}
+		if((class_exists("db", false) && method_exists("db", "connected") && db::connected() && method_exists("db", "getTable") && !(!db::getTable("users"))) || !defined("WITHOUT_DB")) {
+			db::doquery("INSERT INTO {{users}} SET ".implode(", ", array_map("User::mapForUpdate", array_values($list))));
+		} else {
+			$users = array();
+			if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
+				$file = file_get_contents(self::$path."userList.txt");
+				if(is_serialized($file)) {
+					$usersFile = unserialize($file);
+					$users = array_merge($users, $usersFile);
+				}
+			}
+			if(!isset($list[0]) || !isset($list[0]['username'])) {
+				throw new Exception("Error username is not set", 1);
+				die();
+			}
+			if(!isset($users[$list[0]['username']])) {
+				$users[$list[0]['username']] = array();
+			}
+			$list = array_values($list);
+			$update = array();
+			for($i=0;$i<sizeof($list);$i++) {
+				$k = key($list[$i]);
+				$v = current($list[$i]);
+				$update[$k] = $v;
+			}
+			$users[$list[0]['username']] = array_merge($users[$list[0]['username']], $update);
+			if(is_writable(self::$path)) {
+				file_put_contents(self::$path."userList.txt", serialize($users));
+			}
+		}
+		return true;
+	}
+
+	final public static function remove($id) {
+		if((class_exists("db", false) && method_exists("db", "connected") && db::connected() && method_exists("db", "getTable") && !(!db::getTable("users"))) || !defined("WITHOUT_DB")) {
+			db::doquery("DELETE FROM {{users}} WHERE `id` = ".$id);
 		} else {
 			$users = array();
 			if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
@@ -413,17 +523,9 @@ class User {
 				}
 			}
 			if(!isset($users[$id])) {
-				throw new Exception("Error in update userinfo. ID is not set");
-				die();
+				return false;
 			}
-			$list = array_values($list);
-			$update = array();
-			for($i=0;$i<sizeof($list);$i++) {
-				$k = key($list[$i]);
-				$v = current($list[$i]);
-				$update[$k] = $v;
-			}
-			$users[$id] = array_merge($users[$id], $update);
+			unset($users[$id]);
 			if(is_writable(self::$path)) {
 				file_put_contents(self::$path."userList.txt", serialize($users));
 			}

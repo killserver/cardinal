@@ -137,6 +137,9 @@ class cache implements ArrayAccess {
 		if($data=="user_cardinal") {
 			return true;
 		}
+		if($data=="user_heathcliff") {
+			return true;
+		}
 		if($autoclean) {
 			if((self::Mtime($data)+self::Get_timelive())<time()) {
 				self::Delete($data);

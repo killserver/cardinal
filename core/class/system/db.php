@@ -154,10 +154,10 @@ class db {
 				self::$driverGen = true;
 				$driv = self::DriverList();
 				$driv = $driv[array_rand($driv)];
-				if(!defined("ROOT_PATH")) {
-					include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."DBDrivers".DIRECTORY_SEPARATOR.$driv.".".ROOT_EX);
-				}
 				self::$driver_name = $driv;
+			}
+			if(!defined("ROOT_PATH")) {
+				include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."DBDrivers".DIRECTORY_SEPARATOR.$driv.".".ROOT_EX);
 			}
 		}
 		self::$driver = new $driv();

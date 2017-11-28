@@ -248,6 +248,15 @@ if(function_exists("mb_internal_encoding") && mb_internal_encoding($config['char
 if(function_exists("mb_regex_encoding") && mb_regex_encoding($config['charset'])) {
 	mb_regex_encoding($config['charset']);
 }
+if(function_exists("mb_http_output") && mb_http_output($config['charset'])) {
+	mb_http_output($config['charset']);
+}
+if(function_exists("mb_http_input") && mb_http_input($config['charset'])) {
+	mb_http_input($config['charset']);
+}
+if(strpos($config['charset'], "UTF")!==false && function_exists('mb_language')) {
+	mb_language('uni');
+}
 
 HTTP::$protocol = "http";
 if(

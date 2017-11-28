@@ -16,6 +16,13 @@ echo "403 ERROR";
 die();
 }
 
+if(!class_exists("DriverParam", true)) {
+	require_once(dirname(__FILE__).DIRECTORY_SEPARATOR."DriverParam.php");
+}
+if(!class_exists("drivers", true)) {
+	require_once(dirname(__FILE__).DIRECTORY_SEPARATOR."drivers.php");
+}
+
 class db_pdo extends DriverParam implements drivers {
 
 	private $mc;

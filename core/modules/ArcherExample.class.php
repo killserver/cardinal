@@ -9,7 +9,7 @@ class ArcherExample extends modules {
 		KernelArcher::excludeField("add", "Show", array());
 		KernelArcher::excludeField("add", "Sorting", array());
 		KernelArcher::callback("Shield", "TraceOn", array(&$this, "RebuildShields"));
-		KernelArcher::callback("ShieldFunc", "led::RebuildShield");
+		KernelArcher::callback("ShieldFunc", "ArcherExample::RebuildShield");
 		KernelArcher::callback("AddModel", array(&$this, "RebuildAddModel"));
 		KernelArcher::callback("Show", array(&$this, "RebuildShow"));
 		KernelArcher::callback("EditModel", array(&$this, "RebuildEditModel"));

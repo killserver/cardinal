@@ -33,6 +33,13 @@ class userlevel {
 			} else if(file_exists(PATH_MEDIA."userlevels.default.".ROOT_EX)) {
 				include_once(PATH_MEDIA."userlevels.default.".ROOT_EX);
 			}
+			if(file_exists(PATH_CACHE_SYSTEM."userlevels.txt")) {
+				$levels = file_get_contents(PATH_CACHE_SYSTEM."userlevels.txt");
+				if(is_serialized($levels)) {
+					$levels = unserialize($levels);
+					$userlevels = array_merge($userlevels, $levels);
+				}
+			}
 			self::$cacheAll = $userlevels;
 			return $userlevels;
 		}
@@ -120,7 +127,33 @@ class userlevel {
      */
 	final public static function set($id, $set, $data) {
 		if(defined("WITHOUT_DB")) {
-			return false;
+			$userlevels = array();
+			if(file_exists(PATH_CACHE_SYSTEM."userlevels.txt")) {
+				$levels = file_get_contents(PATH_CACHE_SYSTEM."userlevels.txt");
+				if(is_serialized($levels)) {
+					$levels = unserialize($levels);
+					$userlevels = array_merge($userlevels, $levels);
+				}
+				unlink(PATH_CACHE_SYSTEM."userlevels.txt");
+			}
+			if(!isset($userlevels[$id])) {
+				$userlevels[$id] = array();
+			}
+			if(is_bool($data)) {
+				if($data) {
+					$data = "yes";
+				} else {
+					$data = "no";
+				}
+			}
+			if(isset($data) && !empty($data)) {
+				$data = "yes";
+			} elseif(!isset($data) || empty($data)) {
+				$data = "no";
+			}
+			$userlevels[$id]["access_".$set] = $data;
+			@file_put_contents(PATH_CACHE_SYSTEM."userlevels.txt", serialize($userlevels));
+			return true;
 		}
 		if(is_bool($data)) {
 			if($data) {
@@ -136,6 +169,7 @@ class userlevel {
 		}
 		db::doquery("UPDATE {{userlevels}} SET `".$set."` = \"".$data."\" WHERE `id` = ".$id);
 		cache::Delete("userlevels");
+		return true;
 	}
 
 	final public static function is() {

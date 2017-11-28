@@ -570,7 +570,7 @@ class modules {
 		}
 		if(isset($arr[$class]) && class_exists($class, false) && isset($arr[$class]['version']) && property_exists($class, "version") && $class::$version > $arr[$class]['version']) {
 			if(method_exists($class, "updater")) {
-				call_user_func_array(array(&$class, "updater"), array());
+				call_user_func_array(array(&$class, "updater"), array("version" => $arr[$class]['version']));
 			}
 			$arr[$class] = array_merge($arr[$class], array("updateTime" => time(), "version" => $class::$version));
 			file_put_contents(PATH_CACHE_SYSTEM."modules.json", json_encode($arr));

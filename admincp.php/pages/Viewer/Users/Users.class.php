@@ -15,8 +15,8 @@ class Users extends Core {
 		} else {
 			$activ = "no";
 		}
+		User::create(array("username" => $name), array("alt_name" => ToTranslit($name)), array("light" => $password), array("time_reg" => time()), array("pass" => $pass), array("admin_pass" => $admin_pass), array("level" => $level), array("email" => $email), array("activ" => $activ));
 		cardinal::RegAction("Добавление нового пользователя \"".$name."\"");
-		db::doquery("INSERT INTO {{users}} SET `username` = \"".$name."\", `alt_name` = \"".ToTranslit($name)."\", `pass` = \"".$pass."\", `admin_pass` = \"".$admin_pass."\", `email` = \"".$email."\", `light` = \"".$password."\", `level` = \"".$level."\", `activ` = \"".$activ."\", `time_reg` = UNIX_TIMESTAMP()");
 		location("./?pages=Users");
 		return;
 	}
@@ -29,13 +29,13 @@ class Users extends Core {
 		$admin_pass = create_pass($password);
 		$level = intval(Arr::get($_POST, 'level', 0));
 		$email = Saves::SaveOld(Arr::get($_POST, 'email'), true);
-		if(isset($_POST['activ']) && $_POST['activ']=="on") {
+		if(isset($_POST['activ']) && ($_POST['activ']=="on" || $_POST['activ']=="1")) {
 			$activ = "yes";
 		} else {
 			$activ = "no";
 		}
+		User::update(array("username" => $name), array("alt_name" => ToTranslit($name)), array("light" => $password), array("time_reg" => time()), array("pass" => $pass), array("admin_pass" => $admin_pass), array("level" => $level), array("email" => $email), array("activ" => $activ), $id);
 		cardinal::RegAction("Обновление данных пользователя \"".$name."\"");
-		db::doquery("UPDATE {{users}} SET `username` = \"".$name."\", `alt_name` = \"".ToTranslit($name)."\", `pass` = \"".$pass."\", `admin_pass` = \"".$admin_pass."\", `email` = \"".$email."\", `light` = \"".$password."\", `level` = \"".$level."\", `activ` = \"".$activ."\" WHERE `id` = ".$id);
 		location("./?pages=Users");
 		return;
 	}
@@ -63,13 +63,18 @@ class Users extends Core {
 				templates::error("Не возможно удалить аккаунт из которого Вы работаете!");
 				return;
 			}
+			$load = User::All();
+			$load = array_values($load);
+			$id = intval($_GET['id']-1);
+			User::remove($load[$id]['username']);
 			cardinal::RegAction("Удаление пользователя с ИД \"".intval($_GET['id'])."\"");
-			db::doquery("DELETE FROM {{users}} WHERE `id` = ".intval($_GET['id']));
 			location("./?pages=Users");
 			return;
 		}
 		if(isset($_GET['mod']) && $_GET['mod']=="Edit" && isset($_GET['id']) && is_numeric($_GET['id']) && $_GET['id']>0) {
-			$row = db::doquery("SELECT `username`, `light`, `level`, `email`, `activ` FROM {{users}} WHERE `id` = ".intval($_GET['id']));
+			$load = User::All();
+			$load = array_values($load);
+			$row = $load[$_GET['id']-1];
 			if(sizeof($_POST)>0) {
 				$this->Edit($row, intval($_GET['id']));
 				return;
@@ -80,7 +85,7 @@ class Users extends Core {
 				"light" => $row['light'],
 				"level" => $row['level'],
 				"email" => $row['email'],
-				"activ" => $row['activ'],
+				"activ" => (isset($row['activ']) ? $row['activ'] : "yes"),
 			));
 			$this->Prints("Users");
 			return;
@@ -94,19 +99,27 @@ class Users extends Core {
 			}
 		}
 		templates::assign_var("search_ip", $searchIP);
-		db::doquery("SELECT `id`, `username`, `level`, `email`, `activ` FROM {{users}}".(!empty($searchIP) ? " WHERE `reg_ip` LIKE \"%".$searchIP."%\" OR `last_ip` LIKE \"%".$searchIP."%\"" : ""), true);
-		while($row = db::fetch_assoc()) {
-			$row['avatar'] = "http://www.gravatar.com/avatar/".md5(strtolower(trim($row['email'])))."?&s=103";
-			templates::assign_vars($row, "users", $row['id']);
+		$load = User::All($searchIP);
+		$i = 1;
+		foreach($load as $k => $row) {
+			if(!isset($row['id'])) {
+				$row['id'] = $i;
+			}
+			$row['avatar'] = (isset($row['email']) && !empty($row['email']) ? "http://www.gravatar.com/avatar/".md5(strtolower(trim($row['email'])))."?&s=103" : (!empty($row['avatar']) ? $row['avatar'] : "http://www.splayn.com/pic/no_ava.gif"));
+			if(!isset($row['email'])) {
+				$row['email'] = "";
+			}
+			templates::assign_vars($row, "users", $k);
 			if($row['level']==LEVEL_ADMIN) {
-				templates::assign_vars($row, "usersAdmin", $row['id']);
+				templates::assign_vars($row, "usersAdmin", $k);
 			}
 			if($row['level']==LEVEL_MODER) {
-				templates::assign_vars($row, "usersModer", $row['id']);
+				templates::assign_vars($row, "usersModer", $k);
 			}
 			if($row['level']==LEVEL_USER) {
-				templates::assign_vars($row, "usersUser", $row['id']);
+				templates::assign_vars($row, "usersUser", $k);
 			}
+			$i++;
 		}
 		$this->Prints("Users");
 	}
