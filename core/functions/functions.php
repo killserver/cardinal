@@ -51,10 +51,12 @@ global $config;
 		throw new Exception("Error load config file. File is not exists");
 		die();
 	}
-	if(defined("ROOT_PATH") && !file_exists($file)) {
+	if(defined("ROOT_PATH") && file_exists(ROOT_PATH.$file)) {
 		$file = ROOT_PATH.$file;
-	} else {
+	} else if(file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR.$file)) {
 		$file = dirname(__FILE__).DIRECTORY_SEPARATOR.$file;
+	} else {
+		return false;
 	}
 	
 	$autodetect = ini_get('auto_detect_line_endings');

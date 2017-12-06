@@ -72,7 +72,6 @@ class userlevel {
 		if(!is_array($specials)) {
 			throw new Exception("error levels");
 		}
-		$specials = array_values($specials);
 		if(is_bool($level) || empty($level)) {
 			$level = config::Select("guest_level");
 		}

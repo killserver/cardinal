@@ -1432,6 +1432,16 @@ class templates {
 		if(strpos($array[1], ".".ROOT_EX) === false) {
 			$array[1] = $array[1].".".ROOT_EX;
 		}
+		$params = array();
+		if(strpos($array[1], "&")!==false) {
+			$exp = explode("&", $array[1]);
+			$array[1] = $exp[0];
+			unset($exp[0]);
+			foreach($exp as $v) {
+				$v = explode("=", $v);
+				$params[$v[0]] = $v[1];
+			}
+		}
 		if(strpos($array[1], ",") !== false) {
 			$exp = explode(",", $array[1]);
 			$ret = $exp[1];
@@ -1450,7 +1460,7 @@ class templates {
 			return $ret;
 		}
 		$mod = new $class();
-		return $mod->start();
+		return call_user_func_array(array(&$mod, "start"), $params);
 	}
 
 	/**

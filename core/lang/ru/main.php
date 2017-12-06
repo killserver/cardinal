@@ -266,6 +266,8 @@ $lang = array_merge($lang, array(
 	),
 
 	"level" => array(
+		LEVEL_CREATOR => "Создатель",
+		LEVEL_CUSTOMER => "Владелец",
 		LEVEL_ADMIN => "Администрация",
 		LEVEL_MODER => "Модератор",
 		LEVEL_USER => "Пользователь",
