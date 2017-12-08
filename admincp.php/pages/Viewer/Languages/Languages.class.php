@@ -7,7 +7,7 @@ class Languages extends Core {
 	}
 
 	function translateSupport() {
-		$p = new Parser(LANGUAGE_SUPPORT_SERVICE);
+		$p = new Parser(LANGUAGE_SUPPORT_SERVICE."?".time());
 		$echo = $p->get();
 		if(is_serialized($echo)) {
 			$arr = unserialize($echo);
@@ -60,21 +60,27 @@ class Languages extends Core {
 	}
 	
 	function __construct() {
+		config::SetDefault("");
+		templates::accessNull();
 		$orLang = (modules::manifest_get("mainLang") ? modules::manifest_get("mainLang") : "ru");
 		$langs = $orLang;
+		if(Arr::get($_GET, "saveAPI", false)) {
+			config::Update("apiKeyTranslate", Arr::get($_POST, "key", false));
+			return;
+		}
 		if(Arr::get($_GET, "page", false)) {
 			if(Arr::get($_GET, "page")=="main") {
 				$support = lang::support();
+				$supports = $this->translateSupport();
 				for($i=0;$i<sizeof($support);$i++) {
 					$clearLang = nsubstr($support[$i], 4, -3);
 					$langer = nucfirst($clearLang);
 					templates::assign_vars(array(
 						"clearLang" => $clearLang,
-						"lang" => $langer,
+						"lang" => (isset($supports[$clearLang]) ? $supports[$clearLang] : $langer),
 					), "supportLang", "lang".($i+1));
 				}
-				$support = $this->translateSupport();
-				foreach($support as $k => $v) {
+				foreach($supports as $k => $v) {
 					templates::assign_vars(array(
 						"clearLang" => $k,
 						"lang" => $v,
@@ -104,7 +110,7 @@ class Languages extends Core {
 					$arr[$match[2][$i]] = $match[2][$i];
 				}
 			}
-			$admin = PATH_SKINS;
+			$admin = ROOT_PATH."skins".DS;
 			$dir = read_dir($admin);
 			for($z=0;$z<sizeof($dir);$z++) {
 				$file = file_get_contents($admin.$dir[$z]);
@@ -113,7 +119,7 @@ class Languages extends Core {
 					$arr[$match[2][$i]] = $match[2][$i];
 				}
 			}
-			$admin = PATH_SKINS.config::Select("skins", "skins").DS;
+			$admin = ROOT_PATH."skins".DS.config::Select("skins", "skins").DS;
 			$dir = read_dir($admin);
 			for($z=0;$z<sizeof($dir);$z++) {
 				$file = file_get_contents($admin.$dir[$z]);
@@ -151,8 +157,6 @@ class Languages extends Core {
 			} else {
 				$ret = "0";
 			}
-			Debug::activShow(false);
-			templates::$gzip=false;
 			HTTP::echos($ret);
 			die();
 		}
@@ -162,8 +166,6 @@ class Languages extends Core {
 			} else {
 				$ret = "0";
 			}
-			Debug::activShow(false);
-			templates::$gzip=false;
 			HTTP::echos($ret);
 			die();
 		}
