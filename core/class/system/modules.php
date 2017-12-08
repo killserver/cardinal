@@ -589,7 +589,7 @@ class modules {
 			Route::SetLang($rLang);
 			$tmp->assign_var("lang", $rLang);
 			$tmp->assign_var("lang_url", self::langURL());
-			return array("lang" => $rLang);
+			return array("lang" => $rLang, "langDB" => ucfirst($rLang));
 		} else {
 			return array();
 		}
