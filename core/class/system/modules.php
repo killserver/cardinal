@@ -579,6 +579,36 @@ class modules {
 		return true;
 	}
 
+	final public static function setLangPanel() {
+		global $lang;
+		$rLang = Route::param('lang');
+		if(!empty($rLang)) {
+			$tmp = self::init_templates();
+			$langs = self::init_lang();
+			$langs->set_lang($rLang);
+			Route::SetLang($rLang);
+			$tmp->assign_var("lang", $rLang);
+			$tmp->assign_var("lang_url", self::langURL());
+			return array("lang" => $rLang);
+		} else {
+			return array();
+		}
+	}
+	
+	final private static function langURL() {
+		$server = HTTP::getServer("REDIRECT_URL");
+		if(!$server) {
+			return self::get_config("default_http_local");
+		}
+		$REDIRECT_URL = $server;
+		$Lang = Route::param('lang');
+		$REDIRECT_URL = preg_replace('#'.self::get_config("default_http_local").$Lang.'#', '', $REDIRECT_URL);
+		if(empty($REDIRECT_URL)) {
+			$REDIRECT_URL = self::get_config("default_http_local");
+		}
+		return $REDIRECT_URL;
+	}
+
 }
 
 ?>

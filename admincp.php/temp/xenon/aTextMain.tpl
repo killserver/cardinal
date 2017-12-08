@@ -62,7 +62,7 @@ jQuery(document).ready(function() {
 	});
 });
 function confirmDelete() {
-	if (confirm("Вы подтверждаете удаление?(Данную операцию невозможно будет обратить)")) {
+	if (confirm("{L_"Вы подтверждаете удаление?(Данную операцию невозможно будет обратить)"}")) {
 		return true;
 	} else {
 		return false;

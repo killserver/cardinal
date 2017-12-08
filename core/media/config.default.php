@@ -18,12 +18,12 @@ echo "403 ERROR";
 die();
 }
 
-if(!defined("BLOCK")) {
+/*if(!defined("BLOCK")) {
 	define("BLOCK", 4*1024);
 }
 if(!defined("API_URL")) {
 	define("API_URL", "http://online-killer.pp.ua/api.php");
-}
+}*/
 if(!defined("ROUTE_GET_URL")) {
 	define("ROUTE_GET_URL", "PATH_INFO");
 }
@@ -50,14 +50,14 @@ $config = array_merge($config, array(
 		"test_shab" => "",
 		"mobile" => "",
 	),
-	"link" => array(
+	/*"link" => array(
 		"reg" => "/?reg",
 		"lost" => "/?lost",
 		"login" => "/?login",
 		"logout" => "/?login&out",
 		"add" => "/?add",
 		"recover" => "/?recover",
-	),
+	),*/
 //минификаци¤
 	"tpl_minifier" => true,
 	"gzip" => "yes",
@@ -75,7 +75,6 @@ $config = array_merge($config, array(
 	"default_http_local" => "/",
 	"default_http_hostname" => "online-killer.pp.ua",
 	"default_http_host" => HTTP::$protocol."://online-killer.pp.ua/",
-	'lang' => "ru",
 	"charset" => "utf-8",
 
 	"FullMenu" => true,
@@ -86,7 +85,7 @@ $config = array_merge($config, array(
 	"db" => array(
 		"driver" => "db_mysqli",
 	),
-	"related" => 5,
+	//"related" => 5,
 ));
 
 ?>

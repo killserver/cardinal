@@ -1642,6 +1642,9 @@ if(!$test) {
 		if(substr($filename_ROOT_PATH, 0, 1)=="/") {
 			$filename_ROOT_PATH = substr($filename_ROOT_PATH, 1);
 		}
+		if(empty($filename_ROOT_PATH)) {
+			return $arr['link'];
+		}
 		$filename_ROOT_PATH = rawurldecode(ROOT_PATH.$filename_ROOT_PATH);
 		if(!file_exists($filename_ROOT_PATH)) {
 			return $arr['link'];

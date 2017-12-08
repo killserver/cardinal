@@ -147,12 +147,12 @@
 					
 					<div class="form-group">
 						<label class="control-label" for="username">{L_"Имя пользователя"}</label>
-						<input type="text" class="form-control input-dark" name="username" id="username" autocomplete="off" />
+						<input type="text" class="form-control input-dark" name="username" id="username" autocomplete="off" readonly="readonly" style="cursor:text;" onclick="if(this.getAttribute('readonly') == 'readonly') this.removeAttribute('readonly')" />
 					</div>
 					
 					<div class="form-group">
 						<label class="control-label" for="passwd">{L_"Пароль"}</label>
-						<input type="password" class="form-control input-dark" name="passwd" id="passwd" autocomplete="off" value=" " onclick="if(this.value == ' ') this.value=''" />
+						<input type="password" class="form-control input-dark" name="passwd" id="passwd" autocomplete="off" readonly="readonly" style="cursor:text;" onclick="if(this.getAttribute('readonly') == 'readonly') this.removeAttribute('readonly')" />
 					</div>
 					
 					<div class="form-group">

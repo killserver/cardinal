@@ -130,18 +130,12 @@
 				
 				<form role="form" id="lockscreen" class="lockcreen-form fade-in-effect" autocomplete="off">
 					<input type="hidden" name="method" value="login" />
-					<div class="user-thumb">
-						<a href="#">
-							<img src="{U_avatar}" class="img-responsive img-circle" />
-						</a>
-					</div>
-					
 					<div class="form-group">
 						<h3>{L_"Добро пожаловать обратно"}, {U_username}!</h3>
 						<p>{L_"Введите пароль для доступа в админ-панель."}</p>
 						
 						<div class="input-group">
-							<input type="password" class="form-control input-dark" name="passwd" id="passwd" placeholder="{L_"Пароль"}" autocomplete="off" value=" " onclick="if(this.value == ' ') this.value=''" />
+							<input type="password" class="form-control input-dark" name="passwd" id="passwd" placeholder="{L_"Пароль"}" autocomplete="off" readonly="readonly" style="cursor:text;" onclick="if(this.getAttribute('readonly') == 'readonly') this.removeAttribute('readonly')" />
 							<span class="input-group-btn">
 								<button type="submit" class="btn btn-primary">{L_"Войти"}</button>
 							</span>

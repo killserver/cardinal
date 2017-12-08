@@ -114,6 +114,7 @@ if(config::Select("activeCache")) {
 		$load = false;
 	}
 }
+$langPanel = modules::setLangPanel();
 if($load) {
 	if(!$is_file && empty($file)) {
 		if($class == "page") {
@@ -122,7 +123,7 @@ if($load) {
 		if(class_exists($class)) {
 			$page = new $class();
 			if(!empty($method) && method_exists($page, $method)) {
-				$page->$method();
+				call_user_func_array(array(&$page, $method), $langPanel);
 			}
 		}
 	} else {
