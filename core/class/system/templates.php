@@ -1429,9 +1429,6 @@ class templates {
 	 * @return mixed Result work module or original line
      */
 	final private static function include_module($array) {
-		if(strpos($array[1], ".".ROOT_EX) === false) {
-			$array[1] = $array[1].".".ROOT_EX;
-		}
 		$params = array();
 		if(strpos($array[1], "&")!==false) {
 			$exp = explode("&", $array[1]);
@@ -1449,7 +1446,11 @@ class templates {
 		} else {
 			$ret = $array[0];
 		}
+		if(strpos($array[1], ".".ROOT_EX) === false) {
+			$array[1] = $array[1].".".ROOT_EX;
+		}
 		$class = str_replace(array(".class", ".".ROOT_EX), "", $array[1]);
+		
 		if(!file_exists(PATH_MODULES.$array[1]) && !file_exists(PATH_MODULES."autoload".DS.$array[1])) {
 			return $ret;
 		}
