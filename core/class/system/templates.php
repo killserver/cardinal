@@ -2173,6 +2173,7 @@ if(!$test) {
 	 * @param string $msg Error message
      */
 	final private static function ErrorTemplate($msg, $file) {
+		header("HTTP/1.0 520 Unknown Error");
 		$type = "main";
 		$orFile = $file;
 		if(strpos($file, ADMINCP_DIRECTORY)!==false) {
@@ -2199,7 +2200,6 @@ if(!$test) {
 				} catch(Exception $ex) {}
 			}
 		}
-		header("HTTP/1.0 520 Unknown Error");
 		if(file_exists(PATH_SKINS."ErrorTpl.".self::$typeTpl)) {
 			$file = file_get_contents(PATH_SKINS."ErrorTpl.".self::$typeTpl);
 			$file = str_replace("{msg}", $msg, $file);

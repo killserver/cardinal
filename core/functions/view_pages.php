@@ -178,6 +178,9 @@ global $manifest;
 		case "search":
 			include_once(PATH_PAGES."search.".ROOT_EX);
 		break;
+		case "pong":
+			include_once(PATH_PAGES."pong.".ROOT_EX);
+		break;
 		case "main":
 			include_once(PATH_PAGES."main.".ROOT_EX);
 		break;

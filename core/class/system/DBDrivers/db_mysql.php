@@ -44,6 +44,7 @@ class db_mysql extends DriverParam implements drivers {
 			}
 			return $ret;
 		} catch(Exception $ex) {
+			header("HTTP/1.0 520 Unknown Error");
 			return false;
 		}
 	}
@@ -57,6 +58,7 @@ class db_mysql extends DriverParam implements drivers {
 				}
 				return $ret;
 			} catch(Exception $ex) {
+				header("HTTP/1.0 520 Unknown Error");
 				return false;
 			}
 		} else {
@@ -65,6 +67,7 @@ class db_mysql extends DriverParam implements drivers {
 	}
 	public function connect($host, $user, $pass, $db, $charset, $port) {
 		if(!function_exists('mysql_connect')) {
+			header("HTTP/1.0 520 Unknown Error");
 			if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
 				HTTP::echos('Server database MySQL not support PHP');
 			} else {
@@ -74,6 +77,7 @@ class db_mysql extends DriverParam implements drivers {
 		}
 		try {
 			if(!@$this->mc = mysql_connect($host, $user, $pass)) {
+				header("HTTP/1.0 520 Unknown Error");
 				if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
 					HTTP::echos();
 				}
@@ -102,6 +106,7 @@ class db_mysql extends DriverParam implements drivers {
 			$this->query("SET CHARACTER SET '".$charset."'");
 			$this->connecten = true;
 		} catch(Exception $e) {
+			header("HTTP/1.0 520 Unknown Error");
 			if(class_exists("cardinalError")) {
 				cardinalError::handlePhpError($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
 			} else {

@@ -56,6 +56,7 @@ class db_pdo extends DriverParam implements drivers {
 	}
 	public function connect($host, $user, $pass, $db, $charset, $port) {
 		if (!class_exists('PDO')) {
+			header("HTTP/1.0 520 Unknown Error");
 			if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
 				HTTP::echos('Server database PDO not support PHP');
 			} else {
@@ -70,6 +71,7 @@ class db_pdo extends DriverParam implements drivers {
 			$this->mc->query("SET CHARACTER SET '".$charset."'");
 			$parseInt = intval($this->mc->errorCode());
 			if(!empty($parseInt)) {
+				header("HTTP/1.0 520 Unknown Error");
 				if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
 					HTTP::echos();
 				}
@@ -99,6 +101,7 @@ class db_pdo extends DriverParam implements drivers {
 			$this->connecten = true;
 			$this->mc->setAttribute(PDO::ATTR_AUTOCOMMIT, 0);
 		} catch(Exception $e) {
+			header("HTTP/1.0 520 Unknown Error");
 			if(class_exists("cardinalError")) {
 				cardinalError::handlePhpError($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
 			} else {

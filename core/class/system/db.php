@@ -259,42 +259,49 @@ class db {
 			$port = config::Select('db', 'port');
 		} else {
 			if(!isset(self::$configInit['driver'])) {
+				header("HTTP/1.0 520 Unknown Error");
 				throw new Exception("Error! Driver is not set");
 				die();
 			} else {
 				self::$driver_name = self::$configInit['driver'];
 			}
 			if(!isset(self::$configInit['db'])) {
+				header("HTTP/1.0 520 Unknown Error");
 				throw new Exception("Error! DB is not set");
 				die();
 			} else {
 				self::$dbName = self::$configInit['db'];
 			}
 			if(!isset(self::$configInit['host'])) {
+				header("HTTP/1.0 520 Unknown Error");
 				throw new Exception("Error! Host is not set");
 				die();
 			} else {
 				$host = self::$configInit['host'];
 			}
 			if(!isset(self::$configInit['user'])) {
+				header("HTTP/1.0 520 Unknown Error");
 				throw new Exception("Error! User is not set");
 				die();
 			} else {
 				$user = self::$configInit['user'];
 			}
 			if(!isset(self::$configInit['pass'])) {
+				header("HTTP/1.0 520 Unknown Error");
 				throw new Exception("Error! Password is not set");
 				die();
 			} else {
 				$pass = self::$configInit['pass'];
 			}
 			if(!isset(self::$configInit['charset'])) {
+				header("HTTP/1.0 520 Unknown Error");
 				throw new Exception("Error! Charset is not set");
 				die();
 			} else {
 				$chst = self::$configInit['charset'];
 			}
 			if(!isset(self::$configInit['port'])) {
+				header("HTTP/1.0 520 Unknown Error");
 				throw new Exception("Error! Port is not set");
 				die();
 			} else {
@@ -442,6 +449,7 @@ class db {
 			$badword = true;
 		}
 		if($badword) {
+			header("HTTP/1.0 520 Unknown Error");
 			$message = '������, � �� ���� ��, ��� �� ��������� �������, �� �������, ������� �� ������ ������� ���� ������, �� ��������� ����� ������������� � ��� ���� ��������������.<br /><br />��� IP, � ������ ������ ��������� ������������� �������. �����!.';
 			$report  = "Hacking attempt (".date("d.m.Y H:i:s")." - [".time()."]):\n";
 			$report .= ">Database Inforamation\n";
