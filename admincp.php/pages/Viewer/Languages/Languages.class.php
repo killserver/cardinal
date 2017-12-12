@@ -91,6 +91,7 @@ class Languages extends Core {
 			return;
 		}
 		if(Arr::get($_GET, 'createLang', false)) {
+			callAjax();
 			$newLang = Arr::get($_GET, 'createLang');
 			lang::include_lang("install");
 			$this->ParseLang();
@@ -110,7 +111,7 @@ class Languages extends Core {
 					$arr[$match[2][$i]] = $match[2][$i];
 				}
 			}
-			$admin = ROOT_PATH."skins".DS;
+			$admin = PATH_SKINS;
 			$dir = read_dir($admin);
 			for($z=0;$z<sizeof($dir);$z++) {
 				$file = file_get_contents($admin.$dir[$z]);
@@ -119,7 +120,7 @@ class Languages extends Core {
 					$arr[$match[2][$i]] = $match[2][$i];
 				}
 			}
-			$admin = ROOT_PATH."skins".DS.config::Select("skins", "skins").DS;
+			$admin = PATH_SKINS.config::Select("skins", "skins").DS;
 			$dir = read_dir($admin);
 			for($z=0;$z<sizeof($dir);$z++) {
 				$file = file_get_contents($admin.$dir[$z]);
@@ -152,6 +153,7 @@ class Languages extends Core {
 			lang::set_lang($langs);
 		}
 		if(Arr::get($_GET, 'saveLang', false)) {
+			callAjax();
 			if(Arr::get($_POST, 'orLang', false) && Arr::get($_POST, 'translate', false) && lang::Update($langs, rawurldecode(Arr::get($_POST, 'orLang')), rawurldecode(Arr::get($_POST, 'translate')))) {
 				$ret = "1";
 			} else {
@@ -161,6 +163,7 @@ class Languages extends Core {
 			die();
 		}
 		if(Arr::get($_GET, 'resetLang', false)) {
+			callAjax();
 			if(Arr::get($_POST, 'orLang', false) && lang::LangReset($langs, rawurldecode(Arr::get($_POST, 'orLang')))) {
 				$ret = "1";
 			} else {

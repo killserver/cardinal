@@ -5,8 +5,6 @@
 <!--[if gt IE 8]><!--><html class="no-js" lang="ru"><!--<![endif]-->
     <head>
         {headers}
-		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,700">
-        <link rel="stylesheet" href="https://killserver.github.io/Fonts/main.min.css">
         <link rel="stylesheet" href="{THEME}/css/support.css">
         <link rel="stylesheet" href="{THEME}/css/main.{S_time}.css">
         <!--[if lt IE 9]>

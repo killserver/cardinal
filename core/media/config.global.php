@@ -119,13 +119,13 @@ if(!defined("UPLOAD_ALL")) {
 }
 
 if(!defined("VERSION")) {
-	define("VERSION", "7.6");
+	define("VERSION", "7.7");
 }
 if(!defined("VERSION_ADMIN_STYLE")) {
 	define("VERSION_ADMIN_STYLE", "1.5");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "70645");
+	define("INTVERSION", "70715");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "6.5");
@@ -176,10 +176,10 @@ $config = array_merge($config, array(
 	"mobyActive" => false,
 	"default_http_mobyhost" => "",
 	"uses" => array(
-		"Mobile Detect" => "2.8.26",
-		"PHPMailer" => "6.0.1",
+		"Mobile Detect" => "2.8.28",
+		"PHPMailer" => "6.0.2",
 		"PEAR" => "1.10.5",
-		"Archive Tar" => "1.0",
+		"Archive Tar" => "1.1",
 	),
 	"logoAdminMain" => "assets/xenon/images/logo@2x.png",
 	"logoAdminMobile" => "assets/xenon/images/logo-collapsed@2x.png",

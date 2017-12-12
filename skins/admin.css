@@ -27,6 +27,10 @@
 	-moz-box-shadow: 0em 0.1em 0.7em -0.25em #000;
 	box-shadow: 0em 0.1em 0.7em -0.25em #000;
 }
+body.onHoverAdminRight {
+	left: auto;
+	right: 0px;
+}
 .rtl .adminCoreCardinal * {
 	font-family: Tahoma, sans-serif;
 }

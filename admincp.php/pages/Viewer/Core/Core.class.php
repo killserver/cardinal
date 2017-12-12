@@ -376,12 +376,12 @@ class Core {
 			$all++;
 		}
 		templates::assign_var("nowLangText", "{L_Languages}&nbsp;".nucfirst(lang::get_lg()));
-		templates::assign_var("nowLangImg", "http://www.nivea.ua/img/flags/small/flag-".lang::get_lg().".png");
+		templates::assign_var("nowLangImg", "https://killserver.github.io/ForCardinal/flags/".lang::get_lg().".png");
 		$support = lang::support();
 		for($i=0;$i<sizeof($support);$i++) {
 			$cutLang = nsubstr($support[$i], 4, -3);
 			$lang = nucfirst($cutLang);
-			templates::assign_vars(array("img" => "http://www.nivea.ua/img/flags/small/flag-".$cutLang.".png", "langMenu" => $cutLang, "lang" => "{L_Languages}&nbsp;".$lang), "langListSupport", "lang".($i+1));
+			templates::assign_vars(array("img" => "https://killserver.github.io/ForCardinal/flags/".$cutLang.".png", "langMenu" => $cutLang, "lang" => "{L_Languages}&nbsp;".$lang), "langListSupport", "lang".($i+1));
 		}
 		$this->ReadPlugins();
 		if(sizeof(self::$modules)>0 && isset(self::$modules['before'])) {

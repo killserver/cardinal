@@ -507,6 +507,54 @@ class modules {
 		}
 	}
 
+	final public static function regCssJs($link, $type, $short = true) {
+	global $manifest;
+		$typeLink = "full";
+		if(!$short && $type=="css") {
+			$typeLink = "css";
+		} else if(!$short && $type=="js") {
+			$typeLink = "js";
+		}
+		if(!isset($manifest['create_js'])) {
+			$manifest['create_js'] = array();
+		}
+		if(!isset($manifest['create_js'][$typeLink])) {
+			$manifest['create_js'][$typeLink] = array();
+		}
+		if(!isset($manifest['create_css'])) {
+			$manifest['create_css'] = array();
+		}
+		if(!isset($manifest['create_css'][$typeLink])) {
+			$manifest['create_css'][$typeLink] = array();
+		}
+		if($type=="css") {
+			if(is_array($link)) {
+				foreach($link as $k => $linker) {
+					if(is_numeric($k)) {
+						$manifest['create_css'][$typeLink][$linker] = $linker;
+					} else if(is_string($k)) {
+						$manifest['create_css'][$typeLink][$k] = $linker;
+					}
+				}
+			} else if(is_string($link)) {
+				$manifest['create_css'][$typeLink][$link] = $link;
+			}
+		} else {
+			if(is_array($link)) {
+				foreach($link as $k => $linker) {
+					if(is_numeric($k)) {
+						$manifest['create_js'][$typeLink][$linker] = $linker;
+					} else if(is_string($k)) {
+						$manifest['create_js'][$typeLink][$k] = $linker;
+					}
+				}
+			} else if(is_string($link)) {
+				$manifest['create_js'][$typeLink][$link] = $link;
+			}
+		}
+		return $manifest;
+	}
+
 	final public static function create_table($table_name, $fields, $force = false) {
 		$db = self::init_db();
 		if($force) {
