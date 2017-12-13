@@ -196,6 +196,7 @@ class KernelArcher {
 	
 	function Add($model = "", $objTemplate = "") {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -241,6 +242,7 @@ class KernelArcher {
 			||
 			(!isset($file['type']) && !isset($file[5]))
 		) {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception("Returned data for upload");
 			die();
 		}
@@ -280,11 +282,13 @@ class KernelArcher {
 	
 	function TakeEdit($model = "", $objTemplate = "", $template = "", $load = true) {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
 		$request = new Request();
 		if(sizeof($request->post)==0) {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception("Error post data to kernal");
 			die();
 		}
@@ -399,6 +403,7 @@ class KernelArcher {
 	
 	function Edit($model = "", $objTemplate = "") {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -418,6 +423,7 @@ class KernelArcher {
 		$list = $model->getArray();
 		$firstId = current($list);
 		if(empty($firstId)) {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception("Error type kernal get data");
 			die();
 		}
@@ -430,6 +436,7 @@ class KernelArcher {
 	
 	function Sorting($model, $objTemplate = "", $template = "") {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -476,6 +483,7 @@ class KernelArcher {
 	
 	function TakeDelete($model = "", $objTemplate = "", $template = "", $load = true) {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -542,6 +550,7 @@ class KernelArcher {
 	
 	function Show($model = "", $objTemplate = "", $template = "") {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -550,6 +559,7 @@ class KernelArcher {
 		$list = $lists->getArray();
 		$firstId = current($list);
 		if(empty($firstId)) {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception("Error type kernal get data");
 			die();
 		}
@@ -581,6 +591,7 @@ class KernelArcher {
 	
 	function Shield($model = "", $objTemplate = "", $template = "", $load = true) {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -631,6 +642,7 @@ class KernelArcher {
 			$model = $this->localModel;
 		}
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -765,6 +777,7 @@ class KernelArcher {
 	function UnlimitedBladeWorks() {
 		$num = func_num_args();
 		if(!Validate::range($num, 1, 3)) {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception("Error num parameters for UnlimitedBladeWorks");
 			die();
 		}
@@ -774,17 +787,20 @@ class KernelArcher {
 		if($num==1) {
 			$objTemplate = $list[0];
 			if(!is_string($objTemplate) && !is_object($objTemplate) && !is_array($objTemplate)) {
+				header("HTTP/1.0 520 Unknown Error");
 				throw new Exception("Error first parameter for UnlimitedBladeWorks");
 				die();
 			}
 		} elseif($num==2) {
 			$objTemplate = $list[0];
 			if(!is_string($objTemplate) && !is_object($objTemplate) && !is_array($objTemplate)) {
+				header("HTTP/1.0 520 Unknown Error");
 				throw new Exception("Error first parameter for UnlimitedBladeWorks");
 				die();
 			}
 			$template = $list[1];
 			if(!is_bool($template) && !is_string($template)) {
+				header("HTTP/1.0 520 Unknown Error");
 				throw new Exception("Error second parameter for UnlimitedBladeWorks");
 				die();
 			}
@@ -795,16 +811,19 @@ class KernelArcher {
 		} elseif($num==3) {
 			$objTemplate = $list[0];
 			if(!is_string($objTemplate) && !is_object($objTemplate) && !is_array($objTemplate)) {
+				header("HTTP/1.0 520 Unknown Error");
 				throw new Exception("Error first parameter for UnlimitedBladeWorks");
 				die();
 			}
 			$template = $list[1];
 			if(!is_bool($template) && !is_string($template)) {
+				header("HTTP/1.0 520 Unknown Error");
 				throw new Exception("Error second parameter for UnlimitedBladeWorks");
 				die();
 			}
 			$load = $list[2];
 			if(!is_bool($load)) {
+				header("HTTP/1.0 520 Unknown Error");
 				throw new Exception("Error third parameter for UnlimitedBladeWorks");
 				die();
 			}

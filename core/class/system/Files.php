@@ -56,6 +56,7 @@ class Files {
 	final public static function checkType($file, $types) {
 		if(is_string($types) || is_array($types)) {
 			if(self::$switchException) {
+				header("HTTP/1.0 520 Unknown Error");
 				throw new Exception("Error checking type");
 				die();
 			}
@@ -103,6 +104,7 @@ class Files {
 		}
 		if(!is_dir($directory) || !is_writable(realpath($directory))) {
 			if(self::$switchException) {
+				header("HTTP/1.0 520 Unknown Error");
 				throw new Exception("Directory is not exists or not allowed write");
 				die();
 			}
@@ -110,6 +112,7 @@ class Files {
 		}
 		if(!empty($type) && !self::typeFile($file, $type)) {
 			if(self::$switchException) {
+				header("HTTP/1.0 520 Unknown Error");
 				throw new Exception("Type file is not allowed for \"".$type."\"");
 				die();
 			}
@@ -138,6 +141,7 @@ class Files {
 			}
 		}
 		if(self::$switchException) {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception("In proccess upload occurred error. Check file");
 			die();
 		}

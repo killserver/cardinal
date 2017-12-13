@@ -127,14 +127,17 @@ class cardinal {
 					continue;
 				}
 				if(isset($exp[$i][0]) && !empty($exp[$i][0]) && stripos($exp[$i][0], HTTP::getServer('HTTP_HOST'))!==false && isset($exp[$i][1]) && !empty($exp[$i][1]) && stripos($exp[$i][1], HTTP::getServer('SERVER_ADDR'))!==false) {//local ip
+					header("HTTP/1.0 520 Unknown Error");
 					echo "Script is locked by server name and ip address";
 					die();
 				}
 				if(isset($exp[$i][0]) && !empty($exp[$i][0]) && stripos($exp[$i][0], HTTP::getServer('HTTP_HOST'))!==false) {
+					header("HTTP/1.0 520 Unknown Error");
 					echo "Script is locked by server name";
 					die();
 				}
 				if(isset($exp[$i][1]) && !empty($exp[$i][1]) && stripos($exp[$i][1], HTTP::getServer('SERVER_ADDR'))!==false) {//local ip
+					header("HTTP/1.0 520 Unknown Error");
 					echo "Script is locked by ip address";
 					die();
 				}
@@ -162,11 +165,13 @@ class cardinal {
 			$path = ini_get("session.save_path").DS."session_".substr($timeout, 0, 5)."sec";
 			if(!file_exists($path)) {
 				if(!@mkdir($path, 0777)) {
+					header("HTTP/1.0 520 Unknown Error");
 					trigger_error("Failed to create session save path directory '".$path."'. Check permissions.", E_USER_ERROR);
 					die();
 				}
 			}
 			if(!is_writable(session_save_path())) {
+				header("HTTP/1.0 520 Unknown Error");
 				trigger_error('Session path "'.session_save_path().'" is not writable for PHP!', E_USER_ERROR);
 				die();
 			}
@@ -240,6 +245,7 @@ class cardinal {
 	
 	final public static function callbacks($module, $callback = "", $type = "add") {
 		if(!is_callable($callback) && $type == "add") {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception("Callback return error in called method");
 			die();
 		}
@@ -285,6 +291,7 @@ class cardinal {
 			}
 		}
 		if(empty($used_symbols)) {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception("Error generate password");
 			die();
 		}
@@ -335,7 +342,6 @@ class cardinal {
 					"pass" => User::create_pass("'.$pass.'"),
 					"admin_pass" => cardinal::create_pass("'.$pass.'"),
 					"level" => LEVEL_CREATOR,
-					"avatar" => "http://img2.wikia.nocookie.net/__cb20130512094126/sword-art-online/pl/images/thumb/a/a4/Akihiko_Kayaba.png/500px-Akihiko_Kayaba.png",
 				),';
 			$rand = rand(8, 20);
 			$pass = self::randomPassword($rand, 1, "lower_case,upper_case,numbers,special_symbols");
@@ -347,7 +353,6 @@ class cardinal {
 					"pass" => User::create_pass("'.$pass.'"),
 					"admin_pass" => cardinal::create_pass("'.$pass.'"),
 					"level" => LEVEL_CUSTOMER,
-					"avatar" => "http://img2.wikia.nocookie.net/__cb20130512094126/sword-art-online/pl/images/thumb/a/a4/Akihiko_Kayaba.png/500px-Akihiko_Kayaba.png",
 				),';
 			$users .= PHP_EOL.'));';
 			file_put_contents(PATH_MEDIA."users.php", $users);

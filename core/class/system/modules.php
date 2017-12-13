@@ -31,6 +31,7 @@ class modules {
 	
 	final public static function checkObject($obj, $name, $checkParent = false) {
 		if(gettype($name)!="string") {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception("Error set #2 parameter");
 		}
 		if($checkParent === true && is_object($obj) && get_parent_class($obj)===$name) {
@@ -118,11 +119,13 @@ class modules {
 						}
 						return $ret;
 					} else {
+						header("HTTP/1.0 520 Unknown Error");
 						throw new Exception("Error loading model");
 						return false;
 					}
 				}
 			} else {
+				header("HTTP/1.0 520 Unknown Error");
 				throw new Exception("Error loading model. File not found");
 				return false;
 			}
@@ -134,6 +137,7 @@ class modules {
 			}
 			return $ret;
 		} else {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception("Error loading model");
 			return false;
 		}
@@ -149,6 +153,7 @@ class modules {
 				include_once(PATH_LOAD_LIBRARY.$class.".".ROOT_EX);
 			}
 			if(!class_exists($class, false)) {
+				header("HTTP/1.0 520 Unknown Error");
 				throw new Exception('Class is not exists', 6);
 			}
 			$re_args = array();

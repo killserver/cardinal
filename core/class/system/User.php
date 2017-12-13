@@ -58,7 +58,7 @@ class User {
 		$users = array();
 		$userLoad = false;
 		if(isset($_SERVER['HTTP_HOST']) && file_exists(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX)) {
-			include(PATH_MEDIA."users.".ROOT_EX);
+			include(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX);
 			$userLoad = true;
 		} else if(file_exists(PATH_MEDIA."users.".ROOT_EX)) {
 			include(PATH_MEDIA."users.".ROOT_EX);
@@ -204,7 +204,9 @@ class User {
 			$ret = (is_array($users) && sizeof($users) > 0 && isset($users['uid']) ? true : false);
 		} else {
 			$users = array();
-			if(file_exists(PATH_MEDIA."users.".ROOT_EX)) {
+			if(file_exists(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX)) {
+				include(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX);
+			} else if(file_exists(PATH_MEDIA."users.".ROOT_EX)) {
 				include(PATH_MEDIA."users.".ROOT_EX);
 			} else if(file_exists(PATH_MEDIA."users.default.".ROOT_EX)) {
 				include(PATH_MEDIA."users.default.".ROOT_EX);
@@ -294,7 +296,9 @@ class User {
 			$num = db::num_rows($sql);
 		} else {
 			$users = array();
-			if(file_exists(PATH_MEDIA."users.".ROOT_EX)) {
+			if(file_exists(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX)) {
+				include(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX);
+			} else if(file_exists(PATH_MEDIA."users.".ROOT_EX)) {
 				include(PATH_MEDIA."users.".ROOT_EX);
 			} else if(file_exists(PATH_MEDIA."users.default.".ROOT_EX)) {
 				include(PATH_MEDIA."users.default.".ROOT_EX);
@@ -367,7 +371,6 @@ class User {
 			$insert['reg_ip'] = "`reg_ip` = \"".$ip."\"";
 			$insert['last_ip'] = "`last_ip` = \"".$ip."\"";
 			$insert['activ'] = "`activ` = \"".$active."\"";
-			$insert = modules::change_db('reg', $insert);
 			db::doquery("INSERT INTO {{users}} SET ".implode(", ", $insert));
 			return true;
 		} else {
@@ -489,6 +492,7 @@ class User {
 				}
 			}
 			if(!isset($list[0]) || !isset($list[0]['username'])) {
+				header("HTTP/1.0 520 Unknown Error");
 				throw new Exception("Error username is not set", 1);
 				die();
 			}

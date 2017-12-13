@@ -28,7 +28,9 @@ class userlevel {
 		}
 		if(defined("WITHOUT_DB")) {
 			$userlevels = array();
-			if(file_exists(PATH_MEDIA."userlevels.".ROOT_EX)) {
+			if(isset($_SERVER['HTTP_HOST']) && file_exists(PATH_MEDIA."userlevels".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX)) {
+				include_once(PATH_MEDIA."userlevels".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX);
+			} else if(file_exists(PATH_MEDIA."userlevels.".ROOT_EX)) {
 				include_once(PATH_MEDIA."userlevels.".ROOT_EX);
 			} else if(file_exists(PATH_MEDIA."userlevels.default.".ROOT_EX)) {
 				include_once(PATH_MEDIA."userlevels.default.".ROOT_EX);
@@ -70,6 +72,7 @@ class userlevel {
 			$specials = array($specials);
 		}
 		if(!is_array($specials)) {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception("error levels");
 		}
 		if(is_bool($level) || empty($level)) {

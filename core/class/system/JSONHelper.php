@@ -12,10 +12,12 @@ class JSONHelper {
      */
     function __construct($str) {
 		if(!is_string($str)) {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception('First parameter is not correct', 6);
 		}
 		$str = json_decode($str, true);
 		if(null === $str) {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception(json_last_error(), 6);
 		}
 		$list = get_object_vars($this);
@@ -45,6 +47,7 @@ class JSONHelper {
      */
     final public function __get($k) {
 		if(!isset($this->{$k})) {
+			header("HTTP/1.0 520 Unknown Error");
 			throw new Exception('Not Found', 6);
 		}
 		return $this->{$k};
