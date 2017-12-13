@@ -21,7 +21,12 @@ function CheckCanGzip() {
 function GzipOut() {
 global $config, $Timer, $manifest, $session;
 	if(strlen($Timer)>10) {
-		$Timer = microtime()-$Timer;
+		$time = microtime();
+		if(strpos($time, " ")!==false) {
+			$time = explode(" ", $time);
+			$time = current($time);
+		}
+		$Timer = $time-$Timer;
 	}
 	$debug = templates::$gzip;
 	$exit = templates::$gzipActive;

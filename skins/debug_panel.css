@@ -8,32 +8,19 @@
 	font-size: 12px;
 	color: #AAA;
 	min-height: 22px;
+
 	border-radius: 3px 0 0 3px;
 	-moz-border-radius: 3px 0 0 3px;
 	-webkit-border-radius: 3px 0 0 3px;
 	-o-border-radius: 3px 0 0 3px;
 	-ms-border-radius: 3px 0 0 3px;
 	-khtml-border-radius: 3px 0 0 3px;
-	overflow: hidden;
+	overflow: auto;
 	max-height: 80%;
-	max-width: 56%;
+	max-width: 50%;
 	z-index: 10000;
 }
-@media(min-width:900px) and (max-width:1200px) {
-	#i-debug-panel {
-		max-width: 80%;
-	}
-}
-@media(max-width:900px) {
-	#i-debug-panel {
-		max-width: 100%;
-	}
-}
 
-#i-debug-panel ul {
-	display: table;
-	width: 100%;
-}
 #i-debug-panel ul,
 #i-debug-panel li
 {
@@ -50,12 +37,18 @@
 {
 	padding: 0 10px;
 	float: right;
-	border-right: 1px solid #444;
+	border-right: 1px solid #444;;
 }
 
 #i-debug-panel-list li:last-child
 {
 	border-right: none 0;
+}
+
+#i-debug-panel li:before, #i-debug-panel li:after
+{
+	content: '';
+	display: none;
 }
 
 #i-debug-panel-list .show-hide-elem
@@ -67,6 +60,7 @@
 {
 	color: #DDD;
 	text-decoration: none;
+	font-size: 12px;
 }
 
 #i-debug-panel a:hover
@@ -108,7 +102,6 @@
 	text-align: left;
 	vertical-align: top;
 	border: 1px dotted #424242;
-	min-width: 6em;
 }
 
 #i-debug-panel table td.center
@@ -152,10 +145,7 @@
 	height: 16px;
 	width: 16px;
 }
-#i-debug-panel li:before, #i-debug-panel li:after {
-	content: '';
-	display: none;
-}
+
 #i-debug-panel span.time
 {
 	background-position: -96px 0;
@@ -212,11 +202,6 @@
 #i-debug-panel .panel
 {
 	padding: 30px 5px 10px 5px;
-	background: transparent;
-	margin: 0px;
-	overflow: auto;
-	max-width: 100%;
-	max-height: 76.8vh;
 }
 
 #i-debug-panel .panel li

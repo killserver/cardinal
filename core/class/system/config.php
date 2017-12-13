@@ -67,8 +67,17 @@ class config implements ArrayAccess {
 				$configWDB = unserialize($file);
 			}
 			if(!empty($valTh)) {
+				if(!isset($configWDB[$name])) {
+					$configWDB[$name] = array();
+				}
+				if(!isset($configWDB[$name][$val])) {
+					$configWDB[$name][$val] = array();
+				}
 				$configWDB[$name][$val][$valS] = $valTh;
 			} elseif(!empty($valS)) {
+				if(!isset($configWDB[$name])) {
+					$configWDB[$name] = array();
+				}
 				$configWDB[$name][$val] = $valS;
 			} else {
 				$configWDB[$name] = $val;
@@ -89,10 +98,10 @@ class config implements ArrayAccess {
 				$configWDB = unserialize($file);
 			}
 			$update = false;
-			if(!empty($val) && !empty($valS) && isset($configWDB[$name][$val])) {
+			if(!empty($val) && !empty($valS) && isset($configWDB[$name]) && isset($configWDB[$name][$val]) && isset($configWDB[$name][$valS])) {
 				unset($configWDB[$name][$val][$valS]);
 				$update = true;
-			} elseif(!empty($val) && isset($configWDB[$name][$val])) {
+			} elseif(!empty($val) && isset($configWDB[$name]) && isset($configWDB[$name][$val])) {
 				unset($configWDB[$name][$val]);
 				$update = true;
 			} elseif(isset($configWDB[$name])) {
@@ -145,6 +154,9 @@ class config implements ArrayAccess {
 			return false;
 		}
 		$list = func_get_args();
+		if(sizeof($list)==1 && strpos($list[0], ".")!==false) {
+			$list = explode(".", $list[0]);
+		}
 		if(sizeof($list)==2) {
 			self::$config[$list[0]] = $list[1];
 			return true;
@@ -164,6 +176,9 @@ class config implements ArrayAccess {
 			return false;
 		}
 		$list = func_get_args();
+		if(sizeof($list)==1 && strpos($list[0], ".")!==false) {
+			$list = explode(".", $list[0]);
+		}
 		if(isset($list[1]) && !empty($list[1]) && isset($list[2]) && !empty($list[2]) && isset(self::$config[$list[0]]) && isset(self::$config[$list[0]][$list[1]]) && isset(self::$config[$list[0]][$list[1]][$list[2]])) {
 			return true;
 		} else if(isset($list[1]) && !empty($list[1]) && isset(self::$config[$list[0]]) && isset(self::$config[$list[0]][$list[1]])) {
@@ -184,6 +199,9 @@ class config implements ArrayAccess {
 			return false;
 		}
 		$list = func_get_args();
+		if(sizeof($list)==1 && strpos($list[0], ".")!==false) {
+			$list = explode(".", $list[0]);
+		}
 		if(isset($list[1]) && !empty($list[1]) && isset($list[2]) && !empty($list[2]) && isset(self::$config[$list[0]]) && isset(self::$config[$list[0]][$list[1]]) && isset(self::$config[$list[0]][$list[1]][$list[2]])) {
 			return self::$config[$list[0]][$list[1]][$list[2]];
 		} else if(isset($list[1]) && !empty($list[1]) && isset(self::$config[$list[0]]) && isset(self::$config[$list[0]][$list[1]])) {
@@ -200,6 +218,9 @@ class config implements ArrayAccess {
 			return false;
 		}
 		$list = func_get_args();
+		if(sizeof($list)==1 && strpos($list[0], ".")!==false) {
+			$list = explode(".", $list[0]);
+		}
 		if(isset($list[1]) && !empty($list[1]) && isset($list[2]) && !empty($list[2]) && isset(self::$config[$list[0]]) && isset(self::$config[$list[0]][$list[1]]) && isset(self::$config[$list[0]][$list[1]][$list[2]])) {
 			unset(self::$config[$list[0]][$list[1]][$list[2]]);
 			self::initWithoutDB("delete", $list[0], $list[1], $list[2]);
@@ -219,7 +240,18 @@ class config implements ArrayAccess {
 
 	final public static function Update($name, $data = "") {
 		if(defined("WITHOUT_DB") || !class_exists("db") || !method_exists("db", "connected") || !db::connected()) {
-			return self::initWithoutDB("edit", $name, $data);
+			if(strpos($data, ".")!==false) {
+				$exp = explode(".", $data);
+				if(sizeof($exp)==3) {
+					return self::initWithoutDB("edit", $name, $exp[0], $exp[1], $exp[2]);
+				} else if(sizeof($exp)==2) {
+					return self::initWithoutDB("edit", $name, $exp[0], $exp[1]);
+				} else {
+					return self::initWithoutDB("edit", $name, $exp[0]);
+				}
+			} else {
+				return self::initWithoutDB("edit", $name, $data);
+			}
 		}
 		db::doquery("REPLACE INTO {{config}} SET `config_value` = \"".$data."\", `config_name` = \"".$name."\"");
 		cache::Delete("config");
@@ -231,7 +263,16 @@ class config implements ArrayAccess {
 	}
 	
 	final public function __get($val) {
-		if(!empty($val) && isset(self::$config[$val])) {
+		if(strpos($val, ".")!==false) {
+			$val = explode(".", $val);
+		}
+		if(is_array($val) && sizeof($val)==3 && isset(self::$config[$val[0]]) && isset(self::$config[$val[0]][$val[1]]) && isset(self::$config[$val[0]][$val[1]][$val[2]])) {
+			return self::$config[$val[0]][$val[1]][$val[2]];
+		} else if(is_array($val) && sizeof($val)==2 && isset(self::$config[$val[0]]) && isset(self::$config[$val[0]][$val[1]])) {
+			return self::$config[$val[0]][$val[1]];
+		} else if(is_array($val) && sizeof($val)==1 && isset(self::$config[$val[0]])) {
+			return self::$config[$val[0]];
+		} else if(!empty($val) && isset(self::$config[$val])) {
 			return self::$config[$val];
 		} else {
 			return false;
@@ -239,7 +280,28 @@ class config implements ArrayAccess {
 	}
 	
 	final public function __set($name, $val) {
-		if(!empty($name) && !empty($val)) {
+		if(strpos($name, ".")!==false) {
+			$name = explode(".", $name);
+		}
+		if(is_array($name) && sizeof($name)==3 && !empty($val)) {
+			if(!isset(self::$config[$name[0]])) {
+				self::$config[$name[0]] = array();
+			}
+			if(!isset(self::$config[$name[1]])) {
+				self::$config[$name[0]][$name[1]] = array();
+			}
+			self::$config[$name[0]][$name[1]][$name[2]] = $val;
+			return true;
+		} else if(is_array($name) && sizeof($name)==2 && !empty($val)) {
+			if(!isset(self::$config[$name[0]])) {
+				self::$config[$name[0]] = array();
+			}
+			self::$config[$name[0]][$name[1]] = $val;
+			return true;
+		} else if(is_array($name) && sizeof($name)==1 && !empty($val)) {
+			self::$config[$name[0]] = $val;
+			return true;
+		} else if(!empty($name) && !empty($val)) {
 			self::$config[$name] = $val;
 			return true;
 		} else {
@@ -248,23 +310,80 @@ class config implements ArrayAccess {
 	}
 	
 	public function offsetSet($offset, $value) {
+		if(strpos($offset, ".")!==false) {
+			$offset = explode(".", $offset);
+		}
 		if(is_null($offset)) {
 			self::$config[] = $value;
 		} else {
-			self::$config[$offset] = $value;
+			if(is_array($offset) && sizeof($offset)==3 && !empty($value)) {
+				if(!isset(self::$config[$offset[0]])) {
+					self::$config[$offset[0]] = array();
+				}
+				if(!isset(self::$config[$offset[0]][$offset[1]])) {
+					self::$config[$offset[0]][$offset[1]] = array();
+				}
+				self::$config[$offset[0]][$offset[1]][$offset[2]] = $value;
+			} else if(is_array($offset) && sizeof($offset)==2 && !empty($value)) {
+				if(!isset(self::$config[$offset[0]])) {
+					self::$config[$offset[0]] = array();
+				}
+				self::$config[$offset[0]][$offset[1]] = $value;
+			} else if(is_array($offset) && sizeof($offset)==1 && !empty($value)) {
+				self::$config[$offset[0]] = $value;
+			} else if(is_string($offset)) {
+				self::$config[$offset] = $value;
+			}
 		}
     }
 	
 	public function offsetExists($offset) {
-		return isset(self::$config[$offset]);
+		if(strpos($offset, ".")!==false) {
+			$offset = explode(".", $offset);
+		}
+		if(is_array($offset) && sizeof($offset)==3 && !empty($offset[0]) && isset(self::$config[$offset[0]]) && !empty($offset[1]) && isset(self::$config[$offset[0]][$offset[1]]) && !empty($offset[2]) && isset(self::$config[$offset[0]][$offset[1]][$offset[2]])) {
+			return true;
+		} else if(is_array($offset) && sizeof($offset)==2 && !empty($offset[0]) && isset(self::$config[$offset[0]]) && !empty($offset[1]) && isset(self::$config[$offset[0]][$offset[1]])) {
+			return true;
+		} else if(is_array($offset) && sizeof($offset)==1 && !empty($offset[0]) && isset(self::$config[$offset[0]])) {
+			return true;
+		} else if(is_string($offset) && !empty($offset)) {
+			return isset(self::$config[$offset]);
+		} else {
+			return false;
+		}
 	}
 	
 	public function offsetUnset($offset) {
-		unset(self::$config[$offset]);
+		if(strpos($offset, ".")!==false) {
+			$offset = explode(".", $offset);
+		}
+		if(is_array($offset) && sizeof($offset)==3 && !empty($offset[0]) && isset(self::$config[$offset[0]]) && !empty($offset[1]) && isset(self::$config[$offset[0]][$offset[1]]) && !empty($offset[2]) && isset(self::$config[$offset[0]][$offset[1]][$offset[2]])) {
+			unset(self::$config[$offset[0]][$offset[1]][$offset[2]]);
+		} else if(is_array($offset) && sizeof($offset)==2 && !empty($offset[0]) && isset(self::$config[$offset[0]]) && !empty($offset[1]) && isset(self::$config[$offset[0]][$offset[1]])) {
+			unset(self::$config[$offset[0]][$offset[1]]);
+		} else if(is_array($offset) && sizeof($offset)==1 && !empty($offset[0]) && isset(self::$config[$offset[0]])) {
+			unset(self::$config[$offset[0]]);
+		} else if(is_string($offset) && isset(self::$config[$offset])) {
+			unset(self::$config[$offset]);
+		}
 	}
 	
 	public function offsetGet($offset) {
-		return isset(self::$config[$offset]) ? self::$config[$offset] : null;
+		if(strpos($offset, ".")!==false) {
+			$offset = explode(".", $offset);
+		}
+		if(is_array($offset) && sizeof($offset)==3 && !empty($offset[0]) && isset(self::$config[$offset[0]]) && !empty($offset[1]) && isset(self::$config[$offset[0]][$offset[1]]) && !empty($offset[2]) && isset(self::$config[$offset[0]][$offset[1]][$offset[2]])) {
+			return self::$config[$offset[0]][$offset[1]][$offset[2]];
+		} else if(is_array($offset) && sizeof($offset)==2 && !empty($offset[0]) && isset(self::$config[$offset[0]]) && !empty($offset[1]) && isset(self::$config[$offset[0]][$offset[1]])) {
+			return self::$config[$offset[0]][$offset[1]];
+		} else if(is_array($offset) && sizeof($offset)==1 && !empty($offset[0]) && isset(self::$config[$offset[0]])) {
+			return self::$config[$offset[0]];
+		} else if(is_string($offset) && !empty($offset) && isset(self::$config[$offset])) {
+			return self::$config[$offset];
+		} else {
+			return null;
+		}
 	}
 
 }

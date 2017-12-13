@@ -202,6 +202,10 @@ if(!defined("PERMISSION_PHP") && file_exists(PATH_MEDIA."phpINtmp.lock")) {
 }
 
 $Timer = microtime(true);
+if(strpos($Timer, " ")!==false) {
+	$Timer = explode(" ", $Timer);
+	$Timer = current($Timer);
+}
 
 require_once(ROOT_PATH."core".DS."functions.".ROOT_EX);
 

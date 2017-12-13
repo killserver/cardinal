@@ -355,7 +355,12 @@ class db {
      * @return string Time with microseconds
      */
     final private static function time() {
-		return microtime();
+    	$time = microtime();
+    	if(strpos($time, " ")!==false) {
+    		$time = explode(" ", $time);
+    		$time = current($time);
+    	}
+		return $time;
 	}
 
     /**
@@ -576,6 +581,9 @@ class db {
 		$stime = self::time();
 		self::$qid = $return = self::$driver->query($query);
 		$etime = self::time()-$stime;
+		if($etime<0) {
+			$etime = 0;
+		}
 		self::$time += $etime;
 		self::$num += 1;
 		self::$querys[] = array("time" => $etime, "query" => htmlspecialchars($query));

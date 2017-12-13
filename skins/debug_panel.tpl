@@ -14,7 +14,7 @@ function DebugPanel_ShowHidePanel() {
 	DebugPanel_Toggle('i-show-profile');
 }
 </script>
-<link rel="stylesheet" type="text/css" href="{C_default_http_host}skins/debug_panel.css" />
+<link rel="stylesheet" type="text/css" href="{C_default_http_host}skins/debug_panel.min.css" />
 
 
 <div style="clear: both"></div>

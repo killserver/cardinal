@@ -255,7 +255,12 @@ class Debug {
 				$memory = $size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes';
 				unset($size, $filesizename, $i);
 				global $Timer;
-				$time = microtime()-$Timer;
+				$time = microtime();
+				if(strpos($time, " ")!==false) {
+					$time = explode(" ", $time);
+					$time = current($time);
+				}
+				$time = $time-$Timer;
 				unset($Timer);
 			break;
 			case DEBUG_FILES * DEBUG_INCLUDE:
@@ -330,7 +335,12 @@ class Debug {
 				$memory = $size ? round($size / pow(1024, ($isize = floor(log($size, 1024)))), 2) . $filesizename[$isize] : '0 Bytes';
 				unset($size, $filesizename, $isize);
 				global $Timer;
-				$time = microtime()-$Timer;
+				$time = microtime();
+				if(strpos($time, " ")!==false) {
+					$time = explode(" ", $time);
+					$time = current($time);
+				}
+				$time = $time-$Timer;
 				unset($Timer);
 			break;
 		}
