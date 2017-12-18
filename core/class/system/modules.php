@@ -383,6 +383,16 @@ class modules {
 			}
 		}
 		if(defined("WITHOUT_DB")) {
+			if(file_exists(PATH_CACHE_SYSTEM."loader.txt")) {
+				$modulesLoad = array();
+				$file = file_get_contents(PATH_CACHE_SYSTEM."loader.txt");
+				if(is_serialized($file)) {
+					$modulesLoad = unserialize($file);
+				}
+				if(isset($modulesLoad[$file])) {
+					return true;
+				}
+			}
 			if(file_exists(PATH_MODULES."loader.".ROOT_EX)) {
 				$modulesLoad = array();
 				include(PATH_MODULES."loader.".ROOT_EX);
