@@ -42,25 +42,25 @@ if(!defined("PATH_LANGS")) {
 	define("PATH_LANGS", ROOT_PATH."core".DS."lang".DS);
 }
 if(!defined("PATH_MODULES")) {
-	define("PATH_MODULES", ROOT_PATH."applications".DS."modules".DS);
+	define("PATH_MODULES", ROOT_PATH."application".DS."modules".DS);
 }
 if(!defined("PATH_AUTOLOADS")) {
-	define("PATH_AUTOLOADS", ROOT_PATH."applications".DS."autoload".DS);
+	define("PATH_AUTOLOADS", ROOT_PATH."application".DS."autoload".DS);
 }
 if(!defined("PATH_HOOKS")) {
-	define("PATH_HOOKS", ROOT_PATH."applications".DS."hooks".DS);
+	define("PATH_HOOKS", ROOT_PATH."application".DS."hooks".DS);
 }
 if(!defined("PATH_LOAD_LIBRARY")) {
-	define("PATH_LOAD_LIBRARY", ROOT_PATH."applications".DS."library".DS);
+	define("PATH_LOAD_LIBRARY", ROOT_PATH."application".DS."library".DS);
 }
 if(!defined("PATH_LOADED_CONTENT")) {
-	define("PATH_LOADED_CONTENT", ROOT_PATH."applications".DS);
+	define("PATH_LOADED_CONTENT", ROOT_PATH."application".DS);
 }
 if(!defined("PATH_MODELS")) {
-	define("PATH_MODELS", ROOT_PATH."applications".DS."models".DS);
+	define("PATH_MODELS", ROOT_PATH."application".DS."models".DS);
 }
 if(!defined("PATH_CRON_FILES")) {
-	define("PATH_CRON_FILES", ROOT_PATH."applications".DS."cron".DS);
+	define("PATH_CRON_FILES", ROOT_PATH."application".DS."cron".DS);
 }
 if(!defined("PATH_PAGES")) {
 	define("PATH_PAGES", ROOT_PATH."core".DS."pages".DS);
