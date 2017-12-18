@@ -171,6 +171,76 @@ if(empty($phpEx)) {
 if(!defined("ROOT_EX") && strpos($phpEx, '/') === false) {
 	define("ROOT_EX", $phpEx);
 }
+if(file_exists(ROOT_PATH."core".DS."modules".DS)) {
+	if(!file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."application.lock")) {
+		function rrmdirModules($dir) {
+	        if(is_dir($dir)) {
+	            $files = @scandir($dir);
+	            foreach($files as $file) {
+	                if($file != "." && $file != "..") {
+	                	if(is_file($dir.DS.$file)) {
+	                		@unlink($dir.DS.$file);
+	                	} else if(is_dir($dir.DS.$file.DS)) {
+		                	rrmdirModules($dir.DS.$file.DS);
+		                }
+	                }
+	            }
+	            if($dir != "." && $dir != "..") {
+		            @unlink($dir.DS);
+		        }
+	        }
+	    }
+		function rcopyModules($src, $dst) {
+	        if(is_dir($src)) {
+	            @mkdir($dst, 0777);
+	            $files = @scandir($src);
+	            foreach($files as $file) {
+	                if($file != "." && $file != "..") {
+	                    rcopyModules($src.DS.$file, $dst.DS.$file);
+	                }
+	            }
+	        } else if(file_exists($src)) {
+	            @copy($src, $dst);
+	        }
+	    }
+	    rcopyModules(ROOT_PATH."core".DS."modules", ROOT_PATH."application");
+	    rrmdirModules(ROOT_PATH."core".DS."modules");
+	    if(!file_exists(ROOT_PATH."application".DS."modules".DS)) {
+	    	if(!file_exists(ROOT_PATH."application".DS."modules".DS)) {
+	    		@mkdir(ROOT_PATH."application".DS."modules".DS, 0777, true);
+	    	}
+	        $files = @scandir(ROOT_PATH."application".DS);
+	        foreach($files as $file) {
+	        	if(is_file(ROOT_PATH."application".DS.$file)) {
+		        	@copy(ROOT_PATH."application".DS.$file, ROOT_PATH."application".DS."modules".DS.$file);
+		        	@unlink(ROOT_PATH."application".DS.$file);
+		        }
+	        }
+	    }
+	    @file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."application.lock", "");
+	}
+	if(!defined("PATH_MODULES")) {
+		define("PATH_MODULES", ROOT_PATH."application".DS."modules".DS);
+	}
+	if(!defined("PATH_AUTOLOADS")) {
+		define("PATH_AUTOLOADS", ROOT_PATH."application".DS."autoload".DS);
+	}
+	if(!defined("PATH_HOOKS")) {
+		define("PATH_HOOKS", ROOT_PATH."application".DS."hooks".DS);
+	}
+	if(!defined("PATH_LOAD_LIBRARY")) {
+		define("PATH_LOAD_LIBRARY", ROOT_PATH."application".DS."library".DS);
+	}
+	if(!defined("PATH_LOADED_CONTENT")) {
+		define("PATH_LOADED_CONTENT", ROOT_PATH."application".DS);
+	}
+	if(!defined("PATH_MODELS")) {
+		define("PATH_MODELS", ROOT_PATH."application".DS."models".DS);
+	}
+	if(!defined("PATH_CRON_FILES")) {
+		define("PATH_CRON_FILES", ROOT_PATH."application".DS."cron".DS);
+	}
+}
 if(file_exists(ROOT_PATH."core".DS."paths.".ROOT_EX)) {
 	include_once(ROOT_PATH."core".DS."paths.".ROOT_EX);
 } else if(file_exists(ROOT_PATH."core".DS."paths.default.".ROOT_EX)) {

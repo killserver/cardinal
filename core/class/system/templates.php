@@ -1451,7 +1451,7 @@ class templates {
 		}
 		$class = str_replace(array(".class", ".".ROOT_EX), "", $array[1]);
 		
-		if(!file_exists(PATH_MODULES.$array[1]) && !file_exists(PATH_MODULES."autoload".DS.$array[1])) {
+		if(!file_exists(PATH_MODULES.$array[1]) && !file_exists(PATH_AUTOLOADS.$array[1])) {
 			return $ret;
 		}
 		if(!class_exists($class)) {

@@ -8,14 +8,14 @@ function cardinalAutoload($class) {
     if(stripos(ini_get('include_path'), $class)!==false && class_exists($class, false)) {
         return false;
     }
-    if(file_exists(PATH_MODULES."autoload".DS.$class.".".ROOT_EX)) {
-        include_once(PATH_MODULES."autoload".DS.$class.".".ROOT_EX);
+    if(file_exists(PATH_AUTOLOADS.$class.".".ROOT_EX)) {
+        include_once(PATH_AUTOLOADS.$class.".".ROOT_EX);
     } elseif(file_exists(PATH_CLASS.$class.".".ROOT_EX)) {
         include_once(PATH_CLASS.$class.".".ROOT_EX);
-    } elseif(file_exists(PATH_CLASS."system".DS.$class.".".ROOT_EX)) {
-        include_once(PATH_CLASS."system".DS.$class.".".ROOT_EX);
-    } elseif(file_exists(PATH_CLASS."system".DS."DBDrivers".DS.$class.".".ROOT_EX)) {
-        include_once(PATH_CLASS."system".DS."DBDrivers".DS.$class.".".ROOT_EX);
+    } elseif(file_exists(PATH_SYSTEM.$class.".".ROOT_EX)) {
+        include_once(PATH_SYSTEM.$class.".".ROOT_EX);
+    } elseif(file_exists(PATH_DB_DRIVERS.$class.".".ROOT_EX)) {
+        include_once(PATH_DB_DRIVERS.$class.".".ROOT_EX);
     }
 }
 if(version_compare(PHP_VERSION, '5.1.2', '>=')) {

@@ -8,8 +8,8 @@ die();
 if(!defined("PATH_CLASS")) {
 	define("PATH_CLASS", ROOT_PATH."core".DS."class".DS);
 }
-if(!defined("PATH_LOGS")) {
-	define("PATH_LOGS", ROOT_PATH.'core'.DS.'cache'.DS.'system'.DS);
+if(!defined("PATH_SYSTEM")) {
+	define("PATH_SYSTEM", ROOT_PATH."core".DS."class".DS."system".DS);
 }
 if(!defined("PATH_DB_DRIVERS")) {
 	define("PATH_DB_DRIVERS", ROOT_PATH."core".DS."class".DS."system".DS."DBDrivers".DS);
@@ -22,6 +22,9 @@ if(!defined("PATH_CACHE_PAGE")) {
 }
 if(!defined("PATH_CACHE_SYSTEM")) {
 	define("PATH_CACHE_SYSTEM", ROOT_PATH.'core'.DS.'cache'.DS.'system'.DS);
+}
+if(!defined("PATH_LOGS")) {
+	define("PATH_LOGS", ROOT_PATH.'core'.DS.'cache'.DS.'system'.DS);
 }
 if(!defined("PATH_CACHE_TEMP")) {
 	define("PATH_CACHE_TEMP", ROOT_PATH."core".DS."cache".DS."tmp".DS);
@@ -39,22 +42,25 @@ if(!defined("PATH_LANGS")) {
 	define("PATH_LANGS", ROOT_PATH."core".DS."lang".DS);
 }
 if(!defined("PATH_MODULES")) {
-	define("PATH_MODULES", ROOT_PATH."core".DS."modules".DS);
+	define("PATH_MODULES", ROOT_PATH."applications".DS."modules".DS);
+}
+if(!defined("PATH_AUTOLOADS")) {
+	define("PATH_AUTOLOADS", ROOT_PATH."applications".DS."autoload".DS);
 }
 if(!defined("PATH_HOOKS")) {
-	define("PATH_HOOKS", ROOT_PATH."core".DS."modules".DS."hooks".DS);
+	define("PATH_HOOKS", ROOT_PATH."applications".DS."hooks".DS);
 }
 if(!defined("PATH_LOAD_LIBRARY")) {
-	define("PATH_LOAD_LIBRARY", ROOT_PATH."core".DS."modules".DS."library".DS);
+	define("PATH_LOAD_LIBRARY", ROOT_PATH."applications".DS."library".DS);
 }
 if(!defined("PATH_LOADED_CONTENT")) {
-	define("PATH_LOADED_CONTENT", ROOT_PATH."core".DS."modules".DS);
+	define("PATH_LOADED_CONTENT", ROOT_PATH."applications".DS);
 }
 if(!defined("PATH_MODELS")) {
-	define("PATH_MODELS", ROOT_PATH."core".DS."modules".DS."models".DS);
+	define("PATH_MODELS", ROOT_PATH."applications".DS."models".DS);
 }
 if(!defined("PATH_CRON_FILES")) {
-	define("PATH_CRON_FILES", PATH_MODULES."cron".DS);
+	define("PATH_CRON_FILES", ROOT_PATH."applications".DS."cron".DS);
 }
 if(!defined("PATH_PAGES")) {
 	define("PATH_PAGES", ROOT_PATH."core".DS."pages".DS);

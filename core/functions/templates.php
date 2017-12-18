@@ -60,7 +60,7 @@ global $user, $manifest;
 		$dirs = read_dir(PATH_LOADED_CONTENT."js".DS, ".".ROOT_EX);
 		sort($dirs);
 		for($i=0;$i<sizeof($dirs);$i++) {
-			if(file_exists(PATH_LOADED_CONTENT."js".DS.$dirs[$i]) && $dirs[$i]!="index.php") {
+			if(file_exists(PATH_LOADED_CONTENT."js".DS.$dirs[$i]) && $dirs[$i]!="index.html" && $dirs[$i]!="index.php") {
 				include_once(PATH_LOADED_CONTENT."js".DS.$dirs[$i]);
 			}
 		}
@@ -73,7 +73,7 @@ global $user, $manifest;
 		$dirs = read_dir(PATH_LOADED_CONTENT."css".DS, ".".ROOT_EX);
 		sort($dirs);
 		for($i=0;$i<sizeof($dirs);$i++) {
-			if(file_exists(PATH_LOADED_CONTENT."css".DS.$dirs[$i]) && $dirs[$i]!="index.php") {
+			if(file_exists(PATH_LOADED_CONTENT."css".DS.$dirs[$i]) && $dirs[$i]!="index.html" && $dirs[$i]!="index.php") {
 				include_once(PATH_LOADED_CONTENT."css".DS.$dirs[$i]);
 			}
 		}

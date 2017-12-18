@@ -28,11 +28,9 @@ die();
 
 require_once(ROOT_PATH."core".DS."loadConfig.".ROOT_EX);
 
-$useNew = false;
 function require_dir($dir = "", $modules = "", $force = false) { include_dir($dir, $modules, $force); }
 
 function include_dir($dir = "", $modules = "", $force = false) {
-global $useNew;
 	if(empty($dir)) {
 		$dir = PATH_FUNCTIONS;
 	}
@@ -42,26 +40,32 @@ global $useNew;
 	} else {
 		$inc = true;
 	}
+	$useNew = false;
 	if(is_dir($dir)) {
 		if($dh = dir($dir)) {
 			while(($file = $dh->read()) !== false) {
 				$strip_path = str_replace(ROOT_PATH, "", PATH_MODULES);
-				if($file != "index.".ROOT_EX && $file != "." && $file != ".." && strpos($file, $modules) !== false) {
+				if($file != "index.html" && $file != "index.".ROOT_EX && $file != "." && $file != "..") {
+					if($inc && is_file($dir.DS.$file) && strpos($file, $modules) === false) {
+						continue;
+					}
 					if($inc && !modules::load_modules($strip_path.$file, $modules)) {
 						if(!$force) {
 							continue;
 						}
 					}
+					if(is_dir($dir.DS.$file)) {
+						$useNew = true;
+					}
 					if($useNew) {
 						$class = str_replace($modules, "", $file);
-						require_once($dir.$class.DS.$file);
+						require_once($dir.$class.DS."init.".ROOT_EX);
 					} else {
 						require_once($dir.$file);
 					}
 					if($inc) {
 						$class = str_replace($modules, "", $file);
 						if(class_exists($class)) {
-							modules::initialize($class);
 							$classes = new $class();
 							unset($classes);
 						}
@@ -78,7 +82,6 @@ if(file_exists(PATH_MEDIA."config.route.global.".ROOT_EX)) {
 if(file_exists(PATH_MEDIA."config.route.".ROOT_EX)) {
 	require_once(PATH_MEDIA."config.route.".ROOT_EX);
 }
-include_dir(PATH_MODULES, ".2.class.".ROOT_EX);
 include_dir(PATH_MODULES, ".class.".ROOT_EX);
 include_dir();
 if(file_exists(ROOT_PATH.".env")) {
