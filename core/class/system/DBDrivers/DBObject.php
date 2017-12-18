@@ -30,6 +30,7 @@ class DBObject implements ArrayAccess {
 	private $pseudoFields = array();
 	private $multiple = false;
 	private static $usedCache = false;
+	private $listAdd = array();
 	
 	final public function getInstance() {
 		$th = clone $this;
@@ -48,6 +49,7 @@ class DBObject implements ArrayAccess {
 		$th->allowEmptyAttr = false;
 		$th->pseudoFields = array();
 		$th->multiple = false;
+		$th->listAdd = array();
 		return $th;
 	}
 	
@@ -111,6 +113,9 @@ class DBObject implements ArrayAccess {
 		}
 		if(isset($ret['allowEmptyAttr'])) {
 			unset($ret['allowEmptyAttr']);
+		}
+		if(isset($ret['listAdd'])) {
+			unset($ret['listAdd']);
 		}
 	}
 	
@@ -201,6 +206,9 @@ class DBObject implements ArrayAccess {
 			}
 			if(isset($th->allowEmptyAttr)) {
 				unset($th->allowEmptyAttr);
+			}
+			if(isset($th->listAdd)) {
+				unset($th->listAdd);
 			}
 		} else {
 			for($i=0;$i<sizeof($th);$i++) {
@@ -642,6 +650,12 @@ class DBObject implements ArrayAccess {
 		$val = array_values($arr);
 		$table = $this->addPrefixTable($table);
 		$this->clearCache($table);
+		if(sizeof($this->listAdd)>0) {
+			$keys = array_keys($this->listAdd);
+			$vals = array_values($this->listAdd);
+			$key = array_merge($key, $keys);
+			$val = array_merge($val, $vals);
+		}
 		return db::doquery("INSERT INTO ".$table." (".implode(", ", array_map(array(&$this, "buildKeyIn"), $key)).") VALUES(".implode(", ", array_map(array(&$this, "buildValueIn"), $val)).")");
 	}
 	
@@ -686,6 +700,12 @@ class DBObject implements ArrayAccess {
 		$val = array_values($arr);
 		$table = $this->addPrefixTable($table);
 		$this->clearCache($table);
+		if(sizeof($this->listAdd)>0) {
+			$keys = array_keys($this->listAdd);
+			$vals = array_values($this->listAdd);
+			$key = array_merge($key, $keys);
+			$val = array_merge($val, $vals);
+		}
 		return db::doquery("UPDATE ".$table." SET ".implode(", ", array_map(array(&$this, "buildUpdateKV"), $key, $val)).$where.$orderBy.$limit);
 	}
 	
@@ -720,6 +740,7 @@ class DBObject implements ArrayAccess {
 	}
 	
 	final public function addField($name, $val = "") {
+		$this->listAdd[$name] = $val;
 		$this->{$name} = $val;
 		return true;
 	}
