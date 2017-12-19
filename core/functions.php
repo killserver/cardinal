@@ -66,6 +66,7 @@ function include_dir($dir = "", $modules = "", $force = false) {
 					if($inc) {
 						$class = str_replace($modules, "", $file);
 						if(class_exists($class)) {
+							modules::initialize($class);
 							$classes = new $class();
 							unset($classes);
 						}
