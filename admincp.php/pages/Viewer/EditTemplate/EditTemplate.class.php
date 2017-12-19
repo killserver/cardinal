@@ -25,6 +25,7 @@ class EditTemplate extends Core {
 			$File = file_get_contents($Patch);
 			$File = preg_replace("/{C_default_http_local}/","/",$File);
 			$File = preg_replace("/{THEME}\//", config::Select("default_http_local")."skins/{C_skins[skins]}/", $File);
+			$File = str_replace("{", '&#123;', $File);
 			$File = htmlspecialchars($File);
 			templates::assign_var("File", $File);
 			templates::assign_var("css", json_encode($sRet));
@@ -34,6 +35,8 @@ class EditTemplate extends Core {
 			templates::gzip(false);
 			$File = $_POST["File"];
 			$File = preg_replace("/\.\.\\//", "{C_default_http_local}", $File);
+			$File = str_replace('&#123;', "{", $File);
+			$File = str_replace(config::Select("default_http_local")."skins/".config::Select("skins", "skins")."/", "{THEME}/", $File);
 			$FileOpen = fopen($Patch, 'w');
 			fputs($FileOpen, $File);
 			fclose($FileOpen);

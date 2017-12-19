@@ -186,7 +186,7 @@ if(file_exists(ROOT_PATH."core".DS."modules".DS)) {
 	                }
 	            }
 	            if($dir != "." && $dir != "..") {
-		            @unlink($dir.DS);
+		            @unlink($dir);
 		        }
 	        }
 	    }
@@ -291,13 +291,6 @@ $cnf = new config();
 $cnf->init();
 $config = $cnf->all();
 unset($cnf);
-if(!defined("WITHOUT_DB")) {
-	if(isset($config['db_version'])) {
-		updater::update(DB_VERSION, $config['db_version']);
-	} else {
-		updater::update(DB_VERSION, "");
-	}
-}
 $langInit = new lang();
 $lang = $langInit->init_lang();
 if(!defined("WITHOUT_DB")) {

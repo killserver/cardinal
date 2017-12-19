@@ -172,9 +172,6 @@ global $manifest;
 		case "news":
 			include_once(PATH_PAGES."view.".ROOT_EX);
 		break;
-		case "skin":
-			include_once(PATH_PAGES."skin.".ROOT_EX);
-		break;
 		case "search":
 			include_once(PATH_PAGES."search.".ROOT_EX);
 		break;

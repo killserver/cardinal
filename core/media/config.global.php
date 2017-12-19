@@ -181,6 +181,9 @@ $config = array_merge($config, array(
 		"PEAR" => "1.10.5",
 		"Archive Tar" => "1.1",
 	),
+	"htmlPrefix" => array(
+		"og" => "http://ogp.me/ns",
+	),
 	"logoAdminMain" => "assets/xenon/images/logo@2x.png",
 	"logoAdminMobile" => "assets/xenon/images/logo-collapsed@2x.png",
 	"defaultAdminSkin" => " ",

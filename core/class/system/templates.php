@@ -2338,6 +2338,14 @@ if(!$test) {
 			}
 			$h = preg_replace("#<html(.*?)>#is", "<html lang=\"".$lang."\"$1>", $h);
 		}
+		if(!preg_match("#<html.*?prefix=['\"](.+?)['\"].*?>#is", $h)) {
+			$arr = array();
+			$prefix = config::Select("htmlPrefix");
+			foreach($prefix as $namespace => $link) {
+				$arr[] = $namespace.": ".$link."#";
+			}
+			$h = preg_replace("#<html(.*?)>#is", "<html$1 prefix=\"".implode(" ", $arr)."\">", $h);
+		}
 		$h = cardinalEvent::execute("templates::display", $h);
 		HTTP::echos($h);
 		unset($h, $body, $lang);

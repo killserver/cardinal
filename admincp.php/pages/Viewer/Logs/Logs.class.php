@@ -18,9 +18,9 @@ class Logs extends Core {
 			unlink(PATH_CACHE_SYSTEM."php_log.txt");
 		}
 		if(!defined("WITHOUT_DB") && db::connected()) {
-			$list = db::doquery("SELECT `id` FROM `".PREFIX_DB."error_log`", true);
+			$list = db::doquery("SELECT `id` FROM {{error_log}}", true);
 			while($l = db::fetch_assoc($list)) {
-				db::doquery("DELETE FROM `".PREFIX_DB."error_log` WHERE id = ".$l['id']);
+				db::doquery("DELETE FROM {{error_log}} WHERE id = ".$l['id']);
 			}
 		}
 	}
@@ -48,7 +48,7 @@ class Logs extends Core {
 				), "logs", $log->filename.$log->line);
 			}
 		} elseif(!defined("WITHOUT_DB") && db::connected()) {
-			db::doquery("SELECT * FROM `".PREFIX_DB."error_log` ORDER BY `id` DESC", true);
+			db::doquery("SELECT * FROM {{error_log}} ORDER BY `id` DESC", true);
 			while($log = db::fetch_assoc()) {
 				templates::assign_vars(array(
 					"time" => date("d-m-Y H:i:s", $log['times']),

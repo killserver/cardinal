@@ -12,7 +12,7 @@ class Info {
 		$parser = new Parser();
 		$parser->url($parsers);
 		$parser->timeout(3);
-		$parser->post(array("server" => str_replace("https", "http", config::Select('default_http_host')), "ip" => (isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR'] : "")));
+		$parser->post(array("server" => str_replace("https", "http", config::Select('default_http_host')), "ip" => (isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR'] : ""), "version" => (defined("VERSION") ? VERSION : "")));
 		$parser->get();
 		unset($parser);
 	}

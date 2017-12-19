@@ -59,7 +59,11 @@ function include_dir($dir = "", $modules = "", $force = false) {
 					}
 					if($useNew) {
 						$class = str_replace($modules, "", $file);
-						require_once($dir.$class.DS."init.".ROOT_EX);
+						if(file_exists($dir.$class.DS."init.".ROOT_EX)) {
+							require_once($dir.$class.DS."init.".ROOT_EX);
+						} else if(file_exists($dir.$class.DS.$class.".".ROOT_EX)) {
+							require_once($dir.$class.DS.$class.".".ROOT_EX);
+						}
 					} else {
 						require_once($dir.$file);
 					}
@@ -67,6 +71,22 @@ function include_dir($dir = "", $modules = "", $force = false) {
 						$class = str_replace($modules, "", $file);
 						if(class_exists($class)) {
 							modules::initialize($class);
+							if($useNew) {
+								if(file_exists($dir.$class.DS."config".DS)) {
+									global $config;
+									include_dir($dir.$class.DS."config".DS, ".".ROOT_EX);
+								}
+								if(file_exists($dir.$class.DS."classes".DS)) {
+									include_dir($dir.$class.DS."classes".DS, ".".ROOT_EX);
+								}
+								if(file_exists($dir.$class.DS."lang".DS)) {
+									global $lang;
+									include_dir($dir.$class.DS."lang".DS, ".".ROOT_EX);
+								}
+								if(file_exists($dir.$class.DS."routes".DS)) {
+									include_dir($dir.$class.DS."routes".DS, ".".ROOT_EX);
+								}
+							}
 							$classes = new $class();
 							unset($classes);
 						}
