@@ -41,6 +41,25 @@ global $manifest;
 	return $result;
 }
 
+function get_module_url($file = "", $module = "") {
+	if(empty($module)) {
+		$module = debug_backtrace();
+		$module = $module[0]['file'];
+	}
+	$moduleDir = dirname($module).DS;
+	$moduleDir = str_replace(ROOT_PATH, "", $moduleDir);
+	return config::Select("default_http_local").str_replace(DS, "/", $moduleDir).(!empty($file) ? $file : "");
+}
+
+function get_module_path($module = "") {
+	if(empty($module)) {
+		$module = debug_backtrace();
+		$module = $module[0]['file'];
+	}
+	$moduleDir = dirname($module).DS;
+	return $moduleDir;
+}
+
 function loadConfig($file = "") {
 global $config;
 	if($file==='' && !defined("ROOT_PATH")) {
