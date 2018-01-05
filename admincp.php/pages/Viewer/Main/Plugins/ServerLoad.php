@@ -25,7 +25,7 @@ class Main_ServerLoad extends Main {
 		$free = @shell_exec('free');
 		$free = (string)trim($free);
 		if(empty($free)) {
-			return "0";
+			return false;
 		}
 		$free_arr = explode("\n", $free);
 		$mem = explode(" ", $free_arr[1]);

@@ -62,7 +62,7 @@ class Logs extends Core {
 			}
 		}
 		$this->ParseLang();
-		$tmp = templates::complited_assing_vars("errors", null);
+		$tmp = templates::completed_assign_vars("errors", null);
 		templates::clean();
 		$this->Prints($tmp, true);
 	}

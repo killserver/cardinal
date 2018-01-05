@@ -24,9 +24,9 @@ die();
 if(!defined("API_URL")) {
 	define("API_URL", "http://online-killer.pp.ua/api.php");
 }*/
-if(!defined("ROUTE_GET_URL")) {
+/*if(!defined("ROUTE_GET_URL")) {
 	define("ROUTE_GET_URL", "PATH_INFO");
-}
+}*/
 
 $config = array_merge($config, array(
 	"api_key" => "1234567890",

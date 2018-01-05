@@ -44,6 +44,12 @@ if(!defined("PATH_LANGS")) {
 if(!defined("PATH_MODULES")) {
 	define("PATH_MODULES", ROOT_PATH."application".DS."modules".DS);
 }
+if(!defined("PATH_GLOBAL")) {
+	define("PATH_GLOBAL", ROOT_PATH."application".DS."global".DS);
+}
+if(!defined("PATH_MYMODULES")) {
+	define("PATH_MYMODULES", ROOT_PATH."application".DS."my-modules".DS);
+}
 if(!defined("PATH_AUTOLOADS")) {
 	define("PATH_AUTOLOADS", ROOT_PATH."application".DS."autoload".DS);
 }

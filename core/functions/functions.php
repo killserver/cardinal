@@ -488,7 +488,7 @@ function vdump() {
 		$title = "";
 	}
 	$backtrace = debug_backtrace();
-	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "Called: ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "").(!empty($title) ? "<b>".$title."</b>\n\n" : '');
+	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "<b style=\"color:#00f;\">Called:</b> ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "").(!empty($title) ? "<b>".$title."</b>\n\n" : '');
 	if(sizeof($list)>0) {
 		call_user_func_array("var_dump", $list);
 	}
@@ -500,7 +500,7 @@ function vdebug() {
 	Debug::echoDebugMode(true);
 	Debug::limitOnView(0);
 	$backtrace = debug_backtrace();
-	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "Called: ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "");
+	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "<b style=\"color:#00f;\">Called:</b> ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "")."</pre>";
 	if(func_num_args()>0) {
 		echo call_user_func_array(array("Debug", "vars"), func_get_args());
 	}

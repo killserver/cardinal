@@ -90,7 +90,8 @@ if(!defined("DEBUG_ALL")) {
 }
 
 // Upload
-if(!defined("UPLOAD_CORE")) {
+// ToDo: WTF?!
+/*if(!defined("UPLOAD_CORE")) {
 	define("UPLOAD_CORE", 10);
 }
 if(!defined("UPLOAD_FTP")) {
@@ -116,16 +117,16 @@ if(!defined("UPLOAD_CMD")) {
 }
 if(!defined("UPLOAD_ALL")) {
 	define("UPLOAD_ALL", 240000);
-}
+}*/
 
 if(!defined("VERSION")) {
-	define("VERSION", "7.8");
+	define("VERSION", "8.0");
 }
 if(!defined("VERSION_ADMIN_STYLE")) {
 	define("VERSION_ADMIN_STYLE", "1.5");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "70850");
+	define("INTVERSION", "80003");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "6.5");
@@ -153,9 +154,10 @@ if(!defined("S_TIME_VIEW")) {
 }
 
 // Shop
-if(!defined("SERVER_MODULES")) {
+// ToDo: WTF?!
+/*if(!defined("SERVER_MODULES")) {
 	define("SERVER_MODULES", "http://shop.killer.pp.ua/");
-}
+}*/
 if(!defined("LANGUAGE_SUPPORT_SERVICE")) {
 	define("LANGUAGE_SUPPORT_SERVICE", "https://raw.githubusercontent.com/killserver/ForCardinal/master/translateSupport.serialize");
 }

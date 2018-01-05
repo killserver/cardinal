@@ -19,7 +19,7 @@
  * fix bugs on include files
  *
 */
-if(strpos($_SERVER['PATH_INFO'], "/favicon.ico")!==false || strpos($_SERVER['REQUEST_URI'], "/favicon.ico")!==false) {
+if(isset($_SERVER['PATH_INFO']) && strpos($_SERVER['PATH_INFO'], "/favicon.ico")!==false) || (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], "/favicon.ico")!==false)) {
 	header("HTTP/2.0 404 Not found");
 	die();
 }
@@ -36,10 +36,11 @@ if(is_array($config) && sizeof($config)>0 && isset($config["default_http_local"]
 }
 
 if(isset($_GET['noShowAdmin'])) {
+	define("IS_NOSHOWADMIN", true);
 	unset($_GET['noShowAdmin']);
-	if(strpos($_SERVER['QUERY_STRING'], "noShowAdmin")!==false) {
+	if(isset($_SERVER['QUERY_STRING']) && strpos($_SERVER['QUERY_STRING'], "noShowAdmin")!==false) {
 		$_SERVER['QUERY_STRING'] = htmlspecialchars_decode($_SERVER['QUERY_STRING']);
-		$_SERVER['QUERY_STRING'] = preg_replace("#noShowAdmin=(.+?)(\&|)#", "", $_SERVER['QUERY_STRING']);
+		$_SERVER['QUERY_STRING'] = preg_replace("#noShowAdmin(.*?)(\&|)#", "", $_SERVER['QUERY_STRING']);
 	}
 }
 
@@ -115,6 +116,17 @@ if(config::Select("activeCache")) {
 	}
 }
 $langPanel = modules::setLangPanel();
+if(isset($globalClass) && is_array($globalClass) && sizeof($globalClass)>0) {
+	$globalClass = array_values($globalClass);
+	for($i=0;$i<sizeof($globalClass);$i++) {
+		$name = $globalClass[$i];
+		if(class_exists($name, false)) {
+			$reflect  = new ReflectionClass($name);
+			$instance = $reflect->newInstanceArgs($langPanel);
+			unset($reflect, $instance);
+		}
+	}
+}
 if($load) {
 	if(!$is_file && empty($file)) {
 		if($class == "page") {

@@ -383,13 +383,16 @@ class modules {
 			}
 		}
 		if(defined("WITHOUT_DB")) {
-			if(file_exists(PATH_CACHE_SYSTEM."loader.txt")) {
+			if(file_exists(PATH_CACHE_SYSTEM."modules.json")) {
 				$modulesLoad = array();
-				$file = file_get_contents(PATH_CACHE_SYSTEM."loader.txt");
-				if(is_serialized($file)) {
-					$modulesLoad = unserialize($file);
-				}
-				if(isset($modulesLoad[$file])) {
+				$files = file_get_contents(PATH_CACHE_SYSTEM."modules.json");
+				try {
+					$json = json_decode($files, true);
+					$modulesLoad = array_merge($modulesLoad, $json);
+				} catch(Exception $ex) {}
+				$fileCheck = str_replace(str_replace(ROOT_PATH, "", PATH_MODULES), "", $file);
+				$fileCheck = str_replace(".class.".ROOT_EX, "", $fileCheck);
+				if(isset($modulesLoad[$fileCheck]) && isset($modulesLoad[$fileCheck]['active']) && $modulesLoad[$fileCheck]['active']===true) {
 					return true;
 				}
 			}
@@ -461,7 +464,13 @@ class modules {
 
 	final public static function manifest_log($select, $set) {
 	global $manifest;
-		$manifest['log'][$select][] = $set;
+		if(!isset($manifest['log'])) {
+			$manifest['log'] = array();
+		}
+		if(!isset($manifest['log'][$select])) {
+			$manifest['log'][$select] = array();
+		}
+		$manifest['log'][$select][] = ($set);
 	return $manifest;
 	}
 
@@ -618,17 +627,20 @@ class modules {
 		return true;
 	}
 
-	final public static function initialize($class) {
+	final public static function initialize($class, $path = "") {
 		$arr = array();
 		if(file_exists(PATH_CACHE_SYSTEM."modules.json")) {
 			$file = file_get_contents(PATH_CACHE_SYSTEM."modules.json");
 			$arrs = json_decode($file, true);
 			$arr = array_merge($arr, $arrs);
 		}
+		if(isset($arr[$class]) && isset($arr[$class]['active']) && $arr[$class]['active']!==true) {
+			return false;
+		}
 		if(!isset($arr[$class]) && class_exists($class, false) && method_exists($class, "installation")) {
 			call_user_func_array(array(&$class, "installation"), array());
 			$arr[$class] = array("installTime" => time(), "version" => (property_exists($class, "version") ? $class::$version : "0.1"));
-			file_put_contents(PATH_CACHE_SYSTEM."modules.json", json_encode($arr));
+			@file_put_contents(PATH_CACHE_SYSTEM."modules.json", json_encode($arr));
 			cardinal::RegAction("Установка модуля \"".$class."\" версии ".(property_exists($class, "version") ? $class::$version : "0.1"));
 		}
 		if(isset($arr[$class]) && class_exists($class, false) && isset($arr[$class]['version']) && property_exists($class, "version") && $class::$version > $arr[$class]['version']) {
@@ -636,10 +648,30 @@ class modules {
 				call_user_func_array(array(&$class, "updater"), array("version" => $arr[$class]['version']));
 			}
 			$arr[$class] = array_merge($arr[$class], array("updateTime" => time(), "version" => $class::$version));
-			file_put_contents(PATH_CACHE_SYSTEM."modules.json", json_encode($arr));
+			@file_put_contents(PATH_CACHE_SYSTEM."modules.json", json_encode($arr));
 			cardinal::RegAction("Обновление модуля \"".$class."\" с версии ".$arr[$class]['version']." до версии ".$class::$version);
 		}
+		self::manifest_log('init_modules', array($class, $path));
 		return true;
+	}
+
+	final public static function actived($class, $set = "") {
+		$arr = array();
+		if(file_exists(PATH_CACHE_SYSTEM."modules.json")) {
+			$file = file_get_contents(PATH_CACHE_SYSTEM."modules.json");
+			$arrs = json_decode($file, true);
+			$arr = array_merge($arr, $arrs);
+		}
+		if($set!=="") {
+			if(!isset($arr[$class])) {
+				$arr[$class] = array();
+			}
+			$arr[$class]['active'] = $set;
+			@file_put_contents(PATH_CACHE_SYSTEM."modules.json", json_encode($arr));
+			return true;
+		} else {
+			return (isset($arr[$class]) && isset($arr[$class]['active']) && $arr[$class]['active']===true ? $arr[$class]['active'] : false);
+		}
 	}
 
 	final public static function setLangPanel() {

@@ -69,4 +69,30 @@ function parser_host($url) {
 return $ret;
 }
 
+function closetags($html, $singleTagsAdd = array()) {
+	$single_tags = array('meta', 'img', 'br', 'link', 'area', 'input', 'hr', 'col', 'param', 'base');
+	if(sizeof($singleTagsAdd)>0) {
+		$single_tags = array_merge($single_tags, $singleTagsAdd);
+	}
+	preg_match_all('~<([a-z0-9]+)(?: .*)?(?<![/|/ ])>~iU', $html, $result);
+	$openedtags = $result[1];
+	preg_match_all('~</([a-z0-9]+)>~iU', $html, $result);
+	$closedtags = $result[1];
+	$len_opened = sizeof($openedtags);
+	if(sizeof($closedtags) == $len_opened) {
+		return $html;
+	}
+    $openedtags = array_reverse($openedtags);
+	for($i=0;$i<$len_opened;$i++) {
+		if(!in_array($openedtags[$i], $single_tags)) {
+			if(($key = array_search($openedtags[$i], $closedtags)) !== false) {
+				unset($closedtags[$key]);
+			} else {
+				$html .= '</'.$openedtags[$i].'>';
+			}
+		}
+	}
+	return $html;
+}
+
 ?>

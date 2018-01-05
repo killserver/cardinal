@@ -38,7 +38,13 @@ function removeInputFile(th, name, val) {
 $(document).ready(function() {
 	$(".showPreview").each(function(i, elem) {
 		$(elem).after("<br><img src='"+$(elem).attr("href")+"' width='200'>");
-	})
+	});
+	$(".btn-savePage").click(function() {
+		if($('form')[0].checkValidity()) {
+			$(this).attr("desabled", "disabled");
+			$(this).find("i").removeClass('fa-save').addClass('fa-refresh fa-spin');
+		}
+	});
 });
 function addInputFile(name) {
 	jQuery("span#inputForFile").append('<div><div class="col-sm-10"><input class="form-control" type="file" multiple="multiple" name="'+name+'[]" placeholder="{L_"Выберите"} {L_"файл"}"></div><div class=\'col-sm-2\'><a class=\'btn btn-red btn-block fa-remove\' onclick=\'$(this).parent().parent().remove();\'></a></div></div>');

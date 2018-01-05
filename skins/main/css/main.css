@@ -4,7 +4,13 @@ body {
 
 /* Main skins */
 
-@media only screen and (min-width: 35em) {
+/* tablet */
+@media only screen and (max-width: 70em) {
+
+}
+
+/* mobile */
+@media only screen and (max-width: 35em) {
 	
 }
 

@@ -43,6 +43,7 @@ class Updaters extends Core {
 	}
 	
 	function __construct() {
+		callAjax();
 		$this->ParseLang();
 		if(isset($_GET['download'])) {
 			if(file_exists(PATH_CACHE_SYSTEM."lastest.tar.gz")) {

@@ -40,7 +40,7 @@ class Core {
 	
 	protected function ParseLang() {
 	global $lang;
-		$dir = ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Lang".DS.lang::get_lg().DS;
+		$dir = ADMIN_LANGS.lang::get_lg().DS;
 		if(is_dir($dir)) {
 			if($dh = dir($dir)) {
 				while(($file = $dh->read()) !== false) {
@@ -132,7 +132,7 @@ class Core {
 	
 	protected function ParseSkins($dir = "", $name = "skins", $sub_name = "") {
 		if(empty($dir)) {
-			$dir = ROOT_PATH."skins".DS;
+			$dir = PATH_SKINS;
 		}
 		$skins = $this->ParseDirSkins($dir);
 		$selected = config::Select("skins", $name);
@@ -201,18 +201,18 @@ class Core {
 	private function CheckLoadPlugins($file) {
 		if(is_bool($this->load_adminmodules)) {
 			if(defined("WITHOUT_DB")) {
-				if(file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS."loader.".ROOT_EX)) {
+				if(file_exists(ADMIN_VIEWER."Core".DS."Plugins".DS."loader.".ROOT_EX)) {
 					$adminCore = array();
-					include(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS."loader.".ROOT_EX);
+					include(ADMIN_VIEWER."Core".DS."Plugins".DS."loader.".ROOT_EX);
 					$this->load_adminmodules = $adminCore;
-				} else if(file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS."loader.default.".ROOT_EX)) {
+				} else if(file_exists(ADMIN_VIEWER."Core".DS."Plugins".DS."loader.default.".ROOT_EX)) {
 					$adminCore = array();
-					include(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS."loader.default.".ROOT_EX);
+					include(ADMIN_VIEWER."Core".DS."Plugins".DS."loader.default.".ROOT_EX);
 					$this->load_adminmodules = $adminCore;
 				}
 			} elseif(!cache::Exists("load_adminmodules")) {
-				$delete = ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS;
-				db::doquery("SELECT `file` FROM `".PREFIX_DB."modules` WHERE `activ` LIKE \"yes\" AND `type` LIKE \"admincp\"", true);
+				$delete = str_replace(ROOT_PATH, "", ADMIN_VIEWER."Core".DS."Plugins".DS);
+				db::doquery("SELECT `file` FROM {{modules}} WHERE `activ` LIKE \"yes\" AND `type` LIKE \"admincp\"", true);
 				$this->load_adminmodules = array();
 				while($row = db::fetch_assoc()) {
 					$this->load_adminmodules[str_replace($delete, "", $row['file'])] = true;
@@ -230,7 +230,7 @@ class Core {
 	}
 	
 	private function ReadPlugins() {
-		$dir = ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Core".DS."Plugins".DS;
+		$dir = ADMIN_VIEWER."Core".DS."Plugins".DS;
 		if(file_exists($dir) && is_dir($dir)) {
 			$files = array();
 			$lengthEx = (-(strlen(ROOT_EX)+1));
@@ -307,7 +307,7 @@ class Core {
 			Route::RegParam("lang", $_COOKIE['langSet']);
 		}
 		if(!$print) {
-			$echo = (templates::complited_assing_vars($echo, null));
+			$echo = (templates::completed_assign_vars($echo, null));
 		}
 		if(isset($_POST['jajax'])) {
 			HTTP::echos(templates::view($echo));
@@ -324,11 +324,11 @@ class Core {
 		templates::assign_var("count_unmoder", $this->unmoder());
 		templates::assign_var("title_admin", $this->title());
 		$links = array();
-		if($dh = dir(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."menu".DS)) {
+		if($dh = dir(ADMIN_MENU)) {
 			$i=1;
 			while(($file = $dh->read()) !== false) {
 				if($file != "index.".ROOT_EX && $file != "index.html" && $file != "." && $file != "..") {
-					include_once(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."menu".DS.$file);
+					include_once(ADMIN_MENU.$file);
 				}
 			}
 			$dh->close();
@@ -376,12 +376,12 @@ class Core {
 			$all++;
 		}
 		templates::assign_var("nowLangText", "{L_Languages}&nbsp;".nucfirst(lang::get_lg()));
-		templates::assign_var("nowLangImg", "https://killserver.github.io/ForCardinal/flags/".lang::get_lg().".png");
+		templates::assign_var("nowLangImg", ADMIN_FLAGS_UI.lang::get_lg().".png");
 		$support = lang::support();
 		for($i=0;$i<sizeof($support);$i++) {
 			$cutLang = nsubstr($support[$i], 4, -3);
 			$lang = nucfirst($cutLang);
-			templates::assign_vars(array("img" => "https://killserver.github.io/ForCardinal/flags/".$cutLang.".png", "langMenu" => $cutLang, "lang" => "{L_Languages}&nbsp;".$lang), "langListSupport", "lang".($i+1));
+			templates::assign_vars(array("img" => ADMIN_FLAGS_UI.$cutLang.".png", "langMenu" => $cutLang, "lang" => "{L_Languages}&nbsp;".$lang), "langListSupport", "lang".($i+1));
 		}
 		$this->ReadPlugins();
 		if(sizeof(self::$modules)>0 && isset(self::$modules['before'])) {
@@ -389,7 +389,7 @@ class Core {
 				call_user_func($func, false);
 			}
 		}
-		$echos = templates::view(templates::complited_assing_vars("main", null));
+		$echos = templates::view(templates::completed_assign_vars("main", null));
 		if(sizeof(self::$modules)>0 && isset(self::$modules['after'])) {
 			foreach(self::$modules['after'] as $name => $func) {
 				$echos = call_user_func($func, $echos);

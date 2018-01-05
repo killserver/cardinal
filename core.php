@@ -258,7 +258,7 @@ if(!defined("DEVELOPER_MODE") && file_exists(PATH_MEDIA."develop.lock")) {
 if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."isFrame.lock")) {
 	define("WITHOUT_DB", true);
 }
-if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."oldPrinciple.lock")) {
+if(!defined("CHECK_MOD_ADMIN") && file_exists(PATH_MEDIA."oldPrinciple.lock")) {
 	define("CHECK_MOD_ADMIN", false);
 }
 if(!defined("ENABLED_SUPPORTS") && file_exists(PATH_MEDIA."enabledSupports.lock")) {

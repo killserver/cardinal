@@ -28,9 +28,10 @@ die();
 
 require_once(ROOT_PATH."core".DS."loadConfig.".ROOT_EX);
 
-function require_dir($dir = "", $modules = "", $force = false) { include_dir($dir, $modules, $force); }
+function require_dir($dir = "", $modules = "", $force = false, $globs = false) { include_dir($dir, $modules, $force, $globs); }
 
-function include_dir($dir = "", $modules = "", $force = false) {
+function include_dir($dir = "", $modules = "", $force = false, $globs = false) {
+global $globalClass;
 	if(empty($dir)) {
 		$dir = PATH_FUNCTIONS;
 	}
@@ -70,25 +71,30 @@ function include_dir($dir = "", $modules = "", $force = false) {
 					if($inc) {
 						$class = str_replace($modules, "", $file);
 						if(class_exists($class)) {
-							modules::initialize($class);
-							if($useNew) {
-								if(file_exists($dir.$class.DS."config".DS)) {
-									global $config;
-									include_dir($dir.$class.DS."config".DS, ".".ROOT_EX);
+							if(modules::initialize($class, ($useNew ? $dir.$class.DS : $dir.$file))) {
+								if($useNew) {
+									if(file_exists($dir.$class.DS."config".DS)) {
+										global $config;
+										include_dir($dir.$class.DS."config".DS, ".".ROOT_EX);
+									}
+									if(file_exists($dir.$class.DS."classes".DS)) {
+										include_dir($dir.$class.DS."classes".DS, ".".ROOT_EX);
+									}
+									if(file_exists($dir.$class.DS."lang".DS)) {
+										global $lang;
+										include_dir($dir.$class.DS."lang".DS, ".".ROOT_EX);
+									}
+									if(file_exists($dir.$class.DS."routes".DS)) {
+										include_dir($dir.$class.DS."routes".DS, ".".ROOT_EX);
+									}
 								}
-								if(file_exists($dir.$class.DS."classes".DS)) {
-									include_dir($dir.$class.DS."classes".DS, ".".ROOT_EX);
-								}
-								if(file_exists($dir.$class.DS."lang".DS)) {
-									global $lang;
-									include_dir($dir.$class.DS."lang".DS, ".".ROOT_EX);
-								}
-								if(file_exists($dir.$class.DS."routes".DS)) {
-									include_dir($dir.$class.DS."routes".DS, ".".ROOT_EX);
+								if(!$globs) {
+									$classes = new $class();
+									unset($classes);
+								} else {
+									$globalClass[] = $class;
 								}
 							}
-							$classes = new $class();
-							unset($classes);
 						}
 					}
 				}
@@ -103,7 +109,13 @@ if(file_exists(PATH_MEDIA."config.route.global.".ROOT_EX)) {
 if(file_exists(PATH_MEDIA."config.route.".ROOT_EX)) {
 	require_once(PATH_MEDIA."config.route.".ROOT_EX);
 }
-include_dir(PATH_MODULES, ".class.".ROOT_EX);
+$globalClass = array();
+include_dir(PATH_GLOBAL, ".class.".ROOT_EX);
+if(file_exists(PATH_MYMODULES)) {
+	include_dir(PATH_MYMODULES, ".class.".ROOT_EX);
+} else {
+	include_dir(PATH_MODULES, ".class.".ROOT_EX);
+}
 include_dir();
 if(file_exists(ROOT_PATH.".env")) {
 	loadConfig(".env");

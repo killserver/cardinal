@@ -5,7 +5,7 @@ class EditTemplate extends Core {
 	global $manifest;
 		$Edit = "";
 		if(!Arr::get($_GET, 'Edit', false)) {
-			location("{C_default_http_host}admincp.php/?pages=main");
+			location("{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=main");
 			return;
 		} else {
 			$Edit = Arr::get($_GET, 'Edit', false);
@@ -40,7 +40,7 @@ class EditTemplate extends Core {
 			$FileOpen = fopen($Patch, 'w');
 			fputs($FileOpen, $File);
 			fclose($FileOpen);
-			location("{C_default_http_host}admincp.php/?pages=main");
+			location("{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=main");
 			return;
 		}
 		$this->Prints("EditTemplate");

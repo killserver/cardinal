@@ -4,7 +4,14 @@ die();
 }
 define("IS_CORE", true);
 //define("IS_ADMINPANEL", true);
-include_once(dirname(__FILE__)."/../core.php");
+include_once(dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR."core.php");
+
+if(file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."paths.php")) {
+	include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."paths.php");
+}
+if(file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."paths.default.php")) {
+	include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."paths.default.php");
+}
 $defined = array("Cardinal" => "Cardin");
 
 function ReadPlugins($dir, $page, $include=true) {
@@ -24,7 +31,7 @@ $in_page = "Main";
 $skin = config::Select('skins','admincp');
 $skin = (!is_string($skin) ? "xenon" : $skin);
 config::Set("skins", "admincp", $skin);
-templates::dir_skins(ADMINCP_DIRECTORY."/temp/".$skin);
+templates::dir_skins(str_replace(ROOT_PATH, "", ADMIN_SKINS.$skin));
 templates::set_skins("");
 
 function accessOnDefault($class) {
@@ -42,11 +49,11 @@ function accessOnDefault($class) {
 }
 function cardinalAutoloadAdmin($class) {
     global $in_page;
-    if(strpos($class, "/")===false&&strpos($class, "\\")===false&&!class_exists($class,false)&&accessOnDefault($class)!==false&&file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS.$class.DS.$class.".class.".ROOT_EX)) {
-        include_once(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS.$class.DS.$class.".class.".ROOT_EX);
+    if(strpos($class, "/")===false&&strpos($class, "\\")===false&&!class_exists($class,false)&&accessOnDefault($class)!==false&&file_exists(ADMIN_VIEWER.$class.DS.$class.".class.".ROOT_EX)) {
+        include_once(ADMIN_VIEWER.$class.DS.$class.".class.".ROOT_EX);
     } else if(strpos($class, "_")===false) {
         $in_page = "Errors";
-        include_once(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Errors".DS."Errors.class.".ROOT_EX);
+        include_once(ADMIN_VIEWER."Errors".DS."Errors.class.".ROOT_EX);
         new Errors();
     }
 }

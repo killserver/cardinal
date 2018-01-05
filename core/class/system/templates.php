@@ -1779,7 +1779,7 @@ if(!$test) {
 		return $sub;
 	}
 
-	final public static function loadObject($obj, $name = "") {
+	final public static function loadObject($obj, $name = "", $callback = "") {
 		if(!is_object($obj) && !is_array($obj)) {
 			self::ErrorTemplate("First parameter is not object and not array");
 			die();
@@ -1804,15 +1804,40 @@ if(!$test) {
 		foreach($arr as $k => $v) {
 			if(is_array($arr) && is_object($v) && $v instanceof DBObject && !empty($name)) {
 				$v = $v->getArray();
+				cardinalEvent::setData($v);
+				$vs = cardinalEvent::execute("templates::loadObject");
+				if(!empty($vs)) {
+					$v = $vs;
+				}
 				self::assign_vars($v, $name, $k.$i);
 			} else if(is_object($v) && $v instanceof DBObject) {
 				$v = $v->getArray();
+				cardinalEvent::setData($v);
+				$vs = cardinalEvent::execute("templates::loadObject");
+				if(!empty($vs)) {
+					$v = $vs;
+				}
 				self::loadObject($v);
 			} else if(is_object($v)) {
+				cardinalEvent::setData($v);
+				$vs = cardinalEvent::execute("templates::loadObject");
+				if(!empty($vs)) {
+					$v = $vs;
+				}
 				self::loadObject($v);
 			} else if(is_array($arr)) {
+				cardinalEvent::setData($v);
+				$vs = cardinalEvent::execute("templates::loadObject");
+				if(!empty($vs)) {
+					$v = $vs;
+				}
 				self::assign_vars($v, $k, $k.$i);
 			} else {
+				cardinalEvent::setData($v);
+				$vs = cardinalEvent::execute("templates::loadObject");
+				if(!empty($vs)) {
+					$v = $vs;
+				}
 				self::assign_var($k, $v);
 			}
 			$i++;
@@ -2038,9 +2063,10 @@ if(!$test) {
 	 * @return array|mixed|NUll|string Result completed
      */
 	final public static function view($data, $header = "") {
+		$old = self::$tmp;
 		self::complited($data, $header);
 		$h = self::$tmp;
-		self::$tmp = "";
+		self::$tmp = $old;
 		$h = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $h);
 		if(config::Select("manifestCache")) {
 			$h = self::linkToHeader($h);

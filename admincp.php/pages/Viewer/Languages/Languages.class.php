@@ -101,7 +101,7 @@ class Languages extends Core {
 			} else {
 				$arr = array();
 			}
-			$admin = ROOT_PATH.ADMINCP_DIRECTORY.DS."temp".DS.config::Select("skins", "admincp").DS;
+			$admin = ADMIN_SKINS.config::Select("skins", "admincp").DS;
 			$dir = read_dir($admin);
 			sort($dir);
 			for($z=0;$z<sizeof($dir);$z++) {

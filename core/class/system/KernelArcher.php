@@ -149,12 +149,18 @@ class KernelArcher {
 				} else {
 					$type = $v;
 				}
-			} else if(!is_bool($v) || $post != $v) {
+			} else if($model->getAttribute($k, "type")=="date") {
+				$type = strtotime((isset($post) && !empty($post) ? $post : date("d/m/Y"))." ".date("H:i:s"));
+			} else if($model->getAttribute($k, "type")=="time") {
+				$type = strtotime(date("d/m/Y")." ".(isset($post) && !empty($post) ? $post : date("H:i:s")));
+			} else if($model->getAttribute($k, "type")=="datetime") {
+				$type = strtotime((isset($post[0]) && !empty($post[0]) ? $post[0] : date("d/m/Y"))." ".(isset($post[1]) && !empty($post[1]) ? $post[1] : date("H:i:s")));
+			} else if(!is_bool($post) && $post != $v) {
 				$type = $post;
 			} else {
 				$type = $v;
 			}
-			if(!is_string($type) && !is_numeric($type)) {
+			if(!is_string($type) && !is_numeric($type) && ((is_array($type) || is_object($type) ? sizeof($type)>0 : false) || (is_string($type) ? strlen($type)>0 : false))) {
 				$type = serialize($type);
 			}
 			$type = trim($type);
@@ -208,7 +214,14 @@ class KernelArcher {
 				unset($model->{$k});
 			}
 		}
-		$model = $this->callArr($model, "AddModel", array($model));
+		$exc = array();
+		$model = $this->callArr($model, "AddModel", array($model, &$exc));
+		$exc = array_values($exc);
+		for($i=0;$i<sizeof($exc);$i++) {
+			if(isset($model->{$exc[$i]})) {
+				unset($model->{$exc[$i]});
+			}
+		}
 		$list = $model->getArray();
 		$this->AddBlocks("AddData", $list);
 		$tpl = $this->TraceOn("Add", $model, "ArcherAdd");
@@ -356,7 +369,13 @@ class KernelArcher {
 				} else {
 					$type = $v;
 				}
-			} else if(!is_bool($v) || $post != $v) {
+			} else if($model->getAttribute($k, "type")=="date") {
+				$type = strtotime((isset($post) && !empty($post) ? $post : date("d/m/Y"))." ".date("H:i:s"));
+			} else if($model->getAttribute($k, "type")=="time") {
+				$type = strtotime(date("d/m/Y")." ".(isset($post) && !empty($post) ? $post : date("H:i:s")));
+			} else if($model->getAttribute($k, "type")=="datetime") {
+				$type = strtotime((isset($post[0]) && !empty($post[0]) ? $post[0] : date("d/m/Y"))." ".(isset($post[1]) && !empty($post[1]) ? $post[1] : date("H:i:s")));
+			} else if(!is_bool($post) && $post != $v) {
 				$type = $post;
 			} else {
 				$type = $v;
@@ -409,7 +428,14 @@ class KernelArcher {
 		}
 		$model = $model->Select();
 		$model->SetTable($this->selectTable);
-		$model = $this->callArr($model, "EditModel", array($model));
+		$exc = array();
+		$model = $this->callArr($model, "EditModel", array($model, &$exc));
+		$exc = array_values($exc);
+		for($i=0;$i<sizeof($exc);$i++) {
+			if(isset($model->{$exc[$i]})) {
+				unset($model->{$exc[$i]});
+			}
+		}
 		$list = $model->getArray();
 		foreach($list as $k => $v) {
 			if($model->getAttribute($k, "type")=="fileArray" || $model->getAttribute($k, "type")=="imageArray") {
@@ -712,41 +738,57 @@ class KernelArcher {
 			case "varchar":
 				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"text\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;{L_".$name."}\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
 			break;
+			case "price":
+				$retType = "<div class=\"input-group\"><span class=\"input-group-addon\">$</span><input id=\"".$name."\" type=\"number\" step=\"0.01\" class=\"form-control\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;{L_".$name."}\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "")."></div>";
+			break;
 			case "image":
 			case "file":
-				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"file\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"{C_default_http_local}".$val."\"".($type=="image" ? " class=\"showPreview\"" : "")." target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "")."<br>";
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"file\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"{C_default_http_local}".$val."\"".($type=="image" ? " class=\"showPreview\" accept=\"image/*\"" : "")." target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "")."<br>";
 			break;
 			case "imageAccess":
 			case "fileAccess":
-				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"text\" name=\"".$name."\" disabled=\"disabled\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"{C_default_http_local}".$val."\"".($type=="image" ? " class=\"showPreview\"" : "")." target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "")."<br>";
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"text\" name=\"".$name."\" disabled=\"disabled\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").($type=="image" ? " accept=\"image/*\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"{C_default_http_local}".$val."\"".($type=="image" ? " class=\"showPreview\"" : "")." target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "")."<br>";
 			break;
 			case "imageArray":
 			case "fileArray":
 				$retType = '<input type="hidden" name="deleteArray['.$name.']">';
 				$enum = explode(",", $val);
 				$enum = array_map("trim", $enum);
-				$retType .= "<span id=\"inputForFile\">";
+				$retType .= "<div id=\"inputForFile\" class=\"row\">";
 				for($i=0;$i<sizeof($enum);$i++) {
-					$retType .= "<div class='array'>".(sizeof($enum)>1 ? "<div class='col-sm-1'>#".($i+1)."</div><div class='col-sm-9'>" : "<div class='col-sm-10'>")."<input class=\"form-control\" type=\"file\"".(sizeof($enum)==1 ? " multiple=\"multiple\"" : "")." name=\"".$name.(sizeof($enum)>1 ? "[".$i."]" : "[]")."\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "")."></div><div class='col-sm-2'><a class='btn btn-red btn-block fa-remove' onclick='removeInputFile(this,\"".$name."\",\"".$i."\")'></a></div>".(!empty($val) ? "<div class='col-sm-12'><a href=\"{C_default_http_local}".$enum[$i]."\" class=\"showPreview\" target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a></div>" : "")."</div>";
+					$retType .= "<div class='array'>".(sizeof($enum)>1 ? "<div class='col-sm-1'>#".($i+1)."</div><div class='col-sm-9'>" : "<div class='col-sm-10'>")."<input class=\"form-control\" type=\"file\"".(sizeof($enum)==1 ? " multiple=\"multiple\"" : "")." name=\"".$name.(sizeof($enum)>1 ? "[".$i."]" : "[]")."\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").($type=="imageArray" ? " accept=\"image/*\"" : "")."></div><div class='col-sm-2'><a class='btn btn-red btn-block fa-remove' onclick='removeInputFile(this,\"".$name."\",\"".$i."\")'></a></div>".(!empty($val) ? "<div class='col-sm-12'><a href=\"{C_default_http_local}".$enum[$i]."\" class=\"showPreview\" target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a></div>" : "")."</div>";
 				}
-				$retType .= "</span><br><a href=\"javascript:addInputFile('".$name."')\" class=\"btn btn-white btn-block btn-icon btn-icon-standalone\"><i class=\"fa-upload\"></i><span>".($open ? "{L_'" : "")."Добавить".($open ? "'}" : "")."</span></a>";
+				$retType .= "</div><br><a href=\"javascript:addInputFile('".$name."')\" class=\"btn btn-white btn-block btn-icon btn-icon-standalone\"><i class=\"fa-upload\"></i><span>".($open ? "{L_'" : "")."Добавить".($open ? "'}" : "")."</span></a>";
 			break;
 			case "imageArrayAccess":
 			case "fileArrayAccess":
 				$retType = '<input type="hidden" name="deleteArray['.$name.']">';
 				$enum = explode(",", $val);
 				$enum = array_map("trim", $enum);
-				$retType .= "<span id=\"inputForFile\">";
+				$retType .= "<div id=\"inputForFile\" class=\"row\">";
 				for($i=0;$i<sizeof($enum);$i++) {
-					$retType .= "<div class='array'>".(sizeof($enum)>1 ? "<div class='col-sm-1'>#".($i+1)."</div><div class='col-sm-9'>" : "<div class='col-sm-10'>")."<input class=\"form-control\" type=\"text\"".(sizeof($enum)==1 ? " multiple=\"multiple\"" : "")." disabled=\"disabled\" name=\"".$name.(sizeof($enum)>1 ? "[".$i."]" : "[]")."\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "")."></div><div class='col-sm-2'><a class='btn btn-red btn-block fa-remove' onclick='removeInputFile(this,\"".$name."\",\"".$i."\")'></a></div>".(!empty($val) ? "<div class='col-sm-12'><a href=\"{C_default_http_local}".$enum[$i]."\" class=\"showPreview\" target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a></div>" : "")."</div>";
+					$retType .= "<div class='array'>".(sizeof($enum)>1 ? "<div class='col-sm-1'>#".($i+1)."</div><div class='col-sm-9'>" : "<div class='col-sm-10'>")."<input class=\"form-control\" type=\"text\"".(sizeof($enum)==1 ? " multiple=\"multiple\"" : "")." disabled=\"disabled\" name=\"".$name.(sizeof($enum)>1 ? "[".$i."]" : "[]")."\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").($type=="imageArrayAccess" ? " accept=\"image/*\"" : "")."></div><div class='col-sm-2'><a class='btn btn-red btn-block fa-remove' onclick='removeInputFile(this,\"".$name."\",\"".$i."\")'></a></div>".(!empty($val) ? "<div class='col-sm-12'><a href=\"{C_default_http_local}".$enum[$i]."\" class=\"showPreview\" target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a></div>" : "")."</div>";
 				}
-				$retType .= "</span><br><a href=\"javascript:addInputFile('".$name."')\" class=\"btn btn-white btn-block btn-icon btn-icon-standalone\"><i class=\"fa-upload\"></i><span>".($open ? "{L_'" : "")."Добавить".($open ? "'}" : "")."</span></a>";
+				$retType .= "</div><br><a href=\"javascript:addInputFile('".$name."')\" class=\"btn btn-white btn-block btn-icon btn-icon-standalone\"><i class=\"fa-upload\"></i><span>".($open ? "{L_'" : "")."Добавить".($open ? "'}" : "")."</span></a>";
 			break;
 			case "shorttext":
 			case "mediumtext":
 			case "text":
 			case "longtext":
 				$retType = "<textarea id=\"".$name."\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;{L_".$name."}\" class=\"form-control ckeditor\" rows=\"10\"".($block ? " disabled=\"disabled\"" : "").">".htmlspecialchars($val)."</textarea>";
+			break;
+			case "hidden":
+			case "hide":
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"hidden\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;{L_".$name."}\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
+			break;
+			case "date":
+				$retType = "<div class=\"date-and-time\"><input id=\"".$name."\" type=\"text\" class=\"form-control datepicker\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;{L_".$name."}\" value=\"".($val!=="" ? date("d/m/Y", $val) : date("d/m/Y"))."\"".($block ? " disabled=\"disabled\"" : "")." data-format=\"dd/mm/yyyy\"></div>";
+			break;
+			case "time":
+				$retType = "<div class=\"date-and-time\"><input id=\"".$name."\" type=\"text\" class=\"form-control timepicker\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;{L_".$name."}\" value=\"".($val!=="" ? date("H:i:s", $val) : date("H:i:s"))."\"".($block ? " disabled=\"disabled\"" : "")." data-template=\"dropdown\" data-show-seconds=\"true\" data-default-time=\"".($val!=="" ? date("H:i:s", $val) : date("H:i:s"))."\" data-show-meridian=\"false\" data-minute-step=\"5\" data-second-step=\"5\"></div>";
+			break;
+			case "datetime":
+				$retType = "<div class=\"col-sm-12\"><div class=\"date-and-time\"><input type=\"text\"".($block ? " disabled=\"disabled\"" : "")." name=\"".$name."[]\" class=\"form-control datepicker\" data-format=\"dd/mm/yyyy\" value=\"".($val!=="" ? date("d/m/Y", $val) : date("d/m/Y"))."\"><input type=\"text\"".($block ? " disabled=\"disabled\"" : "")." name=\"".$name."[]\" class=\"form-control timepicker\" data-template=\"dropdown\" data-show-seconds=\"true\" value=\"".($val!=="" ? date("H:i:s", $val) : date("H:i:s"))."\" data-default-time=\"".($val!=="" ? date("H:i:s", $val) : date("H:i:s"))."\" data-show-meridian=\"false\" data-minute-step=\"5\" data-second-step=\"5\" /></div></div>";
 			break;
 		}
 		if(is_array($val) && !isset($val['type'])) {

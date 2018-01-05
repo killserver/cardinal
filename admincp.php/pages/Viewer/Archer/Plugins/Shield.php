@@ -51,13 +51,14 @@ class Archer_Shield {
 		}
 		$head .= (!defined("ADMINCP_DIRECTORY") ? "<th>Options</th>" : "<th>{L_\"options\"}</th>");
 		$d = $model->getArray();
+		$first = $model->getFirst();
 		$d = array_keys($d);
 		$data = "";
 		for($i=0;$i<sizeof($d);$i++) {
 			if($this->in_array_strpos($d[$i], $getExclude)) {
 				continue;
 			}
-			$data .= "<td>{".$modelName.".".$d[$i]."}</td>";
+			$data .= "<td data-id=\"{".$modelName.".".$first."}\" data-table=\"".$modelName."\" data-name=\"".$d[$i]."\" class=\"infoField\"><span>{".$modelName.".".$d[$i]."}</span></td>";
 		}
 		$addition = "";
 		if(Arr::get($_GET, "Where", false)) {

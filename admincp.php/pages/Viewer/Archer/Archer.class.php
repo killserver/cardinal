@@ -168,17 +168,26 @@ class Archer extends Core {
 				templates::assign_var("LinkorderTo", $orderTo);
 				$univ = new KernelArcher($typeUni, $model);
 				if($request->get->get("ShowPages", false)) {
-					$tpl = $univ->TraceOn("Shield", "ArcherMainTable");
+					$tmps = "ArcherMainTable";
 				} else {
-					$tpl = $univ->TraceOn("Shield", "ArcherMain");
+					$tmps = "ArcherMain";
 				}
+				if($request->get->get("tmp", false)) {
+					$tmps = $request->get->get("tmp");
+				}
+				$tpl = $univ->TraceOn("Shield", $tmps);
 				$univ->Shield($model, array(&$this, "View"), $tpl, false);
 			break;
 		}
 	}
 	
 	function View($echo, $prints = false) {
-		$this->Prints($echo, $prints);
+		if(ajax_check()=="ajax") {
+			callAjax();
+			echo templates::view($echo);
+		} else {
+			$this->Prints($echo, $prints);
+		}
 	}
 	
 }

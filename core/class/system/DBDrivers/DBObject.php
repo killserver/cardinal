@@ -119,7 +119,7 @@ class DBObject implements ArrayAccess {
 		}
 	}
 	
-	final private function addPrefixTable($query, $addSave = "`") {
+	final private function addPrefixTable($query, $addSave = "`", $force = false) {
 		if($addSave===false) {
 			$save = "";
 		} else if($addSave===true) {
@@ -127,7 +127,14 @@ class DBObject implements ArrayAccess {
 		} else {
 			$save = $addSave;
 		}
-		if(strpos($query, '{{') !== false && defined("PREFIX_DB") && !empty(PREFIX_DB)) {
+		if($force === true && defined("PREFIX_DB") && !empty(PREFIX_DB)) {
+			$arr = db::getTables();
+			$arr = array_keys($arr);
+			for($i=0;$i<sizeof($arr);$i++) {
+				$t = str_replace(PREFIX_DB, "", $arr[$i]);
+				$query = str_replace(array($arr[$i], $t), $save.PREFIX_DB.$t.$save, $query);
+			}
+		} else if(strpos($query, '{{') !== false && defined("PREFIX_DB") && !empty(PREFIX_DB)) {
 			if(preg_match("/CREATE|DROP/", $query)) {
 				$query = str_replace(array('{{', '}}'), array($save.PREFIX_DB, $save), $query);
 			} else {
@@ -146,8 +153,8 @@ class DBObject implements ArrayAccess {
 		return $query;
 	}
 	
-	final public function addPrefix($query) {
-		return $this->addPrefixTable($query, true);
+	final public function addPrefix($query, $force = false) {
+		return $this->addPrefixTable($query, true, $force);
 	}
 
 	final public function getArray() {
@@ -448,7 +455,7 @@ class DBObject implements ArrayAccess {
 	}
 	
 	final public function SetTable($table) {
-		$this->loadedTable = $table;
+		$this->loadedTable = $this->addPrefix($table, true);
 	}
 	
 	final public function loadTable($name = "") {

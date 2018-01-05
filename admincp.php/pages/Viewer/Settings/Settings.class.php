@@ -127,6 +127,7 @@ class Settings extends Core {
 		$name = lang::get_lang("sitename");
 		$descr = lang::get_lang("s_description");
 		config::SetDefault("");
+		templates::accessNull();
 		templates::assign_vars(array(
 			"API" => config::Select("api_key"),
 			"SERPATH" => config::Select("default_http_host"),

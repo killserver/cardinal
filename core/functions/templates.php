@@ -300,51 +300,51 @@ function headers($array = array(), $clear = false, $no_js = false) {
 		$header .= "<link rel=\"shortcut icon\" type=\"image/vnd.microsoft.icon\" href=\"{C_default_http_host}favicon.ico\" sizes=\"16x16\" />\n";
 		$header .= "<link rel=\"icon\" type=\"image/x-icon\" href=\"{C_default_http_host}favicon.ico\" sizes=\"16x16\" />\n";
 	}
-if(!$clear) {
+	if(!$clear) {
 /*
 <!--script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.js"></script><script type='text/javascript' src='http://simplemodal.googlecode.com/files/jquery.simplemodal.1.4.4.min.js'></script><script type="text/javascript" src="http://malsup.github.io/jquery.form.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/jqueryui.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/libs.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/jquery.jmpopups-0.5.1.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/spoiler.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/tabs.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/tabcontent.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/md-socwidget.js"></script><script type="text/javascript">setTimeout(function(){ $('.box').fadeOut('fast') },10000);  //30000 = 30 секунд</script><script type="text/javascript">	var username = "";	var default_link = "http://online-killer.com/";	jQuery(function() {		jQuery('#tabs').tabs('#tabsText > li');	});</script><script type="text/javascript" src="http://online-killer.com/js/poll.core.js"></script><script type="text/javascript">jQuery(document).ready(function(){	loadpoll();});</script><script type="text/javascript" src="http://online-killer.com/js/ajax_core.js"></script><script type="text/javascript" src="http://online-killer.com/flash-js-tagcloud-swfobject.js"></script><meta name="application-name" content="" /><meta name="msapplication-TileColor" content="#e0161d" /><meta name="msapplication-notification" content="frequency=30;polling-uri=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=1;polling-uri2=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=2;polling-uri3=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=3;polling-uri4=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=4;polling-uri5=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=5; cycle=1" /-->
 */
-	$skin = templates::get_skins();
-	$param = array();
-	$dprm = Route::param();
-	foreach($dprm as $k => $v) {
-		$param[] = "\"".$k."\":\"".$v."\"";
+		$skin = templates::get_skins();
+		$param = array();
+		$dprm = Route::param();
+		foreach($dprm as $k => $v) {
+			$param[] = "\"".$k."\":\"".$v."\"";
+		}
+		unset($dprm);
+		$header .= '<meta name="viewport" content="'.config::Select("viewport").'" />'."\n";
+		$header .= '<meta http-equiv="imagetoolbar" content="no" />'."\n";
+		$header .= '<meta http-equiv="url" content="{C_default_http_host}">'."\n";
+		$header .= '<meta http-equiv="cleartype" content="on">'."\n";
+		$header .= '<meta http-equiv="X-UA-Compatible" content="IE=edge">'."\n";
+		$header .= (defined("ENABLED_SUPPORTS") ? '<script type="text/javascript" src="{C_default_http_host}js/supports.min.js" async="true"></script>'."\n" : "");
+		$header .= '<!-- saved from url=(0014)about:internet -->'."\n";
+		$header .= '<meta name="apple-mobile-web-app-capable" content="yes">'."\n";
+		$header .= '<meta name="format-detection" content="telephone=no">'."\n";
+		$header .= '<meta name="format-detection" content="address=no">'."\n";
+		$header .= '<meta name="google" value="notranslate">'."\n";
+		$header .= '<meta name="skype_toolbar" content="skype_toolbar_parser_compatible">'."\n";
+		$header .= '<meta name="msapplication-tap-highlight" content="no">'."\n";
+		$header .= '<meta name="renderer" content="webkit">'."\n";
+		$header .= '<meta name="x5-fullscreen" content="true">'."\n";
+		$header .= '<meta name="rating" content="General">'."\n";
+		$support = lang::support();
+		for($i=1;$i<sizeof($support);$i++) {
+			$clearLang = nsubstr($support[$i], 4, -3);
+			$header .= '<link rel="alternate" href="{C_default_http_host}'.$clearLang.'/" hreflang="'.$clearLang.'">'."\n";
+		}
+		$header .= "<script type=\"text/javascript\">\n".
+			"	var username = \"{U_username}\";\n".
+			"	var default_link = \"{C_default_http_host}\";\n".
+			"	var tskins = \"".$skin."\";\n".
+			"	var SystemTime = \"".time()."\";\n".
+			"	var loadedPage = \"".Route::getLoaded()."\";\n".
+			"	var loadedParam = {".implode(",", $param)."};\n".
+			((file_exists(ROOT_PATH."skins".DS.$skin.DS."skin.css") && Route::Search("css_skin")) ? " var cssRebuildLink = \"{R_[css_skin]}\";\n" : "").
+			"</script>\n";
+		if(file_exists(ROOT_PATH."skins".DS.$skin.DS."skin.css") && Route::Search("css_skin")) {
+			$header .= '<div id="skinRebuilded"><script type="text/javascript" src="{C_default_http_host}js/skins.js" async="true" id="removedSkinRebuilded"></script></div>';
+		}
 	}
-	unset($dprm);
-	$header .= '<meta name="viewport" content="'.config::Select("viewport").'" />'."\n";
-	$header .= '<meta http-equiv="imagetoolbar" content="no" />'."\n";
-	$header .= '<meta http-equiv="url" content="{C_default_http_host}">'."\n";
-	$header .= '<meta http-equiv="cleartype" content="on">'."\n";
-	$header .= '<meta http-equiv="X-UA-Compatible" content="IE=edge">'."\n";
-	$header .= (defined("ENABLED_SUPPORTS") ? '<script type="text/javascript" src="{C_default_http_host}js/supports.min.js" async="true"></script>'."\n" : "");
-	$header .= '<!-- saved from url=(0014)about:internet -->'."\n";
-	$header .= '<meta name="apple-mobile-web-app-capable" content="yes">'."\n";
-	$header .= '<meta name="format-detection" content="telephone=no">'."\n";
-	$header .= '<meta name="format-detection" content="address=no">'."\n";
-	$header .= '<meta name="google" value="notranslate">'."\n";
-	$header .= '<meta name="skype_toolbar" content="skype_toolbar_parser_compatible">'."\n";
-	$header .= '<meta name="msapplication-tap-highlight" content="no">'."\n";
-	$header .= '<meta name="renderer" content="webkit">'."\n";
-	$header .= '<meta name="x5-fullscreen" content="true">'."\n";
-	$header .= '<meta name="rating" content="General">'."\n";
-	$support = lang::support();
-	for($i=1;$i<sizeof($support);$i++) {
-		$clearLang = nsubstr($support[$i], 4, -3);
-		$header .= '<link rel="alternate" href="{C_default_http_host}'.$clearLang.'/" hreflang="'.$clearLang.'">'."\n";
-	}
-	$header .= "<script type=\"text/javascript\">\n".
-		"	var username = \"{U_username}\";\n".
-		"	var default_link = \"{C_default_http_host}\";\n".
-		"	var tskins = \"".$skin."\";\n".
-		"	var SystemTime = \"".time()."\";\n".
-		"	var loadedPage = \"".Route::getLoaded()."\";\n".
-		"	var loadedParam = {".implode(",", $param)."};\n".
-		((file_exists(ROOT_PATH."skins".DS.$skin.DS."skin.css") && Route::Search("css_skin")) ? " var cssRebuildLink = \"{R_[css_skin]}\";\n" : "").
-		"</script>\n";
-	if(file_exists(ROOT_PATH."skins".DS.$skin.DS."skin.css") && Route::Search("css_skin")) {
-		$header .= '<div id="skinRebuilded"><script type="text/javascript" src="{C_default_http_host}js/skins.js" async="true" id="removedSkinRebuilded"></script></div>';
-	}
-}
 	if(isset($array['meta']['canonical'])) {
 		$header .= "<link rel=\"canonical\" href=\"".$array['meta']['canonical']."\" />\n";
 		unset($array['meta']['canonical']);
@@ -396,6 +396,22 @@ if(!$clear) {
 			$header .= "<link rel=\"".$name."\" href=\"".$val."\" />\n";
 		}
 	}
+	if(($metas = config::Select("configMetaData"))!==false) {
+		$metas = json_decode($metas, true);
+		if(isset($metas['meta'])) {
+			$metas['meta'] = array_values($metas['meta']);
+			$metaData = array();
+			for($i=0;$i<sizeof($metas['meta']);$i++) {
+				if(!isset($metas['meta'][$i]) || !isset($metas['meta'][$i]['name']) || !isset($metas['meta'][$i]['content'])) {
+					continue;
+				}
+				$metaData[$metas['meta'][$i]['name']] = $metas['meta'][$i]['content'];
+			}
+			$array['meta'] = array_merge($array['meta'], $metaData);
+			cardinalEvent::addListener("templates::display", "configMetaData");
+			unset($metaData, $metas);
+		}
+	}
 	if(isset($array['meta'])) {
 		foreach($array['meta'] as $name => $val) {
 			if(is_array($val) || ($name == "robots" && defined("DEVELOPER_MODE"))) {
@@ -407,7 +423,7 @@ if(!$clear) {
 	if($is_use) {
 		$header .= "</span>";
 	}
-	if(isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && userlevel::get("admin") && Arr::get($_GET, "noShowAdmin", false)===false) {
+	if(isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && userlevel::get("admin") && !defined("IS_NOSHOWADMIN")) {
 		$links = array();
 		if($dh = dir(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."menu".DS)) {
 			$i=1;
@@ -448,6 +464,19 @@ if(!$clear) {
 	}
 	unset($array);
 return $header;
+}
+
+function configMetaData($null, $tmp) {
+	if(($metas = config::Select("configMetaData"))!==false) {
+		$metas = json_decode($metas, true);
+		if(isset($metas['head'])) {
+			$tmp = str_replace("</head>", $metas['head']."</head>", $tmp);
+		}
+		if(isset($metas['body'])) {
+			$tmp = str_replace("</body>", $metas['body']."</body>", $tmp);
+		}
+	}
+	return $tmp;
 }
 
 function addAdminPanelToPage($page, $data) {

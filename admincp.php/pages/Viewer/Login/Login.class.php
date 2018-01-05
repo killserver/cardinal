@@ -115,9 +115,9 @@ class Login extends Core {
 		$echos = "";
 		templates::assign_var("ref", (isset($_GET['ref']) && !empty($_GET['ref']) && strpos($_GET['ref'], "http")===false ? urldecode($_GET['ref']) : "?pages=main"));
 		if(isset($_COOKIE['is_admin_login']) && !empty($user['username'])) {
-			$echos = templates::view(templates::complited_assing_vars("again_login", null));
+			$echos = templates::view(templates::completed_assign_vars("again_login", null));
 		} else {
-			$echos = templates::view(templates::complited_assing_vars("login", null));
+			$echos = templates::view(templates::completed_assign_vars("login", null));
 		}
 		$js_echo = "";
 		if(sizeof(self::$js)>0) {
