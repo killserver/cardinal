@@ -39,6 +39,26 @@ class Updaters extends Core {
 		$text = str_replace("[~]", "<span class=\"label label-purple\">[~]</span>", $text);
 		$text = str_replace("[%]", "<span class=\"label label-warning\">[%]</span>", $text);
 		$text = str_replace("[@]", "<span class=\"label label-default\">[@]</span>", $text);
+		$text = str_replace("[b]", "<b>", $text);
+		$text = str_replace("[/b]", "</b>", $text);
+		$text = str_replace("[s]", "<s>", $text);
+		$text = str_replace("[/s]", "</s>", $text);
+		$text = str_replace("[u]", "<u>", $text);
+		$text = str_replace("[/u]", "</u>", $text);
+		$text = str_replace("[i]", "<i>", $text);
+		$text = str_replace("[/i]", "</i>", $text);
+		$text = str_replace("[center]", "<center>", $text);
+		$text = str_replace("[/center]", "</center>", $text);
+		$text = str_replace("[left]", "<span style=\"text-align:left;\">", $text);
+		$text = str_replace("[/left]", "</span>", $text);
+		$text = str_replace("[right]", "<span style=\"text-align:right;\">", $text);
+		$text = str_replace("[/right]", "</span>", $text);
+		$text = str_replace("[color=default]", "<span class=\"label label-blue\">", $text);
+		$text = str_replace("[color=default]", "<span class=\"label label-success\">", $text);
+		$text = str_replace("[color=default]", "<span class=\"label label-purple\">", $text);
+		$text = str_replace("[color=default]", "<span class=\"label label-warning\">", $text);
+		$text = str_replace("[color=default]", "<span class=\"label label-default\">", $text);
+		$text = str_replace("[/color]", "</span>", $text);
 		return $text;
 	}
 	
