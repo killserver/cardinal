@@ -10,7 +10,7 @@
         }
         clock();
     });
-    function clock() {
+    var clock = function() {
         var d = new Date();
         var hours = d.getHours();
         var minutes = d.getMinutes();
@@ -25,7 +25,7 @@
         } else if(document.getElementById("doc_time")!==null) {
             document.getElementById("doc_time").innerHTML = date_time;
         }
-        setTimeout("clock()", 1000);
+        setTimeout(clock, 1000);
     }
     var setupWidgets = function() {
         $("[data-from][data-to]").each(function(i, el) {
