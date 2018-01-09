@@ -1,5 +1,5 @@
 <?php
-if(!defined("IS_ADMIN")) {
+if(!defined("IS_CORE")) {
 die();
 }
 
