@@ -1,4 +1,4 @@
-﻿<link rel="stylesheet" href="{C_default_http_local}skins/install.css" />
+﻿<link rel="stylesheet" href="{C_default_http_local}skins/core/install.css" />
 <center>{L_install} Cardinal Engine v{D_VERSION}</center>
 <ol id="checkoutBreadcrumb">
 	<li class="basket<!-- IF {% RP[line] %}==1 -->active<!-- ENDIF --><!-- IF {% RP[line] %}==2 --> nextactive<!-- ENDIF -->">1. {L_licence}</li>

@@ -37,6 +37,10 @@ class Archer_Edit {
 		if(Arr::get($_GET, "orderTo", false)) {
 			$addition .= "&orderTo=".Arr::get($_GET, "orderTo");
 		}
+		$isAjax = false;
+		if(ajax_check()=="ajax") {
+			$isAjax = true;
+		}
 		$body = "";
 		foreach($list as $k => $v) {
 			if(in_array($k, $getExclude)) {
@@ -55,7 +59,7 @@ class Archer_Edit {
 				$default = (!empty($where) && !empty($whereData) && $where==$k && isset($v[$whereData]) ? $v[$whereData] : $v);
 				$v = implode(",", $typeData);
 			}
-			$body .= KernelArcher::Viewing($l, $k, $v, $default);
+			$body .= KernelArcher::Viewing($l, $k, $v, $default, false, $isAjax);
 		}
 		$tpl = str_replace("{addition}", $addition, $tpl);
 		$tpl = str_replace("{ArcherPage}", $page.($page!="Add" ? "&viewId=".$isId : ""), $tpl);

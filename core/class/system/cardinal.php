@@ -230,17 +230,9 @@ class cardinal {
 		}
 	}
 
+	//delete in feature
 	final public static function hackers($page, $referer = "") {
-		if(defined("WITHOUT_DB")) {
-			return false;
-		}
-		if(!empty($referer)) {
-			$ref = ", referer = \"".urlencode($referer)."\"";
-		} else {
-			$ref = "";
-		}
-		db::doquery("INSERT INTO {{hackers}} SET `ip` = \"".HTTP::getip()."\", `page` = \"".urlencode($page)."\", `post` = \"".urlencode(self::amper($_POST))."\", `get` = \"".urlencode(self::amper($_GET))."\"".$ref.", `activ` = \"yes\"");
-		location("{C_default_http_host}?hacker");
+		
 	}
 	
 	final public static function callbacks($module, $callback = "", $type = "add") {

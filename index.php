@@ -19,13 +19,13 @@
  * fix bugs on include files
  *
 */
-if(isset($_SERVER['PATH_INFO']) && strpos($_SERVER['PATH_INFO'], "/favicon.ico")!==false) || (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], "/favicon.ico")!==false)) {
+if((isset($_SERVER['PATH_INFO']) && strpos($_SERVER['PATH_INFO'], "/favicon.ico")!==false) || (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], "/favicon.ico")!==false)) {
 	header("HTTP/2.0 404 Not found");
 	die();
 }
 
 define("IS_CORE", true);
-include_once("core.php");
+include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."core.php");
 
 if(!defined("INSTALLER") && !userlevel::get("site")) {
 	templates::error("{L_error_level_full}", "{L_error_level}");

@@ -778,7 +778,7 @@ class db {
 				"file" => $trace[$level]['file'],
 				"line" => $trace[$level]['line'],
 			));
-			echo $tmp->completed_assign_vars("mysql_error", null);
+			echo $tmp->completed_assign_vars("mysql_error", "core");
 		} else {
 			echo "<center><br />".$trace[$level]['file'].":".$trace[$level]['line']."<hr />Query:<br /><textarea cols=\"40\" rows=\"5\">".$query."</textarea><hr />[".$mysql_error_num."] ".$mysql_error."<br />";
 		}

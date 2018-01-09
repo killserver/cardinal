@@ -120,10 +120,10 @@ if(!defined("UPLOAD_ALL")) {
 }*/
 
 if(!defined("VERSION")) {
-	define("VERSION", "8.0");
+	define("VERSION", "8.1");
 }
 if(!defined("VERSION_ADMIN_STYLE")) {
-	define("VERSION_ADMIN_STYLE", "1.5");
+	define("VERSION_ADMIN_STYLE", "1.6");
 }
 if(!defined("INTVERSION")) {
 	define("INTVERSION", "80008");

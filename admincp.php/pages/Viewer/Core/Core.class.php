@@ -309,7 +309,7 @@ class Core {
 		if(!$print) {
 			$echo = (templates::completed_assign_vars($echo, null));
 		}
-		if(isset($_POST['jajax'])) {
+		if(isset($_POST['jajax']) || isset($_GET['jajax'])) {
 			HTTP::echos(templates::view($echo));
 			return;
 		}

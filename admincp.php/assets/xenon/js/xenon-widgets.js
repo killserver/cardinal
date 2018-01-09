@@ -1,14 +1,32 @@
 (function($, window, undefined) {
     "use strict";
     $(document).ready(function() {
-        if ($(".page-loading-overlay").length) {
+        if($(".page-loading-overlay").length) {
             $(window).on("load", function() {
                 setTimeout(setupWidgets, 200);
             });
         } else {
             setupWidgets();
         }
+        clock();
     });
+    function clock() {
+        var d = new Date();
+        var hours = d.getHours();
+        var minutes = d.getMinutes();
+        var seconds = d.getSeconds();
+        if (hours <= 9) hours = "0" + hours;
+        if (minutes <= 9) minutes = "0" + minutes;
+        if (seconds <= 9) seconds = "0" + seconds;
+        var date_time = "<span>" + hours + "</span><span class='delimer'>:</span><span>" + minutes + "</span><span class='delimer'>:</span><span>" + seconds + "</span>";
+        if(document.layers && typeof(document.layers.doc_time)!=="undefined") {
+            document.layers.doc_time.document.write(date_time);
+            document.layers.doc_time.document.close();
+        } else if(document.getElementById("doc_time")!==null) {
+            document.getElementById("doc_time").innerHTML = date_time;
+        }
+        setTimeout("clock()", 1000);
+    }
     var setupWidgets = function() {
         $("[data-from][data-to]").each(function(i, el) {
             var $el = $(el), sm = scrollMonitor.create(el);

@@ -40,7 +40,7 @@ html:lang(he-il) .rtl .adminCoreCardinal *  {
 body {
 	padding-top: 2.3em !important;
 }
-body[data-body], body.onHoverAdmin {
+body[data-body='bottom'], body.onHoverAdmin {
 	padding-top: 0px !important;
 }
 .adminCoreCardinal.bottom {
@@ -52,7 +52,7 @@ body[data-body], body.onHoverAdmin {
 body .fixedForAdminCoreCardinal {
 	margin-top: 2.3em !important;
 }
-body[data-body] .fixedForAdminCoreCardinal {
+body[data-body='bottom'] .fixedForAdminCoreCardinal {
 	margin-top: 0em !important;
 }
 body.onHoverAdmin .adminCoreCardinal {

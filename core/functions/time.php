@@ -35,6 +35,7 @@ function langdate($date) {
 		$date = $date[1];
 	}
 	$lang = lang::get_lang("langdate");
+	$temp = str_replace(array("<br>", "<br/>", "<br />"), "\n", $temp);
 	if(!is_array($lang)) {
 		return date($temp, $date);
 	}
@@ -43,7 +44,7 @@ function langdate($date) {
 			$local = new DateTime('@'.time());
 			$local->setTimeZone(new DateTimeZone(config::Select("date_timezone")));
 			$date = strtr($local->format($temp), $lang);
-			return $date;
+			return nl2br($date);
 		}
 		return "";
 	}
@@ -52,23 +53,23 @@ function langdate($date) {
 		$local->setTimeZone(new DateTimeZone(config::Select("date_timezone")));
 		$date = strtr($local->format($temp), $lang);
 		if(!$only_date) {
-			return lang::get_lang("time_heute").",".$date;
+			return nl2br(lang::get_lang("time_heute").",".$date);
 		} else {
-			return $date;
+			return nl2br($date);
 		}
 	} elseif(date('Ymd', $date) == date('Ymd', (time()-86400))) {
 		$local = new DateTime('@'.$date);
 		$local->setTimeZone(new DateTimeZone(config::Select("date_timezone")));
 		$date = strtr($local->format($temp), $lang);
 		if(!$only_date) {
-			return lang::get_lang("time_gestern").",".$date;
+			return nl2br(lang::get_lang("time_gestern").",".$date);
 		} else {
-			return $date;
+			return nl2br($date);
 		}
 	} else {
 		$local = new DateTime('@'.$date);
 		$local->setTimeZone(new DateTimeZone(config::Select("date_timezone")));
-		return strtr($local->format($temp), $lang);
+		return nl2br(strtr($local->format($temp), $lang));
 	}
 }
 

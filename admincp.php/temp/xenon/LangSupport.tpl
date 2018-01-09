@@ -13,6 +13,7 @@
 			<div class="panel-body">
 				<input type="text" class="form-control input-sm" name="apiKeyTranslate" value="{C_apiKeyTranslate}">
 			</div>
+			<div class="panel-disabled"></div>
 		</div>
 	</div>
 	<div class="col-xs-12 col-md-6">
@@ -77,6 +78,7 @@
 					</div>
 				</form>
 			</div>
+			<div class="panel-disabled"></div>
 		</div>
 	</div>
 </div>

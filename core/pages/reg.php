@@ -83,7 +83,7 @@ class page {
 				location("{C_default_http_local}");
 			}
 		}
-		$reg = templates::complited_assing_vars("reg", null);
+		$reg = templates::complited_assing_vars("reg", "core");
 		templates::complited($reg, "{L_reg_page}");
 		templates::display();
 	}

@@ -61,6 +61,13 @@ ini_set("max_execution_time", 0);
 if(strpos(CLOSE_FUNCTION, "set_time_limit")===false) {
 	set_time_limit(0);
 }
+if(version_compare(PHP_VERSION, '5.3', '<')) {
+	ini_set('zend.ze1_compatibility_mode', 0);
+	set_magic_quotes_runtime(0);
+	ini_set('magic_quotes_gpc', 0);
+	ini_set('magic_quotes_sybase', 0);
+	ini_set('magic_quotes_runtime', 0);
+}
 
 $manifest = array(
 	"before_ini_class" => array(), //configuration pages and modules before load
@@ -112,7 +119,9 @@ foreach($targets as $target) {
 }
 if(defined("DEBUG") || isset($_GET['debug']) || isset($_COOKIE['cardinal_debug'])) {
 	ini_set('display_errors', 1);
+	ini_set('html_errors', true);
 	error_reporting(E_ALL);
+	ini_set('error_reporting', E_ALL);
 	if(!defined("DEBUG_ACTIVATED")) {
 		define("DEBUG_ACTIVATED", true);
 	}
@@ -145,7 +154,7 @@ if(!defined("DS")) {
 }
 if(!defined("DS_DB")) {
 	if(strtoupper(substr(PHP_OS, 0, 3))==='WIN') {
-		define("DS_DB", DS.DS);
+		define("DS_DB", DS);
 	} else {
 		define("DS_DB", DS);
 	}
@@ -245,7 +254,7 @@ if(file_exists(ROOT_PATH."core".DS."paths.".ROOT_EX)) {
 	include_once(ROOT_PATH."core".DS."paths.".ROOT_EX);
 } else if(file_exists(ROOT_PATH."core".DS."paths.default.".ROOT_EX)) {
 	include_once(ROOT_PATH."core".DS."paths.default.".ROOT_EX);
-} 
+}
 
 if(file_exists(PATH_MEDIA."definition.php")) {
 	include_once(PATH_MEDIA."definition.php");

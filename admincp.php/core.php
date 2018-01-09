@@ -6,12 +6,11 @@ define("IS_CORE", true);
 //define("IS_ADMINPANEL", true);
 include_once(dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR."core.php");
 
-if(file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."paths.php")) {
+/*if(file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."paths.php")) {
 	include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."paths.php");
-}
-if(file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."paths.default.php")) {
+} else if(file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."paths.default.php")) {
 	include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."paths.default.php");
-}
+}*/
 $defined = array("Cardinal" => "Cardin");
 
 function ReadPlugins($dir, $page, $include=true) {

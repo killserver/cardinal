@@ -1040,8 +1040,23 @@ class templates {
 		if(preg_match("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true)\}#", $tmp)) {
 			$tmp = self::callback_array("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true)\}#", "langdate", $tmp);
 		}
+		$tmp = self::callback_array("#\{F_['\"](.+?)['\"],['\"](.+?)['\"],['\"](.+?)['\"]\}#", "templates::declension", $tmp);
 		$tmp = self::callback_array("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tmp);
 		return $tmp;
+	}
+
+	final private static function declension($arr) {
+		if(strpos($arr[3], "|")!==false) {
+			$arr[3] = explode("|", $arr[3]);
+		} else {
+			$arrs = array($arr[3]);
+			unset($arr[3]);
+			$arr[3] = $arrs;
+			unset($arrs);
+		}
+		$lastInt = $arr[2] % 100;
+		$lastInt = $lastInt > 10 && $lastInt < 20 ? 9 : $arr[2] % 10;
+		return $arr[1].(isset($arr[3][$lastInt]) ? $arr[3][$lastInt] : "");
 	}
 
 	/**
@@ -1625,6 +1640,54 @@ if(!$test) {
 			$tpl = str_replace("[clear]", "", $tpl);
 		}
 		return $tpl;
+	}
+
+	private static $independentCount = 0;
+	final public static function optimizeImage($url) {
+		$arr = array();
+		$exp = explode("&", $url);
+		$arr['link'] = $exp[0];
+		for($i=1;$i<sizeof($exp);$i++) {
+			$exps = explode("=", $exp[$i]);
+			$arr[$exps[0]] = (isset($exps[1]) ? $exps[1] : "");
+		}
+		if(strpos($arr['link'], "?")!==false) {
+			$arr['link'] = explode("?", $arr['link']);
+			$arr['link'] = current($arr['link']);
+		}
+		$filename_ROOT_PATH = str_replace("\/", "/", $arr['link']);
+		if(substr($filename_ROOT_PATH, 0, 1)=="/") {
+			$filename_ROOT_PATH = substr($filename_ROOT_PATH, 1);
+		}
+		if(empty($filename_ROOT_PATH)) {
+			return $arr['link'];
+		}
+		$filename_ROOT_PATH = rawurldecode(ROOT_PATH.$filename_ROOT_PATH);
+		if(!file_exists($filename_ROOT_PATH)) {
+			return $arr['link'];
+		}
+
+		$exp = explode(".", $filename_ROOT_PATH);
+		$type = end($exp);
+		$checkFile = str_replace(".".$type, "", $filename_ROOT_PATH);
+		if(isset($arr['width'])) {
+			$checkFile .= "_w".round($arr['width']);
+		}
+		if(isset($arr['height'])) {
+			$checkFile .= "_h".round($arr['height']);
+		}
+		if(!isset($arr['width']) && !isset($arr['height'])) {
+			$checkFile .= ".min";
+		}
+		$checkFile .= ".".$type;
+		if(file_exists($checkFile)) {
+			return str_replace(ROOT_PATH, "", $checkFile);
+		}
+		if(self::$independentCount < 5) {
+			self::$independentCount++;
+			return self::imageRes(array("", $url));
+		}
+		return $url;
 	}
 	
 	final private static function imageRes($arrData) {

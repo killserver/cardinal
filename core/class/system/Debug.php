@@ -153,7 +153,7 @@ class Debug {
 		/* End Route */
 		templates::dir_skins("skins");
 		templates::set_skins("");
-		$tpl = templates::complited_assing_vars("debug_panel", null);
+		$tpl = templates::completed_assign_vars("debug_panel", "core");
 		return templates::view($tpl);
 	}
 	

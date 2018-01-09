@@ -58,11 +58,10 @@ $config = array_merge($config, array(
 		"add" => "/?add",
 		"recover" => "/?recover",
 	),*/
-//минификаци¤
+//минификация
 	"tpl_minifier" => true,
 	"gzip" => "yes",
 	"gzip_output" => true,
-	"js_min" => true,
 	
 	//"viewport" => "width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes",
 	"viewport" => "width=device-width, initial-scale=1, shrink-to-fit=no, minimal-ui",
@@ -85,7 +84,6 @@ $config = array_merge($config, array(
 	"db" => array(
 		"driver" => "db_mysqli",
 	),
-	//"related" => 5,
 ));
 
 ?>

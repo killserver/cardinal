@@ -35,7 +35,7 @@ if(!defined("IS_CORE")) {
 if(!defined("IS_INSTALLER")) {
 	define("IS_INSTALLER", true);
 }
-require_once("core.php");
+require_once(dirname(__FILE__).DIRECTORY_SEPARATOR."core.php");
 if(strpos($_SERVER['REQUEST_URI'], "index.".ROOT_EX)!==false) {
 	$exp = explode("index.".ROOT_EX, $_SERVER['REQUEST_URI']);
 } else {
@@ -55,7 +55,7 @@ Route::Config(array(
 ));
 if((isset($_SERVER[ROUTE_GET_URL]) && strpos($_SERVER[ROUTE_GET_URL], "install/done")!==false) || isset($_GET['done'])) {
 	templates::assign_vars(array("page" => "4"));
-	echo templates::view(templates::complited_assing_vars("install", null, ""));
+	echo templates::view(templates::completed_assign_vars("install", "core", ""));
 	die();
 }
 
@@ -106,7 +106,7 @@ if(sizeof($_POST)==0||(sizeof($_POST)==1)||(sizeof($_POST)==2)) {
 			templates::assign_vars(array("name" => $dr_subname, "value" => $dr_name), "drivers", "driver".$i);
 		}
 	}
-	echo templates::view(templates::complited_assing_vars("install", null, ""));
+	echo templates::view(templates::completed_assign_vars("install", "core", ""));
 	die();
 }
 
@@ -127,7 +127,7 @@ db::changeDriver($db_driver);
 db::OpenDriver();
 if(!db::check_connect($db_host, $db_user, $db_pass)) {
 	templates::assign_vars(array("page" => "error"));
-	echo templates::view(templates::complited_assing_vars("install", null, ""));
+	echo templates::view(templates::completed_assign_vars("install", "core", ""));
 	die();
 }
 
@@ -200,7 +200,7 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `".$db_prefix."error_log` (
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
 
-$SQL[] = "DROP TABLE IF EXISTS `".$db_prefix."hackers`;";
+/*$SQL[] = "DROP TABLE IF EXISTS `".$db_prefix."hackers`;";
 $SQL[] = "CREATE TABLE IF NOT EXISTS `".$db_prefix."hackers` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ip` varchar(255) NOT NULL,
@@ -215,7 +215,7 @@ $SQL[] = "CREATE TABLE IF NOT EXISTS `".$db_prefix."hackers` (
   FULLTEXT KEY `get` (`get`),
   FULLTEXT KEY `post` (`post`),
   FULLTEXT KEY `referer` (`referer`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;";*/
 
 $SQL[] = "DROP TABLE IF EXISTS `".$db_prefix."lang`;";
 $SQL[] = "CREATE TABLE IF NOT EXISTS `".$db_prefix."lang` (

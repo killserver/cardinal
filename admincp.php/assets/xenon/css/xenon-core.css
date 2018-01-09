@@ -167,7 +167,8 @@
   font-weight: 300;
   line-height: 1.4;
   position: relative;
-  border-radius: 5px;
+  -webkit-border-radius: 5px;
+          border-radius: 5px;
 }
 .cbp_tmtimeline > li:nth-child(odd) .cbp_tmlabel {
   background: #6cbfee;
@@ -208,8 +209,10 @@
   position: absolute;
   color: #fff;
   background: #46a4da;
-  border-radius: 50%;
-  box-shadow: 0 0 0 8px #afdcf8;
+  -webkit-border-radius: 50%;
+          border-radius: 50%;
+  -webkit-box-shadow: 0 0 0 8px #afdcf8;
+          box-shadow: 0 0 0 8px #afdcf8;
   text-align: center;
   left: 20%;
   top: 0;
@@ -292,7 +295,6 @@
 }
 .btn-toolbar .btn-default.dropdown-toggle {
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
   border-color: transparent;
 }
@@ -325,7 +327,8 @@
   display: none;
 }
 .table-responsive {
-  border-radius: 0px;
+  -webkit-border-radius: 0px;
+          border-radius: 0px;
   border: 1px solid #eeeeee;
   margin-bottom: 18px;
 }
@@ -364,7 +367,8 @@
   overflow-y: hidden;
   overflow-x: auto;
   -ms-overflow-style: -ms-autohiding-scrollbar;
-  border-radius: 0px;
+  -webkit-border-radius: 0px;
+          border-radius: 0px;
   border: 1px solid #eeeeee;
   -webkit-overflow-scrolling: touch;
 }
@@ -534,7 +538,8 @@ table.display-all td {
 .sticky-table-header {
   background-color: #fff;
   border: none;
-  border-radius: 0;
+  -webkit-border-radius: 0;
+          border-radius: 0;
   border-top: 1px solid #eeeeee;
   border-bottom: 1px solid #eeeeee;
   position: absolute;
@@ -551,12 +556,16 @@ table.display-all td {
 .lt-ie10 .sticky-table-header.fixed-solution {
   border-left: 1px solid #eeeeee;
   border-right: 1px solid #eeeeee;
-  box-sizing: content-box;
+  -webkit-box-sizing: content-box;
+     -moz-box-sizing: content-box;
+          box-sizing: content-box;
   border-bottom: none;
 }
 .sticky-table-header.border-radius-fix {
-  border-bottom-left-radius: 3px;
-  border-bottom-right-radius: 3px;
+  -webkit-border-bottom-left-radius: 3px;
+          border-bottom-left-radius: 3px;
+  -webkit-border-bottom-right-radius: 3px;
+          border-bottom-right-radius: 3px;
 }
 .sticky-table-header > .table {
   margin-bottom: 0;
@@ -720,7 +729,6 @@ body {
   margin-bottom: 30px;
   padding: 20px 0;
   -webkit-box-shadow: 0 1px 0 rgba(0,1,1,.08), inset 0 1px 0 #ededed;
-  -moz-box-shadow: 0 1px 0 rgba(0,1,1,.08), inset 0 1px 0 #ededed;
   box-shadow: 0 1px 0 rgba(0,1,1,.08), inset 0 1px 0 #ededed;
   position: relative;
   z-index: 6;
@@ -1147,7 +1155,6 @@ body {
   z-index: 101;
   min-height: 0px;
   -webkit-box-shadow: 0 0px 1px rgba(0, 0, 0, 0.15);
-  -moz-box-shadow: 0 0px 1px rgba(0, 0, 0, 0.15);
   box-shadow: 0 0px 1px rgba(0, 0, 0, 0.15);
 }
 .navbar.horizontal-menu.navbar-fixed-top {
@@ -1307,7 +1314,6 @@ body {
     border-radius: 0 0 0px 0px;
     background-clip: padding-box;
     -webkit-box-shadow: 0 2px 8px rgba(0,1,1,.05);
-    -moz-box-shadow: 0 2px 8px rgba(0,1,1,.05);
     box-shadow: 0 2px 8px rgba(0,1,1,.05);
     -webkit-transition: opacity 180ms linear, visibility 180ms linear;
     -moz-transition: opacity 180ms linear, visibility 180ms linear;
@@ -2101,7 +2107,6 @@ body.chat-open .user-info-navbar a[data-toggle="chat"] {
 .navbar.horizontal-menu .navbar-inner > .nav > li.search-form .btn:active,
 .navbar.horizontal-menu .navbar-inner > .nav > li.search-form .btn:focus {
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 .user-info-navbar .user-info-menu > li.search-form .search-field,
@@ -2219,7 +2224,6 @@ body.chat-open .user-info-navbar a[data-toggle="chat"] {
   margin-left: -1px;
   z-index: 3;
   -webkit-box-shadow: 0 2px 8px rgba(0,1,1,.05);
-  -moz-box-shadow: 0 2px 8px rgba(0,1,1,.05);
   box-shadow: 0 2px 8px rgba(0,1,1,.05);
 }
 .user-info-navbar .user-info-menu > li .dropdown-menu .dropdown-menu-list,
@@ -2251,7 +2255,8 @@ body.chat-open .user-info-navbar a[data-toggle="chat"] {
 .navbar.horizontal-menu .navbar-inner > .nav > li .dropdown-menu .dropdown-menu-list li a .line.desc {
   margin-top: 10px;
   overflow: hidden;
-  text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+     text-overflow: ellipsis;
   white-space: nowrap;
   margin-right: 10px;
 }
@@ -2427,7 +2432,6 @@ body.chat-open .user-info-navbar a[data-toggle="chat"] {
   background-color: #FFF;
   color: #444;
   -webkit-box-shadow: 0 0 0 1px #eeeeee;
-  -moz-box-shadow: 0 0 0 1px #eeeeee;
   box-shadow: 0 0 0 1px #eeeeee;
 }
 .user-info-navbar .user-info-menu > li .dropdown-menu.user-profile-menu,
@@ -2546,7 +2550,6 @@ body.chat-open .user-info-navbar a[data-toggle="chat"] {
   background-color: #fff;
   color: #333;
   -webkit-box-shadow: 0px 0px 0px 1px #dddddd;
-  -moz-box-shadow: 0px 0px 0px 1px #dddddd;
   box-shadow: 0px 0px 0px 1px #dddddd;
 }
 #chat {
@@ -3159,7 +3162,8 @@ body.chat-open #chat {
   width: 150px;
   text-decoration: none;
   overflow: hidden;
-  text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+     text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
 }
@@ -3478,7 +3482,6 @@ body.chat-open #chat {
   border: 0;
   margin-bottom: 30px;
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 .panel.panel-headerless .panel-body {
@@ -3593,7 +3596,6 @@ body.chat-open #chat {
 }
 .panel.panel-shadow {
   -webkit-box-shadow: 0 1px 1px rgba(0,1,1,.08);
-  -moz-box-shadow: 0 1px 1px rgba(0,1,1,.08);
   box-shadow: 0 1px 1px rgba(0,1,1,.08);
 }
 .panel.panel-inverted {
@@ -3913,7 +3915,8 @@ body.chat-open #chat {
 .breadcrumb.auto-hidden li a.collapsed {
   width: 45px !important;
   overflow: hidden;
-  text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+     text-overflow: ellipsis;
   white-space: nowrap;
 }
 @media screen and (max-width: 768px) {
@@ -3928,7 +3931,6 @@ body.chat-open #chat {
   position: relative;
   overflow: hidden;
   -webkit-perspective: 500px;
-  -moz-perspective: 500px;
   perspective: 500px;
   -webkit-transform-origin: center bottom;
   -moz-transform-origin: center bottom;
@@ -4153,7 +4155,6 @@ body.chat-open #chat {
 .settings-pane-open .sidebar-menu .sidebar-menu-inner .logo-env .settings-icon {
   background: #27292a;
   -webkit-box-shadow: 0px 0px 0px 10px #27292a, 0px -10px 0px 10px #27292a, 0px -20px 0px 10px #27292a, 0px -30px 0px 10px #27292a;
-  -moz-box-shadow: 0px 0px 0px 10px #27292a, 0px -10px 0px 10px #27292a, 0px -20px 0px 10px #27292a, 0px -30px 0px 10px #27292a;
   box-shadow: 0px 0px 0px 10px #27292a, 0px -10px 0px 10px #27292a, 0px -20px 0px 10px #27292a, 0px -30px 0px 10px #27292a;
 }
 .cbr-replaced {
@@ -4441,7 +4442,6 @@ label.cbr-inline + .cbr-inline {
 .btn:active,
 .btn.active {
   -webkit-box-shadow: inset 0 0 5px 2px rgba(0, 0, 0, 0.08);
-  -moz-box-shadow: inset 0 0 5px 2px rgba(0, 0, 0, 0.08);
   box-shadow: inset 0 0 5px 2px rgba(0, 0, 0, 0.08);
 }
 .btn + .btn {
@@ -4831,7 +4831,6 @@ label.cbr-inline + .cbr-inline {
 .btn-unstyled:focus {
   background: none;
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 .dropdown-menu.no-spacing {
@@ -5217,7 +5216,6 @@ label.cbr-inline + .cbr-inline {
 .label.label-white {
   color: #333;
   -webkit-box-shadow: 0px 0px 0px 1px #dddddd;
-  -moz-box-shadow: 0px 0px 0px 1px #dddddd;
   box-shadow: 0px 0px 0px 1px #dddddd;
 }
 .line-height-default li {
@@ -5231,7 +5229,6 @@ label.cbr-inline + .cbr-inline {
   padding: 0;
   border: 1px solid #dddddd;
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 .popover.popover-primary .popover-title {
@@ -5601,7 +5598,6 @@ blockquote small {
 }
 .modal .modal-dialog .modal-content {
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
   border-color: #f5f5f5;
   padding: 30px;
@@ -5886,7 +5882,6 @@ blockquote small {
 .dataTables_wrapper tr .yadcf-filter-wrapper .yadcf-filter-reset-button:focus {
   background: none;
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 .dataTables_wrapper tr .yadcf-filter-wrapper:hover .yadcf-filter-reset-button {
@@ -5909,7 +5904,6 @@ blockquote small {
   padding: 0 10px;
   height: 30px;
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 .dataTables_wrapper tr .yadcf-filter-wrapper .yadcf-filter-wrapper-inner {
@@ -5927,7 +5921,6 @@ blockquote small {
   height: 32px;
   text-align: center;
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 .dataTables_wrapper tr .yadcf-filter-wrapper .yadcf-filter-wrapper-inner .yadcf-filter-range-number-seperator {
@@ -5978,108 +5971,90 @@ input.form-control.form-focus-primary:focus {
   border-color: rgba(44, 46, 47, 0.6);
   outline: 0;
   -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(44, 46, 47, 0.6);
-  -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(44, 46, 47, 0.6);
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(44, 46, 47, 0.6);
 }
 input.form-control.form-focus-primary:focus {
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 input.form-control.form-focus-warning:focus {
   border-color: rgba(255, 186, 0, 0.6);
   outline: 0;
   -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(255, 186, 0, 0.6);
-  -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(255, 186, 0, 0.6);
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(255, 186, 0, 0.6);
 }
 input.form-control.form-focus-warning:focus {
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 input.form-control.form-focus-danger:focus {
   border-color: rgba(204, 63, 68, 0.6);
   outline: 0;
   -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(204, 63, 68, 0.6);
-  -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(204, 63, 68, 0.6);
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(204, 63, 68, 0.6);
 }
 input.form-control.form-focus-danger:focus {
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 input.form-control.form-focus-success:focus {
   border-color: rgba(141, 198, 63, 0.6);
   outline: 0;
   -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(141, 198, 63, 0.6);
-  -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(141, 198, 63, 0.6);
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(141, 198, 63, 0.6);
 }
 input.form-control.form-focus-success:focus {
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 input.form-control.form-focus-info:focus {
   border-color: rgba(64, 187, 234, 0.6);
   outline: 0;
   -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(64, 187, 234, 0.6);
-  -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(64, 187, 234, 0.6);
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(64, 187, 234, 0.6);
 }
 input.form-control.form-focus-info:focus {
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 input.form-control.form-focus-purple:focus {
   border-color: rgba(124, 56, 188, 0.6);
   outline: 0;
   -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(124, 56, 188, 0.6);
-  -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(124, 56, 188, 0.6);
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(124, 56, 188, 0.6);
 }
 input.form-control.form-focus-purple:focus {
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 input.form-control.form-focus-red:focus {
   border-color: rgba(213, 8, 15, 0.6);
   outline: 0;
   -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(213, 8, 15, 0.6);
-  -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(213, 8, 15, 0.6);
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(213, 8, 15, 0.6);
 }
 input.form-control.form-focus-red:focus {
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 input.form-control.form-focus-blue:focus {
   border-color: rgba(14, 98, 199, 0.6);
   outline: 0;
   -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(14, 98, 199, 0.6);
-  -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(14, 98, 199, 0.6);
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(14, 98, 199, 0.6);
 }
 input.form-control.form-focus-blue:focus {
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 input.form-control.form-focus-gray:focus {
   border-color: rgba(200, 200, 200, 0.6);
   outline: 0;
   -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(200, 200, 200, 0.6);
-  -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(200, 200, 200, 0.6);
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(200, 200, 200, 0.6);
 }
 input.form-control.form-focus-gray:focus {
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 form .help-block {
@@ -6099,7 +6074,6 @@ form .form-group.has-success .checkbox-inline {
 form .form-group.has-success .form-control {
   border-color: rgba(141, 198, 63, 0.4);
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 form .form-group.has-success .form-control:focus {
@@ -6123,7 +6097,6 @@ form .form-group.has-warning .checkbox-inline {
 form .form-group.has-warning .form-control {
   border-color: rgba(255, 186, 0, 0.6);
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 form .form-group.has-warning .form-control:focus {
@@ -6147,7 +6120,6 @@ form .form-group.has-error .checkbox-inline {
 form .form-group.has-error .form-control {
   border-color: rgba(204, 63, 68, 0.4);
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 form .form-group.has-error .form-control:focus {
@@ -6171,7 +6143,6 @@ form .form-group.has-info .checkbox-inline {
 form .form-group.has-info .form-control {
   border-color: rgba(64, 187, 234, 0.4);
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 form .form-group.has-info .form-control:focus {
@@ -6253,7 +6224,10 @@ label.radio-inline input[type="radio"] {
   -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
   -moz-transition: border-color ease-in-out .15s, -moz-box-shadow ease-in-out .15s;
   -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+  transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+  -moz-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
   transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+  transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
 }
 .input-group.input-group-minimal .input-group-addon + .form-control {
   border-left: 0;
@@ -6332,7 +6306,8 @@ address {
 }
 div.text-overflow {
   overflow: hidden;
-  text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+     text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
 }
@@ -6640,7 +6615,8 @@ div.scrollable {
   display: block;
   float: right;
   overflow: hidden;
-  text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+     text-overflow: ellipsis;
   white-space: nowrap;
   padding: 10px;
   padding-bottom: 8px;
@@ -6689,7 +6665,8 @@ div.scrollable {
   max-width: 218px;
   display: block;
   overflow: hidden;
-  text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+     text-overflow: ellipsis;
   white-space: nowrap;
 }
 .layout-variants .layout-variant .layout-name:after {
@@ -6743,14 +6720,14 @@ lesshat-selector {
 @-webkit-keyframes loaderAnimate{ 0%{ -webkit-transform: rotate(0deg); } 100%{ -webkit-transform: rotate(220deg); }}
 @-moz-keyframes loaderAnimate{ 0%{ -moz-transform: rotate(0deg); } 100%{ -moz-transform: rotate(220deg); }}
 @-o-keyframes loaderAnimate{ 0%{ -o-transform: rotate(0deg); } 100%{ -o-transform: rotate(220deg); }}
-@keyframes loaderAnimate{ 0%{-webkit-transform: rotate(0deg);-moz-transform: rotate(0deg);-ms-transform: rotate(0deg);transform: rotate(0deg); } 100%{-webkit-transform: rotate(220deg);-moz-transform: rotate(220deg);-ms-transform: rotate(220deg);transform: rotate(220deg); };
+@keyframes loaderAnimate{ 0%{-webkit-transform: rotate(0deg);-moz-transform: rotate(0deg);-ms-transform: rotate(0deg);-o-transform: rotate(0deg);transform: rotate(0deg); } 100%{-webkit-transform: rotate(220deg);-moz-transform: rotate(220deg);-ms-transform: rotate(220deg);-o-transform: rotate(220deg);transform: rotate(220deg); };
 }
 lesshat-selector {
   -lh-property: 0; } 
-@-webkit-keyframes loaderAnimate2{ 0%{ box-shadow: inset #555555 0 0 0 8px; -webkit-transform: rotate(-140deg); } 50%{ box-shadow: inset #555555 0 0 0 2px; } 100%{ box-shadow: inset #555555 0 0 0 8px; -webkit-transform: rotate(140deg); }}
+@-webkit-keyframes loaderAnimate2{ 0%{ -webkit-box-shadow: inset #555555 0 0 0 8px; box-shadow: inset #555555 0 0 0 8px; -webkit-transform: rotate(-140deg); } 50%{ -webkit-box-shadow: inset #555555 0 0 0 2px; box-shadow: inset #555555 0 0 0 2px; } 100%{ -webkit-box-shadow: inset #555555 0 0 0 8px; box-shadow: inset #555555 0 0 0 8px; -webkit-transform: rotate(140deg); }}
 @-moz-keyframes loaderAnimate2{ 0%{ box-shadow: inset #555555 0 0 0 8px; -moz-transform: rotate(-140deg); } 50%{ box-shadow: inset #555555 0 0 0 2px; } 100%{ box-shadow: inset #555555 0 0 0 8px; -moz-transform: rotate(140deg); }}
 @-o-keyframes loaderAnimate2{ 0%{ box-shadow: inset #555555 0 0 0 8px; -o-transform: rotate(-140deg); } 50%{ box-shadow: inset #555555 0 0 0 2px; } 100%{ box-shadow: inset #555555 0 0 0 8px; -o-transform: rotate(140deg); }}
-@keyframes loaderAnimate2{ 0%{ box-shadow: inset #555555 0 0 0 8px;-webkit-transform: rotate(-140deg);-moz-transform: rotate(-140deg);-ms-transform: rotate(-140deg);transform: rotate(-140deg); } 50%{ box-shadow: inset #555555 0 0 0 2px; } 100%{ box-shadow: inset #555555 0 0 0 8px;-webkit-transform: rotate(140deg);-moz-transform: rotate(140deg);-ms-transform: rotate(140deg);transform: rotate(140deg); };
+@keyframes loaderAnimate2{ 0%{ -webkit-box-shadow: inset #555555 0 0 0 8px; box-shadow: inset #555555 0 0 0 8px;-webkit-transform: rotate(-140deg);-moz-transform: rotate(-140deg);-ms-transform: rotate(-140deg);-o-transform: rotate(-140deg);transform: rotate(-140deg); } 50%{ -webkit-box-shadow: inset #555555 0 0 0 2px; box-shadow: inset #555555 0 0 0 2px; } 100%{ -webkit-box-shadow: inset #555555 0 0 0 8px; box-shadow: inset #555555 0 0 0 8px;-webkit-transform: rotate(140deg);-moz-transform: rotate(140deg);-ms-transform: rotate(140deg);-o-transform: rotate(140deg);transform: rotate(140deg); };
 }
 .loader-1:after {
   -webkit-animation: loaderAnimate2 1000ms ease-in-out infinite;
@@ -6759,22 +6736,32 @@ lesshat-selector {
   animation: loaderAnimate2 1000ms ease-in-out infinite;
   clip: rect(0, 30px, 30px, 15px);
   content: '';
-  border-radius: 50%;
+  -webkit-border-radius: 50%;
+          border-radius: 50%;
   height: 30px;
   width: 30px;
   position: absolute;
 }
 @keyframes loaderAnimate2 {
   0% {
-    box-shadow: inset #fff 0 0 0 17px;
-    transform: rotate(-140deg);
+    -webkit-box-shadow: inset #fff 0 0 0 17px;
+            box-shadow: inset #fff 0 0 0 17px;
+    -webkit-transform: rotate(-140deg);
+       -moz-transform: rotate(-140deg);
+         -o-transform: rotate(-140deg);
+            transform: rotate(-140deg);
   }
   50% {
-    box-shadow: inset #fff 0 0 0 2px;
+    -webkit-box-shadow: inset #fff 0 0 0 2px;
+            box-shadow: inset #fff 0 0 0 2px;
   }
   100% {
-    box-shadow: inset #fff 0 0 0 17px;
-    transform: rotate(140deg);
+    -webkit-box-shadow: inset #fff 0 0 0 17px;
+            box-shadow: inset #fff 0 0 0 17px;
+    -webkit-transform: rotate(140deg);
+       -moz-transform: rotate(140deg);
+         -o-transform: rotate(140deg);
+            transform: rotate(140deg);
   }
 }
 .loader-2 {
@@ -6796,14 +6783,14 @@ lesshat-selector {
 @-webkit-keyframes loaderAnimate2{ 0%{ -webkit-transform: rotate(0deg); } 100%{ -webkit-transform: rotate(220deg); }}
 @-moz-keyframes loaderAnimate2{ 0%{ -moz-transform: rotate(0deg); } 100%{ -moz-transform: rotate(220deg); }}
 @-o-keyframes loaderAnimate2{ 0%{ -o-transform: rotate(0deg); } 100%{ -o-transform: rotate(220deg); }}
-@keyframes loaderAnimate2{ 0%{-webkit-transform: rotate(0deg);-moz-transform: rotate(0deg);-ms-transform: rotate(0deg);transform: rotate(0deg); } 100%{-webkit-transform: rotate(220deg);-moz-transform: rotate(220deg);-ms-transform: rotate(220deg);transform: rotate(220deg); };
+@keyframes loaderAnimate2{ 0%{-webkit-transform: rotate(0deg);-moz-transform: rotate(0deg);-ms-transform: rotate(0deg);-o-transform: rotate(0deg);transform: rotate(0deg); } 100%{-webkit-transform: rotate(220deg);-moz-transform: rotate(220deg);-ms-transform: rotate(220deg);-o-transform: rotate(220deg);transform: rotate(220deg); };
 }
 lesshat-selector {
   -lh-property: 0; } 
-@-webkit-keyframes loaderAnimate22{ 0%{ box-shadow: inset #ffffff 0 0 0 8px; -webkit-transform: rotate(-140deg); } 50%{ box-shadow: inset #ffffff 0 0 0 2px; } 100%{ box-shadow: inset #ffffff 0 0 0 8px; -webkit-transform: rotate(140deg); }}
+@-webkit-keyframes loaderAnimate22{ 0%{ -webkit-box-shadow: inset #ffffff 0 0 0 8px; box-shadow: inset #ffffff 0 0 0 8px; -webkit-transform: rotate(-140deg); } 50%{ -webkit-box-shadow: inset #ffffff 0 0 0 2px; box-shadow: inset #ffffff 0 0 0 2px; } 100%{ -webkit-box-shadow: inset #ffffff 0 0 0 8px; box-shadow: inset #ffffff 0 0 0 8px; -webkit-transform: rotate(140deg); }}
 @-moz-keyframes loaderAnimate22{ 0%{ box-shadow: inset #ffffff 0 0 0 8px; -moz-transform: rotate(-140deg); } 50%{ box-shadow: inset #ffffff 0 0 0 2px; } 100%{ box-shadow: inset #ffffff 0 0 0 8px; -moz-transform: rotate(140deg); }}
 @-o-keyframes loaderAnimate22{ 0%{ box-shadow: inset #ffffff 0 0 0 8px; -o-transform: rotate(-140deg); } 50%{ box-shadow: inset #ffffff 0 0 0 2px; } 100%{ box-shadow: inset #ffffff 0 0 0 8px; -o-transform: rotate(140deg); }}
-@keyframes loaderAnimate22{ 0%{ box-shadow: inset #ffffff 0 0 0 8px;-webkit-transform: rotate(-140deg);-moz-transform: rotate(-140deg);-ms-transform: rotate(-140deg);transform: rotate(-140deg); } 50%{ box-shadow: inset #ffffff 0 0 0 2px; } 100%{ box-shadow: inset #ffffff 0 0 0 8px;-webkit-transform: rotate(140deg);-moz-transform: rotate(140deg);-ms-transform: rotate(140deg);transform: rotate(140deg); };
+@keyframes loaderAnimate22{ 0%{ -webkit-box-shadow: inset #ffffff 0 0 0 8px; box-shadow: inset #ffffff 0 0 0 8px;-webkit-transform: rotate(-140deg);-moz-transform: rotate(-140deg);-ms-transform: rotate(-140deg);-o-transform: rotate(-140deg);transform: rotate(-140deg); } 50%{ -webkit-box-shadow: inset #ffffff 0 0 0 2px; box-shadow: inset #ffffff 0 0 0 2px; } 100%{ -webkit-box-shadow: inset #ffffff 0 0 0 8px; box-shadow: inset #ffffff 0 0 0 8px;-webkit-transform: rotate(140deg);-moz-transform: rotate(140deg);-ms-transform: rotate(140deg);-o-transform: rotate(140deg);transform: rotate(140deg); };
 }
 .loader-2:after {
   -webkit-animation: loaderAnimate22 1000ms ease-in-out infinite;
@@ -6812,22 +6799,32 @@ lesshat-selector {
   animation: loaderAnimate22 1000ms ease-in-out infinite;
   clip: rect(0, 30px, 30px, 15px);
   content: '';
-  border-radius: 50%;
+  -webkit-border-radius: 50%;
+          border-radius: 50%;
   height: 30px;
   width: 30px;
   position: absolute;
 }
 @keyframes loaderAnimate22 {
   0% {
-    box-shadow: inset #fff 0 0 0 17px;
-    transform: rotate(-140deg);
+    -webkit-box-shadow: inset #fff 0 0 0 17px;
+            box-shadow: inset #fff 0 0 0 17px;
+    -webkit-transform: rotate(-140deg);
+       -moz-transform: rotate(-140deg);
+         -o-transform: rotate(-140deg);
+            transform: rotate(-140deg);
   }
   50% {
-    box-shadow: inset #fff 0 0 0 2px;
+    -webkit-box-shadow: inset #fff 0 0 0 2px;
+            box-shadow: inset #fff 0 0 0 2px;
   }
   100% {
-    box-shadow: inset #fff 0 0 0 17px;
-    transform: rotate(140deg);
+    -webkit-box-shadow: inset #fff 0 0 0 17px;
+            box-shadow: inset #fff 0 0 0 17px;
+    -webkit-transform: rotate(140deg);
+       -moz-transform: rotate(140deg);
+         -o-transform: rotate(140deg);
+            transform: rotate(140deg);
   }
 }
 .page-loading-overlay {
@@ -6872,7 +6869,6 @@ label {
 }
 .dropdown-menu {
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 .dropdown-menu > li > a {
@@ -6890,14 +6886,12 @@ label {
 }
 .form-control {
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 .form-control:focus,
 .form-control:active {
   outline: none;
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 h1,
@@ -6978,7 +6972,6 @@ h6,
 .progress {
   height: 6px;
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 .progress.progress-bar-purple > .progress-bar {
@@ -6987,6 +6980,7 @@ h6,
 .progress-striped .progress.progress-bar-purple > .progress-bar {
   background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
 .progress.progress-bar-blue > .progress-bar {
@@ -6995,6 +6989,7 @@ h6,
 .progress-striped .progress.progress-bar-blue > .progress-bar {
   background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
 .progress.progress-bar-red > .progress-bar {
@@ -7003,6 +6998,7 @@ h6,
 .progress-striped .progress.progress-bar-red > .progress-bar {
   background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
 .progress.progress-bar-black > .progress-bar {
@@ -7011,6 +7007,7 @@ h6,
 .progress-striped .progress.progress-bar-black > .progress-bar {
   background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
 .progress.progress-bar-gray > .progress-bar {
@@ -7019,11 +7016,11 @@ h6,
 .progress-striped .progress.progress-bar-gray > .progress-bar {
   background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
 .progress .progress-bar {
   -webkit-box-shadow: none;
-  -moz-box-shadow: none;
   box-shadow: none;
 }
 .progress .progress-bar.progress-bar-purple {
@@ -7032,6 +7029,7 @@ h6,
 .progress-striped .progress .progress-bar.progress-bar-purple {
   background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
 .progress .progress-bar.progress-bar-blue {
@@ -7040,6 +7038,7 @@ h6,
 .progress-striped .progress .progress-bar.progress-bar-blue {
   background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
 .progress .progress-bar.progress-bar-red {
@@ -7048,6 +7047,7 @@ h6,
 .progress-striped .progress .progress-bar.progress-bar-red {
   background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
 .progress .progress-bar.progress-bar-black {
@@ -7056,6 +7056,7 @@ h6,
 .progress-striped .progress .progress-bar.progress-bar-black {
   background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
 .progress .progress-bar.progress-bar-gray {
@@ -7064,6 +7065,7 @@ h6,
 .progress-striped .progress .progress-bar.progress-bar-gray {
   background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
   background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
 }
 .list-group .list-group-item {
@@ -7263,4 +7265,25 @@ pre {
 }
 .btn.btn-blue.btn-icon-standalone.btn-icon-standalone-right:hover i {
   border-left-color: #585b5d;
+}
+
+span#doc_time {
+  font-size: 14px;
+  color: #2c2e2f;
+  float: right;
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -moz-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  height: 76px;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+     -moz-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  margin-right: 10%;
+}
+span#doc_time .delimer {
+  margin: 0px 3px;
 }

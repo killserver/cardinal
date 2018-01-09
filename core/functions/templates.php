@@ -42,57 +42,13 @@ function meta($array = array()) {
 		}
 	}
 	unset($array);
-	$te = templates::lcud(templates::completed_assign_vars("meta", null));
+	$te = templates::lcud(templates::completed_assign_vars("meta", "core"));
 return $te;
 }
 
 function create_js($clear = false) {
 global $user, $manifest;
-	$css = $js = array();
 	$sRet = "";
-	$js_list = modules::manifest_get(array("create_js", "min"));
-	if(!config::Select("js_min")) {
-		if(!$clear) {
-			if(isset($user) && isset($user['id']) && $user['id']==1) {
-				$js[] = 'http://ie.microsoft.com/testdrive/HTML5/CompatInspector/inspector.js';
-			}
-		}
-		$dirs = read_dir(PATH_LOADED_CONTENT."js".DS, ".".ROOT_EX);
-		sort($dirs);
-		for($i=0;$i<sizeof($dirs);$i++) {
-			if(file_exists(PATH_LOADED_CONTENT."js".DS.$dirs[$i]) && $dirs[$i]!="index.html" && $dirs[$i]!="index.php") {
-				include_once(PATH_LOADED_CONTENT."js".DS.$dirs[$i]);
-			}
-		}
-		if(is_array($js)) {
-			for($i=0;$i<sizeof($js);$i++) {
-				$sRet .= "<script type=\"text/javascript\" src=\"".$js[$i].AmperOr($js[$i]).time()."\"></script>\n";
-			}
-		}
-		unset($dirs, $js);
-		$dirs = read_dir(PATH_LOADED_CONTENT."css".DS, ".".ROOT_EX);
-		sort($dirs);
-		for($i=0;$i<sizeof($dirs);$i++) {
-			if(file_exists(PATH_LOADED_CONTENT."css".DS.$dirs[$i]) && $dirs[$i]!="index.html" && $dirs[$i]!="index.php") {
-				include_once(PATH_LOADED_CONTENT."css".DS.$dirs[$i]);
-			}
-		}
-		if(is_array($css)) {
-			for($i=0;$i<sizeof($css);$i++) {
-				$sRet .= "<link href=\"".$css[$i].AmperOr($css[$i]).time()."\" rel=\"stylesheet\" />\n";
-			}
-		}
-		unset($dirs, $css);
-	} else {
-		$js = modules::manifest_get(array("create_js", "mini"));
-		if($js) {
-			$js = implode(",", $js);
-		}
-		//$sRet = "<script type=\"text/javascript\" src=\"{C_default_http_host}core/class/min/index.php?g=general&charset=".config::Select("charset").(sizeof($js)>0 ? "&f=".implode(",", $js) : "")."&".time()."\"></script>\n";
-		for($i=0;$i<sizeof($js);$i++) {
-			$sRet = "<script type=\"text/javascript\" src=\"".$js[$i].AmperOr($js[$i]).time()."\"></script>\n";
-		}
-	}
 	$all = modules::manifest_get(array("create_js", "full"));
 	if(is_array($all)) {
 		$all = array_values($all);
@@ -112,7 +68,6 @@ global $user, $manifest;
 		}
 	}
 	if(isset($js_list) && is_array($js_list) && sizeof($js_list)>0) {
-		//$sRet .= "<script type=\"text/javascript\" async=\"async\" src=\"{C_default_http_host}core/class/min/index.php?g=general&charset=".config::Select("charset").(sizeof($js_list)>0 ? "&f=".implode(",", $js_list) : "")."&amp;".time()."\"></script>\n";
 		for($i=0;$i<sizeof($js_list);$i++) {
 			$sRet .= "<script type=\"text/javascript\" src=\"".$js_list[$i].AmperOr($js_list[$i]).time()."\"></script>\n";
 		}
@@ -136,7 +91,7 @@ global $user, $manifest;
 		}
 	}
 	if(isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && userlevel::get("admin") && Arr::get($_GET, "noShowAdmin", false)===false) {
-		$sRet .= '<script type="text/javascript" src="{C_default_http_local}skins/admin.min.js"></script>';
+		$sRet .= '<script type="text/javascript" src="{C_default_http_local}skins/core/admin.min.js"></script>';
 	}
 	if(sizeof($manifest['jscss'])>0) {
 		if(isset($manifest['jscss']['css']) && isset($manifest['jscss']['css']['link']) && is_array($manifest['jscss']['css']['link']) && sizeof($manifest['jscss']['css']['link'])>0) {
@@ -301,9 +256,6 @@ function headers($array = array(), $clear = false, $no_js = false) {
 		$header .= "<link rel=\"icon\" type=\"image/x-icon\" href=\"{C_default_http_host}favicon.ico\" sizes=\"16x16\" />\n";
 	}
 	if(!$clear) {
-/*
-<!--script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.js"></script><script type='text/javascript' src='http://simplemodal.googlecode.com/files/jquery.simplemodal.1.4.4.min.js'></script><script type="text/javascript" src="http://malsup.github.io/jquery.form.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/jqueryui.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/libs.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/jquery.jmpopups-0.5.1.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/spoiler.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/tabs.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/tabcontent.js"></script><script type="text/javascript" src="http://online-killer.com/skins/Kinore/js/md-socwidget.js"></script><script type="text/javascript">setTimeout(function(){ $('.box').fadeOut('fast') },10000);  //30000 = 30 секунд</script><script type="text/javascript">	var username = "";	var default_link = "http://online-killer.com/";	jQuery(function() {		jQuery('#tabs').tabs('#tabsText > li');	});</script><script type="text/javascript" src="http://online-killer.com/js/poll.core.js"></script><script type="text/javascript">jQuery(document).ready(function(){	loadpoll();});</script><script type="text/javascript" src="http://online-killer.com/js/ajax_core.js"></script><script type="text/javascript" src="http://online-killer.com/flash-js-tagcloud-swfobject.js"></script><meta name="application-name" content="" /><meta name="msapplication-TileColor" content="#e0161d" /><meta name="msapplication-notification" content="frequency=30;polling-uri=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=1;polling-uri2=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=2;polling-uri3=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=3;polling-uri4=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=4;polling-uri5=http://notifications.buildmypinnedsite.com/?feed=http://online-killer.com/rss.xml&amp;id=5; cycle=1" /-->
-*/
 		$skin = templates::get_skins();
 		$param = array();
 		$dprm = Route::param();
@@ -425,11 +377,11 @@ function headers($array = array(), $clear = false, $no_js = false) {
 	}
 	if(isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && userlevel::get("admin") && !defined("IS_NOSHOWADMIN")) {
 		$links = array();
-		if($dh = dir(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."menu".DS)) {
+		if($dh = dir(ADMIN_MENU)) {
 			$i=1;
 			while(($file = $dh->read()) !== false) {
 				if($file != "index.".ROOT_EX && $file != "index.html" && $file != "." && $file != "..") {
-					include_once(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."menu".DS.$file);
+					include_once(ADMIN_MENU.$file);
 				}
 			}
 			$dh->close();
@@ -457,7 +409,7 @@ function headers($array = array(), $clear = false, $no_js = false) {
 		if($editor!==false && Arr::get($editor, "class", false)) {
 			$editPage = "{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=".$editor['class'].(isset($editor['page']) ? "&".$editor['page'] : "");
 		}
-		$header .= "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\"><link rel=\"stylesheet\" href=\"{C_default_http_local}skins/admin.{S_time}.css\">";
+		$header .= "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\"><link rel=\"stylesheet\" href=\"{C_default_http_local}skins/core/admin.min.css?{S_time}\">";
 		$menu = "<div class=\"adminCoreCardinal\"><a href=\"{C_default_http_local}\" class=\"logo\"></a><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/\" class=\"linkToAdmin\">{L_'adminpanel'}</a>".(!empty($editPage) ? "<div class=\"items\"><a href=\"".$editPage."\"><i class=\"fa-edit\"></i><span>{L_'Редактировать'}</span></a></div>":"").menuAdminHeader($newMenu)."<div class=\"user\"><span>{U_username}</span><div class=\"dropped\"><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Login&out\"><i class=\"fa-user-times\"></i>{L_'logout'}</a></div></div></div>";
 		cardinalEvent::setData($menu);
 		cardinalEvent::addListener("templates::display", "addAdminPanelToPage");
