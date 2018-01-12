@@ -429,23 +429,18 @@
 	
 	
 	<div class="modal fade custom-width" id="modal-3" data-backdrop="static">
-		<div class="modal-dialog" style="width:96%;height:90%;">
-			<div class="modal-content" style="height:100%;">
-				
+		<div class="modal-dialog" style="width:95%;height:90%;">
+			<form class="modal-content" style="height:100%;display:block;">
 				<div class="modal-header">
-								<button type="button" class="close" onclick="show_hide(this);return false">
-									<span class="collapse-icon">-</span>
-								</button>
+					<button type="button" class="close hide" onclick="show_hide(this);return false"><span class="collapse-icon">-</span></button>
 					<button type="button" class="close" id="closeIco" data-dismiss="modal" aria-hidden="true">&times;</button>
 					<h4 class="modal-title" id="title_video"></h4>
 				</div>
-				
 				<div class="modal-body" id="content_video" style="height:85%;"></div>
-				
-				<div class="modal-footer" style="position:absolute;right:0px;padding:30px;bottom:0px;margin-bottom:-10px;">
-					<button type="button" class="btn btn-white" id="close" data-dismiss="modal">Close</button>
+				<div class="modal-footer" style="position:absolute;left:0px;width:100%;padding:30px;bottom:0px;margin-bottom:-10px;">
+					<button type="button" class="btn btn-white pull-right" id="close" data-dismiss="modal">Close</button>
 				</div>
-			</div>
+			</form>
 		</div>
 	</div>
 	<div id="modalView" class="btn btn-purple btn-lg hidden" style="bottom:0px;left:0px;position:fixed;background:#fff;color:#000;z-index:100;" onclick="shows();return false;">View</div>
@@ -527,10 +522,11 @@
 	{js_list}
 	
 	<script>
-	if(typeof(disableAllEditors)=="undefined") {
+	var editorTextarea;
+	if(typeof(disableAllEditors)==="undefined") {
 		$(document).ready(function(){
-			if(typeof(editorTextarea)!="object") {
-				var editorTextarea = {
+			if(typeof(editorTextarea)!=="object") {
+				editorTextarea = {
 					selector: 'textarea',
 					height: 500,
 					language : selectLang,

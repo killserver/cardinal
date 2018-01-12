@@ -127,14 +127,14 @@ class DBObject implements ArrayAccess {
 		} else {
 			$save = $addSave;
 		}
-		if($force === true && defined("PREFIX_DB") && !empty(PREFIX_DB)) {
+		if($force === true && defined("PREFIX_DB") && !empty(PREFIX_DB) && strpos($query, PREFIX_DB)===false) {
 			$arr = db::getTables();
 			$arr = array_keys($arr);
 			for($i=0;$i<sizeof($arr);$i++) {
 				$t = str_replace(PREFIX_DB, "", $arr[$i]);
 				$query = str_replace(array($arr[$i], $t), $save.PREFIX_DB.$t.$save, $query);
 			}
-		} else if(strpos($query, '{{') !== false && defined("PREFIX_DB") && !empty(PREFIX_DB)) {
+		} else if(strpos($query, '{{') !== false && defined("PREFIX_DB") && !empty(PREFIX_DB) && strpos($query, PREFIX_DB)===false) {
 			if(preg_match("/CREATE|DROP/", $query)) {
 				$query = str_replace(array('{{', '}}'), array($save.PREFIX_DB, $save), $query);
 			} else {
@@ -466,9 +466,13 @@ class DBObject implements ArrayAccess {
 		if(empty($name)) {
 			$name = $this->loadedTable;
 		}
-		$row = db::doquery("SELECT EXISTS(SELECT 1 FROM `information_schema`.`tables` WHERE `table_schema` = '".db::$dbName."' AND `table_name` = '".$this->addPrefixTable($name, false)."') AS `exists`");
+		$name = $this->addPrefixTable($name, "");
+		if(substr($name, 0, 1)==="`") {
+			$name = substr($name, 1, -1);
+		}
+		$row = db::doquery("SELECT EXISTS(SELECT 1 FROM `information_schema`.`tables` WHERE `table_schema` = '".db::$dbName."' AND `table_name` = '".$name."') AS `exists`");
 		if(!isset($row['exists']) || $row['exists'] != 1) {
-			throw new Exception("Table is not exists");
+			throw new Exception("Table ".$name." is not exists");
 			die();
 		}
 		if(empty($name)) {
@@ -671,7 +675,7 @@ class DBObject implements ArrayAccess {
 	}
 	
 	final private function buildValueIn($d) {
-		return (preg_match("/^([a-zA-Z0-9-_]+)/", $d) && strpos($d, "(")!==false&&strpos($d, ")")!==false ? $d : "".str_replace("\\\\u", "\\u", db::escape($d))."");
+		return ("".str_replace("\\\\u", "\\u", db::escape($d))."");
 	}
 
 	final public function Update($table = "", $where = "", $orderBy = "", $limit = "") {
@@ -717,7 +721,7 @@ class DBObject implements ArrayAccess {
 	}
 	
 	final private function buildUpdateKV($k, $v) {
-		return "`".$k."` = ".(preg_match("/^([a-zA-Z0-9-_]+)/", $v) && strpos($v, "(")!==false&&strpos($v, ")")!==false ? $v : "".str_replace("\\\\u", "\\u", db::escape($v))."");
+		return "`".$k."` = ".("".str_replace("\\\\u", "\\u", db::escape($v))."");
 	}
 
 	final public function Deletes($table = "", $where = "", $orderBy = "", $limit = "") {

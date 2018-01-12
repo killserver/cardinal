@@ -288,14 +288,11 @@ class Core {
 			location(htmlspecialchars_decode(HTTP::getServer("HTTP_REFERER")));die();
 		}
 		$this->ParseLang();
-		Route::RegParam("lang", "ru");
+		Route::RegParam("lang", config::Select("lang"));
 		$routeLang = HTTP::getServer(ROUTE_GET_URL);
 		preg_match("#/([a-zA-Z]+)/#", $routeLang, $arr);
 		if(isset($arr[1])) {
-			$support = lang::support();
-			for($i=0;$i<sizeof($support);$i++) {
-				$support[$i] = nsubstr($support[$i], 4, -3);
-			}
+			$support = lang::support(true);
 			if(in_array($arr[1], $support)) {
 				lang::set_lang($arr[1]);
 				lang::init_lang();

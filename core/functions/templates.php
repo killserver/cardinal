@@ -466,8 +466,8 @@ function callBackAdminPanelToPage($arr) {
 function regCssJs($js, $type, $mark = false, $name = "") {
 global $manifest;
 	if(is_array($js)) {
-		foreach($js as $v) {
-			regCssJs($v, $type, $mark, $name);
+		foreach($js as $k => $v) {
+			regCssJs($v, $type, $mark, (is_numeric($k) ? $name : $k));
 		}
 	} else if(is_string($js)) {
 		if(!isset($manifest['jscss'][$type])) {

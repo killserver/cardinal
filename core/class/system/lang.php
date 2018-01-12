@@ -63,7 +63,7 @@ class lang implements ArrayAccess {
 	return $langs;
 	}
 	
-	final public static function support() {
+	final public static function support($clear = false) {
 		$arr = array();
 		$mainLang = (modules::manifest_get("mainLang")!==false ? modules::manifest_get("mainLang") : "ru");
 		$arr["lang".$mainLang.".db"] = "lang".$mainLang.".db";
@@ -95,6 +95,11 @@ class lang implements ArrayAccess {
 		}
 		$arr = array_merge($arr, $arrLangs);
 		$arr = array_values($arr);
+		if($clear) {
+			for($i=0;$i<sizeof($arr);$i++) {
+				$arr[$i] = nsubstr($arr[$i], 4, -3);
+			}
+		}
 		return $arr;
 	}
 
@@ -432,6 +437,17 @@ class lang implements ArrayAccess {
 			$lang = self::merge(self::$defaultLang, $lang, "", "merge");
 		}
 		return $lang;
+	}
+
+	final public static function translateSupport() {
+		$p = new Parser(LANGUAGE_SUPPORT_SERVICE."?".time());
+		$echo = $p->get();
+		if(is_serialized($echo)) {
+			$arr = unserialize($echo);
+		} else {
+			$arr = array();
+		}
+		return $arr;
 	}
 
     /**

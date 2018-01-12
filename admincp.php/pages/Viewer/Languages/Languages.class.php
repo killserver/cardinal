@@ -5,17 +5,6 @@ class Languages extends Core {
 	function implodes($k, $v) {
 		return $k."[-@-]".$v;
 	}
-
-	function translateSupport() {
-		$p = new Parser(LANGUAGE_SUPPORT_SERVICE."?".time());
-		$echo = $p->get();
-		if(is_serialized($echo)) {
-			$arr = unserialize($echo);
-		} else {
-			$arr = array();
-		}
-		return $arr;
-	}
 	
 	function translate($text, $to, $from = "") {
 		$ret = "";
@@ -70,14 +59,13 @@ class Languages extends Core {
 		}
 		if(Arr::get($_GET, "page", false)) {
 			if(Arr::get($_GET, "page")=="main") {
-				$support = lang::support();
-				$supports = $this->translateSupport();
+				$support = lang::support(true);
+				$supports = lang::translateSupport();
 				for($i=0;$i<sizeof($support);$i++) {
-					$clearLang = nsubstr($support[$i], 4, -3);
-					$langer = nucfirst($clearLang);
+					$langer = nucfirst($support[$i]);
 					templates::assign_vars(array(
-						"clearLang" => $clearLang,
-						"lang" => (isset($supports[$clearLang]) ? $supports[$clearLang] : $langer),
+						"clearLang" => $support[$i],
+						"lang" => (isset($supports[$support[$i]]) ? $supports[$support[$i]] : $langer),
 					), "supportLang", "lang".($i+1));
 				}
 				foreach($supports as $k => $v) {

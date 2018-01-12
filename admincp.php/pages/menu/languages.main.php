@@ -20,12 +20,11 @@ $links['languages']["item"][] = array(
 	'access' => userlevel::get("languages"),
 	'icon' => '',
 );
-$support = lang::support();
+$support = lang::support(true);
 for($i=1;$i<sizeof($support);$i++) {
-	$clearLang = nsubstr($support[$i], 4, -3);
-	$langer = nucfirst($clearLang);
+	$langer = nucfirst($support[$i]);
 	$links['languages']["item"][] = array(
-		'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Languages&lang=".$clearLang,
+		'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Languages&lang=".$support[$i],
 		'title' => "{L_Languages}&nbsp;".$langer,
 		'type' => "item",
 		'access' => userlevel::get("languages"),

@@ -133,7 +133,7 @@ class templates {
 			$phpEx = PHP_EX;
 		}
 		if(file_exists(PATH_SKINS.self::$skins.DS."functions.".$phpEx)) {
-			include_once(PATH_SKINS.self::$skins.DS."functions.".$phpEx);
+			include(PATH_SKINS.self::$skins.DS."functions.".$phpEx);
 		}
 	}
 
@@ -2331,6 +2331,17 @@ if(!$test) {
 		if(!file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.self::$mainTpl.".".self::$typeTpl) && !file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$mainSkins.DS.self::$mainTpl.".".self::$typeTpl)) {
 			self::ErrorTemplate("error templates", ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.self::$mainTpl.".".self::$typeTpl);
 			return;
+		}
+		if(!defined("PHP_EX")) {
+			$phpEx = substr(strrchr(__FILE__, '.'), 1);
+			if(empty($phpEx)) {
+				$phpEx = "php";
+			}
+		} else {
+			$phpEx = PHP_EX;
+		}
+		if(file_exists(PATH_SKINS.self::$skins.DS."functions.".$phpEx)) {
+			include(PATH_SKINS.self::$skins.DS."functions.".$phpEx);
 		}
 		if(file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."lang".DS."tpl.".ROOT_EX)) {
 			include_once(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."lang".DS."tpl.".ROOT_EX);
