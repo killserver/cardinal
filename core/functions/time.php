@@ -4,7 +4,8 @@ echo "403 ERROR";
 die();
 }
 
-function get_date($date, $array) {
+function get_date($date, $array){return function_call('get_date', array($date, $array));}
+function or_get_date($date, $array) {
 	$first = $array[0];
 	$second = $array[1];
 	$third = $array[2];
@@ -21,7 +22,8 @@ function get_date($date, $array) {
 	}
 }
 
-function langdate($date) {
+function langdate($date){return function_call('langdate', array($date));}
+function or_langdate($date) {
 	$only_date = false;
 	if(is_array($date) && isset($date[3]) && !empty($date[3])) {
 		$temp = $date[3];
@@ -73,7 +75,8 @@ function langdate($date) {
 	}
 }
 
-function timespan($seconds = 1, $time = "") {
+function timespan($seconds = 1, $time = ""){return function_call('timespan', array($seconds, $time));}
+function or_timespan($seconds = 1, $time = "") {
 	if(!is_numeric($seconds)) {
 		$seconds = 1;
 	}

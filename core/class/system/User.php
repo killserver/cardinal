@@ -384,6 +384,7 @@ class User {
 			}
 			$newUser = array(
 				"".$username => array(
+					"username" => $username,
 					"light" => $pass,
 					"pass" => create_pass($pass),
 					"admin_pass" => cardinal::create_pass($pass),

@@ -91,7 +91,7 @@ global $user, $manifest;
 		}
 	}
 	if(isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && userlevel::get("admin") && Arr::get($_GET, "noShowAdmin", false)===false) {
-		$sRet .= '<script type="text/javascript" src="{C_default_http_local}skins/core/admin.min.js"></script>';
+		$sRet .= '<script type="text/javascript" src="{C_default_http_local}'.get_site_path(PATH_SKINS).'core/admin.min.js"></script>';
 	}
 	if(sizeof($manifest['jscss'])>0) {
 		if(isset($manifest['jscss']['css']) && isset($manifest['jscss']['css']['link']) && is_array($manifest['jscss']['css']['link']) && sizeof($manifest['jscss']['css']['link'])>0) {
@@ -271,11 +271,14 @@ function headers($array = array(), $clear = false, $no_js = false) {
 		$header .= (defined("ENABLED_SUPPORTS") ? '<script type="text/javascript" src="{C_default_http_host}js/supports.min.js" async="true"></script>'."\n" : "");
 		$header .= '<!-- saved from url=(0014)about:internet -->'."\n";
 		$header .= '<meta name="apple-mobile-web-app-capable" content="yes">'."\n";
+		$header .= '<meta name="apple-mobile-web-app-status-barstyle" content="black-translucent">'."\n";
+		$header .= '<meta name="apple-mobile-web-app-title" content="{L_sitename}">'."\n";
 		$header .= '<meta name="format-detection" content="telephone=no">'."\n";
 		$header .= '<meta name="format-detection" content="address=no">'."\n";
 		$header .= '<meta name="google" value="notranslate">'."\n";
 		$header .= '<meta name="skype_toolbar" content="skype_toolbar_parser_compatible">'."\n";
 		$header .= '<meta name="msapplication-tap-highlight" content="no">'."\n";
+		$header .= '<meta name="application-name" content="{L_sitename}">'."\n";
 		$header .= '<meta name="renderer" content="webkit">'."\n";
 		$header .= '<meta name="x5-fullscreen" content="true">'."\n";
 		$header .= '<meta name="rating" content="General">'."\n";
@@ -291,9 +294,9 @@ function headers($array = array(), $clear = false, $no_js = false) {
 			"	var SystemTime = \"".time()."\";\n".
 			"	var loadedPage = \"".Route::getLoaded()."\";\n".
 			"	var loadedParam = {".implode(",", $param)."};\n".
-			((file_exists(ROOT_PATH."skins".DS.$skin.DS."skin.css") && Route::Search("css_skin")) ? " var cssRebuildLink = \"{R_[css_skin]}\";\n" : "").
+			((file_exists(PATH_SKINS.$skin.DS."skin.css") && Route::Search("css_skin")) ? " var cssRebuildLink = \"{R_[css_skin]}\";\n" : "").
 			"</script>\n";
-		if(file_exists(ROOT_PATH."skins".DS.$skin.DS."skin.css") && Route::Search("css_skin")) {
+		if(file_exists(PATH_SKINS.$skin.DS."skin.css") && Route::Search("css_skin")) {
 			$header .= '<div id="skinRebuilded"><script type="text/javascript" src="{C_default_http_host}js/skins.js" async="true" id="removedSkinRebuilded"></script></div>';
 		}
 	}
@@ -321,8 +324,7 @@ function headers($array = array(), $clear = false, $no_js = false) {
 
 	if($rss && !empty($link_rss)) {
 		$header .= "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"{L_sitename}\" href=\"{C_default_http_host}".$link_rss."\" />\n";
-		$header .= "<meta name=\"application-name\" content=\"{L_sitename}\" />\n".
-			"<meta name=\"msapplication-TileColor\" content=\"#e0161d\"/>\n".
+		$header .= "<meta name=\"msapplication-TileColor\" content=\"#e0161d\"/>\n". //"<meta name=\"application-name\" content=\"{L_sitename}\" />\n".
 			"<meta name=\"msapplication-notification\" content=\"frequency=30;polling-uri=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=1;polling-uri2=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=2;polling-uri3=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=3;polling-uri4=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=4;polling-uri5=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=5; cycle=1\"/>\n\n";
 	}
 	if(isset($array['meta']['type_meta'])) {
@@ -409,7 +411,7 @@ function headers($array = array(), $clear = false, $no_js = false) {
 		if($editor!==false && Arr::get($editor, "class", false)) {
 			$editPage = "{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=".$editor['class'].(isset($editor['page']) ? "&".$editor['page'] : "");
 		}
-		$header .= "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\"><link rel=\"stylesheet\" href=\"{C_default_http_local}skins/core/admin.min.css?{S_time}\">";
+		$header .= "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\"><link rel=\"stylesheet\" href=\"{C_default_http_local}".get_site_path(PATH_SKINS)."core/admin.min.css?{S_time}\">";
 		$menu = "<div class=\"adminCoreCardinal\"><a href=\"{C_default_http_local}\" class=\"logo\"></a><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/\" class=\"linkToAdmin\">{L_'adminpanel'}</a>".(!empty($editPage) ? "<div class=\"items\"><a href=\"".$editPage."\"><i class=\"fa-edit\"></i><span>{L_'Редактировать'}</span></a></div>":"").menuAdminHeader($newMenu)."<div class=\"user\"><span>{U_username}</span><div class=\"dropped\"><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Login&out\"><i class=\"fa-user-times\"></i>{L_'logout'}</a></div></div></div>";
 		cardinalEvent::setData($menu);
 		cardinalEvent::addListener("templates::display", "addAdminPanelToPage");

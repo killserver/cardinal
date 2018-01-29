@@ -81,10 +81,10 @@ $manifest = array(
 	"pages" => array(), //in page view
 	"class_pages" => array(), //in page view
 	"route" => array(), //routification
-	"define" => array(), //in class defines
+	//"define" => array(), //in class defines
 	"lang" => array(), //in class lang
-	"bbcodes" => array(), //in colorit
-	"cbbcode" => array(), //in clear_bbcode
+	//"bbcodes" => array(), //in colorit
+	//"cbbcode" => array(), //in clear_bbcode
 	"const" => array(), //is define for modules
 	"params" => array(), //is use in call module and get/send parameters
 	"dependency_modules" => array(), //dependency logic modules and need update his
@@ -240,9 +240,6 @@ if(file_exists(ROOT_PATH."core".DS."modules".DS)) {
 	if(!defined("PATH_LOAD_LIBRARY")) {
 		define("PATH_LOAD_LIBRARY", ROOT_PATH."application".DS."library".DS);
 	}
-	if(!defined("PATH_LOADED_CONTENT")) {
-		define("PATH_LOADED_CONTENT", ROOT_PATH."application".DS);
-	}
 	if(!defined("PATH_MODELS")) {
 		define("PATH_MODELS", ROOT_PATH."application".DS."models".DS);
 	}
@@ -303,8 +300,9 @@ unset($cnf);
 $langInit = new lang();
 $lang = $langInit->init_lang();
 if(!defined("WITHOUT_DB")) {
-	defines::add("CRON_TIME", config::Select("cardinal_time"));
-	defines::init();
+	//defines::add("CRON_TIME", config::Select("cardinal_time"));
+	//defines::init();
+	define("CRON_TIME", config::Select("cardinal_time"));
 	new cardinal();
 } elseif(is_writable(PATH_CACHE)) {
 	if(file_exists(PATH_CACHE."cron.txt")) {
@@ -312,8 +310,9 @@ if(!defined("WITHOUT_DB")) {
 	} else {
 		$otime = time();
 	}
-	defines::add("CRON_TIME", $otime);
-	defines::init();
+	define("CRON_TIME", $otime);
+	//defines::add("CRON_TIME", $otime);
+	//defines::init();
 	new cardinal();
 } else {
 	defines::init();

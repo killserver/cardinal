@@ -154,7 +154,12 @@ class Archer extends Core {
 					$limit = $pager->getLimit();
 					$model->SetLimit($limit[1]);
 					$model->SetOffset($limit[0]);
-					$model->OrderByTo("id", "ASC");
+					if(!empty($andWhere) && !empty($typeWhere) && !empty($dataWhere)) {
+						$model->Where($andWhere, $typeWhere, $dataWhere);
+					} else if(!empty($andWhere) && !empty($dataWhere)) {
+						$model->Where($andWhere, $dataWhere);
+					}
+					$model->OrderByTo((empty($orderBy) ? $model->getFirst() : $orderBy), ($orderTo ? $orderTo : "ASC"));
 				}
 				if(isset($_GET['catid'])) {
 					$model->WhereTo("catId", intval($_GET['catid']));

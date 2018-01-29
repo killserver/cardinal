@@ -24,6 +24,7 @@ class page {
 			return false;
 		}
 		if(sizeof($_POST) > 0) {
+			callAjax();
 			$ajax = ajax_check();
 			$user = Arr::get($_POST, 'username', false);
 			$pass = Arr::get($_POST, 'pass', false);
@@ -83,8 +84,8 @@ class page {
 				location("{C_default_http_local}");
 			}
 		}
-		$reg = templates::complited_assing_vars("reg", "core");
-		templates::complited($reg, "{L_reg_page}");
+		$reg = templates::completed_assign_vars("reg", "core");
+		templates::completed($reg, "{L_reg_page}");
 		templates::display();
 	}
 

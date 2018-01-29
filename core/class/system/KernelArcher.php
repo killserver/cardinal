@@ -154,10 +154,12 @@ class KernelArcher {
 				}
 				$type = str_replace(DS, "/", $type);
 			} else if($model->getAttribute($k, "type")=="date") {
+                $post = str_replace("/", "-", $post);
 				$type = strtotime((isset($post) && !empty($post) ? $post : date("d/m/Y"))." ".date("H:i:s"));
 			} else if($model->getAttribute($k, "type")=="time") {
 				$type = strtotime(date("d/m/Y")." ".(isset($post) && !empty($post) ? $post : date("H:i:s")));
 			} else if($model->getAttribute($k, "type")=="datetime") {
+                $post[0] = str_replace("/", "-", $post[0]);
 				$type = strtotime((isset($post[0]) && !empty($post[0]) ? $post[0] : date("d/m/Y"))." ".(isset($post[1]) && !empty($post[1]) ? $post[1] : date("H:i:s")));
 			} else if(!is_bool($post) && $post != $v) {
 				$type = $post;
@@ -377,10 +379,12 @@ class KernelArcher {
 				}
 				$type = str_replace(DS, "/", $type);
 			} else if($models->getAttribute($k, "type")=="date") {
+                $post = str_replace("/", "-", $post);
 				$type = strtotime((isset($post) && !empty($post) ? $post : date("d/m/Y"))." ".date("H:i:s"));
 			} else if($models->getAttribute($k, "type")=="time") {
 				$type = strtotime(date("d/m/Y")." ".(isset($post) && !empty($post) ? $post : date("H:i:s")));
 			} else if($models->getAttribute($k, "type")=="datetime") {
+                $post[0] = str_replace("/", "-", $post[0]);
 				$type = strtotime((isset($post[0]) && !empty($post[0]) ? $post[0] : date("d/m/Y"))." ".(isset($post[1]) && !empty($post[1]) ? $post[1] : date("H:i:s")));
 			} else if(!is_bool($post) && $post != $v) {
 				$type = $post;

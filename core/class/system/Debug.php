@@ -335,16 +335,20 @@ class Debug {
 				$memory = $size ? round($size / pow(1024, ($isize = floor(log($size, 1024)))), 2) . $filesizename[$isize] : '0 Bytes';
 				unset($size, $filesizename, $isize);
 				global $Timer;
-				$time = microtime();
-				if(strpos($time, " ")!==false) {
-					$time = explode(" ", $time);
-					$time = current($time);
+				if(strlen($Timer)>10) {
+					$time = microtime();
+					if(strpos($time, " ")!==false) {
+						$time = explode(" ", $time);
+						$time = current($time);
+					}
+					$Times = $time-$Timer;
+				} else {
+					$Times = $Timer;
 				}
-				$time = $time-$Timer;
 				unset($Timer);
 			break;
 		}
-		$arr = array("memory" => $memory, "memoryNum" => $memoryNum, "time_work" => $time, "included_files" => $include, "use_files" => $files, "work_template" => $tmp, "db" => array("time" => $db_time, "num" => $db_num, "list" => $db_querys));
+		$arr = array("memory" => $memory, "memoryNum" => $memoryNum, "time_work" => $Times, "included_files" => $include, "use_files" => $files, "work_template" => $tmp, "db" => array("time" => $db_time, "num" => $db_num, "list" => $db_querys));
 		unset($memory, $time, $incl_filesize, $incl_files, $include, $files, $tmp, $db_time, $db_num, $db_querys);
 		if(!$echo) {
 			return $arr;

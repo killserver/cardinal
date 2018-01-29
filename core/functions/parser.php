@@ -38,10 +38,14 @@ function parser_url($url, $referer = "", $header=false, $coo=false, $coopath="",
 	return $p->get();
 }
 
-function parser_video($content, $start, $end){
+function parser_video($content, $start, $end = "") {
 	$pos = strpos($content, $start);
 	$content = substr($content, $pos);
-	$pos = strpos($content, $end);
+	if($end!=="") {
+		$pos = strpos($content, $end);
+	} else {
+		$pos = strlen($content);
+	}
 	$content = substr($content, 0, $pos);
 	$content = str_replace($start, "", $content);
 return $content;
@@ -69,7 +73,8 @@ function parser_host($url) {
 return $ret;
 }
 
-function closetags($html, $singleTagsAdd = array()) {
+function closetags($html, $singleTagsAdd = array()) { return function_call('closetags', array($html, $singleTagsAdd)); }
+function or_closetags($html, $singleTagsAdd = array()) {
 	$single_tags = array('meta', 'img', 'br', 'link', 'area', 'input', 'hr', 'col', 'param', 'base');
 	if(sizeof($singleTagsAdd)>0) {
 		$single_tags = array_merge($single_tags, $singleTagsAdd);

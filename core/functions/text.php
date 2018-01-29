@@ -199,11 +199,13 @@ function nstrlen($text) {
  * @param int $dir Where added text
  * @return string Result pad text
  */
-function nstr_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT) {
+function nstr_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT){return function_call('nstr_pad', array($str, $pad_len, $pad_str, $dir));}
+function or_nstr_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT) {
    return str_pad($str, strlen($str)-nstrlen($str)+$pad_len, $pad_str, $dir); 
 }
 
-function nstr_padv2($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT) {
+function nstr_padv2($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT){return function_call('nstr_pad', array($str, $pad_len, $pad_str, $dir));}
+function or_nstr_padv2($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT) {
     $encoding = iconv_charset($str);
     $padBefore = $dir === STR_PAD_BOTH || $dir === STR_PAD_LEFT;
     $padAfter = $dir === STR_PAD_BOTH || $dir === STR_PAD_RIGHT;
@@ -229,7 +231,8 @@ function or_int_pad($str, $pad_len, $pad_str = 0, $dir = STR_PAD_RIGHT) {
 }
 
 
-function del_in_file($file, $row_number) {
+function del_in_file($file, $row_number){return function_call('del_in_file', array($file, $row_number));}
+function or_del_in_file($file, $row_number) {
 	if(file_exists($file)) {
 		$file_out = file($file);
 		if(isset($file_out[$row_number])) {
@@ -276,7 +279,8 @@ function nlcfirst($text, $all = false) {
 /*
  New on version 6.3
 */
-function is_ascii($str) {
+function is_ascii($str){return function_call('is_ascii', array($str));}
+function or_is_ascii($str) {
 	if(is_array($str)) {
 		$str = implode($str);
 	}
@@ -286,7 +290,8 @@ function is_ascii($str) {
 /*
  New on version 6.3
 */
-function nltrim($str, $charlist = NULL) {
+function nltrim($str, $charlist = NULL){return function_call('nltrim', array($str, $charlist));}
+function or_nltrim($str, $charlist = NULL) {
 	if($charlist === NULL) {
 		return ltrim($str);
 	}
@@ -301,7 +306,8 @@ function nltrim($str, $charlist = NULL) {
 /*
  New on version 6.3
 */
-function nrtrim($str, $charlist = NULL) {
+function nrtrim($str, $charlist = NULL){return function_call('nrtrim', array($str, $charlist));}
+function or_nrtrim($str, $charlist = NULL) {
 	if($charlist === NULL) {
 		return rtrim($str);
 	}
@@ -314,9 +320,8 @@ function nrtrim($str, $charlist = NULL) {
 }
 
 function saves($text, $db = false, $ddb = false){ return function_call('saves', array($text, $db, $ddb)); }
-
 function or_saves($text, $db = false, $ddb = false) {
-return Saves::SaveOld($text, $db, $ddb);
+	return Saves::SaveOld($text, $db, $ddb);
 }
 
 function strtouppers($text) {
@@ -335,7 +340,8 @@ function strtolowers($text) {
 	}
 }
 
-function comp_search($text = "", $finds = array()) {
+function comp_search($text = "", $finds = array()){return function_call('comp_search', array($text, $finds));}
+function or_comp_search($text = "", $finds = array()) {
 	if(empty($text)) {
 		return "";
 	}
@@ -365,7 +371,8 @@ function comp_search($text = "", $finds = array()) {
 	}
 }
 
-function charcode($text, $code = "", $rev = false) {
+function charcode($text, $code = "", $rev = false){return function_call('charcode', array($text, $code, $rev));}
+function or_charcode($text, $code = "", $rev = false) {
 	if(!empty($code)) {
 		if(!$rev) {
 			return iconv($code, config::Select('charset'), $text);
@@ -406,7 +413,8 @@ function ToTranslit($var, $rep = false, $norm = false) {
 return strtr($var, $translate);
 }
 
-function plural_form($arr) {
+function plural_form($arr){return function_call('plural_form', array($arr));}
+function or_plural_form($arr) {
 	if(!is_array($arr) || !isset($arr[1]) || !isset($arr[2]) || !is_numeric($arr[1]) || empty($arr[2])) {
 		return false;
 	}
@@ -430,7 +438,8 @@ function plural_form($arr) {
 	return $n.$del.($n%10==1&&$n%100!=11?$forms[0]:($n%10>=2&&$n%10<=4&&($n%100<10||$n%100>=20)?$forms[1]:$forms[2]));
 }
 
-function _e() {
+function _e($arr){return function_call('_e', func_get_args());}
+function or__e() {
 	$ret = func_get_args();
 	$rets = modules::applyParam($ret, 'before', __FUNCTION__);
 	$ret = call_user_func_array("modules::get_lang", $rets);
@@ -440,7 +449,8 @@ function _e() {
 	return $ret;
 }
 
-function check_invalid_utf8($string) {
+function check_invalid_utf8($string){return function_call('check_invalid_utf8', array($string));}
+function or_check_invalid_utf8($string) {
 	if(!is_string($string) || strlen($string)===0) {
 		return '';
 	}
@@ -473,7 +483,8 @@ function sanitize_callback($matches) {
     return $matches[0];
 }
 
-function sanitize_text($str, $keep_newlines = false) {
+function sanitize_text($str, $keep_newlines = false){return function_call('sanitize_text', array($str, $keep_newlines));}
+function or_sanitize_text($str, $keep_newlines = false) {
     $nstr = check_invalid_utf8($str);
     if(strpos($nstr, '<') !== false) {
         $nstr = preg_replace_callback('%<[^>]*?((?=<)|>|$)%', 'sanitize_callback', $nstr);

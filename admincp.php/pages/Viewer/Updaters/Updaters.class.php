@@ -41,6 +41,8 @@ class Updaters extends Core {
 		$text = str_replace("[@]", "<span class=\"label label-default\">[@]</span>", $text);
 		$text = str_replace("[b]", "<b>", $text);
 		$text = str_replace("[/b]", "</b>", $text);
+		$text = preg_replace("#\[url=['\"](.+?)['\"]\](.+?)\[/url\]#", "<a href=\"$1\">$2</a>", $text);
+		$text = preg_replace("#\[url\](.+?)\[/url\]#", "<a href=\"$1\">$1</a>", $text);
 		$text = str_replace("[s]", "<s>", $text);
 		$text = str_replace("[/s]", "</s>", $text);
 		$text = str_replace("[u]", "<u>", $text);
@@ -112,7 +114,8 @@ class Updaters extends Core {
 		} else {
 			templates::assign_var("is_download", "0");
 		}
-		$vid = parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/version.txt?'.date("d-m-Y-H"));
+		$prs = new Parser('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/version.txt?'.date("d-m-Y-H"));
+		$vid = $prs->get();
 		if(config::Select("speed_update")) {
 			$if = ($vid)>(VERSION);
 		} else {
@@ -123,7 +126,8 @@ class Updaters extends Core {
 			templates::assign_var("is_new", "1");
 			$file = PATH_CACHE_SYSTEM."version_".str_replace("-", "_", $vid).".txt";
 			if(!file_exists($file)) {
-				$vid = parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/changelog/list.txt?'.date("d-m-Y-H"));
+				$prs = new Parser('https://raw.githubusercontent.com/killserver/cardinal/trunk/changelog/list.txt?'.date("d-m-Y-H"));
+				$vid = $prs->get();
 				$changelog = "";
 				$list = explode("\n", $vid);
 				for($i=sizeof($list)-1;$i>0;$i--) {
@@ -133,10 +137,11 @@ class Updaters extends Core {
 						$if = intval(str_replace(".", "", $list[$i]))>intval(str_replace(".", "", VERSION));
 					}
 					if($if) {
-						$changelog .= parser_url('https://raw.githubusercontent.com/killserver/cardinal/trunk/changelog/'.$list[$i].'.txt')."\n\n\n\n";
+						$prs = new Parser('https://raw.githubusercontent.com/killserver/cardinal/trunk/changelog/'.$list[$i].'.txt');
+						$changelog .= $prs->get()."\n\n\n\n";
 					}
 				}
-				file_put_contents($file, $changelog, FILE_APPEND);
+				@file_put_contents($file, $changelog, FILE_APPEND);
 			} else {
 				$changelog = file_get_contents($file);
 			}

@@ -365,6 +365,10 @@ class DBObject implements ArrayAccess {
 		$this->orderBy[][$name] = $type;
 	}
 	
+	final public function OrderBy($name, $type = "DESC") {
+		return self::OrderByTo($name, $type);
+	}
+	
 	final public function Where($name, $to = "", $val = "", $type = "AND") {
 		$this->WhereTo($name, $to, $val, $type);
 	}

@@ -89,44 +89,14 @@ if(!defined("DEBUG_ALL")) {
 	define("DEBUG_ALL", 720);
 }
 
-// Upload
-// ToDo: WTF?!
-/*if(!defined("UPLOAD_CORE")) {
-	define("UPLOAD_CORE", 10);
-}
-if(!defined("UPLOAD_FTP")) {
-	define("UPLOAD_FTP", 20);
-}
-if(!defined("UPLOAD_MYSQL")) {
-	define("UPLOAD_MYSQL", 30);
-}
-if(!defined("UPLOAD_DROPBOX")) {
-	define("UPLOAD_DROPBOX", 40);
-}
-if(!defined("UPLOAD_CF")) {
-	define("UPLOAD_CF", 200);
-}
-if(!defined("UPLOAD_CFM")) {
-	define("UPLOAD_CFM", 6000);
-}
-if(!defined("UPLOAD_CM")) {
-	define("UPLOAD_CM", 12000);
-}
-if(!defined("UPLOAD_CMD")) {
-	define("UPLOAD_CMD", 12000);
-}
-if(!defined("UPLOAD_ALL")) {
-	define("UPLOAD_ALL", 240000);
-}*/
-
 if(!defined("VERSION")) {
-	define("VERSION", "8.1");
+	define("VERSION", "8.2");
 }
 if(!defined("VERSION_ADMIN_STYLE")) {
-	define("VERSION_ADMIN_STYLE", "1.6");
+	define("VERSION_ADMIN_STYLE", "1.7");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "80175");
+	define("INTVERSION", "80201");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "6.5");
@@ -153,19 +123,11 @@ if(!defined("S_TIME_VIEW")) {
 	define("S_TIME_VIEW", "d-m-Y H:i:s");
 }
 
-// Shop
-// ToDo: WTF?!
-/*if(!defined("SERVER_MODULES")) {
-	define("SERVER_MODULES", "http://shop.killer.pp.ua/");
-}*/
 if(!defined("LANGUAGE_SUPPORT_SERVICE")) {
 	define("LANGUAGE_SUPPORT_SERVICE", "https://raw.githubusercontent.com/killserver/ForCardinal/master/translateSupport.serialize");
 }
 if(!defined("ROUTE_GET_URL")) {
 	define("ROUTE_GET_URL", "PATH_INFO");
-}
-if(!defined("ADMINCP_DIRECTORY")) {
-	define("ADMINCP_DIRECTORY", "admincp.php");
 }
 
 $config = array_merge($config, array(

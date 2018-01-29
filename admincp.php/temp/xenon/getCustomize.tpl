@@ -123,6 +123,7 @@
 	padding-left: 4.05%;
 	background: #2c2e2f;
 	border-top: 2px solid #aaa;
+	z-index: 5;
 }
 .sidebar-menu.collapsed .devices {
 	width: 80px;
@@ -166,19 +167,32 @@ $(document).ready(function() {
 			$(".iframe input").val(linked);
 			$('.iframe > div > div iframe').contents().find("a[href*='/']").each(function(i, k) {
 				var elem = k;
-				$(elem).attr("href", elem.href+(elem.href.match(/\?/) ? "&noShowAdmin" : "?noShowAdmin"));
+				var tester = new RegExp("{C_default_http_host}#", "g");
+				if(!tester.test(elem.href)) {
+					$(elem).attr("href", elem.href+(elem.href.match(/\?/) ? "&noShowAdmin" : "?noShowAdmin"));
+				}
 			});
 		});
 	}, 1500);
 	$('.colorpicker').on('changeColor.colorpicker', function(event) {
-		console.log($(this).attr("data-colorId"));
-		if($(this).attr("data-colorId")==1) {
-			$('.iframe > div > div iframe').contents().find("#stylePrimaryId").remove();
-			$('.iframe > div > div iframe').contents().find("body").append("<style id='stylePrimaryId'> .primaryColor { background-color: "+event.color.toHex()+"; } </style>");
-		} else if($(this).attr("data-colorId")==2) {
-			$('.iframe > div > div iframe').contents().find("#styleSecondId").remove();
-			$('.iframe > div > div iframe').contents().find("body").append("<style id='styleSecondId'> .secondColor { background-color: "+event.color.toHex()+"; } </style>");
+		console.log(event.color.toRGB());
+		if($(this).attr("data-colorId")) {
+			$('.iframe > div > div iframe').contents().find("#styleId-"+$(this).attr("data-colorId")).remove();
+			var col = event.color.toRGB();
+			$('.iframe > div > div iframe').contents().find("body").append("<style id='styleId-"+$(this).attr("data-colorId")+"'> .colorSize-"+$(this).attr("data-colorId")+" { background-color: rgba("+col.r+","+col.g+","+col.b+","+col.a+") !important; } </style>");
 		}
+	});
+	$(".saveBackground").click(function() {
+		var backgrounds = {};
+		$(".backgrounds").each(function(i, elem) {
+			backgrounds[$(elem).attr("data-colorId")] = $(elem).val();
+		});
+		jQuery.post("./?pages=Customize&saveCss=true", {"backgrounds": backgrounds}, function(data) {}).done(function(data) {
+			toastr.success("Успешно сохранили", "{L_done}");
+		}).fail(function(data) {
+			toastr.error("Ошибка при сохранении", "{L_error}");
+		});
+		return false;
 	});
 });
 $(".iframe input").change(function() {

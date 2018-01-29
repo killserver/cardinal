@@ -78,7 +78,7 @@ class db_mysqli extends DriverParam implements drivers {
 		if(!@$this->mc = mysqli_init()) {
 			header("HTTP/1.0 520 Unknown Error");
 			if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
-			HTTP::echos("[error]");
+				HTTP::echos("[error]");
 			} else {
 				echo "[error]";
 			}
@@ -153,7 +153,8 @@ class db_mysqli extends DriverParam implements drivers {
 		return $this->mc->insert_id;
 	}
 	public function escape($str) {
-		return "'".$this->mc->real_escape_string($str)."'";
+		$save = strpos($str, "(")!==false && strpos($str, ")")!==false && preg_match("/^[a-zA-Z]/", $str);
+		return ($save ? "": "'").$this->mc->real_escape_string($str).($save ? "": "'");
 	}
 	public function num_fields() {
 		return $this->mc->field_count;

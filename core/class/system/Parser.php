@@ -79,6 +79,8 @@ class Parser {
 	 * @var bool
      */
 	private $display_errors = true;
+
+	private $customRequest = "";
 	/**
 	 * @var int
      */
@@ -251,6 +253,11 @@ class Parser {
 		return $this;
 	}
 
+	final public function customRequest($customRequest = "GET") {
+		$this->customRequest = $customRequest;
+		return $this;
+	}
+
 	/**
 	 * Switch parsing at once or after calling
 	 * @param bool|true $init Switch initialization
@@ -380,6 +387,9 @@ class Parser {
 		}
 		curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		if(!empty($this->customRequest)) {
+			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $this->customRequest);
+		}
 		if($this->gzip) {
 			curl_setopt($ch, CURLOPT_ENCODING, 'gzip');
 		}

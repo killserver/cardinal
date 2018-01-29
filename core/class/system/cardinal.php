@@ -30,8 +30,13 @@ class cardinal {
 	public function __construct() {
 		self::active();
 		if(!defined("IS_BOT")) {
-            if (isset($_SERVER['HTTP_USER_AGENT']) && !$this->robots(getenv("HTTP_USER_AGENT"))) {
-                define("IS_BOT", false);
+            if (HTTP::getServer('HTTP_USER_AGENT')) {
+            	$userAgent = HTTP::getServer('HTTP_USER_AGENT');
+            	if(!$this->robots($userAgent)) {
+                    define("IS_BOT", false);
+	            } else {
+                    define("IS_BOT", true);
+	            }
             } else {
                 define("IS_BOT", true);
             }

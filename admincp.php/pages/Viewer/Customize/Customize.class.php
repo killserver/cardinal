@@ -49,6 +49,28 @@ class Customize extends Core {
 			), PATH_UPLOADS."icon");
 			return false;
 		}
+		if(isset($_GET['saveCss'])) {
+			$css = array();
+			if(isset($_POST['backgrounds'])) {
+				foreach($_POST['backgrounds'] as $k => $v) {
+					$css[] = ".colorSize-".$k." { background-color: ".$v." }";
+				}
+			}
+			if(function_exists("callAjax")) {
+				callAjax();
+			} else {
+				templates::$gzip = false;
+				Debug::activShow(false);
+			}
+			if(@file_put_contents(PATH_SKINS.config::Select("skins", "skins").DS."customizeStyle.css", implode(" ", $css))!==false) {
+				cardinal::RegAction("Внесение изменений в файл \"".PATH_SKINS.config::Select("skins", "skins").DS."customizeStyle.css"."\" пользователем \"".User::get("username")."\"");
+				HTTP::echos("done");
+			} else {
+				header("HTTP/1.0 520 Unknown Error");
+				HTTP::echos("notSave");
+			}
+			return false;
+		}
 		$this->ModuleList("Customize", array(&$this, "changeMenu"));
 		config::Set("FullMenu", "1");
 		$this->Prints("getCustomize");
@@ -73,42 +95,45 @@ class Customize extends Core {
 			"type_end" => "",
 			"icon" => " ",
 		), "menu", 2);
-		templates::assign_vars(array(
-			"value" => '<div class="form-group">
-	<label class="col-sm-12 control-label">Основной цвет сайта</label>
-	<div class="col-sm-12">
-		<div class="input-group">
-			<input type="text" class="form-control colorpicker" data-colorId="1" data-format="hex" value="#5a3d3d" />
-			<div class="input-group-addon">
-				<i class="color-preview"></i>
+	global $colors;
+	if(isset($colors)) {
+		$size = sizeof($colors);
+		$keys = array_keys($colors);
+		for($i=0;$i<$size;$i++) {
+			templates::assign_vars(array(
+				"value" => '<div class="form-group">
+		<label class="col-sm-12 control-label">Цвет {L_"'.$keys[$i].'"}</label>
+		<div class="col-sm-12">
+			<div class="input-group">
+				<input type="text" class="form-control colorpicker backgrounds" data-colorId="'.$keys[$i].'" data-format="rgba" value="'.$colors[$keys[$i]].'" />
+				<div class="input-group-addon">
+					<i class="color-preview"></i>
+				</div>
 			</div>
 		</div>
-	</div>
-</div>',
-			"link" => "#",
-			"is_now" => "0",
-			"type_st" => "",
-			"type_end" => "",
-			"icon" => " ",
-		), "menu", 3);
-		templates::assign_vars(array(
-			"value" => '<div class="form-group">
-	<label class="col-sm-12 control-label">Дополнительный цвет сайта</label>
-	<div class="col-sm-12">
-		<div class="input-group">
-			<input type="text" class="form-control colorpicker" data-colorId="2" data-format="hex" value="#5a3d3d" />
-			<div class="input-group-addon">
-				<i class="color-preview"></i>
-			</div>
+	</div>',
+				"link" => "#",
+				"is_now" => "0",
+				"type_st" => "",
+				"type_end" => "",
+				"icon" => " ",
+			), "menu", ($i+3));
+		}
+		if($size>0) {
+			templates::assign_vars(array(
+				"value" => '<div class="form-group">
+		<div class="col-sm-12">
+			<input class="btn btn-success btn-sm btn-block saveBackground" type="button" value="{L_submit}">
 		</div>
-	</div>
-</div>',
-			"link" => "#",
-			"is_now" => "0",
-			"type_st" => "",
-			"type_end" => "end",
-			"icon" => " ",
-		), "menu", 4);
+	</div>',
+				"link" => "#",
+				"is_now" => "0",
+				"type_st" => "",
+				"type_end" => "end",
+				"icon" => " ",
+			), "menu", ($size+4));
+		}
+		}
 	}
 	
 }

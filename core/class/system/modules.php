@@ -142,6 +142,10 @@ class modules {
 			return false;
 		}
 	}
+
+	final public static function loadModel($model) {
+		return self::loadModels("Model".ucfirst($model), $model);
+	}
 	
 	final public static function loader($class, $standard = array()) {
 		if(!class_exists($class, false)) {

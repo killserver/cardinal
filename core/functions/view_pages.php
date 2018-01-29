@@ -109,7 +109,7 @@ global $manifest;
 			$pages = $pages['set'];
 		}
 		if(isset($pages['object']) && is_object($pages['object']) && method_exists($pages['object'], $pages['func'])) {
-			$fn = $page['func'];
+			$fn = $pages['func'];
 			$pages['object']->$fn($args);
 		}
 		if(isset($pages[0]) && is_object($pages[0]) && method_exists($pages[0], $pages[1])) {
@@ -152,20 +152,20 @@ global $manifest;
 		case "error":
 			include_once(PATH_PAGES."error.".ROOT_EX);
 		break;
-		case "upload":
+		/*case "upload":
 			include_once(PATH_PAGES."upload.".ROOT_EX);
-		break;
+		break;*/
 		case "reg":
 			include_once(PATH_PAGES."reg.".ROOT_EX);
 		break;
 		case "manifest":
 			include_once(PATH_PAGES."manifest.".ROOT_EX);
 		break;
-		case "add":
+		/*case "add":
 		case "edit":
 		case "post":
 			include_once(PATH_PAGES."post.".ROOT_EX);
-		break;
+		break;*/
 		case "login":
 			include_once(PATH_PAGES."login.".ROOT_EX);
 		break;

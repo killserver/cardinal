@@ -41,7 +41,8 @@ global $manifest;
 	return $result;
 }
 
-function get_module_url($file = "", $module = "") {
+function get_module_url($file = "", $module = "") { return function_call('get_module_url', array($file, $module)); }
+function or_get_module_url($file = "", $module = "") {
 	if(empty($module)) {
 		$module = debug_backtrace();
 		$module = $module[0]['file'];
@@ -51,13 +52,21 @@ function get_module_url($file = "", $module = "") {
 	return config::Select("default_http_local").str_replace(DS, "/", $moduleDir).(!empty($file) ? $file : "");
 }
 
-function get_module_path($module = "") {
+function get_module_path($module = "") { return function_call('get_module_path', array($module)); }
+function or_get_module_path($module = "") {
 	if(empty($module)) {
 		$module = debug_backtrace();
 		$module = $module[0]['file'];
 	}
 	$moduleDir = dirname($module).DS;
 	return $moduleDir;
+}
+
+function get_site_path($path) { return function_call('get_site_path', array($path)); }
+function or_get_site_path($path) {
+	$str = str_replace(ROOT_PATH, "", $path);
+	$str = str_replace(DS, "/", $str);
+	return $str;
 }
 
 function loadConfig($file = "") {
@@ -132,6 +141,54 @@ if(!function_exists("RandomCompat_strlen")) {
 	}
 }
 
+// nmail() -> new PHPMailer
+// nmail("me@mail.ru") -> send test mess
+// nmail("me@mail.ru", "body") -> send mess and body = second argument
+// nmail("me@mail.ru", "message", "title") -> send mess
+function nmail() { return function_call('nmail', func_get_args()); }
+function or_nmail() {
+	$get = func_get_args();
+	$mail = new PHPMailer(true);
+	if(sizeof($get)==0) {
+		return $mail;
+	} else if(sizeof($get)==1) {
+		$for = $get[0];
+		$body = "Test message for you. This message generated automatic in Cardinal Engine".(defined("VERSION") ? " in version ".VERSION : "");
+		$head = "Message for you. In site: ".HTTP::getServer("HTTP_HOST");
+	} else if(sizeof($get)==2) {
+		$for = $get[0];
+		$body = $get[1];
+		$head = "Message for you. In site: ".HTTP::getServer("HTTP_HOST");
+	} else if(sizeof($get)==3) {
+		$for = $get[0];
+		$body = $get[1];
+		$head = $get[2];
+	} else {
+		throw new Exception("This operation is not permission", 1);
+		die();
+	}
+	$mail->CharSet = (class_exists("config") && method_exists("config", "Select") && config::Select("charset") ? config::Select("charset") : "UTF-8");
+	$mail->ContentType = 'text/html';
+	$mail->Priority = 1;
+	$mail->From = "info@".HTTP::getServer("HTTP_HOST");
+	$mail->FromName = "info";
+	if(!is_array($for)) {
+		$for = array($for => "".$for);
+	}
+	foreach($for as $k => $v) {
+		$mail->AddAddress($v, $k);
+	}
+	$mail->isHTML(true);
+	$mail->Subject = $head;
+	$mail->AltBody = $mail->Body = $body;
+	try {
+		$er = $mail->Send();
+	} catch(Exception $ex) {
+		$er = $ex;
+	}
+	return $er;
+}
+
 if(!defined("ROUND_HALF_UP")) {
 	define("ROUND_HALF_UP", 1);
 }
@@ -144,7 +201,8 @@ if(!defined("ROUND_HALF_EVEN")) {
 if(!defined("ROUND_HALF_ODD")) {
 	define("ROUND_HALF_ODD", 1);
 }
-function nround($value, $precision = 0, $mode = ROUND_HALF_UP, $native = TRUE) {
+function nround($value, $precision = 0, $mode = ROUND_HALF_UP, $native = TRUE) { return function_call('nround', array($value, $precision, $mode, $native)); }
+function or_nround($value, $precision = 0, $mode = ROUND_HALF_UP, $native = TRUE) {
 	if(version_compare(PHP_VERSION, '5.3', '>=') AND $native) {
 		return round($value, $precision, $mode);
 	}
@@ -215,10 +273,12 @@ function cardinal_version($check = "") {
 	if(class_exists("config", false) && method_exists("config", "Select") && config::Select("speed_update")) {
 		$if = ($check) > ($isChecked);
 	} else {
-		$checked = intval(str_replace(".", "", $check));
-		$version = intval(str_replace(".", "", $isChecked));
+		$checked = intval(str_replace(".", "0", $check));
+		$version = intval(str_replace(".", "0", $isChecked));
 		if(strlen($checked) > strlen($version)) {
 			$version = int_pad($version, strlen($checked));
+		} else if(strlen($checked) < strlen($version)) {
+			$checked = int_pad($checked, strlen($version));
 		}
 		$if = $checked>$version;
 	}
@@ -235,7 +295,8 @@ if(!defined("RAND_FLOAT")) {
 	define("RAND_FLOAT", 3);
 }
 
-function randomFloat($min, $max, $type = RAND_FLOAT) {
+function randomFloat($min, $max, $type = RAND_FLOAT) { return function_call('randomFloat', array($min, $max, $type)); }
+function or_randomFloat($min, $max, $type = RAND_FLOAT) {
 	if($type===RAND_FLOAT_MT && function_exists("mt_rand") && function_exists("mt_getrandmax")) {
 		return $min + abs($max - $min) * mt_rand(0, mt_getrandmax()) / mt_getrandmax(); 
 	} elseif($type===RAND_FLOAT_LCG && function_exists("lcg_value")) {

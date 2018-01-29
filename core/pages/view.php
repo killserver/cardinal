@@ -19,6 +19,7 @@ class page {
 	}
 	
 	function __construct() {
+		callAjax();
 		$link = Route::param("view");
 		if(!$link) {
 			templates::error("", "");
@@ -52,9 +53,9 @@ class page {
 		$sub_action = Route::param("sub_action");
 		if(!(!$sub_action)) {
 			$this->related($model->id, $model->title, $model->descr);
-			$tpl = templates::complited_assing_vars("relatednews");
+			$tpl = templates::completed_assign_vars("relatednews");
 			if(ajax_check() != "ajax") {
-				templates::complited($tpl);
+				templates::completed($tpl);
 				templates::display();
 			} else {
 				HTTP::echos(templates::view($tpl));
@@ -84,7 +85,7 @@ class page {
 		$comments = $comment->get(false);
 		$addcomments = $comment->addcomments();
 		templates::assign_vars(array("title" => $model->title, "alt_name" => $link, "added" => $model->added, "alt_name" => $link, "full-story" => $descr, "action" => "fullnews", "comments" => $comments, "addcomments" => $addcomments, "cat_name" => (isset($category[$model->cat_id]) ? $category[$model->cat_id]['name'] : ""), "cat_altname" => (isset($category[$model->cat_id]) ? $category[$model->cat_id]['alt_name'] : ""), "commCout" => $commCout));
-		$tpl = templates::complited_assing_vars("fullstory");
+		$tpl = templates::completed_assign_vars("fullstory");
 		addSeo("title", $model->title);
 		addSeo("description", $short_descr);
 		addSeo("image", $model->image);
@@ -93,7 +94,7 @@ class page {
 		$titles = array();
 		$titles['title'] = $model->title;
 		$titles = array_merge($titles, releaseSeo(array(), true));
-		templates::complited($tmp, $titles);
+		templates::completed($tmp, $titles);
 		unset($tags, $model, $link);
 		templates::display();
 	}

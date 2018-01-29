@@ -74,5 +74,11 @@ if(!defined("PATH_SKINS")) {
 if(!defined("PATH_UPLOADS")) {
 	define("PATH_UPLOADS", ROOT_PATH."uploads".DS);
 }
+if(!defined("PATH_MANIFEST")) {
+	define("PATH_MANIFEST", ROOT_PATH."uploads".DS."manifest".DS);
+}
+if(!defined("ADMINCP_DIRECTORY")) {
+	define("ADMINCP_DIRECTORY", "admincp.php");
+}
 
 ?>

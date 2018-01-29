@@ -185,7 +185,7 @@ primary key `id`(`id`)
 				}
 			} else {
 				$db = modules::init_db();
-				$db->doquery("INSERT INTO `".PREFIX_DB."error_log`(`times`, `ip`, `exception_type`, `message`, `filename`, `line`, `trace_string`, `request_state`) VALUES(UNIX_TIMESTAMP(), \"".self::getip()."\", \"".self::FriendlyErrorType($e->getCode())."\", \"".self::saves($messagePrefix . $e->getMessage())."\", \"".self::saves($file)."\", \"".$e->getLine()."\", \"".self::saves(self::getExceptionTraceAsString($e))."\", \"".self::saves(serialize($request), true)."\")");
+				$db->doquery("INSERT INTO {{error_log}} (`times`, `ip`, `exception_type`, `message`, `filename`, `line`, `trace_string`, `request_state`) VALUES(UNIX_TIMESTAMP(), \"".self::getip()."\", \"".self::FriendlyErrorType($e->getCode())."\", \"".self::saves($messagePrefix . $e->getMessage())."\", \"".self::saves($file)."\", \"".$e->getLine()."\", \"".self::saves(self::getExceptionTraceAsString($e))."\", \"".self::saves(serialize($request), true)."\")");
 			}
 			if(self::$_echo) {
 				self::$_isCli = self::is_cli();

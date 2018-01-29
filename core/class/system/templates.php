@@ -297,6 +297,7 @@ class templates {
 				stripos($arr[0][$i], "{M_")!==false  ||
 				stripos($arr[0][$i], "{UL_")!==false ||
 				stripos($arr[0][$i], "{S_")!==false  ||
+				stripos($arr[0][$i], "{FN_")!==false  ||
 				stripos($arr[0][$i], "{THEME}")!==false
 			) {
 				unset($arr[0][$i]);
@@ -1042,6 +1043,7 @@ class templates {
 		}
 		$tmp = self::callback_array("#\{F_['\"](.+?)['\"],['\"](.+?)['\"],['\"](.+?)['\"]\}#", "templates::declension", $tmp);
 		$tmp = self::callback_array("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tmp);
+		$tmp = self::callback_array("#\{FN_[\"'](.+?)[\"'],[\"'](.*?)[\"']\}#", "templates::callFn", $tmp);
 		return $tmp;
 	}
 
@@ -1632,6 +1634,7 @@ if(!$test) {
 		$tpl = self::callback_array("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
 		$tpl = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $tpl);
 		$tpl = self::callback_array("#\{IMG_[\"'](.+?)[\"']\}#", ("templates::imageRes"), $tpl);
+		$tpl = self::callback_array("#\{FN_[\"'](.+?)[\"'],[\"'](.*?)[\"']\}#", "templates::callFn", $tpl);
 		if(strpos($tpl, "[clear]") !== false) {
 			foreach($array_use as $name => $val) {
 				unset(self::$blocks[$name]);
@@ -1640,6 +1643,19 @@ if(!$test) {
 			$tpl = str_replace("[clear]", "", $tpl);
 		}
 		return $tpl;
+	}
+
+	final private static function callFn($arr) {
+		if(function_exists($arr[1])) {
+			if(strpos($arr[2], ";")!==false) {
+				$arr[2] = explode(";", $arr[2]);
+			} else {
+				$arr[2] = array($arr[2]);
+			}
+			return call_user_func_array($arr[1], $arr[2]);
+		} else {
+			return $arr[0];
+		}
 	}
 
 	private static $independentCount = 0;
@@ -2484,7 +2500,7 @@ if(!$test) {
 			}
 			$linkAll = array_merge($linkAll, $link[1]);
 		}
-		if(file_exists(PATH_UPLOADS."manifest".DS) && is_dir(PATH_UPLOADS."manifest".DS) && is_writable(PATH_UPLOADS."manifest".DS)) {
+		if(file_exists(PATH_MANIFEST) && is_dir(PATH_MANIFEST) && is_writable(PATH_MANIFEST)) {
 			preg_match_all("#<img.*?src=['\"](.+?)['\"].*?>#is", $tpl, $link);
 			if(isset($link[1]) && is_Array($link[1]) && sizeof($link[1])>0) {
 				$link[1] = array_unique($link[1]);
@@ -2506,8 +2522,8 @@ if(!$test) {
 				$linkAll = serialize($linkAll);
 				$md5 = var_export($linkAll, true);
 				$md5 = md5($md5);
-				if(!file_exists(PATH_UPLOADS."manifest".DS.$md5.".txt")) {
-					file_put_contents(PATH_UPLOADS."manifest".DS.$md5.".txt", $linkAll);
+				if(!file_exists(PATH_MANIFEST.$md5.".txt")) {
+					file_put_contents(PATH_MANIFEST.$md5.".txt", $linkAll);
 				}
 				$tpl = preg_replace("#<html(.*?)>#is", "<html$1 manifest=\"".config::Select("default_http_local")."manifest.cache?f=".urlencode($md5)."\">", $tpl);// type=\"text/cache-manifest\"
 			}

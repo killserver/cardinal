@@ -16,7 +16,7 @@ class page {
 				}
 				$string = Saves::SaveOld(Route::param("alt_name"), true);
 				$title = "{L_view_cat} \"".$string."\"";
-				$db = "SELECT {%sel%} FROM {{posts}} WHERE `active` LIKE \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP()" : "")." AND `type` LIKE \"post\" AND (`cat_id` regexp '[[:<:]]'+(SELECT `cat_id` FROM `".PREFIX_DB."category` WHERE `alt_name` LIKE \"".$string."\" LIMIT 1)+'[[:>:]]') ORDER BY `id` DESC";
+				$db = "SELECT {%sel%} FROM {{posts}} WHERE `active` LIKE \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP()" : "")." AND `type` LIKE \"post\" AND (`cat_id` regexp '[[:<:]]'+(SELECT `cat_id` FROM {{category}} WHERE `alt_name` LIKE \"".$string."\" LIMIT 1)+'[[:>:]]') ORDER BY `id` DESC";
 			break;
 			case "search":
 				$postQ = Arr::get($_POST, 'q', false);
@@ -59,14 +59,14 @@ class page {
 			$row['short_descr'] = trim(cut(trim(bbcodes::clear_bbcode($row['descr'])), 100));
 			templates::assign_vars($row, "index", "index".$row['id']);
 		}
-		$tmp = templates::complited_assing_vars("index");
+		$tmp = templates::completed_assign_vars("index");
 		addSeo("url", "{R_[search][searchWord=".urlencode($string)."]}");
 		addSeo("title", str_replace("\"", "'", $title));
 		addSeo("description", str_replace("\"", "'", $title));
 		$titles = array();
 		$titles['title'] = $title;
 		$titles = array_merge($titles, releaseSeo(array(), true));
-		templates::complited($tmp, $titles);
+		templates::completed($tmp, $titles);
 		templates::display();
 	}
 	

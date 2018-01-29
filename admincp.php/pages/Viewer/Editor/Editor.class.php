@@ -44,6 +44,7 @@ class Editor extends Core {
 		if(Arr::get($_GET, 'save', false)) {
 			Debug::activShow(false);
 			templates::gzip(false);
+			cardinal::RegAction("Внесение изменений в файл \"".Arr::get($_GET, 'save')."\" пользователем \"".User::get("username")."\"");
 			file_put_contents(ROOT_PATH.Arr::get($_GET, 'save'), Arr::get($_POST, 'data'));
 			echo "done";
 			die();

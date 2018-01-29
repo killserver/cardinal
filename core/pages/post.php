@@ -72,8 +72,8 @@ class page {
 				//}
 				location("{C_default_http_host}".Route::get("news")->uri(array('view' => $altName)), 5, false);
 				templates::assign_vars(array("title" => "{L_complited_add}", "descr" => "{L_complited_view}", "action" => "done"));
-				$tpl = templates::complited_assing_vars("ainfo");
-				templates::complited($tpl);
+				$tpl = templates::completed_assign_vars("ainfo");
+				templates::completed($tpl);
 				templates::display();
 			} else if($page=="edit") {
 				$model = new ModelDB(PREFIX_DB."posts", "\"%".Route::param("sub_link")."%\" AND `type` LIKE \"post\"", "alt_name", "select", "like");
@@ -129,8 +129,8 @@ class page {
 				cache::Delete(ToTranslit($link));
 				location("{C_default_http_host}".Route::get("news")->uri(array('view' => $link)), 5, false);
 				templates::assign_vars(array("title" => "{L_complited_add}", "descr" => "{L_complited_view}", "action" => "done"));
-				$tpl = templates::complited_assing_vars("ainfo");
-				templates::complited($tpl);
+				$tpl = templates::completed_assign_vars("ainfo");
+				templates::completed($tpl);
 				templates::display();
 			}
 		} else {
@@ -174,8 +174,8 @@ class page {
 				}
 				templates::assign_vars(array('k' => $k, 'v' => $v), "translate", "translate".$k."=".$v);
 			}
-			$tmp = templates::complited_assing_vars("add");
-			templates::complited($tmp);
+			$tmp = templates::completed_assign_vars("add");
+			templates::completed($tmp);
 			templates::display();
 		}
 	}

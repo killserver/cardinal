@@ -150,7 +150,7 @@ body.onHoverAdmin .adminCoreCardinal:hover > .user {
 .adminCoreCardinal > .items > .dropped {
 	position: absolute;
 	top: -500%;
-	top: -100vh;
+	top: -150vh;
 	background: #ac1f1f;
 	-webkit-transition: all 300ms ease-in-out;
 	-o-transition: all 300ms ease-in-out;
