@@ -1782,6 +1782,33 @@ if(!$test) {
 		$image_type = $size_img[2];
 		if($image_type == IMAGETYPE_JPEG) {
 			$src_img = imagecreatefromjpeg($filename_ROOT_PATH);
+			if($src_img && function_exists('exif_read_data')) {
+				if(
+					(version_compare(phpversion(), "7.2.0", ">=") && strpos($filename_ROOT_PATH, "http")!==false)
+					||
+					strpos($filename_ROOT_PATH, "http")===false
+				) {
+					if(strpos($filename_ROOT_PATH, "http")===false) {
+						$exif = exif_read_data($filename_ROOT_PATH, 0, true);
+					} else {
+						$stream = fopen($filename_ROOT_PATH, "rb");
+						$exif = exif_read_data($stream, 0, true);
+					}
+					if(isset($exif['IFD0']) && isset($exif['IFD0']['Orientation']) && !empty($exif['IFD0']['Orientation'])) {
+						switch($exif['IFD0']['Orientation']) {
+							case 8:
+								$src_img = imagerotate($src_img, 90, 0);
+							break;
+							case 3:
+								$src_img = imagerotate($src_img, 180, 0);
+							break;
+							case 6:
+								$src_img = imagerotate($src_img, -90, 0);
+							break;
+						}
+					}
+				}
+			}
 		} elseif($image_type == IMAGETYPE_GIF) {
 			$src_img = imagecreatefromgif($filename_ROOT_PATH);
 		} elseif($image_type == IMAGETYPE_PNG) {

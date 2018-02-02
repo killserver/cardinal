@@ -161,6 +161,9 @@ global $manifest;
 		case "manifest":
 			include_once(PATH_PAGES."manifest.".ROOT_EX);
 		break;
+		case "getObject":
+			include_once(PATH_PAGES."getObject.".ROOT_EX);
+		break;
 		/*case "add":
 		case "edit":
 		case "post":

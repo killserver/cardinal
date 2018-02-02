@@ -47,7 +47,7 @@ class Archer_Edit {
 				continue;
 			}
 			$l = $models->getAttribute($k, 'type');
-			$default = ($where==$k ? $whereData : "");
+			$default = ($where==$k ? $whereData : $models->getAttribute($k, 'default'));
 			$typeData = $models->getAttribute($k, "typeData");
 			if(is_array($v) && (!empty($where) && !empty($whereData) && $where==$k && isset($v[$whereData]) || isset($v['default']))) {
 				$default = (!empty($where) && !empty($whereData) && $where==$k && isset($v[$whereData]) ? $v[$whereData] : $v['default']);
@@ -56,7 +56,7 @@ class Archer_Edit {
 				}
 				$v = array_values($v);
 			} elseif(is_array($typeData) && sizeof($typeData)>0) {
-				$default = (!empty($where) && !empty($whereData) && $where==$k && isset($v[$whereData]) ? $v[$whereData] : $v);
+				$default = (!empty($where) && !empty($whereData) && $where==$k && isset($v[$whereData]) ? $v[$whereData] : (empty($v) ? $default : $v));
 				$v = implode(",", $typeData);
 			}
 			$body .= KernelArcher::Viewing($l, $k, $v, $default, false, $isAjax);

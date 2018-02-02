@@ -351,7 +351,7 @@ class Core {
 			for($i=0;$i<sizeof($datas);$i++) {
 				for($is=0;$is<sizeof($datas[$i]);$is++) {
 					if(isset($datas[$i][$is]['access']) && !$datas[$i][$is]['access']) {
-						break;
+						continue;
 					}
 					if(sizeof($datas[$i])==1) {
 						$count = 0;
@@ -396,8 +396,8 @@ class Core {
 		if(sizeof(self::$js)>0) {
 			$js = array_values(self::$js);
 			for($o=0;$o<sizeof($js);$o++) {
-				$html = new html();
-				$js_echo .= $html->open("script")->type("text/javascript")->src($js[$o])->cont("")->close()->get_html();
+				//$html = new html();
+				$js_echo .= '<script src="'.$js[$o].'" type="text/javascript"></script>';//$html->open("script")->type("text/javascript")->src($js[$o])->cont("")->close()->get_html();
 			}
 		}
 		$echos = str_replace("{js_list}", $js_echo, $echos);
@@ -405,8 +405,8 @@ class Core {
 		if(sizeof(self::$css)>0) {
 			$css = array_values(self::$css);
 			for($o=0;$o<sizeof($css);$o++) {
-				$html = new html();
-				$css_echo .= $html->open("link", 2)->type("text/css")->href($css[$o])->rel("stylesheet")->cont("")->close()->get_html();
+				//$html = new html();
+				$css_echo .= '<link rel="stylesheet" type="text/css" href="'.$css[$o].'">';//$html->open("link", 2)->type("text/css")->href($css[$o])->rel("stylesheet")->cont("")->close()->get_html();
 			}
 		}
 		$echos = str_replace("{css_list}", $css_echo, $echos);

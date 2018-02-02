@@ -736,7 +736,7 @@ class KernelArcher {
 				$enum = array_map("trim", $enum);
 				$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " disabled=\"disabled\"" : "").">".(!defined("WITHOUT_NULL") ? "<option value=\"\">".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."</option>" : "");
 				for($i=0;$i<sizeof($enum);$i++) {
-					$retType .= "<option value=\"".($open ? "{L_'" : "").htmlspecialchars($enum[$i]).($open ? "'}" : "")."\"".(!empty($default) && $default==$enum[$i] ? " selected=\"selected\"" : "").">".($open ? "{L_'" : "").htmlspecialchars($enum[$i]).($open ? "'}" : "")."</option>";
+					$retType .= "<option value=\"".htmlspecialchars($enum[$i])."\"".(!empty($default) && $default==$enum[$i] ? " selected=\"selected\"" : "").">".($open ? "{L_'" : "").htmlspecialchars($enum[$i]).($open ? "'}" : "")."</option>";
 				}
 				$retType .= "</select>";
 			break;

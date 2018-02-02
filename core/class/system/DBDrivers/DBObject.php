@@ -262,7 +262,7 @@ class DBObject implements ArrayAccess {
 				}
 				$comment = (isset($this->setAttrFor[$row['Field']]) && isset($this->setAttrFor[$row['Field']]['Comment']) ? $this->setAttrFor[$row['Field']]['Comment'] : $row['Comment']);
 				$type = (isset($this->setAttrFor[$row['Field']]) && isset($this->setAttrFor[$row['Field']]['Type']) ? $this->setAttrFor[$row['Field']]['Type'] : substr($row['Type'], 0, $last));
-				$default = (isset($this->setAttrFor[$row['Field']]) && isset($this->setAttrFor[$row['Field']]['Default']) ? $this->setAttrFor[$row['Field']]['Default'] : ($row['Null']=="NO" ? "" : $row['Default']));
+				$default = (isset($this->setAttrFor[$row['Field']]) && isset($this->setAttrFor[$row['Field']]['Default']) ? $this->setAttrFor[$row['Field']]['Default'] : $row['Default']);
 				$typeData = (isset($this->setAttrFor[$row['Field']]) && isset($this->setAttrFor[$row['Field']]['typeData']) ? $this->setAttrFor[$row['Field']]['typeData'] : $typeData);
 				$this->Attributes[$row['Field']] = array("comment" => $comment, "type" => $type, "default" => $default, "typeData" => $typeData);
 			}

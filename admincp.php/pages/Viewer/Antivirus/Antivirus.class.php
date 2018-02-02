@@ -86,8 +86,7 @@ class Antivirus extends Core {
 				file_put_contents(PATH_CACHE_SYSTEM."dirMask.sha1", serialize($dirList));
 			}
 		}
-		Debug::activShow(false);
-		templates::$gzip=false;
+		callAjax();
 		cardinal::RegAction("Инициализация антивируса");
 		HTTP::echos("done");
 		die();
@@ -147,8 +146,7 @@ class Antivirus extends Core {
 				$count++;
 			}
 		}
-		Debug::activShow(false);
-		templates::$gzip=false;
+		callAjax();
 		if($maskInit) {
 			if(!is_writable(PATH_CACHE_SYSTEM)) {
 				throw new Exception("Error write mask on server");

@@ -362,9 +362,10 @@ function headers($array = array(), $clear = false, $no_js = false) {
 				$metaData[$metas['meta'][$i]['name']] = $metas['meta'][$i]['content'];
 			}
 			$array['meta'] = array_merge($array['meta'], $metaData);
-			cardinalEvent::addListener("templates::display", "configMetaData");
-			unset($metaData, $metas);
+			unset($metaData);
 		}
+		cardinalEvent::addListener("templates::display", "configMetaData");
+		unset($metas);
 	}
 	if(isset($array['meta'])) {
 		foreach($array['meta'] as $name => $val) {

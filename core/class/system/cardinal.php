@@ -167,20 +167,23 @@ class cardinal {
 			// used for all. Therefore, for this to work, the session
 			// must be stored in a directory where only sessions sharing
 			// it's lifetime are. Best to just dynamically create on.
-			$path = ini_get("session.save_path").DS."session_".substr($timeout, 0, 5)."sec";
-			if(!file_exists($path)) {
-				if(!@mkdir($path, 0777)) {
+			$path = ini_get("session.save_path");
+			if(!empty($path)) {
+				$path .= DS."session_".substr($timeout, 0, 5)."sec";
+				if(!file_exists($path)) {
+					if(!@mkdir($path, 0777)) {
+						header("HTTP/1.0 520 Unknown Error");
+						trigger_error("Failed to create session save path directory '".$path."'. Check permissions.", E_USER_ERROR);
+						die();
+					}
+				}
+				if(!is_writable(session_save_path())) {
 					header("HTTP/1.0 520 Unknown Error");
-					trigger_error("Failed to create session save path directory '".$path."'. Check permissions.", E_USER_ERROR);
+					trigger_error('Session path "'.session_save_path().'" is not writable for PHP!', E_USER_ERROR);
 					die();
 				}
+				ini_set("session.save_path", $path);
 			}
-			if(!is_writable(session_save_path())) {
-				header("HTTP/1.0 520 Unknown Error");
-				trigger_error('Session path "'.session_save_path().'" is not writable for PHP!', E_USER_ERROR);
-				die();
-			}
-			ini_set("session.save_path", $path);
 
 			// Set the chance to trigger the garbage collection.
 			ini_set("session.gc_probability", $probability);
@@ -322,7 +325,7 @@ class cardinal {
 	
 	final public static function InstallFirst() {
 		if(!file_exists(PATH_MEDIA."users.php") && is_writable(PATH_MEDIA)) {
-			$rand = rand(15, 35);
+			$rand = rand(15, 40);
 			$pass = self::randomPassword($rand, 1, "lower_case,upper_case,numbers,special_symbols");
 			if(is_array($pass) && sizeof($pass)>0) {
 				$pass = current($pass);
