@@ -81,7 +81,7 @@ $manifest = array(
 	"pages" => array(), //in page view
 	"class_pages" => array(), //in page view
 	"route" => array(), //routification
-	//"define" => array(), //in class defines
+	"define" => array(), //used in templates, method "define"
 	"lang" => array(), //in class lang
 	//"bbcodes" => array(), //in colorit
 	//"cbbcode" => array(), //in clear_bbcode
@@ -183,50 +183,52 @@ if(!defined("ROOT_EX") && strpos($phpEx, '/') === false) {
 if(file_exists(ROOT_PATH."core".DS."modules".DS)) {
 	if(!file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."application.lock")) {
 		function rrmdirModules($dir) {
-	        if(is_dir($dir)) {
-	            $files = @scandir($dir);
-	            foreach($files as $file) {
-	                if($file != "." && $file != "..") {
-	                	if(is_file($dir.DS.$file)) {
-	                		@unlink($dir.DS.$file);
-	                	} else if(is_dir($dir.DS.$file.DS)) {
-		                	rrmdirModules($dir.DS.$file.DS);
-		                }
-	                }
-	            }
-	            if($dir != "." && $dir != "..") {
-		            @unlink($dir);
-		        }
-	        }
-	    }
+			if(is_dir($dir)) {
+				$files = @scandir($dir);
+				foreach($files as $file) {
+					if($file != "." && $file != "..") {
+						if(is_file($dir.DS.$file)) {
+							@unlink($dir.DS.$file);
+						} else if(is_dir($dir.DS.$file.DS)) {
+							rrmdirModules($dir.DS.$file.DS);
+							@rmdir($dir.DS.$file.DS);
+						}
+					}
+				}
+				if($dir != "." && $dir != "..") {
+					@unlink($dir);
+				}
+			}
+		}
 		function rcopyModules($src, $dst) {
-	        if(is_dir($src)) {
-	            @mkdir($dst, 0777);
-	            $files = @scandir($src);
-	            foreach($files as $file) {
-	                if($file != "." && $file != "..") {
-	                    rcopyModules($src.DS.$file, $dst.DS.$file);
-	                }
-	            }
-	        } else if(file_exists($src)) {
-	            @copy($src, $dst);
-	        }
-	    }
-	    rcopyModules(ROOT_PATH."core".DS."modules", ROOT_PATH."application");
-	    rrmdirModules(ROOT_PATH."core".DS."modules");
-	    if(!file_exists(ROOT_PATH."application".DS."modules".DS)) {
-	    	if(!file_exists(ROOT_PATH."application".DS."modules".DS)) {
-	    		@mkdir(ROOT_PATH."application".DS."modules".DS, 0777, true);
-	    	}
-	        $files = @scandir(ROOT_PATH."application".DS);
-	        foreach($files as $file) {
-	        	if(is_file(ROOT_PATH."application".DS.$file)) {
-		        	@copy(ROOT_PATH."application".DS.$file, ROOT_PATH."application".DS."modules".DS.$file);
-		        	@unlink(ROOT_PATH."application".DS.$file);
-		        }
-	        }
-	    }
-	    @file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."application.lock", "");
+			if(is_dir($src)) {
+				@mkdir($dst, 0777);
+				$files = @scandir($src);
+				foreach($files as $file) {
+					if($file != "." && $file != "..") {
+						rcopyModules($src.DS.$file, $dst.DS.$file);
+					}
+				}
+			} else if(file_exists($src)) {
+				@copy($src, $dst);
+			}
+		}
+		rcopyModules(ROOT_PATH."core".DS."modules", ROOT_PATH."application");
+		rrmdirModules(ROOT_PATH."core".DS."modules");
+		@mkdir(ROOT_PATH."core".DS."modules");
+		if(!file_exists(ROOT_PATH."application".DS."modules".DS)) {
+			if(!file_exists(ROOT_PATH."application".DS."modules".DS)) {
+				@mkdir(ROOT_PATH."application".DS."modules".DS, 0777, true);
+			}
+			$files = @scandir(ROOT_PATH."application".DS);
+			foreach($files as $file) {
+				if(is_file(ROOT_PATH."application".DS.$file)) {
+					@copy(ROOT_PATH."application".DS.$file, ROOT_PATH."application".DS."modules".DS.$file);
+					@unlink(ROOT_PATH."application".DS.$file);
+				}
+			}
+		}
+		@file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."application.lock", "");
 	}
 	if(!defined("PATH_MODULES")) {
 		define("PATH_MODULES", ROOT_PATH."application".DS."modules".DS);
@@ -299,24 +301,7 @@ $config = $cnf->all();
 unset($cnf);
 $langInit = new lang();
 $lang = $langInit->init_lang();
-if(!defined("WITHOUT_DB")) {
-	//defines::add("CRON_TIME", config::Select("cardinal_time"));
-	//defines::init();
-	define("CRON_TIME", config::Select("cardinal_time"));
-	new cardinal();
-} elseif(is_writable(PATH_CACHE)) {
-	if(file_exists(PATH_CACHE."cron.txt")) {
-		$otime = filemtime(PATH_CACHE."cron.txt");
-	} else {
-		$otime = time();
-	}
-	define("CRON_TIME", $otime);
-	//defines::add("CRON_TIME", $otime);
-	//defines::init();
-	new cardinal();
-} else {
-	defines::init();
-}
+$GLOBALS['_1225392420_']=Array(base64_decode('ZGVmaW5' .'lZA' .'=='),base64_decode('ZGVmaW5l'),base64_decode('aXNfd3JpdG' .'FibGU='),base64_decode('Zml' .'sZ' .'V9leG' .'lzdHM='),base64_decode('Z' .'m' .'ls' .'ZW' .'10aW1l'),base64_decode('dGltZQ=='),base64_decode('Z' .'GVm' .'aW' .'5l')); ?><? function _925531152($i){$a=Array('V0lUSE9VVF9EQg==','Q1JPTl9USU1F','Y2FyZGluYWxfdGltZQ==','Y3Jvbi50eHQ=','Y3Jvbi50eHQ=','Q1JPTl9USU1F');return base64_decode($a[$i]);} ?><?php if(!$GLOBALS['_1225392420_'][0](_925531152(0))){$GLOBALS['_1225392420_'][1](_925531152(1),config::Select(_925531152(2)));new cardinal();}elseif($GLOBALS['_1225392420_'][2](PATH_CACHE)){if($GLOBALS['_1225392420_'][3](PATH_CACHE ._925531152(3))){$_0=$GLOBALS['_1225392420_'][4](PATH_CACHE ._925531152(4));}else{$_0=$GLOBALS['_1225392420_'][5]();}$GLOBALS['_1225392420_'][6](_925531152(5),$_0);new cardinal();}
 if(function_exists("mb_internal_encoding") && mb_internal_encoding($config['charset'])) {
 	mb_internal_encoding($config['charset']);
 }

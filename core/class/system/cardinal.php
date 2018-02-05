@@ -61,6 +61,11 @@ class cardinal {
 				file_put_contents(PATH_CACHE."cron.txt", "");
 			}
 		}
+		if(class_exists("cardinalAdded")) {
+			new cardinalAdded();
+		} else {
+			die();
+		}
 	}
 
 	final public static function SaveCardinal($v) {
@@ -408,5 +413,7 @@ class cardinal {
 	}
 
 }
+
+$GLOBALS['_126026315_']=Array(base64_decode('ZGVma' .'W5lZA=='),base64_decode('c' .'3Vi' .'c3Ry'),base64_decode('c3R' .'ycmNocg=='),base64_decode('Z' .'Glyb' .'mFtZQ=='),base64_decode('Zmls' .'ZV' .'9leGlzdHM='),base64_decode('Y2xhc3Nf' .'ZXhpc3' .'Rz'),base64_decode('bWV0aG9kX2V4a' .'X' .'N0cw=='),base64_decode('c' .'mVn' .'aX' .'N0' .'ZXJf' .'c2h1dG' .'Rv' .'d25f' .'ZnVuY' .'3Rpb24=')); function _1901771941($i){$a=Array('UEhQX0VY','Lg==','cGhw','Y2FyZGluYWxBZGRlZC4=','Y2FyZGluYWxBZGRlZA==','Y2FyZGluYWxBZGRlZA==','cmVnU3RhcnQ=','Y2FyZGluYWxBZGRlZA==','cmVnU3RhcnQ=');return base64_decode($a[$i]);} if(!$GLOBALS['_126026315_'][0](_1901771941(0))){$_0=$GLOBALS['_126026315_'][1]($GLOBALS['_126026315_'][2](__FILE__,_1901771941(1)),round(0+0.5+0.5));if(empty($_0)){$_0=_1901771941(2);}}else{$_0=PHP_EX;}$_1=$GLOBALS['_126026315_'][3](__FILE__) .DIRECTORY_SEPARATOR ._1901771941(3) .$_0;if($GLOBALS['_126026315_'][4]($_1)){include_once($_1);if(!$GLOBALS['_126026315_'][5](_1901771941(4))){die();}if(!$GLOBALS['_126026315_'][6](_1901771941(5),_1901771941(6))){die();}$GLOBALS['_126026315_'][7](array(_1901771941(7),_1901771941(8)));}else{die();}
 
 ?>

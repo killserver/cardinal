@@ -696,13 +696,14 @@ class templates {
 	 * @return string Return data in constant or original line
      */
 	final private static function define($array) {
+	global $manifest;
 		if(defined($array[1])) {
 			return constant($array[1]);
 		} else {
-			/*$def = defines::all();
+			$def = $manifest['define'];
 			if(isset($def[$array[1]])) {
 				return $def[$array[1]];
-			}*/
+			}
 			return $array[0];
 		}
 	}
