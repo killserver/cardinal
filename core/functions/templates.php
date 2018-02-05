@@ -54,7 +54,8 @@ global $user, $manifest;
 		$all = array_values($all);
 		if($all) {
 			for($i=0;$i<sizeof($all);$i++) {
-				$sRet .= "<script type=\"text/javascript\" src=\"".$all[$i].AmperOr($all[$i]).time()."\" defer=\"defer\"></script>\n";
+				$l = (isset($all[$i]['url']) ? $all[$i]['url'] : current($all[$i]));
+				$sRet .= "<script type=\"text/javascript\" src=\"".$l.AmperOr($l).time()."\"".(isset($all[$i]['defer']) && $all[$i]['defer']==true ? " defer=\"defer\"" : "")."></script>\n";
 			}
 		}
 	}
@@ -63,7 +64,8 @@ global $user, $manifest;
 		$all = array_values($all);
 		if($all) {
 			for($i=0;$i<sizeof($all);$i++) {
-				$sRet .= "<script type=\"text/javascript\" defer=\"defer\">".$all[$i]."</script>\n";
+				$l = (isset($all[$i]['url']) ? $all[$i]['url'] : current($all[$i]));
+				$sRet .= "<script type=\"text/javascript\"".(isset($all[$i]['defer']) && $all[$i]['defer']==true ? " defer=\"defer\"" : "").">".$l."</script>\n";
 			}
 		}
 	}
@@ -77,7 +79,8 @@ global $user, $manifest;
 		$all = array_values($all);
 		if($all) {
 			for($i=0;$i<sizeof($all);$i++) {
-				$sRet .= "<link href=\"".$all[$i].AmperOr($all[$i]).time()."\" rel=\"stylesheet\" type=\"text/css\" />\n";
+				$l = (isset($all[$i]['url']) ? $all[$i]['url'] : current($all[$i]));
+				$sRet .= "<link href=\"".$l.AmperOr($l).time()."\" rel=\"stylesheet\" type=\"text/css\" />\n";
 			}
 		}
 	}
@@ -86,7 +89,7 @@ global $user, $manifest;
 		$all = array_values($all);
 		if($all) {
 			for($i=0;$i<sizeof($all);$i++) {
-				$sRet .= "<style type=\"text/css\">".$all[$i]."</style>\n";
+				$sRet .= "<style type=\"text/css\">".(isset($all[$i]['url']) ? $all[$i]['url'] : current($all[$i]))."</style>\n";
 			}
 		}
 	}
@@ -472,7 +475,7 @@ global $manifest;
 		foreach($js as $k => $v) {
 			regCssJs($v, $type, $mark, (is_numeric($k) ? $name : $k));
 		}
-	} else if(is_string($js)) {
+	} else {
 		if(!isset($manifest['jscss'][$type])) {
 			$manifest['jscss'][$type] = array();
 		}

@@ -556,28 +556,50 @@ class modules {
 			$manifest['create_css'][$typeLink] = array();
 		}
 		if($type=="css") {
-			if(is_array($link)) {
+			if(is_array($link) && !isset($link['url'])) {
 				foreach($link as $k => $linker) {
 					if(is_numeric($k)) {
-						$manifest['create_css'][$typeLink][$linker] = $linker;
+						if(is_string($linker)) {
+							$linker = array("url" => $linker);
+						}
+						$key = (isset($linker['url']) ? $linker['url'] : current($linker));
+						$manifest['create_css'][$typeLink][$key] = $linker;
 					} else if(is_string($k)) {
+						if(is_string($linker)) {
+							$linker = array("url" => $linker);
+						}
 						$manifest['create_css'][$typeLink][$k] = $linker;
 					}
 				}
-			} else if(is_string($link)) {
-				$manifest['create_css'][$typeLink][$link] = $link;
+			} else {
+				if(is_string($link)) {
+					$link = array("url" => $link);
+				}
+				$key = (isset($link['url']) ? $link['url'] : current($link));
+				$manifest['create_css'][$typeLink][$key] = $link;
 			}
 		} else {
-			if(is_array($link)) {
+			if(is_array($link) && !isset($link['url'])) {
 				foreach($link as $k => $linker) {
 					if(is_numeric($k)) {
-						$manifest['create_js'][$typeLink][$linker] = $linker;
+						if(is_string($linker)) {
+							$linker = array("url" => $linker);
+						}
+						$key = (isset($linker['url']) ? $linker['url'] : current($linker));
+						$manifest['create_js'][$typeLink][$key] = $linker;
 					} else if(is_string($k)) {
+						if(is_string($linker)) {
+							$linker = array("url" => $linker);
+						}
 						$manifest['create_js'][$typeLink][$k] = $linker;
 					}
 				}
-			} else if(is_string($link)) {
-				$manifest['create_js'][$typeLink][$link] = $link;
+			} else {
+				if(is_string($link)) {
+					$link = array("url" => $link);
+				}
+				$key = (isset($link['url']) ? $link['url'] : current($link));
+				$manifest['create_js'][$typeLink][$key] = $link;
 			}
 		}
 		return $manifest;
