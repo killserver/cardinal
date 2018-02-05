@@ -699,10 +699,10 @@ class templates {
 		if(defined($array[1])) {
 			return constant($array[1]);
 		} else {
-			$def = defines::all();
+			/*$def = defines::all();
 			if(isset($def[$array[1]])) {
 				return $def[$array[1]];
-			}
+			}*/
 			return $array[0];
 		}
 	}

@@ -7308,3 +7308,42 @@ span#doc_time {
 span#doc_time .delimer {
   margin: 0px 3px;
 }
+.dataTables_wrapper .dataTables_filter > label {
+    width: 100%;
+    background: #f9f9f9;
+    padding: 0.5em;
+}
+.dataTables_wrapper .dataTables_filter > label > span {
+    margin: 0.5em;
+    display: inline-flex;
+    align-items: center;
+    height: 2em;
+    font-weight: 600;
+    font-size: 1em;
+}
+.dataTables_wrapper .dataTables_filter > label > input {
+    margin: 0em 0em 0em 0.5em !important;
+    width: 88%;
+}
+.dataTables_wrapper .dataTables_length > label {
+    width: 100%;
+    background: #f9f9f9;
+    padding: 0.5em;
+}
+.dataTables_wrapper .dataTables_length > label > span {
+    display: inline-flex;
+    height: 3em;
+    float: left;
+    align-items: center;
+    margin: 0em 0.5em;
+}
+
+@media(max-width: 900px) {
+    .dataTables_wrapper .row div {
+        width: 100%;
+    }
+    .dataTables_wrapper .dataTables_filter > label > input {
+        margin: 0em 0.5em 0em 0.5em !important;
+        width: 95%;
+    }
+}
