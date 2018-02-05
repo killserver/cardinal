@@ -196,6 +196,10 @@ $(document).ready(function() {
 	});
 });
 $(".iframe input").change(function() {
+	if($(this).val().match(/{D_ADMINCP_DIRECTORY}/)) {
+		alert("You are stuped idiot!");
+		return false;
+	}
 	$('.iframe > div > div iframe').attr("src", ($(this).val().match(/\?/) ? $(this).val()+"&noShowAdmin" : $(this).val()+"?noShowAdmin"));
 });
 $(".sidebar-menu-inner").append('<div class="devices"><div class="hideDev fa-minus-square"><span>&nbsp;Скрыть панель</span></div><div class="resize-desktop fa-desktop active" data-resize="desktop"></div><div class="resize-tablet fa-tablet" data-resize="tablet"></div><div class="resize-mobile fa-mobile" data-resize="mobile"></div><div class="reload fa-retweet"></div></div>');
