@@ -54,7 +54,7 @@ global $user, $manifest;
 		$all = array_values($all);
 		if($all) {
 			for($i=0;$i<sizeof($all);$i++) {
-				$sRet .= "<script type=\"text/javascript\" src=\"".$all[$i].AmperOr($all[$i]).time()."\"></script>\n";
+				$sRet .= "<script type=\"text/javascript\" src=\"".$all[$i].AmperOr($all[$i]).time()."\" defer=\"defer\"></script>\n";
 			}
 		}
 	}
@@ -63,13 +63,13 @@ global $user, $manifest;
 		$all = array_values($all);
 		if($all) {
 			for($i=0;$i<sizeof($all);$i++) {
-				$sRet .= "<script type=\"text/javascript\">".$all[$i]."</script>\n";
+				$sRet .= "<script type=\"text/javascript\" defer=\"defer\">".$all[$i]."</script>\n";
 			}
 		}
 	}
 	if(isset($js_list) && is_array($js_list) && sizeof($js_list)>0) {
 		for($i=0;$i<sizeof($js_list);$i++) {
-			$sRet .= "<script type=\"text/javascript\" src=\"".$js_list[$i].AmperOr($js_list[$i]).time()."\"></script>\n";
+			$sRet .= "<script type=\"text/javascript\" src=\"".$js_list[$i].AmperOr($js_list[$i]).time()."\" defer=\"defer\"></script>\n";
 		}
 	}
 	$all = modules::manifest_get(array("create_css", "full"));
@@ -91,27 +91,27 @@ global $user, $manifest;
 		}
 	}
 	if(isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && userlevel::get("admin") && Arr::get($_GET, "noShowAdmin", false)===false) {
-		$sRet .= '<script type="text/javascript" src="{C_default_http_local}'.get_site_path(PATH_SKINS).'core/admin.min.js"></script>';
+		$sRet .= '<script type="text/javascript" src="{C_default_http_local}'.get_site_path(PATH_SKINS).'core/admin.min.js" defer="defer"></script>';
 	}
 	if(sizeof($manifest['jscss'])>0) {
 		if(isset($manifest['jscss']['css']) && isset($manifest['jscss']['css']['link']) && is_array($manifest['jscss']['css']['link']) && sizeof($manifest['jscss']['css']['link'])>0) {
 			foreach($manifest['jscss']['css']['link'] as $v) {
-				$sRet .= "<link href=\"".$v."\" rel=\"stylesheet\" type=\"text/css\">\n";
+				$sRet .= "<link href=\"".$v['url']."\" rel=\"stylesheet\" type=\"text/css\">\n";
 			}
 		}
 		if(isset($manifest['jscss']['css']) && isset($manifest['jscss']['css']['full']) && is_array($manifest['jscss']['css']['full']) && sizeof($manifest['jscss']['css']['full'])>0) {
 			foreach($manifest['jscss']['css']['full'] as $v) {
-				$sRet .= "<style type=\"text/css\">".$v."</style>\n";
+				$sRet .= "<style type=\"text/css\">".$v['url']."</style>\n";
 			}
 		}
 		if(isset($manifest['jscss']['js']) && isset($manifest['jscss']['js']['link']) && is_array($manifest['jscss']['js']['link']) && sizeof($manifest['jscss']['js']['link'])>0) {
 			foreach($manifest['jscss']['js']['link'] as $v) {
-				$sRet .= "<script type=\"text/javascript\" src=\"".$v."\"></script>\n";
+				$sRet .= "<script type=\"text/javascript\" src=\"".$v['url']."\"".(isset($v['defer']) && $v['defer']==true ? " defer=\"defer\"" : "")."></script>\n";
 			}
 		}
 		if(isset($manifest['jscss']['js']) && isset($manifest['jscss']['js']['full']) && is_array($manifest['jscss']['js']['full']) && sizeof($manifest['jscss']['js']['full'])>0) {
 			foreach($manifest['jscss']['js']['full'] as $v) {
-				$sRet .= "<script type=\"text/javascript\">".$v."</script>\n";
+				$sRet .= "<script type=\"text/javascript\"".(isset($v['defer']) && $v['defer']==true ? " defer=\"defer\"" : "").">".$v['url']."</script>\n";
 			}
 		}
 	}
@@ -468,7 +468,7 @@ function callBackAdminPanelToPage($arr) {
 // regCssJs("{THEME}/jquery.js", "js", true)
 function regCssJs($js, $type, $mark = false, $name = "") {
 global $manifest;
-	if(is_array($js)) {
+	if(is_array($js) && !isset($js['url'])) {
 		foreach($js as $k => $v) {
 			regCssJs($v, $type, $mark, (is_numeric($k) ? $name : $k));
 		}
@@ -485,15 +485,15 @@ global $manifest;
 		$jsCheck = parse_url($js);
 		if(!empty($name)) {
 			if(isset($jsCheck['path'])) {
-				$manifest['jscss'][$type]['link'][$name] = $js.($mark ? AmperOr($js).time() : "");
+				$manifest['jscss'][$type]['link'][$name] = array("url" => (isset($js['url']) ? $js['url'] : $js).($mark ? AmperOr($js).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
 			} else {
-				$manifest['jscss'][$type]['full'][$name] = $js.($mark ? AmperOr($js).time() : "");
+				$manifest['jscss'][$type]['full'][$name] = array("url" => (isset($js['url']) ? $js['url'] : $js).($mark ? AmperOr($js).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
 			}
 		} else {
 			if(isset($jsCheck['path'])) {
-				$manifest['jscss'][$type]['link'][] = $js.($mark ? AmperOr($js).time() : "");
+				$manifest['jscss'][$type]['link'][] = array("url" => (isset($js['url']) ? $js['url'] : $js).($mark ? AmperOr($js).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
 			} else {
-				$manifest['jscss'][$type]['full'][] = $js.($mark ? AmperOr($js).time() : "");
+				$manifest['jscss'][$type]['full'][] = array("url" => (isset($js['url']) ? $js['url'] : $js).($mark ? AmperOr($js).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
 			}
 		}
 	}
@@ -516,13 +516,13 @@ global $manifest;
 		} else {
 			if(isset($jsCheck['path']) && isset($manifest['jscss'][$type]['link']) && is_array($manifest['jscss'][$type]['link']) && sizeof($manifest['jscss'][$type]['link'])>0) {
 				for($i=0;$i<sizeof($manifest['jscss'][$type]['link']);$i++) {
-					if(strpos($manifest['jscss'][$type]['link'][$i], $js)!==false) {
+					if(strpos($manifest['jscss'][$type]['link'][$i]['url'], $js)!==false) {
 						unset($manifest['jscss'][$type]['link'][$i]);
 					}
 				}
 			} else if(isset($manifest['jscss'][$type]['full']) && is_array($manifest['jscss'][$type]['full']) && sizeof($manifest['jscss'][$type]['full'])>0) {
 				for($i=0;$i<sizeof($manifest['jscss'][$type]['full']);$i++) {
-					if(strpos($manifest['jscss'][$type]['full'][$i], $js)!==false) {
+					if(strpos($manifest['jscss'][$type]['full'][$i]['url'], $js)!==false) {
 						unset($manifest['jscss'][$type]['full'][$i]);
 					}
 				}
