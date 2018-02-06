@@ -82,6 +82,8 @@
 					</div>
 				
 				</a>
+
+				{content}
 				
 				[if {is_messagesAdmin}==1]
 				<div class="col-sm-12">
@@ -137,5 +139,33 @@ jQuery(document).ready(function() {
 			toastr.info(data, "{L_"Debug Panel"} "+states);
 		});
 	});
+    var data = localStorage.getItem("mainAdminCollapsed");
+    if(data!==null) {
+        data = JSON.parse(data);
+    } else {
+        data = {};
+    }
+    Object.keys(data).forEach(function(elem) {
+        var e = jQuery("[data-module='"+elem+"']");
+        if(data[elem]===true) {
+            e.removeClass('collapsed');
+        } else if(data[elem]===false) {
+            e.addClass('collapsed');
+        }
+    });
+});
+jQuery(".content_admin [data-toggle]").click(function() {
+    var elem = jQuery(this).parent().parent().parent();
+    var module = elem.attr("data-module");
+    var hidded = elem.hasClass("collapsed");
+    var data = localStorage.getItem("mainAdminCollapsed");
+    if(data!==null) {
+        data = JSON.parse(data);
+    } else {
+        data = {};
+    }
+    data[module] = hidded;
+    data = JSON.stringify(data);
+    localStorage.setItem("mainAdminCollapsed", data);
 });
 </script>

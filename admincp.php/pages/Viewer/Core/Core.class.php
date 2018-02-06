@@ -27,6 +27,11 @@ class Core {
 	private static $modules = array();
 	private static $js = array();
 	private static $css = array();
+	private static $content = "";
+
+	public static function addContent($data) {
+		self::$content .= $data;
+	}
 	
 	public static function __callStatic($call, $args) {
 		$new = __METHOD__;
@@ -410,6 +415,7 @@ class Core {
 			}
 		}
 		$echos = str_replace("{css_list}", $css_echo, $echos);
+		$echo = str_replace("{content}", self::$content, $echo);
 		$echoView = templates::view($echo);
 		if(empty($echoView) && $force) {
 			$echoView = $echo;
