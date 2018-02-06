@@ -48,7 +48,7 @@ class Main_Updater extends Main {
 
 	public function __construct() {
 		if((defined("CLOSE_FUNCTION") && strpos(CLOSE_FUNCTION, "curl")!==false) && userlevel::get("updates")===false) {
-			templates::assign_var("is_new", "0");
+			templates::assign_var("is_new", "old");
 			return;
 		}
 		$prs = new Parser('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/version.txt?'.date("d-m-Y-H"));
@@ -72,19 +72,19 @@ class Main_Updater extends Main {
 				}
 				if(!empty($changelog)) {
 					templates::assign_var("new_version", $vid);
-					templates::assign_var("is_new", "1");
+					templates::assign_var("is_new", "new");
 					if(is_writable($dir)) {
 						file_put_contents($file, $changelog, FILE_APPEND);
 					}
 				}
 			} else if(file_exists($file)) {
 				templates::assign_var("new_version", $vid);
-				templates::assign_var("is_new", "1");
+				templates::assign_var("is_new", "new");
 				$changelog = file_get_contents($file);
 			}
 			templates::assign_var("changelog", nl2br($this->Creator(str_replace(array("{", "}"), array("&#123;", "&#125;"), htmlspecialchars($changelog)))));
 		} else {
-			templates::assign_var("is_new", "0");
+			templates::assign_var("is_new", "old");
 		}
 	}
 
