@@ -415,7 +415,7 @@ class Core {
 			}
 		}
 		$echos = str_replace("{css_list}", $css_echo, $echos);
-		$echo = str_replace("{content}", self::$content, $echo);
+		$echo = str_replace("{contentForAdmin}", self::$content, $echo);
 		$echoView = templates::view($echo);
 		if(empty($echoView) && $force) {
 			$echoView = $echo;

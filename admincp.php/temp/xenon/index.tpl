@@ -83,7 +83,7 @@
 				
 				</a>
 
-				{content}
+				{contentForAdmin}
 				
 				[if {is_messagesAdmin}==1]
 				<div class="col-sm-12">

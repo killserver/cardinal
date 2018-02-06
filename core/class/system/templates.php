@@ -55,7 +55,7 @@ class templates {
 	/**
 	 * @var array
      */
-	private static $module = array("head" => array(), "body" => array(), "blocks" => array(), "menu" => array());
+	private static $module = array("head" => array(), "body" => array(), "blocks" => array());
 	/**
 	 * @var array
      */
@@ -265,9 +265,9 @@ class templates {
 	}
 	
 	final public static function resetVars($array, $view = "") {
-		if(empty($view)) {
+		if(empty($view) && isset(self::$blocks[$array])) {
 			unset(self::$blocks[$array]);
-		} else {
+		} else if(isset(self::$blocks[$array]) && isset(self::$blocks[$array][$view])) {
 			unset(self::$blocks[$array][$view]);
 		}
 	}
@@ -346,36 +346,6 @@ class templates {
 			unset(self::$blocks[$block][$id][$name]);
 		} else if(isset(self::$blocks[$block][$name])) {
 			unset(self::$blocks[$block][$name]);
-		}
-	}
-
-	/**
-	 * Set datas for menu
-	 * @access public
-	 * @param string $name Name menu on template
-	 * @param string $html HTML-code for template
-	 * @param string $block Block menu
-     */
-	final public static function set_menu($name, $html = "", $block = "") {
-		if(empty($block)) {
-			self::$module['menu'][$name] = $html;
-		} else {
-			self::$module['menu'][$name][$block] = array("name" => $block, "value" => $html);
-		}
-	}
-
-	/**
-	 * Get menu datas
-	 * @access public
-	 * @param string $name Name menu
-	 * @param string $block Block menu
-	 * @return mixed Return data on menu
-     */
-	final public static function select_menu($name, $block) {
-		if(isset(self::$module['menu'][$name][$block]) && is_array(self::$module['menu'][$name][$block]) && isset(self::$module['menu'][$name][$block]['value'])) {
-			return self::$module['menu'][$name][$block]['value'];
-		} else {
-			return false;
 		}
 	}
 
@@ -989,9 +959,6 @@ class templates {
      */
 	final private static function ecomp($tmp, $file = "") {
 		$tmp = preg_replace("/\/\/\/\*\*\*(.+?)\*\*\*\/\/\//is", "", $tmp);
-		// while(strpos($tmp, "///***")!==false && strpos($tmp, "***///")!==false) {
-		//	$tmp = nsubstr($tmp, 0, nstrpos($tmp, "///***")).nsubstr($tmp, nstrpos($tmp, "***///")+6, nstrlen($tmp));
-		// }
 		$tmp = self::ParsePHP($tmp, $file);
 		$tmp = self::callback_array("#\{include (.+?)=['\"](.*?)['\"]\}#", ("templates::includeFile"), $tmp);
 		$tmp = preg_replace("~\{\#is_last\[(\"|)(.*?)(\"|)\]\}~", "\\1", $tmp);
@@ -1016,17 +983,17 @@ class templates {
 		$tmp = self::callback_array("#\{R_\[(.+?)\]\[(.+?)\]\}#", ("templates::route"), $tmp);
 		$tmp = self::callback_array("#\{R_\[(.+?)\]\}#", ("templates::route"), $tmp);
 		$tmp = self::callback_array("#\{M_\[(.+?)\]\}#", ("templates::checkMobile"), $tmp);
-		$tmp = str_replace("{reg_link}", config::Select('link', 'reg'), $tmp);
+		/*$tmp = str_replace("{reg_link}", config::Select('link', 'reg'), $tmp);
 		$tmp = str_replace("{login_link}", config::Select('link', 'login'), $tmp);
 		$tmp = str_replace("{logout-link}", config::Select('link', 'logout'), $tmp);
 		$tmp = str_replace("{lost_link}", config::Select('link', 'lost'), $tmp);
 		$tmp = str_replace("{login}", modules::get_user('username'), $tmp);
 		$tmp = str_replace("{addnews-link}", config::Select('link', 'add'), $tmp);
-		$tmp = str_replace("{lostpassword-link}", config::Select('link', 'recover'), $tmp);
+		$tmp = str_replace("{lostpassword-link}", config::Select('link', 'recover'), $tmp);*/
 		$tmp = self::callback_array("#\{UL_(.*?)(|\[(.*?)\])\}#", ("templates::level"), $tmp);
 
-		$tmp = self::callback_array('#\[page=(.*?)\]([^[]*)\[/page\]#i', ("templates::nowpage"), $tmp);
-		$tmp = self::callback_array('#\[not-page=(.*?)\]([^[]*)\[/not-page\]#i', ("templates::npage"), $tmp);
+		//$tmp = self::callback_array('#\[page=(.*?)\]([^[]*)\[/page\]#i', ("templates::nowpage"), $tmp);
+		//$tmp = self::callback_array('#\[not-page=(.*?)\]([^[]*)\[/not-page\]#i', ("templates::npage"), $tmp);
 
 		$tmp = self::callback_array('#\[if (.+?)\](.*?)\[else \\1\](.*?)\[/if \\1\]#i', ("templates::is"), $tmp);
 		while(preg_match('~\[if (.+?)\]([^[]*)\[/if \\1\]~iU', $tmp)) {
@@ -1216,10 +1183,16 @@ class templates {
 			$type = "not_empty";
 			$e = preg_replace("/!empty(.+?)/", "$1", $array[1]);
 			$e = str_replace(array("(", ")"), "", $e);
+			if(strpos($e, "{")!==false) {
+				$e = preg_replace("#\{(.+?)\}#", "$1", $e);
+			}
 		} elseif(strpos($array[1], "empty(") !== false) {
 			$type = "empty";
 			$e = preg_replace("/empty(.+?)/", "$1", $array[1]);
 			$e = str_replace(array("(", ")"), "", $e);
+			if(strpos($e, "{")!==false) {
+				$e = preg_replace("#\{(.+?)\}#", "$1", $e);
+			}
 		}
 		if(!isset($type)) return false;
 		if($type == "UL") {
@@ -1504,7 +1477,11 @@ class templates {
 	 * @return int Return count block-data
      */
 	final private static function count_blocks($array) {
-		return sizeof(self::$blocks[$array[2]]);
+		if(isset($array[2]) && isset(self::$blocks[$array[2]])) {
+			return sizeof(self::$blocks[$array[2]]);
+		} else {
+			return 0;
+		}
 	}
 
 	/**
@@ -1513,7 +1490,7 @@ class templates {
 	 * @param array $array Array data
 	 * @return mixed Return part template if user without this page
      */
-	final private static function npage($array) {
+	/*final private static function npage($array) {
 	global $manifest;
 		if(strpos($array[1], "|")!==false) {
 			$search = explode("|", $array[1]);
@@ -1524,7 +1501,7 @@ class templates {
 			return $array[2];
 		}
 		return "";
-	}
+	}*/
 
 	/**
 	 * "In Page". Check user on this page
@@ -1532,7 +1509,7 @@ class templates {
 	 * @param array $array Array data
 	 * @return mixed Return part template if user on this page
      */
-	final private static function nowpage($array) {
+	/*final private static function nowpage($array) {
 	global $manifest;
 		if(strpos($array[1], "|")!==false) {
 			$search = explode("|", $array[1]);
@@ -1543,7 +1520,7 @@ class templates {
 			return $array[2];
 		}
 		return "";
-	}
+	}*/
 	
 	final private static function fmk($array) {
 		if(!isset($array[2]) || empty($array[2])) {
@@ -1569,7 +1546,6 @@ class templates {
 	public static function comp_datas($tpl, $file = "null", $test = false) {
 		$tpl = self::ParsePHP($tpl, self::$dir_skins.DS.self::$skins.DS.$file);
 		$tpl = self::callback_array("#\{include (.+?)=['\"](.*?)['\"]\}#", ("templates::includeFile"), $tpl);
-		$tpl = preg_replace(array('~\{\#\#(.+?)}~', '~\{\#(.+?)}~', '~\{\_(.+?)}~'), "{\\1}", $tpl);
 		$tpl = self::callback_array("~\{is_last\[(\"|)(.+?)(\"|)\]\}~", ("templates::count_blocks"), $tpl);
 		$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tpl);
 		$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tpl);
@@ -1580,8 +1556,8 @@ class templates {
 		$tpl = self::callback_array("#\{FMK_(['\"])(.*?)\[(.*?)\]\}#", ("templates::fmk"), $tpl);
 		$tpl = self::callback_array("#\{M_\[(.+?)\]\}#", ("templates::checkMobile"), $tpl);
 		$tpl = self::callback_array("#\{RP\[([a-zA-Z0-9\-_]+)\]\}#", ("templates::routeparam"), $tpl);
-		$tpl = self::callback_array('#\[page=(.*?)\](.*)\[/page\]#i', ("templates::nowpage"), $tpl);
-		$tpl = self::callback_array('#\[not-page=(.*?)\](.*)\[/not-page\]#i', ("templates::npage"), $tpl);
+		//$tpl = self::callback_array('#\[page=(.*?)\](.*)\[/page\]#i', ("templates::nowpage"), $tpl);
+		//$tpl = self::callback_array('#\[not-page=(.*?)\](.*)\[/not-page\]#i', ("templates::npage"), $tpl);
 		if(modules::manifest_get(array("temp", "block"))!==false) {
 			self::$blocks = array_merge(self::$blocks, modules::manifest_get(array("temp", "block")));
 		}
@@ -2438,26 +2414,6 @@ if(!$test) {
 		} else {
 			$h = str_replace("{content}", $body, $h);
 		}
-		$tmp = modules::manifest_get(array("temp", "menu"));
-		if(is_array($tmp) && sizeof($tmp)>0) {
-			self::$module['menu'] = array_merge(self::$module['menu'], $tmp);
-		}
-		unset($tmp);
-		if(sizeof(self::$module['menu'])>0) {
-			foreach(self::$module['menu'] as $name => $val) {
-				if(!is_array($name) && !is_array($val)) {
-					$h = str_replace("{".$name."}", self::comp_datas($val), $h);
-				} elseif(!is_array($name) && is_array($val)) {
-					$values = array_values($val);
-					$value = "";
-					for($i=0;$i<sizeof($values);$i++) {
-						$value .= $values[$i]['value'];
-					}
-					$h = str_replace("{".$name."}", self::comp_datas($value), $h);
-				}
-			}
-			self::$module['menu'] = array();
-		}
 		$h = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $h);
 		$h = self::ecomp($h);//, self::$dir_skins.DS.self::$skins.DS."main"
 		$find_preg = $replace_preg = array();
@@ -2566,7 +2522,7 @@ if(!$test) {
 	final public static function clean() {
 		self::$blocks = array();
 		self::$foreach = array("count" => 0, "all" => array());
-		self::$module = array("head" => array(), "body" => array(), "blocks" => array(), "menu" => array());
+		self::$module = array("head" => array(), "body" => array(), "blocks" => array());
 		self::$editor = array();
 		self::$header = null;
 		self::$tmp = "";
