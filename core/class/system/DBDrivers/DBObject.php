@@ -308,7 +308,7 @@ class DBObject implements ArrayAccess {
 			throw new Exception("Switch for allowed empty attribute is not boolen");
 			die();
 		}
-		if(!empty($switch)) {
+		if($switch!=="") {
 			$this->allowEmptyAttr = $switch;
 		}
 		return $this->allowEmptyAttr;
