@@ -123,8 +123,8 @@ class Login extends Core {
 		if(sizeof(self::$js)>0) {
 			$js = array_values(self::$js);
 			for($o=0;$o<sizeof($js);$o++) {
-				$html = new html();
-				$js_echo .= $html->open("script")->type("text/javascript")->src($js[$o])->cont("")->close()->get_html();
+				//$html = new html();
+				$js_echo .= '<script type="text/javascript" src="'.$js[$o].'"></script>';//$html->open("script")->type("text/javascript")->src($js[$o])->cont("")->close()->get_html();
 			}
 		}
 		$echos = str_replace("{js_list}", $js_echo, $echos);
@@ -132,8 +132,8 @@ class Login extends Core {
 		if(sizeof(self::$css)>0) {
 			$css = array_values(self::$css);
 			for($o=0;$o<sizeof($css);$o++) {
-				$html = new html();
-				$css_echo .= $html->open("link", 2)->type("text/css")->href($css[$o])->rel("stylesheet")->cont("")->close()->get_html();
+				//$html = new html();
+				$css_echo .= '<link type="text/css" href="'.$css[$o].'" rel="stylesheet" />';//$html->open("link", 2)->type("text/css")->href($css[$o])->rel("stylesheet")->cont("")->close()->get_html();
 			}
 		}
 		$echos = str_replace("{css_list}", $css_echo, $echos);

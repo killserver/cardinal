@@ -512,7 +512,7 @@
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-api.js?1"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-toggles.js?1"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-widgets.js?1"></script>
-	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/tinymce/tinymce.min.js?{S_time}"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/tinymce/tinymce.min.js?{S_time}"></script>
 
 	
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/datepicker/bootstrap-datepicker.js"></script>
@@ -540,9 +540,9 @@
 					valid_elements : "*[*]",
 					forced_root_block : '',
 					image_advtab: true, 
-					external_filemanager_path: default_admin_link+"assets/xenon/js/tinymce/filemanager/",
+					external_filemanager_path: default_admin_link+"assets/tinymce/filemanager/",
 					filemanager_title: "{L_"Загрузка файлов"}", 
-					external_plugins: { "filemanager" : default_admin_link+"assets/xenon/js/tinymce/filemanager/plugin.min.js"},
+					external_plugins: { "filemanager" : default_admin_link+"assets/tinymce/filemanager/plugin.min.js"},
 					readonly: (typeof(readOnlyEditor)=="undefined" ? 0 : 1),
 					las_seconds: 15,
 					las_nVersions: 15,

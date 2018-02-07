@@ -1,6 +1,6 @@
 <?php
 define("IS_CORE", true);
-require_once("../../../../../../core.php");
+require_once("../../../../core.php");
 if(!userlevel::get("admin")) {
 	die();
 }
