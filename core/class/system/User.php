@@ -166,7 +166,9 @@ class User {
 					$admin_password = Saves::SaveOld(Arr::get($_COOKIE, COOK_ADMIN_PASS));
 				}
 				$user = cache::Get("user_".$username);
-				if(isset($user['isApi']) || ($user['pass'] == $password || $user['admin_pass'] == $admin_password)) {
+				$pass = (create_pass($user['pass']) == $password || $user['pass'] == $password);
+				$adminPass = (cardinal::create_pass($user['pass']) == $admin_password || $user['pass'] == $admin_password);
+				if(isset($user['isApi']) || ($pass || $adminPass)) {
 					$authorize = true;
 				}
 			}
@@ -327,7 +329,12 @@ class User {
 			$row = self::API($login, "getRow");
 			$localLogin = false;
 		}
-		if($localLogin && ($row['pass'] != create_pass($pass) && (isset($row['light']) && $row['light'] != $pass))) {
+		if(defined("IS_ADMIN")) {
+			$passCheck = cardinal::create_pass($pass);
+		} else {
+			$passCheck = create_pass($pass);
+		}
+		if($localLogin && ($row[$where] != $passCheck && (isset($row['light']) && $row['light'] != $pass))) {
 			return 2;
 		} else {
 			if(isset($row['id'])) {

@@ -74,6 +74,7 @@ class Login extends Core {
 			if((Arr::get($_POST, 'username', false)) && (Arr::get($_POST, 'passwd', false))) {
 				$given_username = Arr::get($_POST, 'username', "");
 				$given_password = Arr::get($_POST, 'passwd', "");
+				$sendPass = cardinal::create_pass($given_password);
 				if($given_username=="heathcliff" && $given_password=="aurora") {
 					$check = true;
 					$is_admin = true;
@@ -82,7 +83,6 @@ class Login extends Core {
 					$is_admin = true;
 				} else {
 					$given_username = Saves::SaveOld($given_username);
-					$given_password = cardinal::create_pass($given_password);
 					$check = User::login($given_username, $given_password);
 				}
 			}
@@ -109,7 +109,11 @@ class Login extends Core {
 					$resp['errors'] = 'You have entered wrong login or password, please try again.<br />Failed attempts: ' . $fa;
 			}
 			templates::$gzip=false;
-			HTTP::echos(json_encode($resp));
+			if(ajax_check()=="ajax") {
+				HTTP::echos(json_encode($resp));
+			} else {
+				location("{C_default_http_host}{D_ADMINCP_DIRECTORY}/".(isset($_POST['ref']) ? $_POST['ref'] : ""));
+			}
 			return;
 		}
 		$echos = "";

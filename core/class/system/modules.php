@@ -659,18 +659,24 @@ class modules {
 			$file = file_get_contents(PATH_CACHE_SYSTEM."modules.json");
 			$arrs = json_decode($file, true);
 			$arr = array_merge($arr, $arrs);
-			if(!isset($arr[$class]) || (isset($arr[$class]['active']) && $arr[$class]['active']!==true)) {
+			if(isset($arr[$class]) && isset($arr[$class]['active']) && $arr[$class]['active']!==true) {
 				return false;
 			}
 			if(!isset($arr[$class]['installTime']) && class_exists($class, false) && method_exists($class, "installation")) {
 				call_user_func_array(array(&$class, "installation"), array());
-				$arr[$class] = array("installTime" => time(), "version" => (property_exists($class, "version") ? $class::$version : "0.1"));
+				if(!isset($arr[$class])) {
+					$arr[$class] = array();
+				}
+				$arr[$class] = array_merge($arr[$class], array("installTime" => time(), "version" => (property_exists($class, "version") ? $class::$version : "0.1")));
 				@file_put_contents(PATH_CACHE_SYSTEM."modules.json", json_encode($arr));
 				cardinal::RegAction("Установка модуля \"".$class."\" версии ".(property_exists($class, "version") ? $class::$version : "0.1"));
 			}
 			if(isset($arr[$class]['installTime']) && class_exists($class, false) && isset($arr[$class]['version']) && property_exists($class, "version") && $class::$version > $arr[$class]['version']) {
 				if(method_exists($class, "updater")) {
 					call_user_func_array(array(&$class, "updater"), array("version" => $arr[$class]['version']));
+				}
+				if(!isset($arr[$class])) {
+					$arr[$class] = array();
 				}
 				$arr[$class] = array_merge($arr[$class], array("updateTime" => time(), "version" => $class::$version));
 				@file_put_contents(PATH_CACHE_SYSTEM."modules.json", json_encode($arr));
