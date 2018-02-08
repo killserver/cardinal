@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{langPanel}">
 <head>
-	<meta charset="utf-8">
+	<meta charset="{C_charset}">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<meta name="description" content="Xenon Boostrap Admin Panel" />
-	<meta name="author" content="" />
+	<meta name="description" content="Cardinal Engine Admin Panel" />
+	<meta name="author" content="KilleR" />
 	
-	<title>Xenon - Homepage</title>
+	<title>Admin Panel for {L_sitename}</title>
 
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Arimo:400,700,400italic">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/fonts/linecons/css/linecons.css?1">
@@ -98,6 +98,7 @@
 										method: $(form).find('#method').val(),
 										username: '{U_username}', // user is known in this case
 										passwd: $passwd.val(),
+										ref: "{C_default_http_host}{D_ADMINCP_DIRECTORY}/{ref}",
 									},
 									success: function(resp)
 									{
@@ -109,7 +110,7 @@
 												if(resp.accessGranted)
 												{
 													// Redirect after successful login page (when progress bar reaches 100%)
-													window.location.href = '{C_default_http_host}{D_ADMINCP_DIRECTORY}/{ref}';
+													window.location.href = resp.ref;//'{C_default_http_host}{D_ADMINCP_DIRECTORY}/{ref}';
 												}
 												else
 												{

@@ -99,6 +99,7 @@
 										method: $(form).find('#method').val(),
 										username: $(form).find('#username').val(),
 										passwd: $(form).find('#passwd').val(),
+										ref: "{C_default_http_host}{D_ADMINCP_DIRECTORY}/{ref}",
 									},
 									success: function(resp)
 									{
@@ -106,21 +107,16 @@
 											delay: .5,
 											pct: 100,
 											finish: function(){
-												
 												// Redirect after successful login page (when progress bar reaches 100%)
-												if(resp.accessGranted)
-												{
-													window.location.href = '{C_default_http_host}{D_ADMINCP_DIRECTORY}/{ref}';
-												}
-																							else
-												{
+												if(resp.accessGranted) {
+													window.location.href = resp.ref;//'{C_default_http_host}{D_ADMINCP_DIRECTORY}/{ref}';
+												} else {
 													toastr.error(resp.errors, "{L_"Не корректно введены данные!"}", opts);
 													$passwd.select();
 												}
-																						}
+											}
 										});
-										
-																		}
+									}
 								});
 								
 							}
@@ -169,9 +165,12 @@
 		
 	</div>
 
-
-
-
+	<script type="text/javascript">
+			jQuery(document).ready(function($) {
+				jQuery('body').attr('class', jQuery('body').attr('class').replace(/skin-[a-z]+/i, '')).addClass(Cookies.get('current-skin') ? (' skin-'+Cookies.get('current-skin')) : '');
+				console.log(Cookies.get('current-skin'));
+			});
+	</script>
 	<!-- Bottom Scripts -->
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/bootstrap.min.js?1"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/TweenMax.min.js?1"></script>

@@ -101,7 +101,7 @@ if(class_exists($view)) {
 	if($load) {
 		if(method_exists(''.$view, 'start')) {
 			call_user_func(array(&$view, "start"));
-			defines::init();
+			//defines::init();
 		}
 		new $view();
 	} else {

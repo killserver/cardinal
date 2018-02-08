@@ -183,7 +183,15 @@ class Debug {
 			break;
 			case DEBUG_TIME:
 			global $Timer;
-				$time = microtime()-$Timer;
+				$time = microtime();
+				if(strpos($time, " ")!==false) {
+					$time = explode(" ", $time);
+					$time = current($time);
+				}
+				$Times-=$Timer;
+				if($Times<0) {
+					$Times = 0;
+				}
 				unset($Timer);
 			break;
 			case DEBUG_FILES:
@@ -260,7 +268,10 @@ class Debug {
 					$time = explode(" ", $time);
 					$time = current($time);
 				}
-				$time = $time-$Timer;
+				$Times = $time-$Timer;
+				if($Times<0) {
+					$Times = 0;
+				}
 				unset($Timer);
 			break;
 			case DEBUG_FILES * DEBUG_INCLUDE:
@@ -344,6 +355,11 @@ class Debug {
 					$Times = $time-$Timer;
 				} else {
 					$Times = $Timer;
+				}
+				$Times += $tmp;
+				$Times += $db_time;
+				if($Times<0) {
+					$Times = 0;
 				}
 				unset($Timer);
 			break;

@@ -7,6 +7,7 @@ die();
 class User {
 	
 	private static $userInfo = array();
+	private static $callLogin = array();
 	private static $path = "";
 	
 	final public static function PathUsers($path = "") {
@@ -52,6 +53,36 @@ class User {
 			}
 		}
 		return true;
+	}
+
+	final public static function getInfo($username) {
+		$users = array();
+		if(isset($_SERVER['HTTP_HOST']) && file_exists(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX)) {
+			include(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX);
+		} else if(file_exists(PATH_MEDIA."users.".ROOT_EX)) {
+			include(PATH_MEDIA."users.".ROOT_EX);
+		} else if(file_exists(PATH_MEDIA."users.default.".ROOT_EX)) {
+			include(PATH_MEDIA."users.default.".ROOT_EX);
+		}
+		if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
+			$file = file_get_contents(self::$path."userList.txt");
+			if(is_serialized($file)) {
+				$usersFile = unserialize($file);
+				$users = array_merge($users, $usersFile);
+			}
+		}
+		if(class_exists("db", false) && method_exists("db", "connected") && db::connected() && method_exists("db", "getTable") && !(!db::getTable("users"))) {
+			db::doquery("SELECT * FROM {{users}}".(!empty($username) ? " WHERE `username` LIKE \"%".$username."%\"" : ""), true);
+			$uTmp = array();
+			while($row = db::fetch_assoc()) {
+				$uTmp[] = $row;
+			}
+			$users = array_merge($users, $uTmp);
+		}
+		if(!empty($username) && isset($users[$username])) {
+			$users = $users[$username];
+		}
+		return $users;
 	}
 
 	final public static function All($searchIP = "") {
@@ -283,6 +314,11 @@ class User {
 		}
 		return $ret;
 	}
+
+	final public static function addToLogin($fn) {
+		$size = sizeof(self::$callLogin);
+		self::$callLogin[$size] = $fn;
+	}
 	
 	final public static function login($login, $pass) {
 	global $db;
@@ -328,6 +364,12 @@ class User {
 		if(!isset($row) && defined("ALLOW_API_USER")) {
 			$row = self::API($login, "getRow");
 			$localLogin = false;
+		}
+		for($i=0;$i<sizeof(self::$callLogin);$i++) {
+			$ret = call_user_func_array(self::$callLogin[$i], array($login, $pass, $row));
+			if(is_array($ret)) {
+				$row = $ret;
+			}
 		}
 		if(defined("IS_ADMIN")) {
 			$passCheck = cardinal::create_pass($pass);
@@ -453,6 +495,13 @@ class User {
 					$usersFile = unserialize($file);
 					$users = array_merge($users, $usersFile);
 				}
+			}
+			if(file_exists(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX)) {
+				include(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX);
+			} else if(file_exists(PATH_MEDIA."users.".ROOT_EX)) {
+				include(PATH_MEDIA."users.".ROOT_EX);
+			} else if(file_exists(PATH_MEDIA."users.default.".ROOT_EX)) {
+				include(PATH_MEDIA."users.default.".ROOT_EX);
 			}
 			if(!isset($list[0]) || !isset($list[0]['username'])) {
 				throw new Exception("Error username is not set", 1);
