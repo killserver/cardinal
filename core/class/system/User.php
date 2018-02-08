@@ -152,8 +152,13 @@ class User {
 			}
 			if(!cache::Exists("user_".$username)) {
 				$authorize = false;
+				if(defined("IS_ADMIN")) {
+					$passCheck = cardinal::create_pass($password);
+				} else {
+					$passCheck = ($password);
+				}
 				if($userLoad) {
-					if(isset($users[$username]) && isset($users[$username]['username']) && isset($users[$username][$where]) && $users[$username][$where] == $password) {
+					if(isset($users[$username]) && isset($users[$username]['username']) && isset($users[$username][$where]) && $users[$username][$where] == $passCheck) {
 						$user = $users[$username];
 						cache::Set("user_".$username, $user);
 						$authorize = true;
@@ -170,7 +175,7 @@ class User {
 					}
 				}
 				if(class_exists("db", false) && method_exists("db", "connected") && db::connected() && method_exists("db", "getTable") && !(!db::getTable("users"))) {
-					db::doquery("SELECT * FROM {{users}} WHERE `username` LIKE \"".$username."\" AND `".$where."` LIKE \"".$password."\"", true);
+					db::doquery("SELECT * FROM {{users}} WHERE `username` LIKE \"".$username."\" AND `".$where."` LIKE \"".$passCheck."\"", true);
 					if(db::num_rows()==0 && self::API($username, "checkExists")) {
 						$user = self::API($username, "load");
 						cache::Set("user_".$username, $user);
@@ -197,8 +202,8 @@ class User {
 					$admin_password = Saves::SaveOld(Arr::get($_COOKIE, COOK_ADMIN_PASS));
 				}
 				$user = cache::Get("user_".$username);
-				$pass = (create_pass($user['pass']) == $password || $user['pass'] == $password);
-				$adminPass = (cardinal::create_pass($user['pass']) == $admin_password || $user['pass'] == $admin_password);
+				$pass = ($user['pass'] == create_pass($password) || $user['pass'] == create_pass($password));
+				$adminPass = ($user['pass'] == cardinal::create_pass($admin_password) || $user['pass'] == cardinal::create_pass($admin_password));
 				if(isset($user['isApi']) || ($pass || $adminPass)) {
 					$authorize = true;
 				}
