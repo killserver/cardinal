@@ -494,19 +494,19 @@ class User {
 			db::doquery("UPDATE {{users}} SET ".implode(", ", array_map("User::mapForUpdate", array_values($list)))." WHERE `id` = \"".$id."\" LIMIT 1");
 		} else {
 			$users = array();
-			if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
-				$file = file_get_contents(self::$path."userList.txt");
-				if(is_serialized($file)) {
-					$usersFile = unserialize($file);
-					$users = array_merge($users, $usersFile);
-				}
-			}
 			if(file_exists(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX)) {
 				include(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX);
 			} else if(file_exists(PATH_MEDIA."users.".ROOT_EX)) {
 				include(PATH_MEDIA."users.".ROOT_EX);
 			} else if(file_exists(PATH_MEDIA."users.default.".ROOT_EX)) {
 				include(PATH_MEDIA."users.default.".ROOT_EX);
+			}
+			if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
+				$file = file_get_contents(self::$path."userList.txt");
+				if(is_serialized($file)) {
+					$usersFile = unserialize($file);
+					$users = array_merge($users, $usersFile);
+				}
 			}
 			if(!isset($list[0]) || !isset($list[0]['username'])) {
 				throw new Exception("Error username is not set", 1);

@@ -111,17 +111,17 @@ class SEOBlock extends modules {
 		} elseif(!defined("DEVELOPER_MODE") && file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."seoBlockDev.lock")) {
 			unlink(ROOT_PATH."core".DS."cache".DS."system".DS."seoBlockDev.lock");
 		}
+		$host = (class_exists("HTTP") && method_exists("HTTP", "getServer") ? HTTP::getServer('SERVER_NAME') : $_SERVER['SERVER_NAME']);
+		$path = (class_exists("HTTP") && method_exists("HTTP", "getServer") ? HTTP::getServer('PHP_SELF') : $_SERVER['PHP_SELF']);
+		if(strpos($path, "index.".ROOT_EX."/")!==false) {
+			$path = explode("index.".ROOT_EX."/", $path);
+			$path = current($path);
+		}
+		$path = str_replace(array("uploads".DS."robots.txt", "uploads".(defined("DS_DB") ? DS_DB : "/")."robots.txt", "index.".ROOT_EX), "", $path);
+		if(substr($path, 0, 1)=="/") {
+			$path = substr($path, 1);
+		}
 		if(!defined("DEVELOPER_MODE") && !file_exists(PATH_UPLOADS."robots.txt") && is_writable(PATH_UPLOADS)) {
-			$host = (class_exists("HTTP") && method_exists("HTTP", "getServer") ? HTTP::getServer('SERVER_NAME') : $_SERVER['SERVER_NAME']);
-			$path = (class_exists("HTTP") && method_exists("HTTP", "getServer") ? HTTP::getServer('PHP_SELF') : $_SERVER['PHP_SELF']);
-			if(strpos($path, "index.".ROOT_EX."/")!==false) {
-				$path = explode("index.".ROOT_EX."/", $path);
-				$path = current($path);
-			}
-			$path = str_replace(array("uploads".DS."robots.txt", "uploads".(defined("DS_DB") ? DS_DB : "/")."robots.txt", "index.".ROOT_EX), "", $path);
-			if(substr($path, 0, 1)=="/") {
-				$path = substr($path, 1);
-			}
 			$robots = "User-agent: *\n".
 					"Disallow: /".$path.(!defined("ADMINCP_DIRECTORY") ? "admincp.php" : ADMINCP_DIRECTORY)."/\n".
 					"Disallow: /".$path."cdn-cgi/\n".

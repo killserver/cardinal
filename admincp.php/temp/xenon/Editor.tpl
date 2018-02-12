@@ -3,7 +3,7 @@
 	{dir}
 	</div>
 	<div class="col-md-9">
-		<div name="editor" id="editor" style="height:420px;"></div>
+		<div name="editor" id="editor" style="height:600px;"></div>
 	</div>
 	<div class="col-md-12">
 		<button class="btn btn-turquoise send pull-right">Save</button>
@@ -86,7 +86,7 @@ function loadFile(file) {
 	$.post("./?pages=Editor&getType="+file, function(data) {
 		type = data;
 		$.post("./?pages=Editor&load="+file, function(datas) {
-			dataGet = datas.replace(/<\\\?php/, "<?");
+			dataGet = datas.replace(/<\\\?php/g, "<?php");
 			editor.setValue(dataGet, -1);
 			editor.getSession().setMode("ace/mode/"+type);
 			editor.getSession().setTabSize(4);
@@ -111,4 +111,23 @@ $(".send").click(function() {
 var disableAllEditors = true;
 </script>
 
-<style>#fileTree{max-height:420px;overflow:auto}</style>
+<style>
+#fileTree{
+	max-height: 600px;
+	overflow: auto;
+}
+UL.jqueryFileTree A {
+    font-size: 1.05em;
+    font-family: inherit;
+    letter-spacing: 0.03em;
+}
+UL.jqueryFileTree LI {
+    padding: 0.5em 0px 0.5em 20px !important;
+    margin: 1em 0px !important;
+    background-position: 0px 50% !important;
+}
+.ace_editor {
+	font-size: 13px;
+	line-height: 20px;
+}
+</style>
