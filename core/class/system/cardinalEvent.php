@@ -3,7 +3,6 @@
 class cardinalEvent {
 	
 	private static $pageNow = "";
-	private static $sendData = "";
 	private static $collection = array();
 	
 	public static function addListener($page, $func) {
@@ -11,13 +10,13 @@ class cardinalEvent {
 			if(!isset(self::$collection[$page])) {
 				self::$collection[$page] = array();
 			}
-			self::$collection[$page][] = $func;
+			self::$collection[$page][] = array("fn" => $func, "data" => $data);
 		}
 		if(!is_array($func) && is_callable($func)) {
 			if(!isset(self::$collection[$page])) {
 				self::$collection[$page] = array();
 			}
-			self::$collection[$page][] = $func;
+			self::$collection[$page][] = array("fn" => $func, "data" => $data);
 		}
 		if(is_array($page)) {
 			for($i=0;$i<sizeof($page);$i++) {
@@ -25,7 +24,7 @@ class cardinalEvent {
 					if(!isset(self::$collection[$page[$i]])) {
 						self::$collection[$page[$i]] = array();
 					}
-					self::$collection[$page[$i]][] = $func;
+					self::$collection[$page[$i]][] = array("fn" => $func, "data" => $data);
 				}
 			}
 		}
@@ -52,17 +51,13 @@ class cardinalEvent {
 		self::$pageNow = $page;
 	}
 	
-	public static function setData($data) {
-		self::$sendData = $data;
-	}
-	
 	public static function execute($page = "", $return = "") {
 		if(!empty($page)) {
 			self::$pageNow = $page;
 		}
 		if(!empty(self::$pageNow) && isset(self::$collection[self::$pageNow])) {
 			foreach(self::$collection[self::$pageNow] as $v) {
-				$ret = call_user_func_array($v, array(self::$sendData, $return));
+				$ret = call_user_func_array($v['fn'], array($v['data'], $return));
 				if(!empty($ret)) {
 					$return = $ret;
 				}

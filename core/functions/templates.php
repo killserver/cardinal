@@ -417,8 +417,7 @@ function headers($array = array(), $clear = false, $no_js = false) {
 		}
 		$header .= "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\"><link rel=\"stylesheet\" href=\"{C_default_http_local}".get_site_path(PATH_SKINS)."core/admin.min.css?{S_time}\">";
 		$menu = "<div class=\"adminCoreCardinal\"><a href=\"{C_default_http_local}\" class=\"logo\"></a><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/\" class=\"linkToAdmin\">{L_'adminpanel'}</a>".(!empty($editPage) ? "<div class=\"items\"><a href=\"".$editPage."\"><i class=\"fa-edit\"></i><span>{L_'Редактировать'}</span></a></div>":"").menuAdminHeader($newMenu)."<div class=\"user\"><span>{U_username}</span><div class=\"dropped\"><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Login&out\"><i class=\"fa-user-times\"></i>{L_'logout'}</a></div></div></div>";
-		cardinalEvent::setData($menu);
-		cardinalEvent::addListener("templates::display", "addAdminPanelToPage");
+		cardinalEvent::addListener("templates::display", "addAdminPanelToPage", $menu);
 	}
 	unset($array);
 return $header;

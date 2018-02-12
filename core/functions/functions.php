@@ -147,6 +147,7 @@ if(!function_exists("RandomCompat_strlen")) {
 // nmail("me@mail.ru", "message", "title") -> send mess
 function nmail() { return function_call('nmail', func_get_args()); }
 function or_nmail() {
+	$server = (class_exists("HTTP", false) && method_exists("HTTP", "getServer") ? HTTP::getServer("HTTP_HOST") : (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : ""));
 	$get = func_get_args();
 	$mail = new PHPMailer(true);
 	if(sizeof($get)==0) {
@@ -154,11 +155,11 @@ function or_nmail() {
 	} else if(sizeof($get)==1) {
 		$for = $get[0];
 		$body = "Test message for you. This message generated automatic in Cardinal Engine".(defined("VERSION") ? " in version ".VERSION : "");
-		$head = "Message for you. In site: ".HTTP::getServer("HTTP_HOST");
+		$head = "Message for you. In site: ".$server;
 	} else if(sizeof($get)==2) {
 		$for = $get[0];
 		$body = $get[1];
-		$head = "Message for you. In site: ".HTTP::getServer("HTTP_HOST");
+		$head = "Message for you. In site: ".$server;
 	} else if(sizeof($get)==3) {
 		$for = $get[0];
 		$body = $get[1];
@@ -170,7 +171,7 @@ function or_nmail() {
 	$mail->CharSet = (class_exists("config") && method_exists("config", "Select") && config::Select("charset") ? config::Select("charset") : "UTF-8");
 	$mail->ContentType = 'text/html';
 	$mail->Priority = 1;
-	$mail->From = "info@".HTTP::getServer("HTTP_HOST");
+	$mail->From = "info@".$server;
 	$mail->FromName = "info";
 	if(!is_array($for)) {
 		$for = array($for => "".$for);

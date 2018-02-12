@@ -81,7 +81,7 @@ class page {
 				HTTP::echos(templates::view("<font color=\"green\">{L_good_reg}</font>"));
 				return false;
 			} else {
-				location("{C_default_http_local}");
+				HTTP::Location(templates::view("{C_default_http_local}"), 0, true, 302);
 			}
 		}
 		$reg = templates::completed_assign_vars("reg", "core");

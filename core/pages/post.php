@@ -70,7 +70,7 @@ class page {
 				//} else if(isset($_GET['edit'])) {
 				//	modules::change_db("edit", $db);
 				//}
-				location("{C_default_http_host}".Route::get("news")->uri(array('view' => $altName)), 5, false);
+				HTTP::Location(templates::view("{C_default_http_host}".Route::get("news")->uri(array('view' => $altName))), 5, false, 302);
 				templates::assign_vars(array("title" => "{L_complited_add}", "descr" => "{L_complited_view}", "action" => "done"));
 				$tpl = templates::completed_assign_vars("ainfo");
 				templates::completed($tpl);
@@ -127,7 +127,7 @@ class page {
 				}
 				$link = trim(Saves::SaveOld($model->alt_name, true));
 				cache::Delete(ToTranslit($link));
-				location("{C_default_http_host}".Route::get("news")->uri(array('view' => $link)), 5, false);
+				HTTP::Location(templates::view("{C_default_http_host}".Route::get("news")->uri(array('view' => $link))), 5, false, 302);
 				templates::assign_vars(array("title" => "{L_complited_add}", "descr" => "{L_complited_view}", "action" => "done"));
 				$tpl = templates::completed_assign_vars("ainfo");
 				templates::completed($tpl);

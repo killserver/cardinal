@@ -32,22 +32,22 @@ class page {
 		if(defined("WITHOUT_DB")) {
 			return false;
 		}
-		$ref = getenv("HTTP_REFERER");
+		$ref = HTTP::getServer("HTTP_REFERER");
 		if(!empty($ref)) {
-			$referer = str_replace("http://".getenv("SERVER_NAME"), "", $ref);
+			$referer = str_replace("http://".HTTP::getServer("SERVER_NAME"), "", $ref);
 		} else {
 			$referer = "{C_default_http_local}";
 		}
 		if(isset($_GET['out'])) {
 			if(!User::checkLogin()) {
-				location($referer);
+				HTTP::Location(templates::view($referer), 0, true, 302);
 				return false;
 			}
 			User::logout();
-			location($referer);
+			HTTP::Location(templates::view($referer), 0, true, 302);
 		} else {
 			if(User::checkLogin()) {
-				location($referer, 3, false);
+				HTTP::Location(templates::view($referer), 3, false, 302);
 				templates::error("{L_login[authorized]}");
 				return false;
 			}
@@ -55,15 +55,15 @@ class page {
 			$pass = Saves::SaveOld(Arr::get($_POST, 'login_password'));
 			$login = User::login($name, $pass);
 			if($login===1) {
-				location($referer, 3, false);
+				HTTP::Location(templates::view($referer), 3, false, 302);
 				templates::error("{L_login[notFound]}");
 				return false;
 			} else if($login===2) {
-				location($referer, 3, false);
+				HTTP::Location(templates::view($referer), 3, false, 302);
 				templates::error("{L_login[notCorrect]}");
 				return false;
 			}
-			location($referer, 3, false);
+			HTTP::Location(templates::view($referer), 3, false, 302);
 			templates::error("{L_login[correct]}");
 			return false;
 		}

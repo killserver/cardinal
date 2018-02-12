@@ -30,19 +30,4 @@ function or_create_pass($pass) {
 return md5(md5($pass).$pass);
 }
 
-//ToDo: Надо с этой функцией что-то делать... она баластом в движке валяется
-function user_link($user_link, $user = "", $type = "", $added = "") {
-	if(empty($user_link)) {
-		$user_link = "404";
-	}
-	if(empty($type)) {
-		return "{C_default_http_host}user/".$user_link;
-	} elseif($type == "href" && !empty($user)) {
-		return "<a href=\"{C_default_http_host}user/".$user_link."\">".$user."</a>";
-	} elseif($type == "user" && !empty($user)) {
-		return $user;
-	}
-return "";
-}
-
 ?>
