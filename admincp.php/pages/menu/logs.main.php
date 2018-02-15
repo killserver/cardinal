@@ -1,6 +1,6 @@
 <?php
 $links['logs']["cat"][] = array(
-'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Logs",
+'link' => "#",
 'title' => "{L_Logs}",
 'type' => "cat",
 'access' => userlevel::get("logs"),

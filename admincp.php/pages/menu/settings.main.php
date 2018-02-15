@@ -1,6 +1,6 @@
 <?php
 $links['Settings']["cat"][] = array(
-'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Settings",
+'link' => "#",
 'title' => "{L_Settings}",
 'type' => "cat",
 'access' => userlevel::get("settings"),

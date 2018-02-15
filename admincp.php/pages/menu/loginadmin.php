@@ -1,6 +1,6 @@
 <?php
 $links['loginadmin']["cat"][] = array(
-'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=logInAdmin",
+'link' => "#",
 'title' => "{L_logInAdmin}",
 'type' => "cat",
 'access' => userlevel::get("loginadmin"),

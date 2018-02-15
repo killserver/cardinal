@@ -1,6 +1,6 @@
 <?php
 $links['languages']["cat"][] = array(
-	'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Languages&page=main",
+	'link' => "#",
 	'title' => "{L_Languages}",
 	'type' => "cat",
 	'access' => userlevel::get("languages"),

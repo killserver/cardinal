@@ -1,6 +1,6 @@
 <?php
 $links['editor']["cat"][] = array(
-'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Editor",
+'link' => "#",
 'title' => "{L_Editor}",
 'type' => "cat",
 'access' => userlevel::get("editor"),

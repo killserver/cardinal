@@ -1,6 +1,6 @@
 <?php
 $links['phpinfo']["cat"][] = array(
-'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Phpinfo",
+'link' => "#",
 'title' => "PhpInfo",
 'type' => "cat",
 'access' => userlevel::get("phpinfo"),

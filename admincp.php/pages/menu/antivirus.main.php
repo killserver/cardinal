@@ -1,6 +1,6 @@
 <?php
 $links['Antivirus']["cat"][] = array(
-'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Antivirus",
+'link' => "#",
 'title' => "{L_Antivirus}",
 'type' => "cat",
 'access' => userlevel::get("antivirus") && is_writable(PATH_CACHE_SYSTEM.DS),

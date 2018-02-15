@@ -5,7 +5,7 @@ class cardinalEvent {
 	private static $pageNow = "";
 	private static $collection = array();
 	
-	public static function addListener($page, $func) {
+	public static function addListener($page, $func, $data = "") {
 		if(is_array($func) && is_callable($func)) {
 			if(!isset(self::$collection[$page])) {
 				self::$collection[$page] = array();

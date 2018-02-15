@@ -1,6 +1,6 @@
 <?php
 $links['Yui']["cat"][] = array(
-'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Yui",
+'link' => "#",
 'title' => "{L_\"Администрирование Yui\"}",
 'type' => "cat",
 'access' => userlevel::get("yui_admin"),
