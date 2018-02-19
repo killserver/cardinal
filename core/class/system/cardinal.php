@@ -167,29 +167,6 @@ class cardinal {
 			// Set the session cookie to timout
 			ini_set("session.cookie_lifetime", $timeout);
 
-			// Change the save path. Sessions stored in teh same path
-			// all share the same lifetime; the lowest lifetime will be
-			// used for all. Therefore, for this to work, the session
-			// must be stored in a directory where only sessions sharing
-			// it's lifetime are. Best to just dynamically create on.
-			$path = ini_get("session.save_path");
-			if(!empty($path)) {
-				$path .= DS."session_".substr($timeout, 0, 5)."sec";
-				if(!file_exists($path)) {
-					if(!@mkdir($path, 0777)) {
-						header("HTTP/1.0 520 Unknown Error");
-						trigger_error("Failed to create session save path directory '".$path."'. Check permissions.", E_USER_ERROR);
-						die();
-					}
-				}
-				if(!is_writable(session_save_path())) {
-					header("HTTP/1.0 520 Unknown Error");
-					trigger_error('Session path "'.session_save_path().'" is not writable for PHP!', E_USER_ERROR);
-					die();
-				}
-				ini_set("session.save_path", $path);
-			}
-
 			// Set the chance to trigger the garbage collection.
 			ini_set("session.gc_probability", $probability);
 			ini_set("session.gc_divisor", 100); // Should always be 100

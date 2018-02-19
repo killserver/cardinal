@@ -1,17 +1,19 @@
-<div class="col-md-12">
-	<a id="core-cardinal" class="btn btn-[if {is_download}==0]red download[/if {is_download}==0][if {is_download}==1]success install[/if {is_download}==1] btn-icon btn-icon-standalone btn-lg [if {is_locked}==1]locked[/if {is_locked}==1]">
-		<i class="fa-download"></i>
-		<span>[if {is_download}==0]{L_download}[/if {is_download}==0][if {is_download}==1]{L_install}[/if {is_download}==1] {L_new_versions} [{new_version}]</span>
-	</a>
-	<div class="progress progress-striped active">
-		<div class="progress-bar progress-bar-success" style="width:0%;"></div>
-	</div>
-	<div class="col-sm-12">
-		<div class="panel panel-default">
-			<div class="panel-title">{L_list_changelog}</div>
-			<div class="panel-body">
-				<div class="scrollable" data-max-height="200">
-					{changelog}
+<div class="row">
+	<div class="col-md-12">
+		<a id="core-cardinal" class="btn btn-[if {is_download}==0]red download[/if {is_download}==0][if {is_download}==1]success install[/if {is_download}==1] btn-icon btn-icon-standalone btn-lg [if {is_locked}==1]locked[/if {is_locked}==1]">
+			<i class="fa-download"></i>
+			<span>[if {is_download}==0]{L_download}[/if {is_download}==0][if {is_download}==1]{L_install}[/if {is_download}==1] {L_new_versions} [{new_version}]</span>
+		</a>
+		<div class="progress progress-striped active">
+			<div class="progress-bar progress-bar-success" style="width:0%;"></div>
+		</div>
+		<div class="col-sm-12">
+			<div class="panel panel-default">
+				<div class="panel-title">{L_list_changelog}</div>
+				<div class="panel-body">
+					<div class="scrollable" data-max-height="200">
+						{changelog}
+					</div>
 				</div>
 			</div>
 		</div>
@@ -24,7 +26,7 @@ function rebuild() {
 		NProgress.inc();
 		setTimeout(function() {
 			jQuery.ajax({
-				url: "{C_default_http_host}admincp.php/?pages=Updaters&download",
+				url: "{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Updaters&download",
 			}).done(function(data) {
 				var opts = {
 					"closeButton": true,
@@ -71,7 +73,7 @@ function rebuild() {
 		NProgress.inc();
 		setTimeout(function() {
 			jQuery.ajax({
-				url: "{C_default_http_host}admincp.php/?pages=Updaters&install",
+				url: "{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Updaters&install",
 			}).done(function(data) {
 				var opts = {
 					"closeButton": true,
@@ -192,4 +194,4 @@ jQuery(document).ready(function() {
   100% { transform: rotate(360deg); }
 }
 </style>
-<script type="text/javascript" src="assets/xenon/js/nprogress.js"></script>
+<script type="text/javascript" src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/nprogress.js"></script>

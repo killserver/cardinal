@@ -667,7 +667,7 @@ class PHPMailer
      *
      * @var string
      */
-    const VERSION = '6.0.2';
+    const VERSION = '6.0.3';
 
     /**
      * Error severity: message only, continue processing.
@@ -3875,6 +3875,7 @@ class PHPMailer
             'midi' => 'audio/midi',
             'mp2' => 'audio/mpeg',
             'mp3' => 'audio/mpeg',
+            'm4a' => 'audio/mp4',
             'mpga' => 'audio/mpeg',
             'aif' => 'audio/x-aiff',
             'aifc' => 'audio/x-aiff',
@@ -3884,6 +3885,7 @@ class PHPMailer
             'rpm' => 'audio/x-pn-realaudio-plugin',
             'ra' => 'audio/x-realaudio',
             'wav' => 'audio/x-wav',
+            'mka' => 'audio/x-matroska',
             'bmp' => 'image/bmp',
             'gif' => 'image/gif',
             'jpeg' => 'image/jpeg',
@@ -3892,6 +3894,11 @@ class PHPMailer
             'png' => 'image/png',
             'tiff' => 'image/tiff',
             'tif' => 'image/tiff',
+            'webp' => 'image/webp',
+            'heif' => 'image/heif',
+            'heifs' => 'image/heif-sequence',
+            'heic' => 'image/heic',
+            'heics' => 'image/heic-sequence',
             'eml' => 'message/rfc822',
             'css' => 'text/css',
             'html' => 'text/html',
@@ -3907,17 +3914,23 @@ class PHPMailer
             'ics' => 'text/calendar',
             'xml' => 'text/xml',
             'xsl' => 'text/xml',
+            'wmv' => 'video/x-ms-wmv',
             'mpeg' => 'video/mpeg',
             'mpe' => 'video/mpeg',
             'mpg' => 'video/mpeg',
+            'mp4' => 'video/mp4',
+            'm4v' => 'video/mp4',
             'mov' => 'video/quicktime',
             'qt' => 'video/quicktime',
             'rv' => 'video/vnd.rn-realvideo',
             'avi' => 'video/x-msvideo',
             'movie' => 'video/x-sgi-movie',
+            'webm' => 'video/webm',
+            'mkv' => 'video/x-matroska',
         );
-        if (array_key_exists(strtolower($ext), $mimes)) {
-            return $mimes[strtolower($ext)];
+        $ext = strtolower($ext);
+        if (array_key_exists($ext, $mimes)) {
+            return $mimes[$ext];
         }
 
         return 'application/octet-stream';
@@ -4047,7 +4060,7 @@ class PHPMailer
         // Normalise to \n
         $text = str_replace(array("\r\n", "\r"), "\n", $text);
         // Now convert LE as needed
-        if ("\n" !== static::$LE) {
+        if ("\n" !== $breaktype) {
             $text = str_replace("\n", $breaktype, $text);
         }
 
@@ -4152,6 +4165,7 @@ class PHPMailer
     /**
      * Generate a DKIM canonicalization header.
      * Uses the 'relaxed' algorithm from RFC6376 section 3.4.2.
+     * Canonicalized headers should *always* use CRLF, regardless of mailer setting.
      *
      * @see    https://tools.ietf.org/html/rfc6376#section-3.4.2
      *
@@ -4187,12 +4201,13 @@ class PHPMailer
             $lines[$key] = trim($heading, " \t") . ':' . trim($value, " \t");
         }
 
-        return implode(static::$LE, $lines);
+        return implode("\r\n", $lines);
     }
 
     /**
      * Generate a DKIM canonicalization body.
      * Uses the 'simple' algorithm from RFC6376 section 3.4.3.
+     * Canonicalized bodies should *always* use CRLF, regardless of mailer setting.
      *
      * @see    https://tools.ietf.org/html/rfc6376#section-3.4.3
      *
@@ -4203,13 +4218,13 @@ class PHPMailer
     public function DKIM_BodyC($body)
     {
         if (empty($body)) {
-            return static::$LE;
+            return "\r\n";
         }
-        // Normalize line endings
-        $body = static::normalizeBreaks($body);
+        // Normalize line endings to CRLF
+        $body = static::normalizeBreaks($body, "\r\n");
 
         //Reduce multiple trailing line breaks to a single one
-        return rtrim($body, "\r\n") . static::$LE;
+        return rtrim($body, "\r\n") . "\r\n";
     }
 
     /**

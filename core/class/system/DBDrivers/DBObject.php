@@ -26,7 +26,7 @@ class DBObject implements ArrayAccess {
 	private $Attributes = array();
 	private $selectAdd = array();
 	private $setAttrFor = array();
-	private $allowEmptyAttr = false;
+	private $allowEmptyAttr = true;
 	private $pseudoFields = array();
 	private $multiple = false;
 	private static $usedCache = false;
@@ -46,7 +46,7 @@ class DBObject implements ArrayAccess {
 		$th->Attributes = array();
 		$th->selectAdd = array();
 		$th->setAttrFor = array();
-		$th->allowEmptyAttr = false;
+		$th->allowEmptyAttr = true;
 		$th->pseudoFields = array();
 		$th->multiple = false;
 		$th->listAdd = array();
