@@ -110,7 +110,7 @@ class db_mysqli extends DriverParam implements drivers {
 						echo ("Connect to database in not exists, server database is not exists");
 						break;
 					default:
-						echo ("[".$this->mc->connect_errno."]: ".$this->mc->connect_errno);
+						echo ("[".$this->mc->connect_errno."]: ".$this->mc->connect_error);
 						break;
 				}
 				die();
