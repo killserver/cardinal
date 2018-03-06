@@ -133,7 +133,7 @@ class templates {
 			$phpEx = PHP_EX;
 		}
 		if(file_exists(PATH_SKINS.self::$skins.DS."functions.".$phpEx)) {
-			include(PATH_SKINS.self::$skins.DS."functions.".$phpEx);
+			include_once(PATH_SKINS.self::$skins.DS."functions.".$phpEx);
 		}
 	}
 
@@ -2361,7 +2361,7 @@ if(!$test) {
 			$phpEx = PHP_EX;
 		}
 		if(file_exists(PATH_SKINS.self::$skins.DS."functions.".$phpEx)) {
-			include(PATH_SKINS.self::$skins.DS."functions.".$phpEx);
+			include_once(PATH_SKINS.self::$skins.DS."functions.".$phpEx);
 		}
 		if(file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."lang".DS."tpl.".ROOT_EX)) {
 			include_once(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."lang".DS."tpl.".ROOT_EX);

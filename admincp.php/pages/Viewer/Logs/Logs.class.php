@@ -28,6 +28,7 @@ class Logs extends Core {
 	function __construct() {
 		if(isset($_GET['delete'])) {
 			$this->Delete();
+			cardinal::RegAction("Очистка логов ошибок на сервере");
 			location("./?pages=Logs");
 			die();
 		}

@@ -62,12 +62,17 @@ if(strpos(CLOSE_FUNCTION, "set_time_limit")===false) {
 	set_time_limit(0);
 }
 if(version_compare(PHP_VERSION, '5.3', '<')) {
-	ini_set('zend.ze1_compatibility_mode', 0);
-	set_magic_quotes_runtime(0);
-	ini_set('magic_quotes_gpc', 0);
-	ini_set('magic_quotes_sybase', 0);
-	ini_set('magic_quotes_runtime', 0);
+	@ini_set('zend.ze1_compatibility_mode', 0);
+	@set_magic_quotes_runtime(0);
+	@ini_set('magic_quotes_gpc', 0);
+	@ini_set('magic_quotes_sybase', 0);
+	@ini_set('magic_quotes_runtime', 0);
 }
+@ini_set('mbstring.func_overload', 4);
+@ini_set('upload_max_filesize', '200M');
+@ini_set('post_max_size', '200M');
+@ini_set('max_file_uploads', '80');
+@ini_set('scream.enabled', false);
 
 $manifest = array(
 	"before_ini_class" => array(), //configuration pages and modules before load
@@ -107,10 +112,6 @@ if(function_exists("ob_implicit_flush")) {
 	$manifest['gzip'] = true;
 }
 
-//define("NOT_DIE", true);
-
-ini_set('scream.enabled', false);
-
 $targets = array('PHP_SELF', 'HTTP_USER_AGENT', 'HTTP_REFERER', 'QUERY_STRING', 'REQUEST_URI', 'PATH_INFO');
 foreach($targets as $target) {
 	if(isset($_SERVER[$target]) && substr($_SERVER[$target], -5)=="debug") {
@@ -118,18 +119,18 @@ foreach($targets as $target) {
 	}
 }
 if(defined("DEBUG") || isset($_GET['debug']) || isset($_COOKIE['cardinal_debug'])) {
-	ini_set('display_errors', 1);
-	ini_set('html_errors', true);
+	@ini_set('display_errors', 1);
+	@ini_set('html_errors', true);
+	@ini_set('error_reporting', E_ALL);
 	error_reporting(E_ALL);
-	ini_set('error_reporting', E_ALL);
 	if(!defined("DEBUG_ACTIVATED")) {
 		define("DEBUG_ACTIVATED", true);
 	}
 } else {
 	error_reporting(E_ALL ^ E_WARNING ^ E_DEPRECATED ^ E_NOTICE);
-	ini_set('error_reporting', E_ALL ^ E_WARNING ^ E_DEPRECATED ^ E_NOTICE);
-	ini_set('display_errors', true);
-	ini_set('html_errors', false);
+	@ini_set('error_reporting', E_ALL ^ E_WARNING ^ E_DEPRECATED ^ E_NOTICE);
+	@ini_set('display_errors', true);
+	@ini_set('html_errors', false);
 }
 
 if(!defined('PHP_VERSION_ID')) {
@@ -181,6 +182,20 @@ if(!defined("ROOT_EX") && strpos($phpEx, '/') === false) {
 	define("ROOT_EX", $phpEx);
 }
 if(file_exists(ROOT_PATH."core".DS."modules".DS)) {
+	if(file_exists(ROOT_PATH."core".DS."modules".DS."loader.default.".ROOT_EX)) {
+		$file = file_get_contents(ROOT_PATH."core".DS."modules".DS."loader.default.".ROOT_EX);
+		$file = str_replace('"core\\', '"application".DS."', $file);
+		$file = str_replace('"core/', '"application".DS."', $file);
+		$file = str_replace('"core".DS', '"application".DS', $file);
+		file_put_contents(ROOT_PATH."core".DS."modules".DS."loader.default.".ROOT_EX, $file);
+	}
+	if(file_exists(ROOT_PATH."core".DS."modules".DS."loader.".ROOT_EX)) {
+		$file = file_get_contents(ROOT_PATH."core".DS."modules".DS."loader.".ROOT_EX);
+		$file = str_replace('"core\\', '"application".DS."', $file);
+		$file = str_replace('"core/', '"application".DS."', $file);
+		$file = str_replace('"core".DS', '"application".DS', $file);
+		file_put_contents(ROOT_PATH."core".DS."modules".DS."loader.".ROOT_EX, $file);
+	}
 	if(!file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."application.lock")) {
 		function rrmdirModules($dir) {
 			if(is_dir($dir)) {

@@ -454,6 +454,7 @@ class modules {
 
 	final public static function get_user($get) {
 	global $user;
+		User::PathUsers(PATH_CACHE_SYSTEM);
 		$user = User::load();
 		if(in_array($get, self::$access_user)) {
 			if(isset($user[$get])) {
@@ -490,6 +491,11 @@ class modules {
 
 	final public static function manifest_set($select, $set, $args = array()) {
 	global $manifest;
+		$isArr = is_array($set);
+		if($isArr) {
+			$isArr = current($set);
+			$isArr = is_array($isArr);
+		}
 		if(sizeof($args)>0) {
 			$set = array("set" => $set, "args" => $args);
 		}
@@ -500,16 +506,16 @@ class modules {
 			if(!isset($manifest[$select[0]][$select[1]])) {
 				$manifest[$select[0]][$select[1]] = array();
 			}
-			$manifest[$select[0]][$select[1]][$select[2]] = $set;
+			$manifest[$select[0]][$select[1]][$select[2]] = ($isArr ? array_merge($manifest[$select[0]][$select[1]][$select[2]], $set) : $set);
 		} elseif(is_array($select) && sizeof($select)==2) {
 			if(!isset($manifest[$select[0]])) {
 				$manifest[$select[0]] = array();
 			}
-			$manifest[$select[0]][$select[1]] = $set;
+			$manifest[$select[0]][$select[1]] = ($isArr ? array_merge($manifest[$select[0]][$select[1]], $set) : $set);
 		} elseif(is_array($select) && sizeof($select)==1) {
-			$manifest[$select[0]] = $set;
+			$manifest[$select[0]] = ($isArr ? array_merge($manifest[$select[0]], $set) : $set);
 		} else {
-			$manifest[$select] = $set;
+			$manifest[$select] = ($isArr ? array_merge($manifest[$select], $set) : $set);
 		}
 	return $manifest;
 	}

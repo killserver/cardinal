@@ -18,6 +18,7 @@ class Yui extends Core {
 					$data = $arr;
 				}
 			}
+			cardinal::RegAction("Обновлены инструкции для помощи пользователям в разделе YUI");
 			Debug::activShow(false);
 			templates::$gzip=false;
 			echo json_encode($data);

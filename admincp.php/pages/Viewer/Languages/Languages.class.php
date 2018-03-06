@@ -55,6 +55,7 @@ class Languages extends Core {
 		$langs = $orLang;
 		if(Arr::get($_GET, "saveAPI", false)) {
 			config::Update("apiKeyTranslate", Arr::get($_POST, "key", false));
+			cardinal::RegAction("Сохранён новый ключ для перевода в разделе языковой панели");
 			return;
 		}
 		if(Arr::get($_GET, "page", false)) {
@@ -130,6 +131,7 @@ class Languages extends Core {
 				$v = $this->translate($v, $newLang, $orLang);
 				lang::Update($newLang, $k, $v);
 			}
+			cardinal::RegAction("Создан новый язык \"".$newlang."\" в разделе языковой панели");
 			return true;
 		}
 		if(Arr::get($_GET, 'lang', false)) {
@@ -143,6 +145,7 @@ class Languages extends Core {
 		if(Arr::get($_GET, 'saveLang', false)) {
 			callAjax();
 			if(Arr::get($_POST, 'orLang', false) && Arr::get($_POST, 'translate', false) && lang::Update($langs, rawurldecode(Arr::get($_POST, 'orLang')), rawurldecode(Arr::get($_POST, 'translate')))) {
+				cardinal::RegAction("Сохранён перевод для языка \"".Arr::get($_GET, 'lang', $orLang)."\" в разделе языковой панели");
 				$ret = "1";
 			} else {
 				$ret = "0";
@@ -153,6 +156,7 @@ class Languages extends Core {
 		if(Arr::get($_GET, 'resetLang', false)) {
 			callAjax();
 			if(Arr::get($_POST, 'orLang', false) && lang::LangReset($langs, rawurldecode(Arr::get($_POST, 'orLang')))) {
+				cardinal::RegAction("Сброшен перевод для языка \"".Arr::get($_GET, 'lang', $orLang)."\" в разделе языковой панели");
 				$ret = "1";
 			} else {
 				$ret = "0";

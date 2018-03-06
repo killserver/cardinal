@@ -345,6 +345,8 @@ class Core {
 				if(sizeof($datas['item'])>1) {
 					$type = "cat";
 				} else {
+					$datas['item'][0]['icon'] = (isset($datas['cat'][0]['icon']) ? $datas['cat'][0]['icon'] : "");
+					$datas['cat'] = $datas['item'];
 					unset($datas['item']);
 					$type = "item";
 				}

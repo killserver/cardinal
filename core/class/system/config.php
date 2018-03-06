@@ -240,7 +240,7 @@ class config implements ArrayAccess {
 
 	final public static function Update($name, $data = "") {
 		if(defined("WITHOUT_DB") || !class_exists("db") || !method_exists("db", "connected") || !db::connected()) {
-			if(strpos($data, ".")!==false) {
+			/*if(strpos($data, ".")!==false) {
 				$exp = explode(".", $data);
 				if(sizeof($exp)==3) {
 					return self::initWithoutDB("edit", $name, $exp[0], $exp[1], $exp[2]);
@@ -249,9 +249,9 @@ class config implements ArrayAccess {
 				} else {
 					return self::initWithoutDB("edit", $name, $exp[0]);
 				}
-			} else {
+			} else {*/
 				return self::initWithoutDB("edit", $name, $data);
-			}
+			/*}*/
 		}
 		db::doquery("REPLACE INTO {{config}} SET `config_value` = \"".$data."\", `config_name` = \"".$name."\"");
 		cache::Delete("config");

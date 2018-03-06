@@ -54,7 +54,7 @@ global $user, $manifest;
 		$all = array_values($all);
 		if($all) {
 			for($i=0;$i<sizeof($all);$i++) {
-				$l = (isset($all[$i]['url']) ? $all[$i]['url'] : current($all[$i]));
+				$l = (isset($all[$i]['url']) ? $all[$i]['url'] : (is_array($all[$i]) ? current($all[$i]) : $all[$i]));
 				$sRet .= "<script type=\"text/javascript\" src=\"".$l.AmperOr($l).time()."\"".(isset($all[$i]['defer']) && $all[$i]['defer']==true ? " defer=\"defer\"" : "")."></script>\n";
 			}
 		}
@@ -64,14 +64,9 @@ global $user, $manifest;
 		$all = array_values($all);
 		if($all) {
 			for($i=0;$i<sizeof($all);$i++) {
-				$l = (isset($all[$i]['url']) ? $all[$i]['url'] : current($all[$i]));
+				$l = (isset($all[$i]['url']) ? $all[$i]['url'] : (is_array($all[$i]) ? current($all[$i]) : $all[$i]));
 				$sRet .= "<script type=\"text/javascript\"".(isset($all[$i]['defer']) && $all[$i]['defer']==true ? " defer=\"defer\"" : "").">".$l."</script>\n";
 			}
-		}
-	}
-	if(isset($js_list) && is_array($js_list) && sizeof($js_list)>0) {
-		for($i=0;$i<sizeof($js_list);$i++) {
-			$sRet .= "<script type=\"text/javascript\" src=\"".$js_list[$i].AmperOr($js_list[$i]).time()."\" defer=\"defer\"></script>\n";
 		}
 	}
 	$all = modules::manifest_get(array("create_css", "full"));
@@ -79,7 +74,7 @@ global $user, $manifest;
 		$all = array_values($all);
 		if($all) {
 			for($i=0;$i<sizeof($all);$i++) {
-				$l = (isset($all[$i]['url']) ? $all[$i]['url'] : current($all[$i]));
+				$l = (isset($all[$i]['url']) ? $all[$i]['url'] : (is_array($all[$i]) ? current($all[$i]) : $all[$i]));
 				$sRet .= "<link href=\"".$l.AmperOr($l).time()."\" rel=\"stylesheet\" type=\"text/css\" />\n";
 			}
 		}
@@ -89,7 +84,8 @@ global $user, $manifest;
 		$all = array_values($all);
 		if($all) {
 			for($i=0;$i<sizeof($all);$i++) {
-				$sRet .= "<style type=\"text/css\">".(isset($all[$i]['url']) ? $all[$i]['url'] : current($all[$i]))."</style>\n";
+				$l = (isset($all[$i]['url']) ? $all[$i]['url'] : (is_array($all[$i]) ? current($all[$i]) : $all[$i]));
+				$sRet .= "<style type=\"text/css\">".$l."</style>\n";
 			}
 		}
 	}

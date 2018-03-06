@@ -46,6 +46,16 @@ die();
 				$model->text = serialize($post);
 				cardinal::RegAction("Добавление данных в AText");
 				$model->Insert();
+				$dirCache = (defined("PATH_CACHE") ? PATH_CACHE : ROOT_PATH.'core'.DS.'cache'.DS);
+				$lang = lang::support(true);
+				if(file_exists($dirCache."AText.txt")) {
+					unlink($dirCache."AText.txt");
+				}
+				for($i=0;$i<sizeof($lang);$i++) {
+					if(file_exists($dirCache."AText_".$lang[$i].".txt")) {
+						unlink($dirCache."AText_".$lang[$i].".txt");
+					}
+				}
 				location("{C_default_http_local}{D_ADMINCP_DIRECTORY}?pages=ATextAdmin");
 			break;
 			case "Add":
@@ -80,8 +90,18 @@ die();
 						$model->text = $sel->text;
 					}
 					$model->lang = lang::get_lg();
-					cardinal::RegAction("Редактирование данных в AText. ИД: \"".$viewId."\"");
 					$model->Update();
+					cardinal::RegAction("Редактирование данных в AText. ИД: \"".$viewId."\"");
+					$dirCache = (defined("PATH_CACHE") ? PATH_CACHE : ROOT_PATH.'core'.DS.'cache'.DS);
+					$lang = lang::support(true);
+					if(file_exists($dirCache."AText.txt")) {
+						unlink($dirCache."AText.txt");
+					}
+					for($i=0;$i<sizeof($lang);$i++) {
+						if(file_exists($dirCache."AText_".$lang[$i].".txt")) {
+							unlink($dirCache."AText_".$lang[$i].".txt");
+						}
+					}
 					location("{C_default_http_local}{D_ADMINCP_DIRECTORY}?pages=ATextAdmin");
 				}
 			break;
@@ -111,8 +131,18 @@ die();
 					$first = $sel->getFirst();
 					$sel = $sel->getArray();
 					if(is_array($sel) && Arr::get($sel, $first, false)) {
-						cardinal::RegAction("Удаление данных в AText. ИД: \"".$viewId."\"");
 						$model->Deletes();
+						cardinal::RegAction("Удаление данных в AText. ИД: \"".$viewId."\"");
+						$dirCache = (defined("PATH_CACHE") ? PATH_CACHE : ROOT_PATH.'core'.DS.'cache'.DS);
+						$lang = lang::support(true);
+						if(file_exists($dirCache."AText.txt")) {
+							unlink($dirCache."AText.txt");
+						}
+						for($i=0;$i<sizeof($lang);$i++) {
+							if(file_exists($dirCache."AText_".$lang[$i].".txt")) {
+								unlink($dirCache."AText_".$lang[$i].".txt");
+							}
+						}
 						location("{C_default_http_local}{D_ADMINCP_DIRECTORY}?pages=ATextAdmin");
 					}
 				}

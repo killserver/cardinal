@@ -43,7 +43,7 @@ class User {
 			}
 		} else {
 			$auth = file_get_contents($file);
-			if(is_serialized($auth)) {
+			if(self::is_serialized($auth)) {
 				$auth = unserialize($auth);
 				foreach($auth as $k => $v) {
 					if(!Arr::get($_COOKIE, $k, false)) {
@@ -66,7 +66,7 @@ class User {
 		}
 		if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
 			$file = file_get_contents(self::$path."userList.txt");
-			if(is_serialized($file)) {
+			if(self::is_serialized($file)) {
 				$usersFile = unserialize($file);
 				$users = array_merge($users, $usersFile);
 			}
@@ -100,7 +100,7 @@ class User {
 		}
 		if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
 			$file = file_get_contents(self::$path."userList.txt");
-			if(is_serialized($file)) {
+			if(self::is_serialized($file)) {
 				$usersFile = unserialize($file);
 				$users = array_merge($users, $usersFile);
 			}
@@ -114,6 +114,36 @@ class User {
 			$users = array_merge($users, $uTmp);
 		}
 		return $users;
+	}
+
+	final private static function is_serialized($data) {
+		if(!is_string($data)) {
+			return false;
+		}
+		$data = trim($data);
+		if('N;' == $data) {
+			return true;
+		}
+		if(!preg_match('/^([adObis]):/', $data, $badions)) {
+			return false;
+		}
+		switch($badions[1]) {
+			case 'a':
+			case 'O':
+			case 's':
+				if (preg_match("/^".$badions[1].":[0-9]+:.*[;}]\$/s", $data)) {
+					return true;
+				}
+			break;
+			case 'b':
+			case 'i':
+			case 'd':
+				if(preg_match("/^".$badions[1].":[0-9.E-]+;\$/", $data)) {
+					return true;
+				}
+			break;
+		}
+		return false;
 	}
 	
 	final public static function load() {
@@ -132,7 +162,7 @@ class User {
 		}
 		if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
 			$file = file_get_contents(self::$path."userList.txt");
-			if(is_serialized($file)) {
+			if(self::is_serialized($file)) {
 				$usersFile = unserialize($file);
 				$users = array_merge($users, $usersFile);
 			}
@@ -152,11 +182,7 @@ class User {
 			}
 			if(!cache::Exists("user_".$username)) {
 				$authorize = false;
-				if(defined("IS_ADMIN")) {
-					$passCheck = cardinal::create_pass($password);
-				} else {
-					$passCheck = ($password);
-				}
+				$passCheck = ($password);
 				if($userLoad) {
 					if(isset($users[$username]) && isset($users[$username]['username']) && isset($users[$username][$where]) && $users[$username][$where] == $passCheck) {
 						$user = $users[$username];
@@ -253,7 +279,7 @@ class User {
 		}
 		if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
 			$file = file_get_contents(self::$path."userList.txt");
-			if(is_serialized($file)) {
+			if(self::is_serialized($file)) {
 				$users = array();
 				$usersFile = unserialize($file);
 				$users = array_merge($users, $usersFile);
@@ -297,22 +323,22 @@ class User {
 		$ret = false;
 		switch($type) {
 			case "login":
-				if(is_serialized($html)) {
+				if(self::is_serialized($html)) {
 					$ret = unserialize($html);
 				}
 			break;
 			case "getRow":
-				if(is_serialized($html)) {
+				if(self::is_serialized($html)) {
 					$ret = unserialize($html);
 				}
 			break;
 			case "reg":
-				if(is_serialized($html)) {
+				if(self::is_serialized($html)) {
 					$ret = unserialize($html);
 				}
 			break;
 			case "checkExists":
-				if(is_serialized($html)) {
+				if(self::is_serialized($html)) {
 					$ret = unserialize($html);
 				}
 			break;
@@ -348,7 +374,7 @@ class User {
 			}
 			if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
 				$file = file_get_contents(self::$path."userList.txt");
-				if(is_serialized($file)) {
+				if(self::is_serialized($file)) {
 					$usersFile = unserialize($file);
 					$users = array_merge($users, $usersFile);
 				}
@@ -379,7 +405,7 @@ class User {
 		if(defined("IS_ADMIN")) {
 			$passCheck = cardinal::create_pass($pass);
 		} else {
-			$passCheck = create_pass($pass);
+			$passCheck = self::create_pass($pass);
 		}
 		if($localLogin && ($row[$where] != $passCheck && (isset($row['light']) && $row['light'] != $pass))) {
 			return 2;
@@ -431,7 +457,7 @@ class User {
 			$users = array();
 			if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
 				$file = file_get_contents(self::$path."userList.txt");
-				if(is_serialized($file)) {
+				if(self::is_serialized($file)) {
 					$usersFile = unserialize($file);
 					$users = array_merge($users, $usersFile);
 				}
@@ -503,7 +529,7 @@ class User {
 			}
 			if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
 				$file = file_get_contents(self::$path."userList.txt");
-				if(is_serialized($file)) {
+				if(self::is_serialized($file)) {
 					$usersFile = unserialize($file);
 					$users = array_merge($users, $usersFile);
 				}
@@ -548,7 +574,7 @@ class User {
 			$users = array();
 			if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
 				$file = file_get_contents(self::$path."userList.txt");
-				if(is_serialized($file)) {
+				if(self::is_serialized($file)) {
 					$usersFile = unserialize($file);
 					$users = array_merge($users, $usersFile);
 				}
@@ -583,7 +609,7 @@ class User {
 			$users = array();
 			if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
 				$file = file_get_contents(self::$path."userList.txt");
-				if(is_serialized($file)) {
+				if(self::is_serialized($file)) {
 					$usersFile = unserialize($file);
 					$users = array_merge($users, $usersFile);
 				}

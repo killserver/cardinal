@@ -51,9 +51,9 @@ if(typeof(editorTextarea)!="object") {
 		valid_elements : "*[*]",
 		forced_root_block : '',
 		image_advtab: true, 
-		external_filemanager_path: default_admin_link+"assets/xenon/js/tinymce/filemanager/",
+		external_filemanager_path: default_admin_link+"assets/tinymce/filemanager/",
 		filemanager_title: "{L_"Загрузка файлов"}", 
-		external_plugins: { "filemanager" : default_admin_link+"assets/xenon/js/tinymce/filemanager/plugin.min.js"}
+		external_plugins: { "filemanager" : default_admin_link+"assets/tinymce/filemanager/plugin.min.js"}
 	}
 }
 var template = jQuery("#descr").html();

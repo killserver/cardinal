@@ -33,6 +33,7 @@ class Main_Cache extends Main {
 			}
 			Debug::activShow(false);
 			templates::$gzip=false;
+			cardinal::RegAction("Очистка кеша шаблонов");
 			echo "Done";
 			die();
 		}
@@ -51,6 +52,7 @@ class Main_Cache extends Main {
 					unlink($path.$files[$i]);
 				}
 			}
+			cardinal::RegAction("Очистка кеша данных");
 			Debug::activShow(false);
 			templates::$gzip=false;
 			echo "Done";

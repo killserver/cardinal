@@ -12,6 +12,7 @@ class SEO extends Core {
 				$_POST['meta'] = array_values($_POST['meta']);
 			}
 			config::Update("configMetaData", json_encode($_POST));
+			cardinal::RegAction("Обновлены данные раздела СЕО мета-информации");
 			location("./?pages=SEO");
 			return false;
 		}

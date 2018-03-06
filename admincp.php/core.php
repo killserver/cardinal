@@ -6,11 +6,6 @@ define("IS_CORE", true);
 //define("IS_ADMINPANEL", true);
 include_once(dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR."core.php");
 
-/*if(file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."paths.php")) {
-	include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."paths.php");
-} else if(file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."paths.default.php")) {
-	include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."paths.default.php");
-}*/
 $defined = array("Cardinal" => "Cardin");
 
 function ReadPlugins($dir, $page, $include=true) {
@@ -41,7 +36,7 @@ function accessOnDefault($class) {
 	if(in_array($class, array("Core", "Errors"))) {
 		return true;
 	}
-	if(!in_array($class, array("Antivirus", "Archer", "ATextAdmin", "Editor", "LogInAdmin", "Logs", "Login", "Main", "ModuleList", "Phpinfo", "Settings", "Shop", "Users")) && userlevel::get($classCheck)===false) {
+	if(!in_array($class, array("Archer", "Login", "Main")) && userlevel::get($classCheck)===false) {
 		return false;
 	}
 	return true;
@@ -101,7 +96,6 @@ if(class_exists($view)) {
 	if($load) {
 		if(method_exists(''.$view, 'start')) {
 			call_user_func(array(&$view, "start"));
-			//defines::init();
 		}
 		new $view();
 	} else {
