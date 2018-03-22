@@ -580,7 +580,11 @@ class User {
 				}
 			}
 			if(!isset($list[0]) || !isset($list[0]['username'])) {
-				header("HTTP/1.0 520 Unknown Error");
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Error username is not set", 1);
 				die();
 			}

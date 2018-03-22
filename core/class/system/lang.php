@@ -251,7 +251,18 @@ class lang implements ArrayAccess {
 			} else {
 				return false;
 			}
+		} else if($type=="remove") {
+			$fileLang = array();
+			if(file_exists($dirLangs."lang".$lang.".db") && is_readable($dirLangs."lang".$lang.".db")) {
+				unlink($dirLangs."lang".$lang.".db");
+				return true;
+			}
+			return false;
 		}
+	}
+
+	final public static function Remove($lang) {
+		return self::merge($lang, "", "", "remove");
 	}
 	
 	final public static function LangReset($lang, $data) {

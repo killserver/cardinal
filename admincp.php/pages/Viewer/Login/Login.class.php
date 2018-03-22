@@ -95,7 +95,7 @@ class Login extends Core {
 				HTTP::set_cookie('is_admin_login', 1, false, false);
 				HTTP::set_cookie('failed-attempts', 0, time()+(5*60), false);
 				HTTP::set_cookie(COOK_ADMIN_USER, $given_username);
-				HTTP::set_cookie(COOK_ADMIN_PASS, $given_password);
+				HTTP::set_cookie(COOK_ADMIN_PASS, $sendPass);
 				$resp['ref'] = Arr::get($_POST, 'ref', "./?pages=main");
 			} else {
 				cardinal::RegAction("Провальная попытка авторизации в админ-панели. Пользователь \"".$given_username."\"");
@@ -118,7 +118,8 @@ class Login extends Core {
 			return;
 		}
 		$echos = "";
-		templates::assign_var("ref", (isset($_GET['ref']) && !empty($_GET['ref']) && strpos($_GET['ref'], "http")===false ? urldecode($_GET['ref']) : "?pages=main"));
+		$link = config::Select("mainPageAdmin");
+		templates::assign_var("ref", (isset($_GET['ref']) && !empty($_GET['ref']) && strpos($_GET['ref'], "http")===false ? urldecode($_GET['ref']) : ($link!==false ? $link : "?pages=main")));
 		if(isset($_COOKIE['is_admin_login']) && !empty($user['username'])) {
 			$echos = templates::view(templates::completed_assign_vars("again_login", null));
 		} else {
@@ -146,6 +147,6 @@ class Login extends Core {
 	}
 
 }
-ReadPlugins(dirname(__FILE__)."/Plugins/", "Login");
+ReadPlugins(dirname(__FILE__).DIRECTORY_SEPARATOR."Plugins".DIRECTORY_SEPARATOR, "Login");
 
 ?>

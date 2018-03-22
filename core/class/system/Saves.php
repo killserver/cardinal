@@ -43,6 +43,13 @@ class Saves {
      * @return string Saved string
      */
     final public static function SaveOld($text, $db = false, $ddb = false) {
+		if(is_array($text)) {
+			$ret = array();
+			foreach($text as $k => $v) {
+				$ret[$k] = self::SaveOld($v, $db, $ddb);
+			}
+			return $ret;
+		}
 		if($ddb) {
 			$text = str_replace('"', '\\\\"', $text);
 		} elseif($db) {
@@ -67,6 +74,13 @@ class Saves {
      * @return string Removed invisible characters
      */
     final public static function remove_invisible_characters($str, $url_encoded = true) {
+		if(is_array($str)) {
+			$ret = array();
+			foreach($str as $k => $v) {
+				$ret[$k] = self::remove_invisible_characters($v, $url_encoded);
+			}
+			return $ret;
+		}
 		$non_displayables = array();
 		// every control character except newline (dec 10),
 		// carriage return (dec 13) and horizontal tab (dec 09)
@@ -108,6 +122,13 @@ class Saves {
      * @return string Saved link
      */
     final public static function SaveAltName($uri) {
+    	if(is_array($uri)) {
+    		$ret = array();
+    		foreach($uri as $k => $v) {
+    			$ret[$k] = self::SaveAltName($v);
+    		}
+    		return $ret;
+    	}
 		$uri = preg_replace("|[^\d\w ]+|i", "", $uri);
 		$str = strip_tags($str);
 		$str = html_entity_decode($str, ENT_QUOTES, 'UTF-8');
@@ -129,6 +150,13 @@ class Saves {
      * @return array|bool|float|int|string Saved data
      */
     final public static function SaveAuto($val, $double_encode = true, $charset = "") {
+    	if(is_array($val)) {
+    		$ret = array();
+    		foreach($val as $k => $v) {
+    			$ret[$k] = self::SaveAuto($v, $double_encode, $charset);
+    		}
+    		return $ret;
+    	}
 		$ret = "";
 		if(is_bool($val)) {
 			$ret = self::SaveBool($val);
@@ -152,6 +180,13 @@ class Saves {
      * @return string Saved data
      */
     final public static function SaveText($val, $double_encode = true, $charset = "") {
+    	if(is_array($val)) {
+    		$ret = array();
+    		foreach($val as $k => $v) {
+    			$ret[$k] = self::SaveText($v, $double_encode, $charset);
+    		}
+    		return $ret;
+    	}
 		$val = preg_replace('#<script[^>]*>.*?</script>#is', "", $val);
 		$val = strip_tags($val);
 		$val = self::html_escape($val, $double_encode, $charset);
@@ -166,6 +201,13 @@ class Saves {
      * @return int Saved data
      */
     final public static function SaveInt($val) {
+		if(is_array($val)) {
+			$ret = array();
+			foreach($val as $k => $v) {
+				$ret[$k] = self::SaveInt($v);
+			}
+			return $ret;
+		}
 		return intval($val);
 	}
 
@@ -175,6 +217,13 @@ class Saves {
      * @return bool Saved data
      */
     final public static function SaveBool($val) {
+		if(is_array($val)) {
+			$ret = array();
+			foreach($val as $k => $v) {
+				$ret[$k] = self::SaveBool($v);
+			}
+			return $ret;
+		}
 		return boolval($val);
 	}
 
@@ -183,7 +232,14 @@ class Saves {
      * @param mixed $val Needed save
      * @return float Saved data
      */
-    final public static function SaveFloat($val) {
+	final public static function SaveFloat($val) {
+		if(is_array($val)) {
+			$ret = array();
+			foreach($val as $k => $v) {
+				$ret[$k] = self::SaveFloat($v);
+			}
+			return $ret;
+		}
 		return floatval($val);
 	}
 
@@ -194,6 +250,13 @@ class Saves {
      * @return string Saved data
      */
     final public static function SaveHtml($val, $delete = false) {
+		if(is_array($val)) {
+			$ret = array();
+			foreach($val as $k => $v) {
+				$ret[$k] = self::SaveHtml($v, $delete);
+			}
+			return $ret;
+		}
 		$val = str_replace("\r\n", "\n", $val);
 		$val = str_replace(array("\"", "<p>&nbsp;</p>", "&nbsp;"), array("\\\"", "<br />", " "), $val);
 		$val = preg_replace('#<p(.+?)> </p>#i', "<br />", $val);
@@ -209,6 +272,13 @@ class Saves {
      * @return string Saved data
      */
     final public static function SaveEscape($val) {
+		if(is_array($val)) {
+			$ret = array();
+			foreach($val as $k => $v) {
+				$ret[$k] = self::SaveEscape($v);
+			}
+			return $ret;
+		}
 		return str_replace(array('\x00', '\n', '\r', '\\', "'", '"', '\x1a'), array('\\x00', '\\n', '\\r', '\\\\', "\'", '\"', '\\x1a'), $val);
 	}
 
@@ -219,6 +289,13 @@ class Saves {
      * @return array|float|int|string Saved data
      */
     final public static function SaveType($val, $type = Saves::SAVEText) {
+		if(is_array($val)) {
+			$ret = array();
+			foreach($val as $k => $v) {
+				$ret[$k] = self::SaveType($v, $type);
+			}
+			return $ret;
+		}
 		$ret = "";
 		switch($type) {
 			case self::SAVEText:

@@ -72,8 +72,13 @@ class userlevel {
 			$specials = array($specials);
 		}
 		if(!is_array($specials)) {
-			header("HTTP/1.0 520 Unknown Error");
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("error levels");
+			die();
 		}
 		if(is_bool($level) || empty($level)) {
 			$level = config::Select("guest_level");

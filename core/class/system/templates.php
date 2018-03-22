@@ -1611,7 +1611,8 @@ if(!$test) {
 		$tpl = self::callback_array("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
 		$tpl = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $tpl);
 		$tpl = self::callback_array("#\{IMG_[\"'](.+?)[\"']\}#", ("templates::imageRes"), $tpl);
-		$tpl = self::callback_array("#\{FN_[\"'](.+?)[\"'],[\"'](.*?)[\"']\}#", "templates::callFn", $tpl);
+		$tpl = self::callback_array("#\{RETINA_[\"'](.+?)[\"'],[\"'](.+?)[\"'](|,[\"'](.+?)[\"'])\}#", ("templates::retinaImg"), $tpl);
+		$tpl = self::callback_array("#\{FN_[\"'](.+?)[\"'](,[\"'](.*?)[\"'])\}#", "templates::callFn", $tpl);
 		if(strpos($tpl, "[clear]") !== false) {
 			foreach($array_use as $name => $val) {
 				unset(self::$blocks[$name]);
@@ -1624,12 +1625,12 @@ if(!$test) {
 
 	final private static function callFn($arr) {
 		if(function_exists($arr[1])) {
-			if(strpos($arr[2], ";")!==false) {
-				$arr[2] = explode(";", $arr[2]);
+			if(strpos($arr[3], ";")!==false) {
+				$arr[3] = explode(";", $arr[3]);
 			} else {
-				$arr[2] = array($arr[2]);
+				$arr[3] = array($arr[3]);
 			}
-			return call_user_func_array($arr[1], $arr[2]);
+			return call_user_func_array($arr[1], $arr[3]);
 		} else {
 			return $arr[0];
 		}
@@ -1681,6 +1682,76 @@ if(!$test) {
 			return self::imageRes(array("", $url));
 		}
 		return $url;
+	}
+
+	final public static function retina($link, $size = array("480", "720", "1020")) {
+		if(!is_array($size)) {
+			switch($size) {
+				case 'small':
+					$size = array("480");
+				break;
+				case 'medium':
+					$size = array("720");
+				break;
+				case 'big':
+					$size = array("1020");
+				break;
+			}
+		}
+		$rets = array();
+		$size = array_unique($size);
+		for($i=0;$i<sizeof($size);$i++) {
+			$rets[$size[$i]] = array("img" => self::imageRes(array("", $link."&width=".$size[$i])), "size" => $size[$i]);
+		}
+		return (sizeof($rets)>0 ? $rets : $ret);
+	}
+
+	final private static function retinaImg($arr) {
+		$link = $arr[1];
+		$size = false;
+		if(isset($arr[4])) {
+			$size = $arr[4];
+		}
+		if(isset($arr[2])) {
+			$type = $arr[2];
+		}
+		$ret = $arr[0];
+		if($size===false) {
+			$ret = self::retina($link);
+		} else {
+			$ret = self::retina($link, $size);
+		}
+		$ret = array_values($ret);
+		$count = sizeof($ret);
+		$center = round($count/2);
+		//$html = ' src="medium.png" srcset=" small.png 480w, medium.png 720w, big.png 1020w " sizes=" (min-width: 1100px) 1020px, (min-width: 720px) 720px, 100vw "';
+		$main = (isset($ret[$center-1]) ? $ret[$center-1] : current($ret));
+		$html = "";
+		if($type=="img") {
+			$html = 'src="{C_default_http_local}'.$main['img'].'"';
+		} elseif($type=="div") {
+			$main = 'background-image:url(\'{C_default_http_local}'.$main['img'].'\')';
+		}
+		$sizes = $srcset = array();
+		$max = 0;
+		for($i=0;$i<$count;$i++) {
+			if($type=="img") {
+				$sizes[$ret[$i]['size']] = "(min-width: ".$ret[$i]['size']."px) ".$ret[$i]['size']."px";
+				$srcset[] = '{C_default_http_local}'.$ret[$i]['img']." ".$ret[$i]['size']."w";
+			} elseif($type=="div") {
+				$max = max($max, $ret[$i]['size']);
+				$srcset[] = "@media(max-width:".$ret[$i]['size']."px){background-image:url('{C_default_http_local}".$ret[$i]['img']."');}";
+			}
+		}
+		krsort($sizes);
+		if(sizeof($srcset)>0) {
+			if($type=="img") {
+				$html .= ' srcset="'.implode(", ", $srcset).'" sizes="'.implode(", ", $sizes).', 100vw"';
+			} elseif($type=="div") {
+				$html .= implode("", $srcset).'@media(min-width:'.$max.'px){background-image:url(\''.$main.'\');}';
+			}
+		}
+		return $html;
 	}
 	
 	final private static function imageRes($arrData) {
@@ -1738,6 +1809,10 @@ if(!$test) {
 		if(!isset($arr['height']) && isset($arr['width'])) {
 			$ratio = $arr['width'] / $size_img[0];
 			$setHeight = $size_img[1] * $ratio;
+		}
+		if(isset($arr['persent']) && $arr['persent']>0 && $arr['persent']<100) {
+			$arr['width'] = ($size_img[0]/100*$arr['persent']);
+			$arr['height'] = ($size_img[1]/100*$arr['persent']);
 		}
 
 		$resizerWidth = $resizeWidth = (isset($arr['width']) ? $arr['width'] : (isset($setWidth) ? $setWidth : $size_img[0]));
@@ -2056,17 +2131,17 @@ if(!$test) {
 		$time = self::time();
 		if(!is_array($header)) {
 			$header = array(
-				"title" => $header,
+				"title" => htmlspecialchars($header),
 				"meta" => array(
 					"og" => array(
-						"title" => $header,
-						"description" => "{L_s_description}",
+						"title" => htmlspecialchars($header),
+						"description" => htmlspecialchars(lang::get_lang("s_description")),
 					),
 					"ogpr" => array(
-						"og:title" => $header,
-						"og:description" => "{L_s_description}",
+						"og:title" => htmlspecialchars($header),
+						"og:description" => htmlspecialchars(lang::get_lang("s_description")),
 					),
-					"description" => "{L_s_description}",
+					"description" => htmlspecialchars(lang::get_lang("s_description")),
 				),
 			);
 		}
@@ -2237,6 +2312,7 @@ if(!$test) {
 			$html = preg_replace('/(<textarea[^>]*?>.*?<\/textarea>)/si', '#textarea'.$i.'#', $html, 1);
 			$i++;
 		}
+		$html = preg_replace('#<!-(.*?)\[(if|endif)(.*?)\](.*?)>#', '<#!-$1[$2$3]$4>', $html);
 		$html = preg_replace('#<!(.*?)\[(if|endif)(.*?)\](.*?)>#', '<#!$1[$2$3]$4>', $html);
 		$html = preg_replace('#<!-[^\[].+?->#s', '', $html);//ToDo: WTF?!
 		while(preg_match('#<\#!(.*?)\[(if|endif)(.*?)\](.*?)>#', $html)) {
@@ -2282,7 +2358,11 @@ if(!$test) {
 	 * @param string $msg Error message
      */
 	final private static function ErrorTemplate($msg, $file) {
-		header("HTTP/1.0 520 Unknown Error");
+		if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+			header("HTTP/1.0 520 Unknown Error");
+		} else {
+			header("HTTP/1.0 404 Not found");
+		}
 		$type = "main";
 		$orFile = $file;
 		if(strpos($file, ADMINCP_DIRECTORY)!==false) {

@@ -53,7 +53,7 @@ class config implements ArrayAccess {
 		if(!isset($configWDB) || !is_array($configWDB)) {
 			$configWDB = array();
 		}
-		$dir = defined("ROOT_PATH") ? PATH_CACHE_SYSTEM : dirname(__FILE__).DIRECTORY_SEPARATOR;
+		$dir = defined("ROOT_PATH") ? PATH_CACHE_USERDATA : dirname(__FILE__).DIRECTORY_SEPARATOR;
 		$filePATH = $dir."configWithoutDB.txt";
 		if($action == "read" && file_exists($filePATH) && is_readable($filePATH)) {
 			$file = file_get_contents($filePATH);

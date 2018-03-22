@@ -697,10 +697,13 @@ class DBObject implements ArrayAccess {
 			throw new Exception("Fields is not set");
 			die();
 		}
+		$forUpdate = array();
 		foreach($arr as $k => $v) {
-			if(!is_string($v)) {
+			if(!is_string($v) && !empty($v)) {
 				throw new Exception("Fields ".$k." is not string");
 				die();
+			} elseif(!empty($v)) {
+				$forUpdate[$k] = $v;
 			}
 		}
 		if(empty($table)) {
@@ -711,8 +714,8 @@ class DBObject implements ArrayAccess {
 		$where = $this->ReleaseWhere($where);
 		$orderBy = $this->ReleaseOrder($orderBy);
 		$limit = $this->ReleaseLimit($limit);
-		$key = array_keys($arr);
-		$val = array_values($arr);
+		$key = array_keys($forUpdate);
+		$val = array_values($forUpdate);
 		$table = $this->addPrefixTable($table);
 		$this->clearCache($table);
 		if(sizeof($this->listAdd)>0) {

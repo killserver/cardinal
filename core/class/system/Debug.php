@@ -1,6 +1,7 @@
 <?php
 if(!defined("IS_CORE")) {
-	die();
+echo "403 ERROR";
+die();
 }
 if(!defined("DEBUG_MODE_ONLY_DEBUG")) {
 	define("DEBUG_MODE_ONLY_DEBUG", 1);

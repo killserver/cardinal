@@ -47,6 +47,23 @@ class Archer extends Core {
 		}
 		switch($page) {
 			/*
+			Quick save data in database
+			*/
+			case "QuickEdit":
+				$model = modules::loadModels("Model".$upFirst, $typeUni);
+				$model->SetTable($typeUni);
+				if($request->get->get("Save", false)) {
+					$id = $request->post->get("pk");
+					$name = $request->post->get("name");
+					$value = $request->post->get("value");
+					$model->SetLimit(1);
+					$model->{$name} = $value;
+					$model->WhereTo("", $id);
+					$model->Update();
+				}
+				return;
+			break;
+			/*
 			Save data in database
 			*/
 			case "TakeAdd":
@@ -154,9 +171,9 @@ class Archer extends Core {
 					$limit = $pager->getLimit();
 					$model->SetLimit($limit[1]);
 					$model->SetOffset($limit[0]);
-					if(!empty($andWhere) && !empty($typeWhere) && !empty($dataWhere)) {
+					if($andWhere!==false && $typeWhere!==false && $dataWhere!==false) {
 						$model->Where($andWhere, $typeWhere, $dataWhere);
-					} else if(!empty($andWhere) && !empty($dataWhere)) {
+					} else if($andWhere!==false && $dataWhere!==false) {
 						$model->Where($andWhere, $dataWhere);
 					}
 					$model->OrderByTo((empty($orderBy) ? $model->getFirst() : $orderBy), ($orderTo ? $orderTo : "ASC"));
@@ -164,9 +181,9 @@ class Archer extends Core {
 				if(isset($_GET['catid'])) {
 					$model->WhereTo("catId", intval($_GET['catid']));
 				}
-				if(!empty($andWhere) && !empty($typeWhere) && !empty($dataWhere)) {
+				if($andWhere!==false && $typeWhere!==false && $dataWhere!==false) {
 					$model->Where($andWhere, $typeWhere, $dataWhere);
-				} else if(!empty($andWhere) && !empty($dataWhere)) {
+				} else if($andWhere!==false && $dataWhere!==false) {
 					$model->Where($andWhere, $dataWhere);
 				}
 				templates::assign_var("LinkOrderBy", (empty($orderBy) ? $model->getFirst() : $orderBy));
@@ -197,4 +214,4 @@ class Archer extends Core {
 	
 }
 
-ReadPlugins(dirname(__FILE__)."/Plugins/", "Archer");
+ReadPlugins(dirname(__FILE__).DIRECTORY_SEPARATOR."Plugins".DIRECTORY_SEPARATOR, "Archer");

@@ -82,7 +82,11 @@ class cardinalError {
 	}
 	
 	final private static function viewOnPage($data) {
-		header("HTTP/1.0 520 Unknown Error");
+		if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+			header("HTTP/1.0 520 Unknown Error");
+		} else {
+			header("HTTP/1.0 404 Not found");
+		}
 		return Debug::viewOnPage($data);
 	}
 	

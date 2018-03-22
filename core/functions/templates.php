@@ -130,8 +130,8 @@ global $seoBlock;
 
 function releaseSeo($meta = array(), $return = false, $clear = true) {
 global $seoBlock;
-	$title = (isset($meta['title']) ? $meta['title'] : (isset($seoBlock['ogp']['title']) ? $seoBlock['ogp']['title'] : (isset($seoBlock['og']['title']) ? $seoBlock['og']['title'] : (isset($seoBlock['main']['title']) ? $seoBlock['main']['title'] : "{L_sitename}"))));
-	$description = (isset($meta['description']) ? $meta['description'] : (isset($seoBlock['ogp']['description']) ? $seoBlock['ogp']['description'] : (isset($seoBlock['og']['description']) ? $seoBlock['og']['description'] : (isset($seoBlock['main']['description']) ? $seoBlock['main']['description'] : "{L_s_description}"))));
+	$title = (isset($meta['title']) ? $meta['title'] : (isset($seoBlock['ogp']['title']) ? $seoBlock['ogp']['title'] : (isset($seoBlock['og']['title']) ? $seoBlock['og']['title'] : (isset($seoBlock['main']['title']) ? $seoBlock['main']['title'] : lang::get_lang("sitename")))));
+	$description = (isset($meta['description']) ? $meta['description'] : (isset($seoBlock['ogp']['description']) ? $seoBlock['ogp']['description'] : (isset($seoBlock['og']['description']) ? $seoBlock['og']['description'] : (isset($seoBlock['main']['description']) ? $seoBlock['main']['description'] : lang::get_lang("s_description")))));
 	$imageCheck = (isset($seoBlock['ogp']['image']) && (file_exists(ROOT_PATH.$seoBlock['ogp']['image']) || file_exists($seoBlock['ogp']['image']) || file_exists(config::Select("default_http_host").$seoBlock['ogp']['image']))) || (isset($seoBlock['main']['image_src']) && (file_exists(ROOT_PATH.$seoBlock['main']['image_src']) || file_exists($seoBlock['main']['image_src']) || file_exists(config::Select("default_http_host").$seoBlock['main']['image_src']))) || file_exists(ROOT_PATH."logo.jpg") || file_exists(ROOT_PATH."logo.png");
 	$type = (isset($seoBlock['ogp']['type']) ? $seoBlock['ogp']['type'] : (isset($seoBlock['og']['type']) ? $seoBlock['og']['type'] : "website"));
 	$link = (isset($meta['canonicalLink']) ? $meta['canonicalLink'] : (isset($meta['link']) ? $meta['link'] : (isset($seoBlock['og']['link']) ? $seoBlock['og']['link'] : (isset($seoBlock['ogp']['link']) ? $seoBlock['ogp']['link'] : (isset($seoBlock['main']['canonical']) ? $seoBlock['main']['canonical'] : (isset($seoBlock['main']['link']) ? $seoBlock['main']['link'] : (isset($seoBlock['main']['url']) ? $seoBlock['main']['url'] : "")))))));
@@ -158,11 +158,12 @@ global $seoBlock;
 			$imageCheck = false;
 		}
 	}
+	$sitename = lang::get_lang("sitename");
 	$ogpr = array(
-		"og:site_name" => "{L_sitename}",
+		"og:site_name" => htmlspecialchars($sitename),
 		"og:url" => "{C_default_http_host}".$link,
-		"og:title" => $title,
-		"og:description" => $description,
+		"og:title" => htmlspecialchars($title),
+		"og:description" => htmlspecialchars($description),
 		"og:type" => $type,
 	);
 	if($imageCheck && !empty($imageLink)) {
@@ -171,8 +172,8 @@ global $seoBlock;
 		));
 	}
 	$og = array(
-		"title" => $title,
-		"description" => $description,
+		"title" => htmlspecialchars($title),
+		"description" => htmlspecialchars($description),
 	);
 	if($imageCheck && !empty($imageLink)) {
 		$og = array_merge($og, array(
@@ -182,9 +183,9 @@ global $seoBlock;
 	$meta = array(
 		"og" => $og,
 		"ogpr" => $ogpr,
-		"title" => $title,
+		"title" => htmlspecialchars($title),
 		"robots" => $robots,
-		"description" => $description,
+		"description" => htmlspecialchars($description),
 	);
 	if(!empty($keywords)) {
 		$meta = array_merge($meta, array(
@@ -236,14 +237,14 @@ function AmperOr($str) {
 
 function headers($array = array(), $clear = false, $no_js = false) {
 	$header = "";
-	if(isset($array['title'])) {
+	if(isset($array['title']) && !empty($array['title'])) {
 		$header .= "\t<title>".$array['title']."</title>\n";
 	} else {
-		$header .= "\t<title>{L_sitename}</title>\n";
+		$header .= "\t<title>".htmlspecialchars(lang::get_lang("sitename"))."</title>\n";
 	}
 	$header .= "<meta name=\"generator\" content=\"Cardinal ".VERSION."\" />\n";
 	$header .= "<meta name=\"author\" content=\"".(isset($array['author']) ? $array['author'] : "Cardinal ".VERSION)."\" />\n";
-	$header .= "<meta name=\"copyright\" content=\"{L_sitename}\" />\n";
+	$header .= "<meta name=\"copyright\" content=\"".htmlspecialchars(lang::get_lang("sitename"))."\" />\n";
 	if(!defined("DEVELOPER_MODE") && (!isset($array['meta']) || !array_key_exists("robots", $array['meta']))) {
 		$header .= "<meta name=\"robots\" content=\"all\" />\n";
 	} elseif(defined("DEVELOPER_MODE")) {
@@ -271,13 +272,13 @@ function headers($array = array(), $clear = false, $no_js = false) {
 		$header .= '<!-- saved from url=(0014)about:internet -->'."\n";
 		$header .= '<meta name="apple-mobile-web-app-capable" content="yes">'."\n";
 		$header .= '<meta name="apple-mobile-web-app-status-barstyle" content="black-translucent">'."\n";
-		$header .= '<meta name="apple-mobile-web-app-title" content="{L_sitename}">'."\n";
+		$header .= '<meta name="apple-mobile-web-app-title" content="'.htmlspecialchars(lang::get_lang("sitename")).'">'."\n";
 		$header .= '<meta name="format-detection" content="telephone=no">'."\n";
 		$header .= '<meta name="format-detection" content="address=no">'."\n";
 		$header .= '<meta name="google" value="notranslate">'."\n";
 		$header .= '<meta name="skype_toolbar" content="skype_toolbar_parser_compatible">'."\n";
 		$header .= '<meta name="msapplication-tap-highlight" content="no">'."\n";
-		$header .= '<meta name="application-name" content="{L_sitename}">'."\n";
+		$header .= '<meta name="application-name" content="'.htmlspecialchars(lang::get_lang("sitename")).'">'."\n";
 		$header .= '<meta name="renderer" content="webkit">'."\n";
 		$header .= '<meta name="x5-fullscreen" content="true">'."\n";
 		$header .= '<meta name="rating" content="General">'."\n";
@@ -322,7 +323,7 @@ function headers($array = array(), $clear = false, $no_js = false) {
 }*/
 
 	if($rss && !empty($link_rss)) {
-		$header .= "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"{L_sitename}\" href=\"{C_default_http_host}".$link_rss."\" />\n";
+		$header .= "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"".htmlspecialchars(lang::get_lang("sitename"))."\" href=\"{C_default_http_host}".$link_rss."\" />\n";
 		$header .= "<meta name=\"msapplication-TileColor\" content=\"#e0161d\"/>\n". //"<meta name=\"application-name\" content=\"{L_sitename}\" />\n".
 			"<meta name=\"msapplication-notification\" content=\"frequency=30;polling-uri=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=1;polling-uri2=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=2;polling-uri3=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=3;polling-uri4=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=4;polling-uri5=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=5; cycle=1\"/>\n\n";
 	}
@@ -480,18 +481,19 @@ global $manifest;
 		if(!isset($manifest['jscss'][$type]['full'])) {
 			$manifest['jscss'][$type]['full'] = array();
 		}
-		$jsCheck = parse_url($js);
+		$url = (isset($js['url']) ? $js['url'] : $js);
+		$jsCheck = parse_url($url);
 		if(!empty($name)) {
 			if(isset($jsCheck['path'])) {
-				$manifest['jscss'][$type]['link'][$name] = array("url" => (isset($js['url']) ? $js['url'] : $js).($mark ? AmperOr($js).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
+				$manifest['jscss'][$type]['link'][$name] = array("url" => $url.($mark ? AmperOr($url).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
 			} else {
-				$manifest['jscss'][$type]['full'][$name] = array("url" => (isset($js['url']) ? $js['url'] : $js).($mark ? AmperOr($js).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
+				$manifest['jscss'][$type]['full'][$name] = array("url" => $url.($mark ? AmperOr($url).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
 			}
 		} else {
 			if(isset($jsCheck['path'])) {
-				$manifest['jscss'][$type]['link'][] = array("url" => (isset($js['url']) ? $js['url'] : $js).($mark ? AmperOr($js).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
+				$manifest['jscss'][$type]['link'][] = array("url" => $url.($mark ? AmperOr($url).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
 			} else {
-				$manifest['jscss'][$type]['full'][] = array("url" => (isset($js['url']) ? $js['url'] : $js).($mark ? AmperOr($js).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
+				$manifest['jscss'][$type]['full'][] = array("url" => $url.($mark ? AmperOr($url).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
 			}
 		}
 	}
@@ -503,8 +505,9 @@ global $manifest;
 		foreach($js as $v) {
 			unRegCssJs($v, $type, $mark, $name);
 		}
-	} else if(is_string($js)) {
-		$jsCheck = parse_url($js);
+	} else {
+		$url = (isset($js['url']) ? $js['url'] : $js);
+		$jsCheck = parse_url($url);
 		if(!empty($name)) {
 			if(isset($jsCheck['path']) && isset($manifest['jscss'][$type]['link'][$name])) {
 				unset($manifest['jscss'][$type]['link'][$name]);
@@ -514,13 +517,13 @@ global $manifest;
 		} else {
 			if(isset($jsCheck['path']) && isset($manifest['jscss'][$type]['link']) && is_array($manifest['jscss'][$type]['link']) && sizeof($manifest['jscss'][$type]['link'])>0) {
 				for($i=0;$i<sizeof($manifest['jscss'][$type]['link']);$i++) {
-					if(strpos($manifest['jscss'][$type]['link'][$i]['url'], $js)!==false) {
+					if(strpos($manifest['jscss'][$type]['link'][$i]['url'], $url)!==false) {
 						unset($manifest['jscss'][$type]['link'][$i]);
 					}
 				}
 			} else if(isset($manifest['jscss'][$type]['full']) && is_array($manifest['jscss'][$type]['full']) && sizeof($manifest['jscss'][$type]['full'])>0) {
 				for($i=0;$i<sizeof($manifest['jscss'][$type]['full']);$i++) {
-					if(strpos($manifest['jscss'][$type]['full'][$i]['url'], $js)!==false) {
+					if(strpos($manifest['jscss'][$type]['full'][$i]['url'], $url)!==false) {
 						unset($manifest['jscss'][$type]['full'][$i]);
 					}
 				}

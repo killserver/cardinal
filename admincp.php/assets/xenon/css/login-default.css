@@ -1,0 +1,16 @@
+.login-page .login-form .form-group .form-control.input-dark {
+    background: rgba(255, 255, 255, 0.8);
+    color: #000000;
+}
+.login-page .login-form .form-group label.error {
+    color: rgba(0, 0, 0, 0.7);
+    background: rgb(213, 213, 213);
+    top: 1px;
+    right: 2px;
+}
+.login-page .login-form .form-group .control-label {
+    color: #5f5f5f;
+}
+.login-page .login-form .form-group .btn.btn-dark {
+    background-color: rgba(175, 186, 191, 0.3);
+}

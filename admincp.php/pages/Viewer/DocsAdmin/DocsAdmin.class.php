@@ -1,4 +1,8 @@
 <?php
+if(!defined("IS_ADMIN")) {
+echo "403 ERROR";
+die();
+}
 
 class DocsAdmin extends Core {
 	

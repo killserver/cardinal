@@ -149,6 +149,11 @@ class Antivirus extends Core {
 		callAjax();
 		if($maskInit) {
 			if(!is_writable(PATH_CACHE_SYSTEM)) {
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Error write mask on server");
 				die();
 			}

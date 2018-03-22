@@ -95,7 +95,7 @@ $manifest = array(
 	"dependency_modules" => array(), //dependency logic modules and need update his
 	"applyParam" => array(),
 	"gzip" => false,
-	"session_destroy" => true,
+	"session_destroy" => false,
 	"jscss" => array(),
 );
 
@@ -347,8 +347,29 @@ if(
 	HTTP::$protocol = "https";
 }
 
-
-
+cardinal::StartSession();
+if(isset($sessionOnline) && is_writeable(PATH_CACHE_USERDATA)) {
+	clearstatcache();
+	$SessionDir = session_save_path();
+	$Timeout = 3 * 60;
+	$usersOnline = 0;
+	$online = 0;
+	if($Handler = @scandir($SessionDir)) {
+		for($i=2;$i<sizeof($Handler);$i++) {
+			if($Handler[$i]=="index.html"||$Handler[$i]=="index.".ROOT_EX) {
+				continue;
+			}
+			if(time()-@filemtime($SessionDir.$Handler[$i])<$Timeout) {
+				$usersOnline++;
+			}
+		}
+	}
+	if(file_exists(PATH_CACHE_USERDATA."userOnline.txt")) {
+		$online = file_get_contents(PATH_CACHE_USERDATA."userOnline.txt");
+	}
+	$online = max($online, $usersOnline);
+	@file_put_contents(PATH_CACHE_USERDATA."userOnline.txt", $online);
+}
 
 if(PHP_VERSION_ID>50600) {
 	ini_set("default_charset", $config['charset']);
@@ -374,7 +395,7 @@ if(defined("WITHOUT_DB") || !defined("INSTALLER")) {
 		header("Location: ".HTTP::$protocol."://".$config['default_http_hostname'].$_SERVER['REQUEST_URI']);
 	die();
 	}
-	User::PathUsers(PATH_CACHE_SYSTEM);
+	User::PathUsers(PATH_CACHE_USERDATA);
 	User::load();
 }
 
@@ -386,8 +407,8 @@ header("X-Content-Type-Options: SAMEORIGIN");
 header("X-XSS-Protection: 1; mode=block");
 header('Cache-Control: max-age');
 header("Cardinal: ".cardinal::SaveCardinal(VERSION));
-ini_set("pcre.backtrack_limit", 120000000);
-ini_set("pcre.recursion_limit", 120000000);
+@ini_set("pcre.backtrack_limit", 120000000);
+@ini_set("pcre.recursion_limit", 120000000);
 if(function_exists("header_remove")) {
 	header_remove('x-powered-by');
 } else {

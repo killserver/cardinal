@@ -146,8 +146,8 @@ class db {
     final public static function OpenDriver() {
 		$driv = self::$driver_name;
 		if(!is_string($driv) || !class_exists($driv)) {
-			if(defined("ROOT_PATH") && file_exists(PATH_CACHE."db_lock.lock") && is_readable(PATH_CACHE."db_lock.lock")) {
-				$driv = file_get_contents(PATH_CACHE."db_lock.lock");
+			if(defined("ROOT_PATH") && file_exists(PATH_CACHE_USERDATA."db_lock.lock") && is_readable(PATH_CACHE_USERDATA."db_lock.lock")) {
+				$driv = file_get_contents(PATH_CACHE_USERDATA."db_lock.lock");
 			} elseif(!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock") && is_readable(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock")) {
 				$driv = file_get_contents(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock");
 			} else {
@@ -209,12 +209,18 @@ class db {
 		$open = self::OpenDriver();
 		if($open) {
 			self::$driver->connect($host, $user, $pass, $db, $charset, $port);
-			if(self::connected() && self::$driverGen && !empty(self::$driver_name)) {
-				if(defined("ROOT_PATH") && !file_exists(PATH_CACHE_SYSTEM."db_lock.lock") && is_writable(PATH_CACHE_SYSTEM)) {
-					file_put_contents(PATH_CACHE_SYSTEM."db_lock.lock", self::$driver_name);
+			if(self::connected()) {
+				if(defined("ROOT_PATH") && !file_exists(PATH_CACHE_SYSTEM."db_charset.lock") && is_writable(PATH_CACHE_SYSTEM)) {
+					self::query("ALTER DATABASE `".$db."` DEFAULT CHARSET=".$charset." COLLATE ".$charset."_general_ci;");
+					file_put_contents(PATH_CACHE_SYSTEM."db_charset.lock", "");
 				}
-				if(!defined("ROOT_PATH") && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock") && is_writable(dirname(__FILE__).DIRECTORY_SEPARATOR)) {
-					file_put_contents(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock", self::$driver_name);
+				if(self::$driverGen && !empty(self::$driver_name)) {
+					if(defined("ROOT_PATH") && !file_exists(PATH_CACHE_SYSTEM."db_lock.lock") && is_writable(PATH_CACHE_SYSTEM)) {
+						file_put_contents(PATH_CACHE_SYSTEM."db_lock.lock", self::$driver_name);
+					}
+					if(!defined("ROOT_PATH") && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock") && is_writable(dirname(__FILE__).DIRECTORY_SEPARATOR)) {
+						file_put_contents(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock", self::$driver_name);
+					}
 				}
 			}
 		}
@@ -231,6 +237,11 @@ class db {
 	
 	final public static function config($config = array()) {
 		if(sizeof($config)==0 && ((defined("ROOT_PATH") && !file_exists(PATH_MEDIA."db.".ROOT_EX)) || (!defined("ROOT_PATH") && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX)))) {
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Config file for db or data in config is not correct");
 			die();
 		} else if(defined("ROOT_PATH") && file_exists(PATH_MEDIA."db.".ROOT_EX)) {
@@ -259,7 +270,11 @@ class db {
 			$port = config::Select('db', 'port');
 		} else {
 			if(!isset(self::$configInit['driver'])) {
-				header("HTTP/1.0 520 Unknown Error");
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Error! Driver is not set");
 				die();
 			} else {
@@ -273,35 +288,55 @@ class db {
 				self::$dbName = self::$configInit['db'];
 			}
 			if(!isset(self::$configInit['host'])) {
-				header("HTTP/1.0 520 Unknown Error");
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Error! Host is not set");
 				die();
 			} else {
 				$host = self::$configInit['host'];
 			}
 			if(!isset(self::$configInit['user'])) {
-				header("HTTP/1.0 520 Unknown Error");
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Error! User is not set");
 				die();
 			} else {
 				$user = self::$configInit['user'];
 			}
 			if(!isset(self::$configInit['pass'])) {
-				header("HTTP/1.0 520 Unknown Error");
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Error! Password is not set");
 				die();
 			} else {
 				$pass = self::$configInit['pass'];
 			}
 			if(!isset(self::$configInit['charset'])) {
-				header("HTTP/1.0 520 Unknown Error");
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Error! Charset is not set");
 				die();
 			} else {
 				$chst = self::$configInit['charset'];
 			}
 			if(!isset(self::$configInit['port'])) {
-				header("HTTP/1.0 520 Unknown Error");
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Error! Port is not set");
 				die();
 			} else {
@@ -454,7 +489,11 @@ class db {
 			$badword = true;
 		}
 		if($badword) {
-			header("HTTP/1.0 520 Unknown Error");
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			$message = 'Привет, я не знаю то, что Вы пробовали сделать, но команда, которую Вы только послали базе данных, не выглядела очень дружественной и она была заблокированна.<br /><br />Ваш IP, и другие данные переданны администрации сервера. Удачи!.';
 			$report  = "Hacking attempt (".date("d.m.Y H:i:s")." - [".time()."]):\n";
 			$report .= ">Database Inforamation\n";
@@ -738,7 +777,11 @@ class db {
      * @param array $arr Info of query
      */
     final public static function error($arr) {
-		header("HTTP/1.0 520 Unknown Error");
+		if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+			header("HTTP/1.0 520 Unknown Error");
+		} else {
+			header("HTTP/1.0 404 Not found");
+		}
 		$mysql_error = $arr['mysql_error'];
 		$mysql_error_num = $arr['mysql_error_num'];
 		$query = $arr['query'];
@@ -786,7 +829,7 @@ class db {
 	}
 	
 	function backupDB($tables = '*', $path = "") {
-		if(empty($path) && defined("ROOT_PATH") && defined("DS") && (!file_exists(PATH_CACHE_SYSTEM) || !is_writable(PATH_CACHE_SYSTEM))) {
+		if(empty($path) && defined("ROOT_PATH") && defined("DS") && (!file_exists(PATH_CACHE_USERDATA) || !is_writable(PATH_CACHE_USERDATA))) {
 			return false;
 		}
 		$pathToSave = "";

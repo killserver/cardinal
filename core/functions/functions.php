@@ -516,7 +516,7 @@ function sortByKey(&$arr) {
 }
 
 function sortByValue(&$arr) {
-	usort($arr, 'strnatcmp');
+	uasort($arr, 'strnatcmp');
 	return $arr;
 }
 

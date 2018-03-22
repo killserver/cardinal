@@ -32,6 +32,12 @@ if(!defined("PATH_CACHE_TEMP")) {
 if(!defined("PATH_CACHE_LANGS")) {
 	define("PATH_CACHE_LANGS", ROOT_PATH.'core'.DS.'cache'.DS.'lang'.DS);
 }
+if(!defined("PATH_CACHE_SESSION")) {
+	define("PATH_CACHE_SESSION", ROOT_PATH."core".DS."cache".DS."session".DS);
+}
+if(!defined("PATH_CACHE_USERDATA")) {
+	define("PATH_CACHE_USERDATA", ROOT_PATH."application".DS."cache".DS);
+}
 if(!defined("PATH_FUNCTIONS")) {
 	define("PATH_FUNCTIONS", ROOT_PATH."core".DS."functions".DS);
 }

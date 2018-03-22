@@ -76,6 +76,6 @@ class Main extends Core {
 	}
 
 }
-ReadPlugins(dirname(__FILE__)."/Plugins/", "Main");
+ReadPlugins(dirname(__FILE__).DIRECTORY_SEPARATOR."Plugins".DIRECTORY_SEPARATOR, "Main");
 
 ?>

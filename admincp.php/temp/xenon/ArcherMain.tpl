@@ -54,7 +54,8 @@ jQuery(document).ready(function() {
 			'aTargets': [
 				{ArcherNotTouch}
 			]
-		}]
+		}],
+		"order": [[ {orderById}, "{orderBySort}" ]]
 	});
 	var sorted = [{ArcherSort}];
 	if(sorted.length>0) {
@@ -71,6 +72,41 @@ jQuery(document).ready(function() {
 			});
 			dTable.yadcf([{column_number: getId}]);
 		}
+	}
+	$.fn.editableform.buttons = '<button type="submit" class="btn btn-primary btn-sm editable-submit"><i class="fa fa-check"></i></button><button type="button" class="btn btn-default btn-sm editable-cancel"><i class="fa fa-close"></i></button>';
+	$('.quickEdit').editable({
+		url: '{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Archer&type={ArcherTable}&pageType=QuickEdit&Save=true',
+		validate: function(value) {
+			if($.trim(value) == '') {
+				return '{L_"Данное поле не может быть пустым"}';
+			}
+		}
+	});
+	var arrToSave = {};
+	var linkForAutoSave = encodeURIComponent(window.location.href.split(default_admin_link)[1])+"&v=1";
+	if(localStorage.getItem(linkForAutoSave)===null) {
+		$("[aria-controls='example-1'],.yadcf-filter").each(function(i, elem) {
+			if(elem.nodeName!=="TH"&&elem.nodeName!=="LI") {
+				arrToSave[elem.nodeName.toLowerCase()+"[aria-controls='"+$(elem).attr("aria-controls")+"']"] = elem.value;
+			}
+		});
+		localStorage.setItem(linkForAutoSave, JSON.stringify(arrToSave));
+		Object.keys(arrToSave).forEach(function(k) {
+			$(k).bind("change input", function() {
+				arrToSave[k] = $(this).val();
+				localStorage.setItem(linkForAutoSave, JSON.stringify(arrToSave));
+			});
+		});
+	} else {
+		var strForAutoSave = localStorage.getItem(linkForAutoSave);
+		arrToSave = JSON.parse(strForAutoSave);
+		Object.keys(arrToSave).forEach(function(k) {
+			$(k).val(arrToSave[k]).change().keyup();
+			$(k).bind("change input", function() {
+				arrToSave[k] = $(this).val();
+				localStorage.setItem(linkForAutoSave, JSON.stringify(arrToSave));
+			});
+		});
 	}
 });
 function confirmDelete() {

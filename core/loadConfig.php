@@ -127,6 +127,10 @@ if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."config.".ROOT_EX) && file_e
 	}
 }
 
+if(file_exists(PATH_MEDIA."config.init.".ROOT_EX)) {
+	include_once(PATH_MEDIA."config.init.".ROOT_EX);
+}
+
 if(file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."paths.".ROOT_EX)) {
 	include_once(ROOT_PATH.ADMINCP_DIRECTORY.DS."paths.".ROOT_EX);
 } else if(file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."paths.default.".ROOT_EX)) {

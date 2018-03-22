@@ -137,17 +137,29 @@ class cardinal {
 					continue;
 				}
 				if(isset($exp[$i][0]) && !empty($exp[$i][0]) && stripos($exp[$i][0], HTTP::getServer('HTTP_HOST'))!==false && isset($exp[$i][1]) && !empty($exp[$i][1]) && stripos($exp[$i][1], HTTP::getServer('SERVER_ADDR'))!==false) {//local ip
-					header("HTTP/1.0 520 Unknown Error");
+					if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+						header("HTTP/1.0 520 Unknown Error");
+					} else {
+						header("HTTP/1.0 404 Not found");
+					}
 					echo "Script is locked by server name and ip address";
 					die();
 				}
 				if(isset($exp[$i][0]) && !empty($exp[$i][0]) && stripos($exp[$i][0], HTTP::getServer('HTTP_HOST'))!==false) {
-					header("HTTP/1.0 520 Unknown Error");
+					if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+						header("HTTP/1.0 520 Unknown Error");
+					} else {
+						header("HTTP/1.0 404 Not found");
+					}
 					echo "Script is locked by server name";
 					die();
 				}
 				if(isset($exp[$i][1]) && !empty($exp[$i][1]) && stripos($exp[$i][1], HTTP::getServer('SERVER_ADDR'))!==false) {//local ip
-					header("HTTP/1.0 520 Unknown Error");
+					if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+						header("HTTP/1.0 520 Unknown Error");
+					} else {
+						header("HTTP/1.0 404 Not found");
+					}
 					echo "Script is locked by ip address";
 					die();
 				}
@@ -156,7 +168,7 @@ class cardinal {
 	}
 
 	final public static function StartSession($timeout = 0, $probability = 100, $cookie_domain = '/') {
-	global $session;
+	global $session, $sessionOnline;
 		if(!is_bool($session)) {
 			if($timeout===0) {
 				$timeout = time()+(120*24*60*60);
@@ -166,6 +178,33 @@ class cardinal {
 
 			// Set the session cookie to timout
 			ini_set("session.cookie_lifetime", $timeout);
+
+			// Change the save path. Sessions stored in teh same path
+			// all share the same lifetime; the lowest lifetime will be
+			// used for all. Therefore, for this to work, the session
+			// must be stored in a directory where only sessions sharing
+			// it's lifetime are. Best to just dynamically create on.
+			$path = (defined("PATH_CACHE_SESSION") ? PATH_CACHE_SESSION : false);
+			$copy = $save = false;
+			if(!is_bool($path)) {
+				if(!file_exists($path)) {
+					if(@mkdir($path, 0777)) {
+						$save = true;
+					} 
+				} else {
+					$save = true;
+				}
+				if($save) {
+					$realpath = realpath($path);
+					@ini_set("session.save_path", $realpath);
+					@session_save_path($realpath);
+					$newGet = session_save_path();
+					if($realpath!=$newGet) {
+						$copy = true;
+					}
+					$sessionOnline = true;
+				}
+			}
 
 			// Set the chance to trigger the garbage collection.
 			ini_set("session.gc_probability", $probability);
@@ -186,8 +225,16 @@ class cardinal {
 			// If you skip this, the session will time out based
 			// on the time when it was created, rather than when
 			// it was last used.
-			if(isset($_COOKIE[session_name()])) {
-				HTTP::set_cookie(session_name(), $_COOKIE[session_name()], time()+(120*24*60*60), true, false);
+			$name = session_name();
+			if(isset($_COOKIE[$name])) {
+				HTTP::set_cookie($name, $_COOKIE[$name], time()+(120*24*60*60), true, false);
+				if(!is_bool($path) && $copy) {
+					$dir = ini_get("session.save_path").DS;
+					$file = "sess_".$_COOKIE[$name];
+					if(file_exists($dir.$file)) {
+						@copy($dir.$file, $path.$file);
+					}
+				}
 			}
 		}
 		return $_SESSION;
@@ -227,7 +274,11 @@ class cardinal {
 	
 	final public static function callbacks($module, $callback = "", $type = "add") {
 		if(!is_callable($callback) && $type == "add") {
-			header("HTTP/1.0 520 Unknown Error");
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Callback return error in called method");
 			die();
 		}
@@ -265,7 +316,7 @@ class cardinal {
 		$symbols["lower_case"] = 'abcdefghijklmnopqrstuvwxyz';
 		$symbols["upper_case"] = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 		$symbols["numbers"] = '1234567890';
-		$symbols["special_symbols"] = '!?~@#-_+<>[]{}';
+		$symbols["special_symbols"] = '!?~@#-_+>[]{}';
 		$characters = explode(",", $characters);
 		foreach($characters as $key => $value) {
 			if(isset($symbols[$value])) {
@@ -273,7 +324,11 @@ class cardinal {
 			}
 		}
 		if(empty($used_symbols)) {
-			header("HTTP/1.0 520 Unknown Error");
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Error generate password");
 			die();
 		}
@@ -290,17 +345,17 @@ class cardinal {
 	}
 	
 	final public static function GenApiKey() {
-		if(!file_exists(PATH_CACHE_SYSTEM."apiKey.safe") || !is_readable(PATH_CACHE_SYSTEM."apiKey.safe")) {
+		if(!file_exists(PATH_CACHE_USERDATA."apiKey.safe") || !is_readable(PATH_CACHE_USERDATA."apiKey.safe")) {
 			$rand = rand(9, 20);
 			$api_key = self::randomPassword($rand, 1, "numbers");
 			if(is_array($api_key) && sizeof($api_key)>0) {
 				$api_key = current($api_key);
 			}
-			if(is_writable(PATH_CACHE_SYSTEM)) {
-				file_put_contents(PATH_CACHE_SYSTEM."apiKey.safe", $api_key);
+			if(is_writable(PATH_CACHE_USERDATA)) {
+				file_put_contents(PATH_CACHE_USERDATA."apiKey.safe", $api_key);
 			}
-		} else if(file_exists(PATH_CACHE_SYSTEM."apiKey.safe")) {
-			$api_key = file_get_contents(PATH_CACHE_SYSTEM."apiKey.safe");
+		} else if(file_exists(PATH_CACHE_USERDATA."apiKey.safe")) {
+			$api_key = file_get_contents(PATH_CACHE_USERDATA."apiKey.safe");
 		}
 		return $api_key;
 	}
@@ -342,7 +397,7 @@ class cardinal {
 	}
 	
 	final public static function InitRegAction() {
-		$dir = PATH_CACHE_SYSTEM;
+		$dir = PATH_CACHE_USERDATA;
 		$file = $dir."logInAdmin.txt";
 		$log = "";
 		if(!defined("WITHOUT_DB") || db::connected()) {
@@ -360,7 +415,7 @@ class cardinal {
 	}
 	
 	final public static function RegAction($action) {
-		$dir = PATH_CACHE_SYSTEM;
+		$dir = PATH_CACHE_USERDATA;
 		$file = $dir."logInAdmin.txt";
 		$maxDaysForLog = 7;
 		$log = self::InitRegAction();

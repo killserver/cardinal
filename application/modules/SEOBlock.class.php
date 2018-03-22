@@ -16,9 +16,9 @@ class SEOBlock extends modules {
 
 	function releaseSeo($meta = array(), $return = false, $clear = true) {
 	global $seoBlock;
-		$title = (isset($meta['title']) ? $meta['title'] : (isset($seoBlock['ogp']['title']) ? $seoBlock['ogp']['title'] : (isset($seoBlock['og']['title']) ? $seoBlock['og']['title'] : (isset($seoBlock['main']['title']) ? $seoBlock['main']['title'] : "{L_sitename}"))));
+		$title = (isset($meta['title']) ? $meta['title'] : (isset($seoBlock['ogp']['title']) ? $seoBlock['ogp']['title'] : (isset($seoBlock['og']['title']) ? $seoBlock['og']['title'] : (isset($seoBlock['main']['title']) ? $seoBlock['main']['title'] : lang::get_lang("sitename")))));
 		$titleHead = (isset($meta['title']) ? $meta['title'] : (isset($seoBlock['ogp']['title']) ? $seoBlock['ogp']['title'] : (isset($seoBlock['og']['title']) ? $seoBlock['og']['title'] : (isset($seoBlock['main']['title']) ? $seoBlock['main']['title'] : ""))));
-		$description = (isset($meta['description']) ? $meta['description'] : (isset($seoBlock['ogp']['description']) ? $seoBlock['ogp']['description'] : (isset($seoBlock['og']['description']) ? $seoBlock['og']['description'] : (isset($seoBlock['main']['description']) ? $seoBlock['main']['description'] : "{L_s_description}"))));
+		$description = (isset($meta['description']) ? $meta['description'] : (isset($seoBlock['ogp']['description']) ? $seoBlock['ogp']['description'] : (isset($seoBlock['og']['description']) ? $seoBlock['og']['description'] : (isset($seoBlock['main']['description']) ? $seoBlock['main']['description'] : lang::get_lang("s_description")))));
 		$imageCheck = (isset($seoBlock['ogp']['image']) && (file_exists(ROOT_PATH.$seoBlock['ogp']['image']) || file_exists($seoBlock['ogp']['image']) || file_exists(config::Select("default_http_host").$seoBlock['ogp']['image']))) || (isset($seoBlock['main']['image_src']) && (file_exists(ROOT_PATH.$seoBlock['main']['image_src']) || file_exists($seoBlock['main']['image_src']) || file_exists(config::Select("default_http_host").$seoBlock['main']['image_src']))) || file_exists(ROOT_PATH."logo.jpg") || file_exists(ROOT_PATH."logo.png");
 		$type = (isset($seoBlock['ogp']['type']) ? $seoBlock['ogp']['type'] : (isset($seoBlock['og']['type']) ? $seoBlock['og']['type'] : "website"));
 		$link = (isset($meta['canonicalLink']) ? $meta['canonicalLink'] : (isset($meta['link']) ? $meta['link'] : (isset($seoBlock['og']['link']) ? $seoBlock['og']['link'] : (isset($seoBlock['ogp']['link']) ? $seoBlock['ogp']['link'] : (isset($seoBlock['main']['canonical']) ? $seoBlock['main']['canonical'] : (isset($seoBlock['main']['link']) ? $seoBlock['main']['link'] : (isset($seoBlock['main']['url']) ? $seoBlock['main']['url'] : "")))))));
@@ -45,11 +45,12 @@ class SEOBlock extends modules {
 				$imageCheck = false;
 			}
 		}
+		$sitename = lang::get_lang("sitename");
 		$ogpr = array(
-			"og:site_name" => "{L_sitename}",
+			"og:site_name" => htmlspecialchars($sitename),
 			"og:url" => "{C_default_http_host}".$link,
-			"og:title" => $title,
-			"og:description" => $description,
+			"og:title" => htmlspecialchars($title),
+			"og:description" => htmlspecialchars($description),
 			"og:type" => $type,
 		);
 		if($imageCheck && !empty($imageLink)) {
@@ -58,8 +59,8 @@ class SEOBlock extends modules {
 			));
 		}
 		$og = array(
-			"title" => $title,
-			"description" => $description,
+			"title" => htmlspecialchars($title),
+			"description" => htmlspecialchars($description),
 		);
 		if($imageCheck && !empty($imageLink)) {
 			$og = array_merge($og, array(
@@ -69,9 +70,9 @@ class SEOBlock extends modules {
 		$meta = array(
 			"og" => $og,
 			"ogpr" => $ogpr,
-			"title" => $title,
+			"title" => htmlspecialchars($title),
 			"robots" => $robots,
-			"description" => $description,
+			"description" => htmlspecialchars($description),
 		);
 		if(!empty($keywords)) {
 			$meta = array_merge($meta, array(
@@ -214,10 +215,10 @@ class SEOBlock extends modules {
 				die();
 			}
 			if(!empty($row['sTitle'])) {
-				$this->addSeo('title', $row['sTitle']);
+				$this->addSeo('title', htmlspecialchars($row['sTitle']));
 			}
 			if(!empty($row['sMetaDescr'])) {
-				$this->addSeo('description', $row['sMetaDescr']);
+				$this->addSeo('description', htmlspecialchars($row['sMetaDescr']));
 			}
 			if(!empty($row['sMetaKeywords'])) {
 				$this->addSeo('keywords', $row['sMetaKeywords']);

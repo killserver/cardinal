@@ -102,7 +102,7 @@ FileETag None
 	Header unset X-Powered-By
 	Header unset ETag
 	Header set X-Content-Type-Options "nosniff"
-	Header set X-XSS-Protection "1; mode=block"
+	#Header set X-XSS-Protection "1; mode=block"
 	Header set X-UA-Compatible "IE=edge"
 	<IfModule mod_env.c>
 		SetEnv modHeadersAvailable true

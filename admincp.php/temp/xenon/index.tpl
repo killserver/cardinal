@@ -82,6 +82,20 @@
 					</div>
 				
 				</a>
+				
+				<span class="col-md-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-sm-12"[if {IsUserOnline}==0] style="display:none;"[/if {IsUserOnline}==0]>
+					
+					<div class="xe-widget xe-counter xe-counter-blue" data-count=".num" data-from="0" data-to="{UserOnline}" data-duration="3" data-easing="false">
+						<div class="xe-icon">
+							<i class="linecons-user"></i>
+						</div>
+						<div class="xe-label">
+							<strong class="num">{UserOnline}</strong>
+							<span>{L_"Users Online"}</span>
+						</div>
+					</div>
+				
+				</span>
 
 				{contentForAdmin}
 				

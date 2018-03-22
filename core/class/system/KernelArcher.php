@@ -9,6 +9,7 @@ class KernelArcher {
 	public static $editModel = array();
 	private $countCall = array();
 	public static $sortBy = array();
+	public static $orderBy = false;
 	
 	function __construct($table, $model = false) {
 		$this->selectTable = $table;
@@ -92,11 +93,21 @@ class KernelArcher {
 	
 	function TakeAdd($model = "", $objTemplate = "", $template = "", $load = true) {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
 		$request = new Request();
 		if(sizeof($request->post)==0) {
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Error post data to kernal");
 			die();
 		}
@@ -208,7 +219,11 @@ class KernelArcher {
 	
 	function Add($model = "", $objTemplate = "") {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
-			header("HTTP/1.0 520 Unknown Error");
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -261,7 +276,11 @@ class KernelArcher {
 			||
 			(!isset($file['type']) && !isset($file[5]))
 		) {
-			header("HTTP/1.0 520 Unknown Error");
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Returned data for upload");
 			die();
 		}
@@ -301,13 +320,21 @@ class KernelArcher {
 	
 	function TakeEdit($model = "", $objTemplate = "", $template = "", $load = true) {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
-			header("HTTP/1.0 520 Unknown Error");
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
 		$request = new Request();
 		if(sizeof($request->post)==0) {
-			header("HTTP/1.0 520 Unknown Error");
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Error post data to kernal");
 			die();
 		}
@@ -433,7 +460,11 @@ class KernelArcher {
 	
 	function Edit($model = "", $objTemplate = "") {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
-			header("HTTP/1.0 520 Unknown Error");
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -460,7 +491,11 @@ class KernelArcher {
 		$list = $model->getArray();
 		$firstId = current($list);
 		if(empty($firstId)) {
-			header("HTTP/1.0 520 Unknown Error");
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Error type kernal get data");
 			die();
 		}
@@ -473,7 +508,11 @@ class KernelArcher {
 	
 	function Sorting($model, $objTemplate = "", $template = "") {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
-			header("HTTP/1.0 520 Unknown Error");
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -520,7 +559,11 @@ class KernelArcher {
 	
 	function TakeDelete($model = "", $objTemplate = "", $template = "", $load = true) {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
-			header("HTTP/1.0 520 Unknown Error");
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -589,7 +632,11 @@ class KernelArcher {
 	
 	function Show($model = "", $objTemplate = "", $template = "") {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
-			header("HTTP/1.0 520 Unknown Error");
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -598,7 +645,11 @@ class KernelArcher {
 		$list = $lists->getArray();
 		$firstId = current($list);
 		if(empty($firstId)) {
-			header("HTTP/1.0 520 Unknown Error");
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Error type kernal get data");
 			die();
 		}
@@ -630,7 +681,11 @@ class KernelArcher {
 	
 	function Shield($model = "", $objTemplate = "", $template = "", $load = true) {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
-			header("HTTP/1.0 520 Unknown Error");
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -681,7 +736,11 @@ class KernelArcher {
 			$model = $this->localModel;
 		}
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
-			header("HTTP/1.0 520 Unknown Error");
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -717,19 +776,20 @@ class KernelArcher {
 	public static function Viewing($type, $name, $val, $default = "", $block = false, $isAjax = false) {
 		$open = defined("ADMINCP_DIRECTORY");
 		$retType = "";
+		$hide = false;
 		switch($type) {
 			case "tinyint":
 			case "smallint":
 			case "mediumint":
 			case "int":
 			case "bigint":
-				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"number\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите&nbsp;".$name.($open ? "'}" : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"number\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
 			break;
 			case "float":
 			case "double":
 			case "decimal":
 			case "real":
-				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"number\" step=\"0.01\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите&nbsp;".$name.($open ? "'}" : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"number\" step=\"0.01\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
 			break;
 			case "enum":
 				$enum = explode(",", $val);
@@ -742,25 +802,44 @@ class KernelArcher {
 			break;
 			case "array":
 				$enum = array_map("trim", $val);
-				$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " disabled=\"disabled\"" : "").">".(!defined("WITHOUT_NULL") ? "<option value=\"\">".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}</option>" : "");
+				$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " disabled=\"disabled\"" : "").">".(!defined("WITHOUT_NULL") ? "<option value=\"\">".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."</option>" : "");
 				for($i=0;$i<sizeof($enum);$i++) {
-					$retType .= "<option value=\"".htmlspecialchars($enum[$i])."\"".(!empty($default) && $default==$enum[$i] ? " selected=\"selected'" : "").">".($open ? "{L_'" : "").htmlspecialchars($enum[$i])."".($open ? "'}" : "")."</option>";
+					$type = "o";
+					if(is_array($enum[$i])) {
+						if(isset($enum[$i]['type']) && $enum[$i]['type']=="opt") {
+							$type = "opt";
+						}
+						if(isset($enum[$i]['name'])) {
+							$enum[$i] = $enum[$i]['name'];
+						} else {
+							$enum[$i] = end($enum[$i]);
+						}
+					}
+					$enum[$i] = trim($enum[$i]);
+					if($type=="opt") {
+						$retType .= "<option class='bold' value=\"".htmlspecialchars($enum[$i])."\"".(!empty($default) && $default==$enum[$i] ? " selected=\"selected\"" : "").">".($open ? "{L_'" : "").htmlspecialchars($enum[$i])."".($open ? "'}" : "")."</option>\n";
+					} else {
+						$retType .= "<option value=\"".htmlspecialchars($enum[$i])."\"".(!empty($default) && $default==$enum[$i] ? " selected=\"selected\"" : "").">".($open ? "{L_'" : "").htmlspecialchars($enum[$i])."".($open ? "'}" : "")."</option>\n";
+					}
 				}
 				$retType .= "</select>";
 			break;
 			case "varchar":
-				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"text\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;{L_".$name."}\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"text\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
 			break;
 			case "price":
-				$retType = "<div class=\"input-group\"><span class=\"input-group-addon\">$</span><input id=\"".$name."\" type=\"number\" step=\"0.01\" class=\"form-control\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;{L_".$name."}\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "")."></div>";
+				$retType = "<div class=\"input-group\"><span class=\"input-group-addon\">$</span><input id=\"".$name."\" type=\"number\" step=\"0.01\" class=\"form-control\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "")."></div>";
 			break;
 			case "image":
 			case "file":
-				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"file\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").($type=="image" ? " accept=\"image/*\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"{C_default_http_local}".$val."\"".($type=="image" ? " class=\"showPreview\"" : "")." target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "")."<br>";
+				if(strpos($val, "http")===false) {
+					$val = "{C_default_http_local}".$val;
+				}
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"file\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."\"".($block ? " disabled=\"disabled\"" : "").($type=="image" ? " accept=\"image/*\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"".$val."\"".($type=="image" ? " class=\"showPreview\"" : "")." target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "")."<br>";
 			break;
 			case "imageAccess":
 			case "fileAccess":
-				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"text\" name=\"".$name."\" disabled=\"disabled\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").($type=="imageAccess" ? " accept=\"image/*\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"{C_default_http_local}".$val."\"".($type=="imageAccess" ? " class=\"showPreview\"" : "")." target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "")."<br>";
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"text\" name=\"".$name."\" disabled=\"disabled\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."\"".($block ? " disabled=\"disabled\"" : "").($type=="imageAccess" ? " accept=\"image/*\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"{C_default_http_local}".$val."\"".($type=="imageAccess" ? " class=\"showPreview\"" : "")." target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "")."<br>";
 			break;
 			case "imageArray":
 			case "fileArray":
@@ -769,7 +848,7 @@ class KernelArcher {
 				$enum = array_map("trim", $enum);
 				$retType .= "<div id=\"inputForFile\" class=\"row\" data-accept=\"".($type=="imageArray" ? "image/*" : "")."\">";
 				for($i=0;$i<sizeof($enum);$i++) {
-					$retType .= "<div class='array'>".(sizeof($enum)>1 ? "<div class='col-sm-1'>#".($i+1)."</div><div class='col-sm-9'>" : "<div class='col-sm-10'>")."<input class=\"form-control\" type=\"file\"".(sizeof($enum)==1 ? " multiple=\"multiple\"" : "")." name=\"".$name.(sizeof($enum)>1 ? "[".$i."]" : "[]")."\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").($type=="imageArray" ? " accept=\"image/*\"" : "")."></div><div class='col-sm-2'><a class='btn btn-red btn-block fa-remove' onclick='removeInputFile(this,\"".$name."\",\"".$i."\")'></a></div>".(!empty($val) ? "<div class='col-sm-12'><a href=\"{C_default_http_local}".$enum[$i]."\" class=\"showPreview\" target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a></div>" : "")."</div>";
+					$retType .= "<div class='array'>".(sizeof($enum)>1 ? "<div class='col-sm-1'>#".($i+1)."</div><div class='col-sm-9'>" : "<div class='col-sm-10'>")."<input class=\"form-control\" type=\"file\"".(sizeof($enum)==1 ? " multiple=\"multiple\"" : "")." name=\"".$name.(sizeof($enum)>1 ? "[".$i."]" : "[]")."\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."\"".($block ? " disabled=\"disabled\"" : "").($type=="imageArray" ? " accept=\"image/*\"" : "")."></div><div class='col-sm-2'><a class='btn btn-red btn-block fa-remove' onclick='removeInputFile(this,\"".$name."\",\"".$i."\")'></a></div>".(!empty($val) ? "<div class='col-sm-12'><a href=\"{C_default_http_local}".$enum[$i]."\" class=\"showPreview\" target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a></div>" : "")."</div>";
 				}
 				$retType .= "</div><br><a href=\"#\" onclick=\"addInputFile(this, '".$name."');return false;\" class=\"btn btn-white btn-block btn-icon btn-icon-standalone\"><i class=\"fa-upload\"></i><span>".($open ? "{L_'" : "")."Добавить".($open ? "'}" : "")."</span></a>";
 			break;
@@ -780,7 +859,7 @@ class KernelArcher {
 				$enum = array_map("trim", $enum);
 				$retType .= "<div id=\"inputForFile\" class=\"row\" data-accept=\"".($type=="imageArrayAccess" ? "image/*" : "")."\">";
 				for($i=0;$i<sizeof($enum);$i++) {
-					$retType .= "<div class='array'>".(sizeof($enum)>1 ? "<div class='col-sm-1'>#".($i+1)."</div><div class='col-sm-9'>" : "<div class='col-sm-10'>")."<input class=\"form-control\" type=\"text\"".(sizeof($enum)==1 ? " multiple=\"multiple\"" : "")." disabled=\"disabled\" name=\"".$name.(sizeof($enum)>1 ? "[".$i."]" : "[]")."\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;{L_".$name."}\"".($block ? " disabled=\"disabled\"" : "").($type=="imageArrayAccess" ? " accept=\"image/*\"" : "")."></div><div class='col-sm-2'><a class='btn btn-red btn-block fa-remove' onclick='removeInputFile(this,\"".$name."\",\"".$i."\")'></a></div>".(!empty($val) ? "<div class='col-sm-12'><a href=\"{C_default_http_local}".$enum[$i]."\" class=\"showPreview\" target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a></div>" : "")."</div>";
+					$retType .= "<div class='array'>".(sizeof($enum)>1 ? "<div class='col-sm-1'>#".($i+1)."</div><div class='col-sm-9'>" : "<div class='col-sm-10'>")."<input class=\"form-control\" type=\"text\"".(sizeof($enum)==1 ? " multiple=\"multiple\"" : "")." disabled=\"disabled\" name=\"".$name.(sizeof($enum)>1 ? "[".$i."]" : "[]")."\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."\"".($block ? " disabled=\"disabled\"" : "").($type=="imageArrayAccess" ? " accept=\"image/*\"" : "")."></div><div class='col-sm-2'><a class='btn btn-red btn-block fa-remove' onclick='removeInputFile(this,\"".$name."\",\"".$i."\")'></a></div>".(!empty($val) ? "<div class='col-sm-12'><a href=\"{C_default_http_local}".$enum[$i]."\" class=\"showPreview\" target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a></div>" : "")."</div>";
 				}
 				$retType .= "</div><br><a href=\"#\" onclick=\"addInputFile(this, '".$name."');return false;\" class=\"btn btn-white btn-block btn-icon btn-icon-standalone\"><i class=\"fa-upload\"></i><span>".($open ? "{L_'" : "")."Добавить".($open ? "'}" : "")."</span></a>";
 			break;
@@ -788,17 +867,18 @@ class KernelArcher {
 			case "mediumtext":
 			case "text":
 			case "longtext":
-				$retType = "<textarea id=\"".$name."\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;{L_".$name."}\" class=\"form-control ckeditor\" rows=\"10\"".($block ? " disabled=\"disabled\"" : "").">".htmlspecialchars($val)."</textarea>";
+				$retType = "<textarea id=\"".$name."\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."\" class=\"form-control ckeditor\" rows=\"10\"".($block ? " disabled=\"disabled\"" : "").">".htmlspecialchars($val)."</textarea>";
 			break;
 			case "hidden":
 			case "hide":
-				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"hidden\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;{L_".$name."}\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
+				$hide = true;
+				$retType = "<input id=\"".$name."\" type=\"hidden\" name=\"".$name."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
 			break;
 			case "date":
-				$retType = "<div class=\"date-and-time\"><input id=\"".$name."\" type=\"text\" class=\"form-control datepicker\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;{L_".$name."}\" value=\"".($val!=="" && $val!==0 ? date("d/m/Y", $val) : date("d/m/Y"))."\"".($block ? " disabled=\"disabled\"" : "")." data-format=\"dd/mm/yyyy\"></div>";
+				$retType = "<div class=\"date-and-time\"><input id=\"".$name."\" type=\"text\" class=\"form-control datepicker\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."\" value=\"".($val!=="" && $val!==0 ? date("d/m/Y", $val) : date("d/m/Y"))."\"".($block ? " disabled=\"disabled\"" : "")." data-format=\"dd/mm/yyyy\"></div>";
 			break;
 			case "time":
-				$retType = "<div class=\"date-and-time\"><input id=\"".$name."\" type=\"text\" class=\"form-control timepicker\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;{L_".$name."}\" value=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : date("H:i:s"))."\"".($block ? " disabled=\"disabled\"" : "")." data-template=\"dropdown\" data-show-seconds=\"true\" data-default-time=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : date("H:i:s"))."\" data-show-meridian=\"false\" data-minute-step=\"5\" data-second-step=\"5\"></div>";
+				$retType = "<div class=\"date-and-time\"><input id=\"".$name."\" type=\"text\" class=\"form-control timepicker\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."\" value=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : date("H:i:s"))."\"".($block ? " disabled=\"disabled\"" : "")." data-template=\"dropdown\" data-show-seconds=\"true\" data-default-time=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : date("H:i:s"))."\" data-show-meridian=\"false\" data-minute-step=\"5\" data-second-step=\"5\"></div>";
 			break;
 			case "datetime":
 				$retType = "<div class=\"col-sm-12\"><div class=\"date-and-time\"><input type=\"text\"".($block ? " disabled=\"disabled\"" : "")." name=\"".$name."[]\" class=\"form-control datepicker\" data-format=\"dd/mm/yyyy\" value=\"".($val!=="" && $val!==0 ? date("d/m/Y", $val) : date("d/m/Y"))."\"><input type=\"text\"".($block ? " disabled=\"disabled\"" : "")." name=\"".$name."[]\" class=\"form-control timepicker\" data-template=\"dropdown\" data-show-seconds=\"true\" value=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : date("H:i:s"))."\" data-default-time=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : date("H:i:s"))."\" data-show-meridian=\"false\" data-minute-step=\"5\" data-second-step=\"5\" /></div></div>";
@@ -806,10 +886,26 @@ class KernelArcher {
 		}
 		if(is_array($val) && !isset($val['type'])) {
 			$enum = array_values($val);
-			$enum = array_map("trim", $enum);
-			$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " disabled=\"disabled\"" : "")."><option value=\"\">{L_'Выберите'}&nbsp;{L_".$name."}</option>";
+			//$enum = array_map("trim", $enum);
+			$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " disabled=\"disabled\"" : "")."><option value=\"\">".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."</option>";
 			for($i=0;$i<sizeof($enum);$i++) {
-				$retType .= "<option value=\"".htmlspecialchars($enum[$i])."\"".(!empty($default) && $default==$enum[$i] ? " selected=\"selected\"" : "").">".($open ? "{L_'" : "").htmlspecialchars($enum[$i])."".($open ? "'}" : "")."</option>";
+				$type = "o";
+				if(is_array($enum[$i])) {
+					if(isset($enum[$i]['type']) && $enum[$i]['type']=="opt") {
+						$type = "opt";
+					}
+					if(isset($enum[$i]['name'])) {
+						$enum[$i] = $enum[$i]['name'];
+					} else {
+						$enum[$i] = end($enum[$i]);
+					}
+				}
+				$enum[$i] = trim($enum[$i]);
+				if($type=="opt") {
+					$retType .= "<option class='bold' value=\"".htmlspecialchars($enum[$i])."\"".(!empty($default) && $default==$enum[$i] ? " selected=\"selected\"" : "").">".($open ? "{L_'" : "").htmlspecialchars($enum[$i])."".($open ? "'}" : "")."</option>\n";
+				} else {
+					$retType .= "<option value=\"".htmlspecialchars($enum[$i])."\"".(!empty($default) && $default==$enum[$i] ? " selected=\"selected\"" : "").">".($open ? "{L_'" : "").htmlspecialchars($enum[$i])."".($open ? "'}" : "")."</option>\n";
+				}
 			}
 			$retType .= "</select>";
 		} else if(is_array($val) && isset($val['type'])) {
@@ -825,14 +921,18 @@ class KernelArcher {
 			}
 			$retType = $this->view($type, $name, $val, $default, $block);
 		}
-		$ret = "<div class=\"".(!$block ? "form-group" : "row")." block-".$name."\"><label class=\"col-sm-".($isAjax ? "2" : "3")." control-label\" for=\"".$name."\">{L_".$name."}</label><div class=\"col-sm-".($isAjax ? "10" : "9")."\">".$retType."</div></div>\n";
+		$ret = (!$hide ? "<div class=\"".(!$block ? "form-group" : "row")." block-".$name."\"><label class=\"col-sm-".($isAjax ? "2" : "3")." control-label\" for=\"".$name."\">{L_".$name."}</label><div class=\"col-sm-".($isAjax ? "10" : "9")."\">" : "").$retType.(!$hide ? "</div></div>\n" : "");
 		return $ret;
 	}
 	
 	function UnlimitedBladeWorks() {
 		$num = func_num_args();
 		if(!Validate::range($num, 1, 3)) {
-			header("HTTP/1.0 520 Unknown Error");
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Error num parameters for UnlimitedBladeWorks");
 			die();
 		}
@@ -842,20 +942,32 @@ class KernelArcher {
 		if($num==1) {
 			$objTemplate = $list[0];
 			if(!is_string($objTemplate) && !is_object($objTemplate) && !is_array($objTemplate)) {
-				header("HTTP/1.0 520 Unknown Error");
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Error first parameter for UnlimitedBladeWorks");
 				die();
 			}
 		} elseif($num==2) {
 			$objTemplate = $list[0];
 			if(!is_string($objTemplate) && !is_object($objTemplate) && !is_array($objTemplate)) {
-				header("HTTP/1.0 520 Unknown Error");
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Error first parameter for UnlimitedBladeWorks");
 				die();
 			}
 			$template = $list[1];
 			if(!is_bool($template) && !is_string($template)) {
-				header("HTTP/1.0 520 Unknown Error");
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Error second parameter for UnlimitedBladeWorks");
 				die();
 			}
@@ -866,19 +978,31 @@ class KernelArcher {
 		} elseif($num==3) {
 			$objTemplate = $list[0];
 			if(!is_string($objTemplate) && !is_object($objTemplate) && !is_array($objTemplate)) {
-				header("HTTP/1.0 520 Unknown Error");
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Error first parameter for UnlimitedBladeWorks");
 				die();
 			}
 			$template = $list[1];
 			if(!is_bool($template) && !is_string($template)) {
-				header("HTTP/1.0 520 Unknown Error");
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Error second parameter for UnlimitedBladeWorks");
 				die();
 			}
 			$load = $list[2];
 			if(!is_bool($load)) {
-				header("HTTP/1.0 520 Unknown Error");
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Error third parameter for UnlimitedBladeWorks");
 				die();
 			}

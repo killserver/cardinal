@@ -119,13 +119,21 @@ class modules {
 						}
 						return $ret;
 					} else {
-						header("HTTP/1.0 520 Unknown Error");
+						if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+							header("HTTP/1.0 520 Unknown Error");
+						} else {
+							header("HTTP/1.0 404 Not found");
+						}
 						throw new Exception("Error loading model");
 						return false;
 					}
 				}
 			} else {
-				header("HTTP/1.0 520 Unknown Error");
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Error loading model. File not found");
 				return false;
 			}
@@ -137,7 +145,11 @@ class modules {
 			}
 			return $ret;
 		} else {
-			header("HTTP/1.0 520 Unknown Error");
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Error loading model");
 			return false;
 		}
@@ -157,7 +169,11 @@ class modules {
 				include_once(PATH_LOAD_LIBRARY.$class.".".ROOT_EX);
 			}
 			if(!class_exists($class, false)) {
-				header("HTTP/1.0 520 Unknown Error");
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception('Class is not exists', 6);
 			}
 			$re_args = array();
@@ -353,7 +369,7 @@ class modules {
 			$cache = self::init_cache();
 			if(!$cache->exists("load_hooks")) {
 				$db = self::init_db();
-				$db->doquery("SELECT `module` FROM {{modules}} WHERE `activ` LIKE \"yes\" AND `file` LIKE \"core%".$module.".class.".ROOT_EX."\"", true);
+				$db->doquery("SELECT `module` FROM {{modules}} WHERE `activ` LIKE \"yes\" AND `file` LIKE \"application%".$module.".class.".ROOT_EX."\"", true);
 				self::$load_hooks = array();
 				while($row = $db->fetch_assoc()) {
 					self::$load_hooks[$row['module']] = true;
@@ -419,7 +435,7 @@ class modules {
 			$cache = self::init_cache();
 			if(!$cache->exists("load_modules")) {
 				$db = self::init_db();
-				$db->doquery("SELECT `file` FROM {{modules}} WHERE `activ` LIKE \"yes\" AND `file` LIKE \"core%\"", true);
+				$db->doquery("SELECT `file` FROM {{modules}} WHERE `activ` LIKE \"yes\" AND `file` LIKE \"application%\"", true);
 				self::$load_modules = array();
 				while($row = $db->fetch_assoc()) {
 					self::$load_modules[$row['file']] = true;
@@ -454,7 +470,7 @@ class modules {
 
 	final public static function get_user($get) {
 	global $user;
-		User::PathUsers(PATH_CACHE_SYSTEM);
+		User::PathUsers(PATH_CACHE_USERDATA);
 		$user = User::load();
 		if(in_array($get, self::$access_user)) {
 			if(isset($user[$get])) {

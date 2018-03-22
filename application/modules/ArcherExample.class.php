@@ -3,20 +3,20 @@
 class ArcherExample extends modules {
 	
 	function __construct() {
-		KernelArcher::excludeField("add", "Shield", array());
-		KernelArcher::excludeField("add", "Edit", array());
-		KernelArcher::excludeField("add", "TakeDelete", array());
-		KernelArcher::excludeField("add", "Show", array());
-		KernelArcher::excludeField("add", "Sorting", array());
-		KernelArcher::callback("Shield", "TraceOn", array(&$this, "RebuildShields"));
-		KernelArcher::callback("ShieldFunc", "ArcherExample::RebuildShield");
-		KernelArcher::callback("AddModel", array(&$this, "RebuildAddModel"));
-		KernelArcher::callback("Show", array(&$this, "RebuildShow"));
-		KernelArcher::callback("EditModel", array(&$this, "RebuildEditModel"));
-		KernelArcher::callback("TakeUpload", array(&$this, "RebuildTakeUpload"));
-		KernelArcher::callback("TakeDelete", array(&$this, "RebuildTakeDelete"));
-		KernelArcher::callback("TakeAddModel", array(&$this, "RebuildTakeAddModel"));
-		KernelArcher::callback("TakeEditModel", array(&$this, "RebuildTakeEditModel"));
+		KernelArcher::excludeField("add", "Shield", array()); // поля, которые нужно исключить из просмотра списка добавленных данных
+		KernelArcher::excludeField("add", "Edit", array()); // поля, которые нужно исключить из добавления/редактирования
+		KernelArcher::excludeField("add", "TakeDelete", array()); // поля, которые нужно исключить из удаления
+		KernelArcher::excludeField("add", "Show", array()); // поля, которые нужно исключить из раздела просмотра добавленных данных
+		KernelArcher::excludeField("add", "Sorting", array()); // поля, которые нужно исключить из сортировки
+		KernelArcher::callback("Shield", "TraceOn", array(&$this, "RebuildShields")); // функция, которая вызывается при просмотре списка добавленных данных
+		KernelArcher::callback("ShieldFunc", "ArcherExample::RebuildShield"); // функция, которая вызывается для каждого элемента при выводе его в виде списка добавленных данных
+		KernelArcher::callback("AddModel", array(&$this, "RebuildAddModel")); // функция, которая вызывается при добавлении данных
+		KernelArcher::callback("Show", array(&$this, "RebuildShow")); // функция, которая вызывается при добавлении данных
+		KernelArcher::callback("EditModel", array(&$this, "RebuildEditModel")); // функция, которая вызывается при редактировании данных
+		KernelArcher::callback("TakeUpload", array(&$this, "RebuildTakeUpload")); // функция, которая вызывается при загрузке файлов
+		KernelArcher::callback("TakeDelete", array(&$this, "RebuildTakeDelete")); // функция, которая вызывается при удалении данных
+		KernelArcher::callback("TakeAddModel", array(&$this, "RebuildTakeAddModel")); // функция, которая вызывается перед тем, как данные будут добавлены в базу данных
+		KernelArcher::callback("TakeEditModel", array(&$this, "RebuildTakeEditModel")); // функция, которая вызывается перед тем, как данные будут отредактированны в базе данных
 	}
 
 	public function RebuildTakeDelete($model, $models) {
@@ -24,7 +24,9 @@ class ArcherExample extends modules {
 	}
 
 	public function RebuildShields($table, $page, $model, $tpl) {
-		defines::add("DisableSort", "0");
+		if(!defined("DisableSort")) {
+			define("DisableSort", "0"); // отключение сортировки
+		}
 		return $tpl;
 	}
 

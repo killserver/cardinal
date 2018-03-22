@@ -40,6 +40,7 @@ class Route {
 	private static $_secret = "route";
 	private static $_config = array();
 	private static $_lang = "";
+	private static $_langForce = "";
 	private static $_loaded = "";
 	
 	final public static function Config($get) {
@@ -54,8 +55,12 @@ class Route {
 		return false;
 	}
 	
-	final public static function SetLang($lang) {
+	final public static function SetLang($lang, $force = false) {
 		self::$_lang = $lang;
+		if($force) {
+			self::$_params['lang'] = $lang;
+			self::$_langForce = $lang;
+		}
 	}
 	
 	final public static function Build(array $arr, $mode = 1) {
@@ -209,6 +214,9 @@ class Route {
 				if(is_int($key)) {
 					continue;
 				}
+				if($key=="lang") {
+					$params["now_".$key] = $value;
+				}
 				$params[$key] = $value;
 			}
 		}
@@ -275,6 +283,24 @@ class Route {
 			$params = "";
 			foreach($routes as $name => $route) {
 				if($params = $route->Matches($uri, $default)) {
+					$langs = lang::support();
+					$newLang = array();
+					for($i=0;$i<sizeof($langs);$i++) {
+						$clearLang = $langs[$i];
+						if(strlen($langs[$i])>2) {
+							$clearLang = substr($clearLang, 4, -3);
+						}
+						$newLang[$clearLang] = $langs[$i];
+					}
+					if(!empty(self::$_langForce) && !isset($params['now_lang'])) {
+						$params['tlang'] = self::$_langForce;
+					} else if(isset($params['now_lang']) && isset($newLang[$params['now_lang']])) {
+						$params['tlang'] = $params['now_lang'];
+					} else if(isset($params['now_lang']) && !isset($newLang[$params['now_lang']])) {
+						header("HTTP/1.1 301 Moved Permanently");
+						header("Location: ".substr($uri, 2));
+						die();
+					}
 					self::$_loaded = $uri;
 					self::$_params = array_merge(self::$_params, $params);
 					return array('params' => $params, 'route' => $route);
@@ -323,6 +349,9 @@ class Route {
 	final public function Uri($params = array()) {
 		if(!empty(self::$_lang)) {
 			$params['lang'] = self::$_lang;
+		}
+		if(!empty(self::$_langForce) && (!isset($params['lang']) || $params['lang'] == config::Select("lang"))) {
+			$params['lang'] = self::$_langForce;
 		}
 		$uri = $this->_uri;
 		if(strpos($uri, '<') === false && strpos($uri, '(') === false) {

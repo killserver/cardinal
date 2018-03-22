@@ -95,6 +95,11 @@ function or_timespan($seconds = 1, $time = "") {
 	if($years > 0) {
 		$lang = lang::get_lang('times', 'years');
 		if(!is_array($lang) || sizeof($lang)<3) {
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Lang times for years is not implemented");
 			die();
 		}
@@ -108,6 +113,11 @@ function or_timespan($seconds = 1, $time = "") {
 		if($months > 0) {
 			$lang = lang::get_lang('times', 'months');
 			if(!is_array($lang) || sizeof($lang)<3) {
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Lang times for months is not implemented");
 				die();
 			}
@@ -121,6 +131,11 @@ function or_timespan($seconds = 1, $time = "") {
 		if($weeks > 0) {
 			$lang = lang::get_lang('times', 'weeks');
 			if(!is_array($lang) || sizeof($lang)<3) {
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Lang times for weeks is not implemented");
 				die();
 			}
@@ -134,6 +149,11 @@ function or_timespan($seconds = 1, $time = "") {
 		if($days > 0) {
 			$lang = lang::get_lang('times', 'days');
 			if(!is_array($lang) || sizeof($lang)<3) {
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Lang times for days is not implemented");
 				die();
 			}
@@ -147,6 +167,11 @@ function or_timespan($seconds = 1, $time = "") {
 		if($hours > 0) {
 			$lang = lang::get_lang('times', 'hours');
 			if(!is_array($lang) || sizeof($lang)<3) {
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Lang times for hours is not implemented");
 				die();
 			}
@@ -160,6 +185,11 @@ function or_timespan($seconds = 1, $time = "") {
 		if($minutes > 0) {
 			$lang = lang::get_lang('times', 'minutes');
 			if(!is_array($lang) || sizeof($lang)<3) {
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Lang times for minutes is not implemented");
 				die();
 			}
@@ -171,6 +201,11 @@ function or_timespan($seconds = 1, $time = "") {
 	if(empty($result)) {
 		$lang = lang::get_lang('times', 'seconds');
 		if(!is_array($lang) || sizeof($lang)<3) {
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Lang times for seconds is not implemented");
 			die();
 		}

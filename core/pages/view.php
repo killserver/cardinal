@@ -3,7 +3,8 @@
 class page {
 	
 	function related($id, $name, $descr) {
-		$search = others_video($name);
+		//$search = others_video($name);
+		$search = $name;
 		$limit = config::Select("related");
 		$view = str_replace("\"", "\\\"", Saves::SaveOld($name." ".$descr));
 		db::doquery("SELECT `id`, `alt_name`, `title`, `image`, `descr`, (MATCH(`title`, `descr`) AGAINST(\"".$view."\")) AS `status` FROM `".PREFIX_DB."posts` WHERE `id` != ".$id." AND MATCH(`title`, `descr`) AGAINST(\"".$view."\") AND `type` LIKE \"post\" ORDER BY `status` DESC LIMIT ".$limit, true);

@@ -9,3 +9,15 @@ https://who.is/whois-ip/ip-address/
 
 [00:56 06.01.2018]
 Редактор прямо в сайте?!
+
+
+[13:37 22.03.2018]
+Создание "корзины" данных удаляемых при помощи Арчера. Автоматическое создание нужной таблицы и перемещение данных туда
+DROP TABLE IF EXISTS `cardinal_trash`;
+CREATE TABLE IF NOT EXISTS `cardinal_trash` (
+`tId` int(11) not null auto_increment,
+`tTable` varchar(255) not null,
+`tData` longtext not null,
+primary key `id`(`tId`)
+) ENGINE=MyISAM;
+INSERT INTO `cardinal_trash` SET `tTable` = "AText", `tData` = "serialize..."

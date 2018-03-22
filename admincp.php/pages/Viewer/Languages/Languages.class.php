@@ -54,6 +54,7 @@ class Languages extends Core {
 		$orLang = (modules::manifest_get("mainLang") ? modules::manifest_get("mainLang") : "ru");
 		$langs = $orLang;
 		if(Arr::get($_GET, "saveAPI", false)) {
+			callAjax();
 			config::Update("apiKeyTranslate", Arr::get($_POST, "key", false));
 			cardinal::RegAction("Сохранён новый ключ для перевода в разделе языковой панели");
 			return;
@@ -62,11 +63,13 @@ class Languages extends Core {
 			if(Arr::get($_GET, "page")=="main") {
 				$support = lang::support(true);
 				$supports = lang::translateSupport();
+				sortByValue($supports);
 				for($i=0;$i<sizeof($support);$i++) {
 					$langer = nucfirst($support[$i]);
 					templates::assign_vars(array(
 						"clearLang" => $support[$i],
 						"lang" => (isset($supports[$support[$i]]) ? $supports[$support[$i]] : $langer),
+						"mainLang" => (isset($mainLangSite) && $mainLangSite==$clearLang ? "yes" : "no"),
 					), "supportLang", "lang".($i+1));
 				}
 				foreach($supports as $k => $v) {
@@ -81,41 +84,49 @@ class Languages extends Core {
 		}
 		if(Arr::get($_GET, 'createLang', false)) {
 			callAjax();
-			$newLang = Arr::get($_GET, 'createLang');
-			lang::include_lang("install");
-			$this->ParseLang();
-			global $lang;
-			if(is_array($lang)) {
-				$arr = array_merge(array(), $lang);
+			$newLang = Arr::get($_POST, 'nameCreated');
+			if(isset($_POST['useLang']) && $_POST['useLang']=="1") {
+				lang::include_lang("install");
+				$this->ParseLang();
+				global $lang;
+				if(is_array($lang)) {
+					$arr = array_merge(array(), $lang);
+				} else {
+					$arr = array();
+				}
 			} else {
 				$arr = array();
 			}
-			$admin = ADMIN_SKINS.config::Select("skins", "admincp").DS;
-			$dir = read_dir($admin);
-			sort($dir);
-			for($z=0;$z<sizeof($dir);$z++) {
-				$file = file_get_contents($admin.$dir[$z]);
-				preg_match_all("#\{L_(['\"]|)(.+?)(\[(.*?)\]|)\\1\}#", $file, $match);
-				for($i=0;$i<sizeof($match[2]);$i++) {
-					$arr[$match[2][$i]] = $match[2][$i];
+			if(isset($_POST['supportSkinsAdmin']) && ($_POST['supportSkinsAdmin'] == "on" || $_POST['supportSkinsAdmin'] == "1")) {
+				$admin = ADMIN_SKINS.config::Select("skins", "admincp").DS;
+				$dir = read_dir($admin);
+				sort($dir);
+				for($z=0;$z<sizeof($dir);$z++) {
+					$file = file_get_contents($admin.$dir[$z]);
+					preg_match_all("#\{L_(['\"]|)(.+?)(\[(.*?)\]|)\\1\}#", $file, $match);
+					for($i=0;$i<sizeof($match[2]);$i++) {
+						$arr[$match[2][$i]] = $match[2][$i];
+					}
 				}
 			}
-			$admin = PATH_SKINS;
-			$dir = read_dir($admin);
-			for($z=0;$z<sizeof($dir);$z++) {
-				$file = file_get_contents($admin.$dir[$z]);
-				preg_match_all("#\{L_(['\"]|)(.+?)(\[(.*?)\]|)\\1\}#", $file, $match);
-				for($i=0;$i<sizeof($match[2]);$i++) {
-					$arr[$match[2][$i]] = $match[2][$i];
+			if(isset($_POST['supportSkins']) && ($_POST['supportSkins'] == "on" || $_POST['supportSkins'] == "1")) {
+				$admin = PATH_SKINS;
+				$dir = read_dir($admin);
+				for($z=0;$z<sizeof($dir);$z++) {
+					$file = file_get_contents($admin.$dir[$z]);
+					preg_match_all("#\{L_(['\"]|)(.+?)(\[(.*?)\]|)\\1\}#", $file, $match);
+					for($i=0;$i<sizeof($match[2]);$i++) {
+						$arr[$match[2][$i]] = $match[2][$i];
+					}
 				}
-			}
-			$admin = PATH_SKINS.config::Select("skins", "skins").DS;
-			$dir = read_dir($admin);
-			for($z=0;$z<sizeof($dir);$z++) {
-				$file = file_get_contents($admin.$dir[$z]);
-				preg_match_all("#\{L_(['\"]|)(.+?)(\[(.*?)\]|)\\1\}#", $file, $match);
-				for($i=0;$i<sizeof($match[2]);$i++) {
-					$arr[$match[2][$i]] = $match[2][$i];
+				$admin = PATH_SKINS.config::Select("skins", "skins").DS;
+				$dir = read_dir($admin);
+				for($z=0;$z<sizeof($dir);$z++) {
+					$file = file_get_contents($admin.$dir[$z]);
+					preg_match_all("#\{L_(['\"]|)(.+?)(\[(.*?)\]|)\\1\}#", $file, $match);
+					for($i=0;$i<sizeof($match[2]);$i++) {
+						$arr[$match[2][$i]] = $match[2][$i];
+					}
 				}
 			}
 			$arr['lang_ini'] = $newLang;
@@ -132,6 +143,7 @@ class Languages extends Core {
 				lang::Update($newLang, $k, $v);
 			}
 			cardinal::RegAction("Создан новый язык \"".$newlang."\" в разделе языковой панели");
+			location("./?pages=Languages&page=main");
 			return true;
 		}
 		if(Arr::get($_GET, 'lang', false)) {
@@ -151,6 +163,40 @@ class Languages extends Core {
 				$ret = "0";
 			}
 			HTTP::echos($ret);
+			die();
+		}
+		if(Arr::get($_GET, 'removeLang', false)) {
+			callAjax();
+			$lang = Arr::get($_GET, 'removeLang', false);
+			if(!$lang || !lang::checkLang($lang)) {
+				new Errors();
+				die();
+			}
+			if(lang::Remove($lang)) {
+				$ret = "1";
+			} else {
+				$ret = "0";
+			}
+			HTTP::echos($ret);
+			cardinal::RegAction("Удалён язык \"".$lang."\" в разделе языковой панели");
+			location("./?pages=Languages&page=main");
+			die();
+		}
+		if(Arr::get($_GET, 'mainLang', false)) {
+			callAjax();
+			$lang = Arr::get($_GET, 'mainLang', false);
+			if(!$lang || !lang::checkLang($lang)) {
+				new Errors();
+				die();
+			}
+			if(!is_writeable(PATH_MEDIA)) {
+				chmod(PATH_MEDIA, 0777);
+			}
+			@file_put_contents(PATH_MEDIA."config.init.".ROOT_EX, '<?php'.PHP_EOL.'lang::set_lang("'.$lang.'");Route::SetLang("'.$lang.'", true);$mainLangSite = "'.$lang.'";');
+			$ret = "1";
+			HTTP::echos($ret);
+			cardinal::RegAction("Установлен язык по-умолчанию \"".$lang."\" в разделе языковой панели");
+			location("./?pages=Languages&page=main");
 			die();
 		}
 		if(Arr::get($_GET, 'resetLang', false)) {

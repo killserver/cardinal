@@ -8,7 +8,12 @@ class Customize extends Core {
 		$width = imagesx($im);
 		$height = imagesy($im);
 		if($width > 500 || $height > 500) {
-			trigger_error('ICO images cannot be larger than 500 pixels wide/tall', E_USER_WARNING);
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
+			throw new Exception('ICO images cannot be larger than 500 pixels wide/tall', E_USER_WARNING);
 			return;
 		}
 		foreach($sizes as $size) {
@@ -66,7 +71,11 @@ class Customize extends Core {
 				cardinal::RegAction("Внесение изменений в файл \"".PATH_SKINS.config::Select("skins", "skins").DS."customizeStyle.css"."\" пользователем \"".User::get("username")."\"");
 				HTTP::echos("done");
 			} else {
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
 				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 				HTTP::echos("notSave");
 			}
 			return false;

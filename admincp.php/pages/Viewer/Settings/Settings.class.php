@@ -134,8 +134,8 @@ class Settings extends Core {
 			"SERNAME" => config::Select("default_http_hostname"),
 			"mail_from" => config::Select("mail_from"),
 			"max_news" => config::Select("max_news"),
-			"sitename" => $name,
-			"description" => $descr,
+			"sitename" => htmlspecialchars($name),
+			"description" => htmlspecialchars($descr),
 		));
 		if(sizeof(self::$sub_nav)>0) {
 			for($i=0;$i<sizeof(self::$sub_nav);$i++) {
@@ -147,6 +147,6 @@ class Settings extends Core {
 	}
 	
 }
-ReadPlugins(dirname(__FILE__)."/Plugins/", "Settings");
+ReadPlugins(dirname(__FILE__).DIRECTORY_SEPARATOR."Plugins".DIRECTORY_SEPARATOR, "Settings");
 
 ?>

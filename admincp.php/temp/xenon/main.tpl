@@ -224,11 +224,11 @@
 					
 					<!-- logo -->
 					<div class="logo">
-						<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=main" class="logo-expanded">
+						<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/{C_mainPageAdmin}" class="logo-expanded">
 							<img src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/{C_logoAdminMain}" width="80" alt="" />
 						</a>
 						
-						<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=main" class="logo-collapsed">
+						<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/{C_mainPageAdmin}" class="logo-collapsed">
 							<img src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/{C_logoAdminMobile}" width="40" alt="" />
 						</a>
 					</div>
@@ -257,8 +257,8 @@
 				<ul id="main-menu" class="main-menu">
 					<!-- add class "multiple-expanded" to allow multiple submenus to open -->
 					<!-- class "auto-inherit-active-class" will automatically add "active" class for parent elements who are marked already with class "active" -->
-						<li>
-							<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=main">
+						<li[if {C_deactiveMainMenu}==1] style="display:none;"[/if {C_deactiveMainMenu}==1]>
+							<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/{C_mainPageAdmin}">
 								<i class="linecons-cog"></i>
 								<span class="title">{L_"Main admin"}</span>
 							</a>
@@ -503,6 +503,7 @@
 	
 	<!-- Imported styles on this page -->
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/toastr/toastr.min.css?1">
+	<link href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/x-editable/x-editable.min.css" rel="stylesheet">
 	{css_list}
 	<!-- Bottom Scripts -->
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/bootstrap.min.js?1"></script>
@@ -518,6 +519,7 @@
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/datepicker/bootstrap-datepicker.js"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/timepicker/bootstrap-timepicker.min.js"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/colorpicker/bootstrap-colorpicker.min.js"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/x-editable/x-editable.min.js"></script>
 
 	{js_list}
 	
