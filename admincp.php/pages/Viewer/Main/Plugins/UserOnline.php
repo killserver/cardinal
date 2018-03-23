@@ -11,7 +11,7 @@ class Main_UserOnline extends Main {
 			$online = 0;
 			if($Handler = @scandir($SessionDir)) {
 				for($i=0;$i<sizeof($Handler);$i++) {
-					if($Handler[$i]=="index.html"||$Handler[$i]=="index.".ROOT_EX) {
+					if($Handler[$i]=="index.html"||$Handler[$i]=="index.".ROOT_EX||$Handler[$i]==".htaccess"||$Handler[$i]=="."||$Handler[$i]=="..") {
 						continue;
 					}
 					if(time()-@filemtime($SessionDir.$Handler[$i])<$Timeout) {

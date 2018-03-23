@@ -376,8 +376,8 @@ function in_array_strpos($str, $arr, $rebuild = false) {
 	return $ret;
 }
 
-function location($link, $time = 0, $exit = true, $code = 302){return function_call('location', array($link, $time, $exit, $code));}
-function or_location($link, $time = 0, $exit = true, $code = 302) {
+function location($link, $time = 0, $exit = true, $code = 301){return function_call('location', array($link, $time, $exit, $code));}
+function or_location($link, $time = 0, $exit = true, $code = 301) {
 	HTTP::Location(templates::view($link), $time, $exit, $code);
 }
 

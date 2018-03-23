@@ -19,6 +19,8 @@
 	max-width: 55%;
 	z-index: 10000;
 	margin: 0px;
+    font: 12px Arial, Helvetica, sans-serif;
+    letter-spacing: 0.5px;
 }
 
 #i-debug-panel ul,
@@ -140,6 +142,7 @@
 #i-debug-panel table td span
 {
 	color: #777;
+	font-size: 12px;
 }
 
 #i-debug-panel table tr:hover

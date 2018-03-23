@@ -254,6 +254,18 @@ function headers($array = array(), $clear = false, $no_js = false) {
 		$header .= "<link href=\"{C_default_http_host}favicon.ico\" rel=\"shortcut icon\" type=\"image/x-icon\" />\n";
 		$header .= "<link rel=\"shortcut icon\" type=\"image/vnd.microsoft.icon\" href=\"{C_default_http_host}favicon.ico\" sizes=\"16x16\" />\n";
 		$header .= "<link rel=\"icon\" type=\"image/x-icon\" href=\"{C_default_http_host}favicon.ico\" sizes=\"16x16\" />\n";
+	} else if(file_exists(ROOT_PATH."favicon.png")) {
+		$header .= "<link href=\"{C_default_http_host}favicon.png\" rel=\"shortcut icon\" type=\"image/png\" />\n";
+		$header .= "<link rel=\"shortcut icon\" type=\"image/png\" href=\"{C_default_http_host}favicon.png\" sizes=\"16x16\" />\n";
+		$header .= "<link rel=\"icon\" type=\"image/png\" href=\"{C_default_http_host}favicon.png\" sizes=\"16x16\" />\n";
+	} else if(file_exists(ROOT_PATH."favicon.jpg")) {
+		$header .= "<link href=\"{C_default_http_host}favicon.jpg\" rel=\"shortcut icon\" type=\"image/jpg\" />\n";
+		$header .= "<link rel=\"shortcut icon\" type=\"image/jpg\" href=\"{C_default_http_host}favicon.jpg\" sizes=\"16x16\" />\n";
+		$header .= "<link rel=\"icon\" type=\"image/jpg\" href=\"{C_default_http_host}favicon.jpg\" sizes=\"16x16\" />\n";
+	} else if(file_exists(ROOT_PATH."favicon.jpeg")) {
+		$header .= "<link href=\"{C_default_http_host}favicon.jpeg\" rel=\"shortcut icon\" type=\"image/jpeg\" />\n";
+		$header .= "<link rel=\"shortcut icon\" type=\"image/jpeg\" href=\"{C_default_http_host}favicon.jpeg\" sizes=\"16x16\" />\n";
+		$header .= "<link rel=\"icon\" type=\"image/jpeg\" href=\"{C_default_http_host}favicon.jpeg\" sizes=\"16x16\" />\n";
 	}
 	if(!$clear) {
 		$skin = templates::get_skins();

@@ -306,7 +306,7 @@ class HTTP {
 		}
 	}
 	
-	final public static function Location($link, $time = 0, $exit = true, $code = 302) {
+	final public static function Location($link, $time = 0, $exit = true, $code = 301) {
 		if(defined("PHP_SAPI") && (PHP_SAPI != 'cgi-fcgi')) {
 			$status = self::StatusHeader($code);
 			header("HTTP/2.0 ".$code." ".$status);
