@@ -19,6 +19,7 @@ die();
 class DBObject implements ArrayAccess {
 	
 	private $loadedTable = "";
+	private $groupBy = "";
 	private $where = array();
 	private $limit = 1;
 	private $offset = 0;
@@ -39,6 +40,7 @@ class DBObject implements ArrayAccess {
 			$th->{$k} = "";
 		}
 		$th->loadedTable = "";
+		$th->groupBy = "";
 		$th->where = array();
 		$th->limit = 1;
 		$th->offset = 0;
@@ -77,6 +79,9 @@ class DBObject implements ArrayAccess {
 	final private function UnSetAll(&$ret) {
 		if(isset($ret['loadedTable'])) {
 			unset($ret['loadedTable']);
+		}
+		if(isset($ret['groupBy'])) {
+			unset($ret['groupBy']);
 		}
 		if(isset($ret['pathForUpload'])) {
 			unset($ret['pathForUpload']);
@@ -177,6 +182,9 @@ class DBObject implements ArrayAccess {
 		if(!is_array($th)) {
 			if(isset($th->loadedTable)) {
 				unset($th->loadedTable);
+			}
+			if(isset($th->groupBy)) {
+				unset($th->groupBy);
 			}
 			if(isset($th->pathForUpload)) {
 				unset($th->pathForUpload);
@@ -424,6 +432,17 @@ class DBObject implements ArrayAccess {
 		return (!empty($orders) ? " ORDER BY ".$orders." " : "");
 	}
 	
+	final private function ReleaseGroupBy($groupBy = "") {
+		$groupbys = "";
+		if($groupBy!=="") {
+			$groupbys = $groupBy;
+		} elseif($this->groupBy!=="") {
+			$groupbys = $this->groupBy;
+		}
+
+		return (!empty($groupbys) ? " GROUP BY `".$groupbys."` " : "");
+	}
+	
 	final private function ReleaseLimit($limit = "") {
 		$limits = "";
 		if(!empty($limit)) {
@@ -434,7 +453,7 @@ class DBObject implements ArrayAccess {
 		if($limits<1) {
 			$limits = "";
 		}
-		return (!empty($limits) ? " LIMIT ".$limits." " : "");
+		return (!empty($limits) && $this->multiple===false ? " LIMIT ".$limits." " : "");
 	}
 	
 	final private function ReleaseOffset($offset = "") {
@@ -512,7 +531,7 @@ class DBObject implements ArrayAccess {
 		}
 	}
 	
-	final public function Select($table = "", $where = "", $orderBy = "", $limit = "", $offset = "") {
+	final public function Select($table = "", $where = "", $orderBy = "", $limit = "", $offset = "", $groupby = "") {
 		if(empty($this->loadedTable) && empty($table)) {
 			throw new Exception("Table for select is not set or empty");
 			die();
@@ -534,8 +553,9 @@ class DBObject implements ArrayAccess {
 		$orderBy = $this->ReleaseOrder($orderBy);
 		$limit = $this->ReleaseLimit($limit);
 		$offset = $this->ReleaseOffset($offset);
+		$groupby = $this->ReleaseGroupBy($groupby);
 		$table = $this->addPrefixTable($table);
-		$sql = "SELECT ".implode(", ", array_map(array(&$this, "getFieldForSelect"), $keys))." FROM ".$table.$where.$orderBy.$limit.$offset;
+		$sql = "SELECT ".implode(", ", array_map(array(&$this, "getFieldForSelect"), $keys))." FROM ".$table.$where.$groupby.$orderBy.$limit.$offset;
 		if(defined("PATH_CACHE_SYSTEM") && !empty(PATH_CACHE_SYSTEM)) {
 			$fileCache = PATH_CACHE_SYSTEM.$table."_".md5($sql).".cache";
 		}
@@ -585,7 +605,7 @@ class DBObject implements ArrayAccess {
 		$this->multiple = ($val === "" ? (!$this->multiple ? true : false) : $val);
 	}
 
-	final public function getSelectQuery($table = "", $where = "", $orderBy = "", $limit = "", $offset = "") {
+	final public function getSelectQuery($table = "", $where = "", $orderBy = "", $limit = "", $offset = "", $groupby = "") {
 		if(empty($this->loadedTable) && empty($table)) {
 			throw new Exception("Table for select is not set or empty");
 			die();
@@ -606,11 +626,12 @@ class DBObject implements ArrayAccess {
 		$where = $this->ReleaseWhere($where);
 		$orderBy = $this->ReleaseOrder($orderBy);
 		$limit = $this->ReleaseLimit($limit);
+		$groupby = $this->ReleaseGroupBy($groupby);
 		$offset = $this->ReleaseOffset($offset);
-		return "SELECT ".implode(", ", array_map(array(&$this, "getFieldForSelect"), $keys))." FROM ".$this->addPrefixTable($table).$where.$orderBy.$limit.$offset;
+		return "SELECT ".implode(", ", array_map(array(&$this, "getFieldForSelect"), $keys))." FROM ".$this->addPrefixTable($table).$where.$groupby.$orderBy.$limit.$offset;
 	}
 
-	final public function getMax($table = "", $where = "", $orderBy = "", $limit = "", $offset = "") {
+	final public function getMax($table = "", $where = "", $orderBy = "", $limit = "", $offset = "", $groupby = "") {
 		if(empty($this->loadedTable) && empty($table)) {
 			throw new Exception("Table for select is not set or empty");
 			die();
@@ -631,8 +652,9 @@ class DBObject implements ArrayAccess {
 		$where = $this->ReleaseWhere($where);
 		$orderBy = $this->ReleaseOrder($orderBy);
 		$limit = $this->ReleaseLimit($limit);
+		$groupby = $this->ReleaseGroupBy($groupby);
 		$offset = $this->ReleaseOffset($offset);
-		$rel = db::doquery("SELECT COUNT(".current($keys).") AS `max` FROM ".$this->addPrefixTable($table).$where.$orderBy.$limit.$offset);
+		$rel = db::doquery("SELECT COUNT(".current($keys).") AS `max` FROM ".$this->addPrefixTable($table).$groupby.$where.$orderBy.$limit.$offset);
 		return $rel['max'];
 	}
 
@@ -643,6 +665,11 @@ class DBObject implements ArrayAccess {
 		} else {
 			return time();
 		}
+	}
+
+	final public function groupBy($field) {
+		$this->groupBy = $field;
+		return true;
 	}
 
 	final public function Insert($table = "") {
@@ -656,13 +683,19 @@ class DBObject implements ArrayAccess {
 			throw new Exception("Fields is not set");
 			die();
 		}
+		$forUpdate = array();
+		foreach($arr as $k => $v) {
+			if($v!=="") {
+				$forUpdate[$k] = $v;
+			}
+		}
 		if(empty($table)) {
 			$table = $this->loadedTable;
 		} else {
 			$this->loadedTable = $table;
 		}
-		$key = array_keys($arr);
-		$val = array_values($arr);
+		$key = array_keys($forUpdate);
+		$val = array_values($forUpdate);
 		$table = $this->addPrefixTable($table);
 		$this->clearCache($table);
 		if(sizeof($this->listAdd)>0) {
@@ -682,7 +715,7 @@ class DBObject implements ArrayAccess {
 		return ("".str_replace("\\\\u", "\\u", db::escape($d))."");
 	}
 
-	final public function Update($table = "", $where = "", $orderBy = "", $limit = "") {
+	final public function Update($table = "", $where = "", $orderBy = "", $limit = "", $groupby = "") {
 		if(empty($this->loadedTable) && empty($table)) {
 			throw new Exception("Table for update is not set or empty");
 			die();
@@ -699,10 +732,7 @@ class DBObject implements ArrayAccess {
 		}
 		$forUpdate = array();
 		foreach($arr as $k => $v) {
-			if(!is_string($v) && !empty($v)) {
-				throw new Exception("Fields ".$k." is not string");
-				die();
-			} elseif(!empty($v)) {
+			if($v!==""&&$v!==null) {
 				$forUpdate[$k] = $v;
 			}
 		}
@@ -713,6 +743,7 @@ class DBObject implements ArrayAccess {
 		}
 		$where = $this->ReleaseWhere($where);
 		$orderBy = $this->ReleaseOrder($orderBy);
+		$groupby = $this->ReleaseGroupBy($groupby);
 		$limit = $this->ReleaseLimit($limit);
 		$key = array_keys($forUpdate);
 		$val = array_values($forUpdate);
@@ -724,14 +755,14 @@ class DBObject implements ArrayAccess {
 			$key = array_merge($key, $keys);
 			$val = array_merge($val, $vals);
 		}
-		return db::doquery("UPDATE ".$table." SET ".implode(", ", array_map(array(&$this, "buildUpdateKV"), $key, $val)).$where.$orderBy.$limit);
+		return db::doquery("UPDATE ".$table." SET ".implode(", ", array_map(array(&$this, "buildUpdateKV"), $key, $val)).$where.$groupby.$orderBy.$limit);
 	}
 	
 	final private function buildUpdateKV($k, $v) {
 		return "`".$k."` = ".("".str_replace("\\\\u", "\\u", db::escape($v))."");
 	}
 
-	final public function Deletes($table = "", $where = "", $orderBy = "", $limit = "") {
+	final public function Deletes($table = "", $where = "", $orderBy = "", $limit = "", $groupby = "") {
 		if(empty($this->loadedTable) && empty($table)) {
 			throw new Exception("Table for delete is not set or empty");
 			die();
@@ -748,13 +779,14 @@ class DBObject implements ArrayAccess {
 		$where = $this->ReleaseWhere($where);
 		$orderBy = $this->ReleaseOrder($orderBy);
 		$limit = $this->ReleaseLimit($limit);
+		$groupby = $this->ReleaseGroupBy($groupby);
 		if((!isset($this->where) || sizeof($this->where)==0) && empty($where)) {
 			throw new Exception("Сonditions for delete is not set or empty");
 			die();
 		}
 		$table = $this->addPrefixTable($table);
 		$this->clearCache($table);
-		return db::doquery("DELETE FROM ".$table." ".$where.$orderBy.$limit);
+		return db::doquery("DELETE FROM ".$table." ".$where.$groupby.$orderBy.$limit);
 	}
 	
 	final public function addField($name, $val = "") {

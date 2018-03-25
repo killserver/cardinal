@@ -1,6 +1,6 @@
 <div class="row">
 	<div class="col-md-3" id="fileTree">
-	{dir}
+	<!-- {dir} -->
 	</div>
 	<div class="col-md-9">
 		<div name="editor" id="editor" style="height:600px;"></div>
@@ -100,7 +100,7 @@ function loadFile(file) {
 	});
 }
 //loadFile('{file}');
-jQuery('#fileTree').fileTree({ root: '/', script: './?pages=Editor&tree=1', folderEvent: 'dblclick', expandSpeed: 1, collapseSpeed: 1 }, function(file) { 
+jQuery('#fileTree').fileTree({ root: '/', script: './?pages=Editor&tree=1', folderEvent: 'click', expandSpeed: 1, collapseSpeed: 1 }, function(file) {
 	loadFile(file);
 });
 $(".send").click(function() {
