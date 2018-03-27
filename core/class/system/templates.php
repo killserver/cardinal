@@ -1962,37 +1962,32 @@ if(!$test) {
 		foreach($arr as $k => $v) {
 			if(is_array($arr) && is_object($v) && $v instanceof DBObject && !empty($name)) {
 				$v = $v->getArray();
-				cardinalEvent::setData($v);
-				$vs = cardinalEvent::execute("templates::loadObject");
+				$vs = cardinalEvent::execute("templates::loadObject", $v);
 				if(!empty($vs)) {
 					$v = $vs;
 				}
 				self::assign_vars($v, $name, $k.$i);
 			} else if(is_object($v) && $v instanceof DBObject) {
 				$v = $v->getArray();
-				cardinalEvent::setData($v);
-				$vs = cardinalEvent::execute("templates::loadObject");
+				$vs = cardinalEvent::execute("templates::loadObject", $v);
 				if(!empty($vs)) {
 					$v = $vs;
 				}
 				self::loadObject($v);
 			} else if(is_object($v)) {
-				cardinalEvent::setData($v);
-				$vs = cardinalEvent::execute("templates::loadObject");
+				$vs = cardinalEvent::execute("templates::loadObject", $v);
 				if(!empty($vs)) {
 					$v = $vs;
 				}
 				self::loadObject($v);
 			} else if(is_array($arr)) {
-				cardinalEvent::setData($v);
-				$vs = cardinalEvent::execute("templates::loadObject");
+				$vs = cardinalEvent::execute("templates::loadObject", $v);
 				if(!empty($vs)) {
 					$v = $vs;
 				}
 				self::assign_vars($v, $k, $k.$i);
 			} else {
-				cardinalEvent::setData($v);
-				$vs = cardinalEvent::execute("templates::loadObject");
+				$vs = cardinalEvent::execute("templates::loadObject", $v);
 				if(!empty($vs)) {
 					$v = $vs;
 				}

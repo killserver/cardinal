@@ -283,20 +283,22 @@ class Route {
 			$params = "";
 			foreach($routes as $name => $route) {
 				if($params = $route->Matches($uri, $default)) {
-					$langs = lang::support();
 					$newLang = array();
-					for($i=0;$i<sizeof($langs);$i++) {
-						$clearLang = $langs[$i];
-						if(strlen($langs[$i])>2) {
-							$clearLang = substr($clearLang, 4, -3);
+					if(class_exists("lang", false) && method_exists("lang", "support")) {
+						$langs = lang::support();
+						for($i=0;$i<sizeof($langs);$i++) {
+							$clearLang = $langs[$i];
+							if(strlen($langs[$i])>2) {
+								$clearLang = substr($clearLang, 4, -3);
+							}
+							$newLang[$clearLang] = $langs[$i];
 						}
-						$newLang[$clearLang] = $langs[$i];
 					}
 					if(!empty(self::$_langForce) && !isset($params['now_lang'])) {
-						$params['tlang'] = self::$_langForce;
-					} else if(isset($params['now_lang']) && isset($newLang[$params['now_lang']])) {
-						$params['tlang'] = $params['now_lang'];
-					} else if(isset($params['now_lang']) && !isset($newLang[$params['now_lang']])) {
+						$params['lang'] = self::$_langForce;
+					} else if(isset($params['now_lang']) && sizeof($newLang)>0 && isset($newLang[$params['now_lang']])) {
+						$params['lang'] = $params['now_lang'];
+					} else if(isset($params['now_lang']) && sizeof($newLang)>0 && !isset($newLang[$params['now_lang']])) {
 						header("HTTP/1.1 301 Moved Permanently");
 						header("Location: ".substr($uri, 2));
 						die();

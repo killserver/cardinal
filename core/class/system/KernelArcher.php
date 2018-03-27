@@ -580,42 +580,58 @@ class KernelArcher {
 		if(is_array($del) && isset($del['models'])) {
 			$models = $del['models'];
 		}
-		if(is_object($del)) {
+		/*if(is_object($del)) {
 			$models = $del;
-		}
+		}*/
 		$models = $models->getArray();
-		$first = current($models);
-		if(isset(self::$excl[__FUNCTION__])) {
-			foreach(self::$excl[__FUNCTION__] as $k => $v) {
-				if(isset($models[$k])) {
-					unset($models[$k]);
-				}
+		$trash = false;
+		if(defined("PATH_CACHE_USERDATA")) {
+			if(!is_writeable(PATH_CACHE_USERDATA)) {
+				@chmod(PATH_CACHE_USERDATA, 0777);
 			}
+			if(!file_exists(PATH_CACHE_USERDATA."trashBin.lock")) {
+				db::query("CREATE TABLE IF NOT EXISTS {{trashBin}} ( `tId` int not null auto_increment, `tTable` varchar(255) not null, `tData` longtext not null, `tTime` int(11) not null, `tIp` varchar(255) not null, primary key `id`(`tId`) ) ENGINE=MyISAM;");
+				file_put_contents(PATH_CACHE_USERDATA."trashBin.lock", "");
+			}
+			$trash = true;
 		}
-		foreach($models as $name => $val) {
-			if(empty($val)) {
-				continue;
-			}
-			$type = $model->getAttribute($name, "type");
-			if($type=="image" || $type=="file") {
-				$val = str_replace("/", DS, $val);
-				$exp = explode("?", $val);
-				if((is_array($exp) && isset($exp[0]) && file_exists(ROOT_PATH.$exp[0])) || (file_exists(ROOT_PATH.$val))) {
-					unlink(ROOT_PATH.(is_array($exp) && isset($exp[0]) ? $exp[0] : $val));
-				}
-			} else if($type=="imageArray" || $type=="fileArray") {
-				$exp = explode(",", $val);
-				for($i=0;$i<sizeof($exp);$i++) {
-					$exp[$i] = str_replace("/", DS, $exp[$i]);
-					$exps = explode("?", $exp[$i]);
-					if((is_array($exps) && isset($exps[0]) && file_exists(ROOT_PATH.$exps[0])) || (file_exists(ROOT_PATH.$exp[$i]))) {
-						unlink(ROOT_PATH.(is_array($exps) && isset($exps[0]) ? $exps[0] : $exp[$i]));
+		$first = current($models);
+		if(!$trash) {
+			if(isset(self::$excl[__FUNCTION__])) {
+				foreach(self::$excl[__FUNCTION__] as $k => $v) {
+					if(isset($models[$k])) {
+						unset($models[$k]);
 					}
 				}
 			}
+			foreach($models as $name => $val) {
+				if(empty($val)) {
+					continue;
+				}
+				$type = $model->getAttribute($name, "type");
+				if($type=="image" || $type=="file") {
+					$val = str_replace("/", DS, $val);
+					$exp = explode("?", $val);
+					if((is_array($exp) && isset($exp[0]) && file_exists(ROOT_PATH.$exp[0])) || (file_exists(ROOT_PATH.$val))) {
+						unlink(ROOT_PATH.(is_array($exp) && isset($exp[0]) ? $exp[0] : $val));
+					}
+				} else if($type=="imageArray" || $type=="fileArray") {
+					$exp = explode(",", $val);
+					for($i=0;$i<sizeof($exp);$i++) {
+						$exp[$i] = str_replace("/", DS, $exp[$i]);
+						$exps = explode("?", $exp[$i]);
+						if((is_array($exps) && isset($exps[0]) && file_exists(ROOT_PATH.$exps[0])) || (file_exists(ROOT_PATH.$exp[$i]))) {
+							unlink(ROOT_PATH.(is_array($exps) && isset($exps[0]) ? $exps[0] : $exp[$i]));
+						}
+					}
+				}
+			}
+			cardinal::RegAction("Удаление данных в Арчере. Модель \"".$modelName."\". ИД: \"".$first."\"");
+		} else {
+			db::doquery("INSERT INTO {{trashBin}} SET `tTable` = ".db::escape($this->selectTable).", `tData` = ".db::escape(json_encode($models)).", `tTime`= UNIX_TIMESTAMP(), `tIp` = '".HTTP::getip()."'");
+			$list = $model->Deletes();
+			cardinal::RegAction("Перемещение данных в Арчере в корзину. Модель \"".$modelName."\". ИД: \"".$first."\"");
 		}
-		cardinal::RegAction("Удаление данных в Арчере. Модель \"".$modelName."\". ИД: \"".$first."\"");
-		$list = $model->Deletes();
 		$addition = "";
 		if(Arr::get($_GET, "ShowPages", false)) {
 			$addition .= "&ShowPages=".Arr::get($_GET, "ShowPages");

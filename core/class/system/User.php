@@ -145,9 +145,8 @@ class User {
 		}
 		return false;
 	}
-	
-	final public static function load() {
-	global $user, $users, $db;
+
+	final public static function loadUsers() {
 		$user = $users = array();
 		$userLoad = false;
 		if(isset($_SERVER['HTTP_HOST']) && file_exists(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX)) {
@@ -167,6 +166,29 @@ class User {
 				$users = array_merge($users, $usersFile);
 			}
 		}
+		$id = 1;
+		$arr = array_values($users);
+		for($i=0;$i<sizeof($arr);$i++) {
+			if(isset($arr['id'])) {
+				$id = max($id, $arr['id']);
+			}
+		}
+		foreach($users as $k => $v) {
+			if(!isset($v['id'])) {
+				$users[$k]['id'] = $id;
+				$id++;
+			}
+		}
+		return array($user, $users, $userLoad);
+	}
+	
+	final public static function load() {
+	global $user, $users, $db;
+		$user = $users = array();
+		$load = self::loadUsers();
+		$user = $load[0];
+		$users = $load[1];
+		$userLoad = $load[2];
 		if((defined("COOK_USER") || defined("COOK_ADMIN_USER") || defined("COOK_PASS") || defined("COOK_ADMIN_PASS")) && (Arr::get($_COOKIE, COOK_USER, false) || Arr::get($_COOKIE, COOK_ADMIN_USER, false)) && (Arr::get($_COOKIE, COOK_PASS, false) || Arr::get($_COOKIE, COOK_ADMIN_PASS, false))) {
 			if(Arr::get($_COOKIE, COOK_ADMIN_USER, false) && defined("IS_ADMIN")) {
 				$username = Saves::SaveOld(Arr::get($_COOKIE, COOK_ADMIN_USER));
@@ -250,15 +272,24 @@ class User {
 	}
 	
 	final public static function checkField($first, $second) {
-		return (is_array(self::$userInfo) && sizeof(self::$userInfo) > 0 && isset(self::$userInfo[$first]) && Validate::equals($first, $second));
+		if(!is_array(self::$userInfo) || sizeof(self::$userInfo) == 0 || !isset(self::$userInfo[$first])) {
+			self::load();
+		}
+		return Validate::equals($first, $second);
 	}
 	
 	final public static function get($first) {
-		return (is_array(self::$userInfo) && sizeof(self::$userInfo) > 0 && isset(self::$userInfo[$first]) ? self::$userInfo[$first] : false);
+		if(!is_array(self::$userInfo) || sizeof(self::$userInfo) == 0 || !isset(self::$userInfo[$first])) {
+			self::load();
+		}
+		return (isset(self::$userInfo[$first]) ? self::$userInfo[$first] : false);
 	}
 	
 	final public static function checkLogin() {
-		return (is_array(self::$userInfo) && sizeof(self::$userInfo) > 0 && isset(self::$userInfo['username']) && !empty(self::$userInfo['username']) ? true : false);
+		if(!is_array(self::$userInfo) || sizeof(self::$userInfo) == 0 || !isset(self::$userInfo[$first])) {
+			self::load();
+		}
+		return (isset(self::$userInfo['username']) && !empty(self::$userInfo['username']) ? true : false);
 	}
 	
 	final public static function checkExists($login) {
@@ -506,6 +537,11 @@ class User {
 		}
 		$id = $list[$size-1];
 		if(!is_string($id) && !is_numeric($id)) {
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Error in set ID for user");
 			die();
 		}
@@ -535,6 +571,11 @@ class User {
 				}
 			}
 			if(!isset($list[0]) || !isset($list[0]['username'])) {
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Error username is not set", 1);
 				die();
 			}
@@ -598,6 +639,7 @@ class User {
 				$v = current($list[$i]);
 				$update[$k] = $v;
 			}
+			$update['id'] = sizeof($users);
 			$users[$list[0]['username']] = array_merge($users[$list[0]['username']], $update);
 			if(is_writable(self::$path)) {
 				file_put_contents(self::$path."userList.txt", serialize($users));

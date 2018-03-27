@@ -281,7 +281,11 @@ class db {
 				self::$driver_name = self::$configInit['driver'];
 			}
 			if(!isset(self::$configInit['db'])) {
-				header("HTTP/1.0 520 Unknown Error");
+				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+					header("HTTP/1.0 520 Unknown Error");
+				} else {
+					header("HTTP/1.0 404 Not found");
+				}
 				throw new Exception("Error! DB is not set");
 				die();
 			} else {
@@ -348,8 +352,8 @@ class db {
 		}
 	}
 	
-	final public static function getTables($columns = true) {
-		if(sizeof(self::$loadedTable)==0 && self::connected()) {
+	final public static function getTables($columns = true, $andType = false) {
+		if(sizeof(self::$loadedTable[$columns.$andType])==0 && self::connected()) {
 			$loaded = array();
 			$sel = db::doquery("SHOW FULL TABLES", true);
 			while($row = db::fetch_assoc($sel)) {
@@ -357,15 +361,25 @@ class db {
 				if($columns) {
 					$res = db::query("SHOW COLUMNS FROM `".$row['Tables_in_'.strtolower(self::$dbName)]."`");
 					while($roz = db::fetch_assoc($res)) {
-						$loaded[$row['Tables_in_'.strtolower(self::$dbName)]][$roz['Field']] = $roz['Field'];
+						if($andType) {
+							$pos = strpos($roz['Type'], "(");
+							if($pos!==false) {
+								$roz['Type'] = substr($roz['Type'], 0, $pos);
+							}
+							$loaded[$row['Tables_in_'.strtolower(self::$dbName)]][$roz['Field']] = $roz['Type'];
+						} else {
+							$loaded[$row['Tables_in_'.strtolower(self::$dbName)]][$roz['Field']] = $roz['Field'];
+						}
 					}
-					$loaded[$row['Tables_in_'.strtolower(self::$dbName)]] = array_values($loaded[$row['Tables_in_'.strtolower(self::$dbName)]]);
+					if(!$andType) {
+						$loaded[$row['Tables_in_'.strtolower(self::$dbName)]] = array_values($loaded[$row['Tables_in_'.strtolower(self::$dbName)]]);
+					}
 				}
 			}
-			self::$loadedTable = $loaded;
-			return self::$loadedTable;
+			self::$loadedTable[$columns.$andType] = $loaded;
+			return self::$loadedTable[$columns.$andType];
 		} else {
-			return self::$loadedTable;
+			return self::$loadedTable[$columns.$andType];
 		}
 	}
 	

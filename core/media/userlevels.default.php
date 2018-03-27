@@ -20,6 +20,7 @@ $userlevels = array_replace($userlevels, array(
 		"access_loginadmin" => "yes", // Доступ к списку действий в админ-панели
 		"access_logs" => "yes", // Доступ к отчётам ошибок на сайте
 		"access_phpinfo" => "yes", // Доступ к системной информации о сервере
+		"access_recyclebin" => "yes", // Доступ к корзине данных, куда помещаются данные на 30 дней после удаления их из таблиц при помощи Арчера
 		"access_seo" => "yes", // Доступ к СЕО-мета
 		"access_seoBlock" => "yes", // Доступ к СЕО-блоку
 		"access_settings" => "yes", // Доступ к настройкам
