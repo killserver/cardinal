@@ -22,6 +22,28 @@ class Archer_Shield {
 	public function __construct() {
 		KernelArcher::callback("Shield", "TraceOn", array(&$this, "Headers"));
 	}
+
+	private function ordering($orderByName, $nowField) {
+		$ret = false;
+		if(is_array($orderByName)) {
+			$arr = array_keys($orderByName);
+			for($i=0;$i<sizeof($arr);$i++) {
+				$name = $orderByName[$arr[$i]];
+				if(isset($name[0]) && ($name[0]==$nowField || "{L_\"".$name[0]."\"}"==$nowField || "{L_'".$name[0]."'}"==$nowField)) {
+					$ret = $name[1];
+					break;
+				} else if(isset($name['name']) && ($name['name']==$nowField || "{L_\"".$name['name']."\"}"==$nowField || "{L_'".$name['name']."'}"==$nowField)) {
+					$ret = $name['order'];
+					break;
+				}
+			}
+			return $ret;
+		} else if($orderByName==$nowField || "{L_\"".$orderByName."\"}"==$nowField || "{L_'".$orderByName."'}"==$nowField) {
+			return $orderByName[1];
+		} else {
+			return false;
+		}
+	}
 	
 	public function Headers($table, $page, $model, $tpl) {
 		$modelName = get_class($model);
@@ -43,16 +65,26 @@ class Archer_Shield {
 		$myOrder = false;
 		if(isset(KernelArcher::$orderBy) && is_array(KernelArcher::$orderBy)) {
 			$myOrder = (isset(KernelArcher::$orderBy['name']) || isset(KernelArcher::$orderBy[0]) ? true : false);
-			$myOrderName = (isset(KernelArcher::$orderBy['name']) ? KernelArcher::$orderBy['name'] : (isset(KernelArcher::$orderBy[0]) ? KernelArcher::$orderBy[0] : ""));
-			$orderBySort = (isset(KernelArcher::$orderBy['order']) ? KernelArcher::$orderBy['order'] : (isset(KernelArcher::$orderBy[1]) ? KernelArcher::$orderBy[1] : ""));
+			if(isset(KernelArcher::$orderBy['name'])) {
+				$myOrderName = KernelArcher::$orderBy['name'];
+			} else {
+				if(isset(KernelArcher::$orderBy[0]) && is_array(KernelArcher::$orderBy[0])) {
+					$myOrderName = KernelArcher::$orderBy;
+					//$orderBySort = "";
+				} else if(isset(KernelArcher::$orderBy[0])) {
+					$myOrderName = KernelArcher::$orderBy[0];
+				}
+			}
+			//$orderBySort = (isset(KernelArcher::$orderBy['order']) ? KernelArcher::$orderBy['order'] : (isset(KernelArcher::$orderBy[1]) ? KernelArcher::$orderBy[1] : ""));
 		}
 		$counts = 0;
 		for($i=0;$i<sizeof($h);$i++) {
 			if($this->in_array_strpos($h[$i], $getExclude)) {
 				continue;
 			}
-			if($myOrder && $h[$i]==$myOrderName) {
+			if($myOrder && ($res = $this->ordering($myOrderName, $h[$i]))!==false) {
 				$orderById = $i;
+				$orderBySort = $res;
 			}
 			$altName = str_replace(array("{L_\"", "\"}"), "", $h[$i]);
 			if(isset(KernelArcher::$sortBy) && is_array(KernelArcher::$sortBy) && sizeof(KernelArcher::$sortBy)>0 && in_array($h[$i], KernelArcher::$sortBy)) {
@@ -72,10 +104,12 @@ class Archer_Shield {
 			}
 			$type = $model->getAttribute($d[$i], "type", $table, true);
 			$quickEditor = "";
-			if($i!=0) {
-				$active = false;
+			$infoField = "infoField";
+			$active = false;
+			if($i!=0 && KernelArcher::$disabledQuickEditor===false) {
 				$quickEditor = " data-pk=\"{".$modelName.".".$first."}\" data-name=\"".$d[$i]."\"";
 				if($type=="select" || $type=="array" || $type=="enum") {
+					$infoField = "";
 					//$quickEditor .= " data-type=\"select\" data-source=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Archer&type=".$modelName."&pageType=QuickEdit&loadSelect=".$d[$i]."\"";
 				} else if($type=="date") {
 					$active = true;
@@ -101,7 +135,7 @@ class Archer_Shield {
 					$quickEditor = " class=\"quickEdit\"".$quickEditor;
 				}
 			}
-			$data .= "<td data-id=\"{".$modelName.".".$first."}\" data-table=\"".$modelName."\" data-name=\"".$d[$i]."\" class=\"infoField\"><span".$quickEditor.">{".$modelName.".".$d[$i]."}</span></td>";
+			$data .= "<td data-id=\"{".$modelName.".".$first."}\" data-table=\"".$modelName."\" data-name=\"".$d[$i]."\" class=\"".$infoField."\"><span".$quickEditor.">{".$modelName.".".$d[$i]."}</span></td>";
 		}
 		$addition = "";
 		if(Arr::get($_GET, "Where", false)) {
@@ -119,7 +153,7 @@ class Archer_Shield {
 		if(Arr::get($_GET, "orderTo", false)) {
 			$addition .= "&orderTo=".Arr::get($_GET, "orderTo");
 		}
-		$tpl = str_replace("{orderById}", $orderById, $tpl);
+		$tpl = str_replace("{orderById}", ($orderById+1), $tpl);
 		$tpl = str_replace("{orderBySort}", $orderBySort, $tpl);
 		$tpl = str_replace("{addition}", $addition, $tpl);
 		$tpl = str_replace("{ArcherFirst}", $first, $tpl);
@@ -128,7 +162,8 @@ class Archer_Shield {
 		$tpl = str_replace("{ArcherPage}", $modelName, $tpl);
 		$tpl = str_replace("{ArcherSort}", implode(",", $sortBy), $tpl);
 		$tpl = str_replace("{ArcherTable}", str_replace(PREFIX_DB, "", $table), $tpl);
-		$tpl = str_replace("{ArcherNotTouch}", $counts, $tpl);
+		$tpl = str_replace("{ArcherAll}", ($counts+2), $tpl);
+		$tpl = str_replace("{ArcherNotTouch}", ($counts+1), $tpl);
 		return $tpl;
 	}
 	

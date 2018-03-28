@@ -116,6 +116,18 @@ class Archer extends Core {
 				$tpl = $univ->TraceOn("Delete", "ArcherTakeDelete");
 				$univ->TakeDelete($model, array(&$this, "View"), $tpl, false);
 			break;
+			case "MultiAction":
+				if($request->post->get("action", false)=="delete") {
+					$ids = $request->post->get("delete", array());
+					if(sizeof($ids)>0) {
+						$model = modules::loadModels("Model".$upFirst, $typeUni);
+						$model->SetTable($typeUni);
+						$model->WhereTo("", "", "IN(".implode(",", $ids).")");
+						$model->Deletes();
+					}
+				}
+				location("./?pages=Archer&type=".$typeUni);
+			break;
 			/*
 			Sorting data in database
 			*/

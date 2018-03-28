@@ -10,6 +10,7 @@ class KernelArcher {
 	private $countCall = array();
 	public static $sortBy = array();
 	public static $orderBy = false;
+	public static $disabledQuickEditor = true;
 	
 	function __construct($table, $model = false) {
 		$this->selectTable = $table;
