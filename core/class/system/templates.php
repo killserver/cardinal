@@ -1380,7 +1380,31 @@ class templates {
 		} else if($arr[1]=="templates") {
 			unset($arr[1]);$arr = array_values($arr);
 			return self::include_tpl($arr);
+		} else if($arr[1]=="content") {
+			unset($arr[1]);$arr = array_values($arr);
+			return self::include_content($arr);
 		}
+	}
+
+	final private static function include_content($array) {
+		if(strpos($array[1], ",") !== false) {
+			$file = explode(",", $array[1]);
+		} else {
+			$file = array($array[1]);
+		}
+		if(!isset($file[1])) {
+			$dir = ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file[0];
+		} elseif(isset($file[1]) && !empty($file[1])) {
+			$dir = ROOT_PATH."".self::$dir_skins.DS.$file[1].DS.$file[0];
+		} else {
+			$dir = ROOT_PATH."".self::$dir_skins.DS.$file[0];
+		}
+		$files = $array[0];
+		try {
+			$files = file_get_contents($dir);
+		} catch(Exception $ex) {}
+		$files = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $files);
+		return $files;
 	}
 
 	/**
