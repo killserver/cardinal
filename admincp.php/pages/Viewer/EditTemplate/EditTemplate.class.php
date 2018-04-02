@@ -20,7 +20,7 @@ class EditTemplate extends Core {
 			if(sizeof($manifest['jscss'])>0) {
 				if(isset($manifest['jscss']['css']) && isset($manifest['jscss']['css']['link']) && is_array($manifest['jscss']['css']['link']) && sizeof($manifest['jscss']['css']['link'])>0) {
 					foreach($manifest['jscss']['css']['link'] as $v) {
-						$sRet[] = preg_replace("/{THEME}\//", config::Select("default_http_local").$clearPath."/{C_skins[skins]}/", $v);
+						$sRet[] = preg_replace("/{THEME}\//", config::Select("default_http_local").$clearPath."/{C_skins[skins]}/", (isset($v['url']) ? $v['url'] : $v));
 					}
 				}
 			}
