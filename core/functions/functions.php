@@ -562,7 +562,7 @@ function vdebug() {
 	Debug::echoDebugMode(true);
 	Debug::limitOnView(0);
 	$backtrace = debug_backtrace();
-	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "<b style=\"color:#00f;\">Called:</b> ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "")."</pre>";
+	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "<b style=\"color:#70f;\">Called:</b> ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "")."</pre>";
 	if(func_num_args()>0) {
 		echo call_user_func_array(array("Debug", "vars"), func_get_args());
 	}

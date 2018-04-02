@@ -31,14 +31,16 @@ if(version_compare(PHP_VERSION, '5.1.2', '>=')) {
 }
 
 $host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua");
-if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."config.".ROOT_EX) && file_exists(PATH_MEDIA."db.".ROOT_EX)) {
-	$config = array();
-	if(file_exists(PATH_MEDIA."config.client.".ROOT_EX)) {
-		if(is_writable(PATH_MEDIA."config.client.".ROOT_EX)) {
-			chmod(PATH_MEDIA."config.client.".ROOT_EX, 0664);
-		}
-		require_once(PATH_MEDIA."config.client.".ROOT_EX);
+$config = array(
+	"charset" => "utf-8",
+);
+if(file_exists(PATH_MEDIA."config.client.".ROOT_EX)) {
+	if(is_writable(PATH_MEDIA."config.client.".ROOT_EX)) {
+		chmod(PATH_MEDIA."config.client.".ROOT_EX, 0664);
 	}
+	require_once(PATH_MEDIA."config.client.".ROOT_EX);
+}
+if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."config.".ROOT_EX) && file_exists(PATH_MEDIA."db.".ROOT_EX)) {
 	require_once(PATH_MEDIA."config.global.".ROOT_EX);
 	require_once(PATH_MEDIA."config.".ROOT_EX);
 	if(file_exists(PATH_MEDIA."config.install.".ROOT_EX)) {
@@ -54,13 +56,6 @@ if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."config.".ROOT_EX) && file_e
 } else {
 	if(!defined("WITHOUT_DB")) {
 		define("INSTALLER", true);
-	}
-	$config = array("charset" => "utf-8");
-	if(file_exists(PATH_MEDIA."config.client.".ROOT_EX)) {
-		if(is_writable(PATH_MEDIA."config.client.".ROOT_EX)) {
-			chmod(PATH_MEDIA."config.client.".ROOT_EX, 0664);
-		}
-		require_once(PATH_MEDIA."config.client.".ROOT_EX);
 	}
 	require_once(PATH_MEDIA."config.global.".ROOT_EX);
 	$protocol = "http";
@@ -129,6 +124,12 @@ if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."config.".ROOT_EX) && file_e
 
 if(file_exists(PATH_MEDIA."config.init.".ROOT_EX)) {
 	include_once(PATH_MEDIA."config.init.".ROOT_EX);
+}
+if(file_exists(PATH_MEDIA."config.settings.".ROOT_EX)) {
+	include_once(PATH_MEDIA."config.settings.".ROOT_EX);
+}
+if(defined("DEBUG_ACTIVATED") && file_exists(PATH_MEDIA."config.dev.".ROOT_EX)) {
+	include_once(PATH_MEDIA."config.dev.".ROOT_EX);
 }
 
 if(file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."paths.".ROOT_EX)) {

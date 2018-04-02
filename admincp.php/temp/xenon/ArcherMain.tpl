@@ -79,15 +79,17 @@ jQuery(document).ready(function() {
 			dTable.yadcf([{column_number: getId}]);
 		}
 	}
-	$.fn.editableform.buttons = '<button type="submit" class="btn btn-primary btn-sm editable-submit"><i class="fa fa-check"></i></button><button type="button" class="btn btn-default btn-sm editable-cancel"><i class="fa fa-close"></i></button>';
-	$('.quickEdit').editable({
-		url: '{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Archer&type={ArcherTable}&pageType=QuickEdit&Save=true',
-		validate: function(value) {
-			if($.trim(value) == '') {
-				return '{L_"Данное поле не может быть пустым"}';
+	if(typeof($.fn.editableform)!=="undefined") {
+		$.fn.editableform.buttons = '<button type="submit" class="btn btn-primary btn-sm editable-submit"><i class="fa fa-check"></i></button><button type="button" class="btn btn-default btn-sm editable-cancel"><i class="fa fa-close"></i></button>';
+		$('.quickEdit').editable({
+			url: '{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Archer&type={ArcherTable}&pageType=QuickEdit&Save=true',
+			validate: function(value) {
+				if($.trim(value) == '') {
+					return '{L_"Данное поле не может быть пустым"}';
+				}
 			}
-		}
-	});
+		});
+	}
 	var arrToSave = {};
 	var linkForAutoSave = encodeURIComponent(window.location.href.split(default_admin_link)[1])+"&v=1";
 	if(localStorage.getItem(linkForAutoSave)===null) {
