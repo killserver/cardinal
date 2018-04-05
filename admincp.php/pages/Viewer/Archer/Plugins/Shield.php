@@ -106,6 +106,7 @@ class Archer_Shield {
 			$quickEditor = "";
 			$infoField = "infoField";
 			$active = false;
+			$val = "{".$modelName.".".$d[$i]."}";
 			if($i!=0 && KernelArcher::$disabledQuickEditor===false) {
 				$quickEditor = " data-pk=\"{".$modelName.".".$first."}\" data-name=\"".$d[$i]."\"";
 				if($type=="select" || $type=="array" || $type=="enum") {
@@ -114,12 +115,15 @@ class Archer_Shield {
 				} else if($type=="date") {
 					$active = true;
 					$quickEditor .= " data-type=\"date\"";
+					$val = date("d F Y", $val);
 				} else if($type=="time") {
 					$active = true;
 					$quickEditor .= " data-type=\"time\"";
+					$val = date("H:i:s", $val);
 				} else if($type=="datetime") {
 					$active = true;
 					$quickEditor .= " data-type=\"datetime\"";
+					$val = date("d F Y H:i:s", $val);
 				} else if($type=="int" || $type=="price" || $type=="tinyint" || $type=="smallint" || $type=="mediumint" || $type=="bigint") {
 					$active = true;
 					$quickEditor .= " data-type=\"number\"";
@@ -135,7 +139,7 @@ class Archer_Shield {
 					$quickEditor = " class=\"quickEdit\"".$quickEditor;
 				}
 			}
-			$data .= "<td data-id=\"{".$modelName.".".$first."}\" data-table=\"".$modelName."\" data-name=\"".$d[$i]."\" class=\"".$infoField."\"><span".$quickEditor.">{".$modelName.".".$d[$i]."}</span></td>";
+			$data .= "<td data-id=\"{".$modelName.".".$first."}\" data-table=\"".$modelName."\" data-name=\"".$d[$i]."\" class=\"".$infoField."\"><span".$quickEditor.">".$val."</span></td>";
 		}
 		$addition = "";
 		if(Arr::get($_GET, "Where", false)) {
