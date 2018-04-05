@@ -96,7 +96,7 @@ if(!defined("VERSION_ADMIN_STYLE")) {
 	define("VERSION_ADMIN_STYLE", "1.7");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "90059");
+	define("INTVERSION", "90071");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "6.5");
@@ -136,7 +136,6 @@ $config = array_merge($config, array(
 	"git_beta" => true,
 	"rewrite" => true,
 	"gzip" => false,
-	"activeCache" => false,
 	"mobyActive" => false,
 	"default_http_mobyhost" => "",
 	"uses" => array(

@@ -100,30 +100,30 @@ class dbFile {
 		$arr = array();
 		$tab = 1;
 		$d = false;
-        for($f=0;$f<strlen($data);$f++) {
-            $bytes = $data[$f];
-            if($d && $bytes === $d) {
-            	$data[$f - 1] !== "\\" && ($d = !1);
-            } else if(!$d && ($bytes === '"' || $bytes === "'")) {
-            	$d = $bytes;
-            } else if(!$d && ($bytes === " " || $bytes === "\t")) {
-            	$bytes = "";
-            } else if(!$d && $bytes === ":") {
-            	$bytes = $bytes." ";
-            } else if(!$d && $bytes === ",") {
-            	$bytes = $bytes."\n";
-            	$bytes = str_pad($bytes, ($tab * 2), " ");
-            } else if(!$d && ($bytes === "[" || $bytes === "{")) {
-            	$tab++;
-            	$bytes .= "\n";
-            	$bytes = str_pad($bytes, ($tab * 2), " ");
-            } else if(!$d && ($bytes === "]" || $bytes === "}")) {
-            	$tab--;
-            	$bytes = str_pad("\n", ($tab * 2), " ").$bytes;
-            }
-            array_push($arr, $bytes);
-        }
-        return implode("", $arr);
+		for($f=0;$f<strlen($data);$f++) {
+			$bytes = $data[$f];
+			if($d && $bytes === $d) {
+				$data[$f - 1] !== "\\" && ($d = !1);
+			} else if(!$d && ($bytes === '"' || $bytes === "'")) {
+				$d = $bytes;
+			} else if(!$d && ($bytes === " " || $bytes === "\t")) {
+				$bytes = "";
+			} else if(!$d && $bytes === ":") {
+				$bytes = $bytes." ";
+			} else if(!$d && $bytes === ",") {
+				$bytes = $bytes."\n";
+				$bytes = str_pad($bytes, ($tab * 2), " ");
+			} else if(!$d && ($bytes === "[" || $bytes === "{")) {
+				$tab++;
+				$bytes .= "\n";
+				$bytes = str_pad($bytes, ($tab * 2), " ");
+			} else if(!$d && ($bytes === "]" || $bytes === "}")) {
+				$tab--;
+				$bytes = str_pad("\n", ($tab * 2), " ").$bytes;
+			}
+			array_push($arr, $bytes);
+		}
+		return implode("", $arr);
 	}
 
 }

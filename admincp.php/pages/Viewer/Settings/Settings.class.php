@@ -23,7 +23,6 @@ class Settings extends Core {
 		$cache_user = Arr::get($_POST, 'cache_user', config::Select("cache", "user"));
 		$cache_pass = Arr::get($_POST, 'cache_pass', config::Select("cache", "pass"));
 		$cache_path = Arr::get($_POST, 'cache_path', config::Select("cache", "path"));
-		$activeCache = Arr::get($_POST, 'activeCache', "0");
 		$viewport = Arr::get($_POST, 'viewport', config::Select("viewport"));
 		$ParsePHP = Arr::get($_POST, 'ParsePHP', "0");
 		$sitename = Arr::get($_POST, 'sitename', lang::get_lang('sitename'));
@@ -70,7 +69,6 @@ class Settings extends Core {
 				"path" => "'.Saves::SaveOld($cache_path, true).'",
 			),
 			"viewport" => "'.Saves::SaveOld($viewport, true).'",
-			"activeCache" => '.($activeCache=="1" ? "true" : "false").',
 			"ParsePHP" => '.($ParsePHP=="1" ? "true" : "false").','.$this->Saves($_POST).'
 			"lang" => "ru",
 			"charset" => "utf-8",

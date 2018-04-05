@@ -96,25 +96,7 @@ $manifest['mod_page'][HTTP::getip()]['page'] = $page;
 $is_file = Route::param('is_file');
 $file = Route::param('file');
 
-$active = false;
-$load = true;
 $obj = "";
-if(config::Select("activeCache")) {
-    function cacheWalk(&$v, $k) { $v = ($k."-".$v); }
-	$par = Route::param();
-	array_walk($par, "cacheWalk");
-	$url = implode("=", $par);
-	$md5 = md5($url);
-	$par = $_GET;
-	array_walk($par, "cacheWalk");
-	$url = implode("=", $par);
-	$md5 = md5($md5.$url);
-	if(!file_exists(PATH_CACHE_PAGE.$md5.".txt")) {
-		$active = true;
-	} else {
-		$load = false;
-	}
-}
 $langPanel = modules::setLangPanel();
 if(isset($globalClass) && is_array($globalClass) && sizeof($globalClass)>0) {
 	$globalClass = array_values($globalClass);
@@ -127,32 +109,22 @@ if(isset($globalClass) && is_array($globalClass) && sizeof($globalClass)>0) {
 		}
 	}
 }
-if($load) {
-	if(!$is_file && empty($file)) {
-		if($class == "page") {
-			view_pages($page);
-		}
-		if(class_exists($class)) {
-			$page = new $class();
-			if(!empty($method) && method_exists($page, $method)) {
-				call_user_func_array(array(&$page, $method), $langPanel);
-			}
-		}
-	} else {
-		if(file_exists($file)) {
-			require_once($file);
-		} else {
-			templates::error("{L_error_page}", "{L_error_routification}");
+if(!$is_file && empty($file)) {
+	if($class == "page") {
+		view_pages($page);
+	}
+	if(class_exists($class)) {
+		$page = new $class();
+		if(!empty($method) && method_exists($page, $method)) {
+			call_user_func_array(array(&$page, $method), $langPanel);
 		}
 	}
 } else {
-	include(PATH_CACHE_PAGE.$md5.".txt");
-}
-if($active) {
-	$obj = ob_get_contents();
-	ob_end_clean();
-	file_put_contents(PATH_CACHE_PAGE.$md5.".txt", removeBOM($obj));
-	HTTP::echos($obj);
+	if(file_exists($file)) {
+		require_once($file);
+	} else {
+		templates::error("{L_error_page}", "{L_error_routification}");
+	}
 }
 unset($page, $class, $method, $file, $is_file);
 $time = microtime();

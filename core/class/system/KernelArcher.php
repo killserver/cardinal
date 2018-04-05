@@ -737,12 +737,16 @@ class KernelArcher {
 		}
 		if(isset(self::$callbackFunc[$page]) && is_string($func) && isset(self::$callbackFunc[$page][$func])) {
 			for($i=0;$i<sizeof(self::$callbackFunc[$page][$func]);$i++) {
-				$return = call_user_func_array(self::$callbackFunc[$page][$func][$i], $params);
+				$params[3] = call_user_func_array(self::$callbackFunc[$page][$func][$i], $params);
 			}
+			return $params[3];
 		} else if(isset(self::$callbackFunc[$page]) && is_array($func)) {
+			$call = $func;
 			for($i=0;$i<sizeof(self::$callbackFunc[$page]);$i++) {
-				$return = call_user_func_array(self::$callbackFunc[$page][$i], $func);
+				$call = call_user_func_array(self::$callbackFunc[$page][$i], $call);
+				$call = array($call);
 			}
+			$return = current($call);
 		}
 		return $return;
 	}

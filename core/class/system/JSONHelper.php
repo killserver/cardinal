@@ -78,8 +78,42 @@ class JSONHelper {
      * Save all elements in object to string
      * @return string This object to string
      */
-    final public function save() {
-		return json_encode(get_object_vars($this));
+    final public function save($normal = false) {
+    	$data = json_encode(get_object_vars($this), JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
+    	if($normal) {
+    		$data = $this->normalizer($data);
+    	}
+		return $data;
+	}
+	
+	final private function normalizer($data) {
+		$arr = array();
+		$tab = 1;
+		$d = false;
+		for($f=0;$f<strlen($data);$f++) {
+			$bytes = $data[$f];
+			if($d && $bytes === $d) {
+				$data[$f - 1] !== "\\" && ($d = !1);
+			} else if(!$d && ($bytes === '"' || $bytes === "'")) {
+				$d = $bytes;
+			} else if(!$d && ($bytes === " " || $bytes === "\t")) {
+				$bytes = "";
+			} else if(!$d && $bytes === ":") {
+				$bytes = $bytes." ";
+			} else if(!$d && $bytes === ",") {
+				$bytes = $bytes."\n";
+				$bytes = str_pad($bytes, ($tab * 2), " ");
+			} else if(!$d && ($bytes === "[" || $bytes === "{")) {
+				$tab++;
+				$bytes .= "\n";
+				$bytes = str_pad($bytes, ($tab * 2), " ");
+			} else if(!$d && ($bytes === "]" || $bytes === "}")) {
+				$tab--;
+				$bytes = str_pad("\n", ($tab * 2), " ").$bytes;
+			}
+			array_push($arr, $bytes);
+		}
+		return implode("", $arr);
 	}
 	
 }
