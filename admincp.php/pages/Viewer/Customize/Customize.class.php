@@ -95,6 +95,8 @@ class Customize extends Core {
 			"type_end" => "",
 			"icon" => " ",
 		), "menu", 1);
+	global $colors;
+	if(isset($colors) && is_array($colors) && sizeof($colors)>0) {
 		templates::assign_vars(array(
 			"value" => 'Цвета сайта',
 			"link" => "#",
@@ -104,8 +106,6 @@ class Customize extends Core {
 			"type_end" => "",
 			"icon" => " ",
 		), "menu", 2);
-	global $colors;
-	if(isset($colors)) {
 		$size = sizeof($colors);
 		$keys = array_keys($colors);
 		for($i=0;$i<$size;$i++) {
