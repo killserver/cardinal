@@ -264,7 +264,7 @@ class KernelArcher {
 	}
 	
 	private function UploadFile($model, $key, $id, $file, $path, $type = "", $i = -1) {
-		$file = $this->callArr($file, "TakeUpload", func_get_args());
+		$file = $this->callArr($file, "TakeUpload", func_get_args(), array(), false);
 		if(!is_array($file)
 			||
 			(!isset($file['key']) && !isset($file[1]))
@@ -472,7 +472,7 @@ class KernelArcher {
 		$model = $model->Select();
 		$model->SetTable($this->selectTable);
 		$exc = array();
-		$model = $this->callArr($model, "EditModel", array($model, &$exc));
+		$model = $this->callArr($model, "EditModel", array($model, &$exc), array(), true);
 		$exc = array_values($exc);
 		for($i=0;$i<sizeof($exc);$i++) {
 			if(isset($model->{$exc[$i]})) {
@@ -630,9 +630,9 @@ class KernelArcher {
 			cardinal::RegAction("Удаление данных в Арчере. Модель \"".$modelName."\". ИД: \"".$first."\"");
 		} else {
 			db::doquery("INSERT INTO {{trashBin}} SET `tTable` = ".db::escape($this->selectTable).", `tData` = ".db::escape(json_encode($models)).", `tTime`= UNIX_TIMESTAMP(), `tIp` = '".HTTP::getip()."'");
-			$list = $model->Deletes();
 			cardinal::RegAction("Перемещение данных в Арчере в корзину. Модель \"".$modelName."\". ИД: \"".$first."\"");
 		}
+		$list = $model->Deletes();
 		$addition = "";
 		if(Arr::get($_GET, "ShowPages", false)) {
 			$addition .= "&ShowPages=".Arr::get($_GET, "ShowPages");
@@ -708,6 +708,7 @@ class KernelArcher {
 		}
 		$objName = get_class($model);
 		$model->SetTable($this->selectTable);
+		$model->multiple();
 		$list = $model->Select();
 		if(is_object($list)) {
 			$list = $list->getArray();
@@ -716,7 +717,7 @@ class KernelArcher {
 		} elseif(is_array($list)) {
 			for($i=0;$i<sizeof($list);$i++) {
 				$subList = $list[$i]->getArray();
-				$subList = $this->callArr($subList, "ShieldFunc", array($subList));
+				$subList = $this->callArr($subList, "ShieldFunc", array($subList), false);
 				$this->AddBlocks("Mains", $subList, $objName, $objName."-".current($subList));
 			}
 		}
@@ -725,7 +726,7 @@ class KernelArcher {
 		}
 	}
 	
-	private function callArr($return, $page, $func, $params = array()) {
+	private function callArr($return, $page, $func, $params = array(), $single = true) {
 		if(!isset($this->countCall[$page]) || !is_numeric($this->countCall[$page])) {
 			$this->countCall[$page] = 0;
 		}
@@ -737,16 +738,18 @@ class KernelArcher {
 		}
 		if(isset(self::$callbackFunc[$page]) && is_string($func) && isset(self::$callbackFunc[$page][$func])) {
 			for($i=0;$i<sizeof(self::$callbackFunc[$page][$func]);$i++) {
-				$params[3] = call_user_func_array(self::$callbackFunc[$page][$func][$i], $params);
+				$return = call_user_func_array(self::$callbackFunc[$page][$func][$i], $params);
 			}
-			return $params[3];
 		} else if(isset(self::$callbackFunc[$page]) && is_array($func)) {
 			$call = $func;
 			for($i=0;$i<sizeof(self::$callbackFunc[$page]);$i++) {
 				$call = call_user_func_array(self::$callbackFunc[$page][$i], $call);
-				$call = array($call);
 			}
-			$return = current($call);
+			if($single) {
+				$return = current($call);
+			} else {
+				$return = $call;
+			}
 		}
 		return $return;
 	}

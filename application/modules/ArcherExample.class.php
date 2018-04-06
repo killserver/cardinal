@@ -27,7 +27,7 @@ class ArcherExample extends modules {
 		if(!defined("DisableSort")) {
 			define("DisableSort", "0"); // отключение сортировки
 		}
-		return $tpl;
+		return array($table, $page, $model, $tpl);
 	}
 
 	public function RebuildShow($table, $tpl, $model) {
@@ -44,19 +44,19 @@ class ArcherExample extends modules {
 	}
 
 	public static function RebuildEditModel($model, &$exc = array()) {
-		return $model;
+		return array($model);
 	}
 
 	function RebuildAddModel($model, &$exc = array()) {
-		return $model;
+		return array($model);
 	}
 
 	function RebuildTakeAddModel($model, $id, $countCall) {
-		return $model;
+		return array($model, $id, $countCall);
 	}
 
 	function RebuildTakeEditModel($model, $id, $countCall) {
-		return $model;
+		return array($model, $id, $countCall);
 	}
 	
 }
