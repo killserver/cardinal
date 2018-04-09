@@ -804,6 +804,10 @@ class db {
 			self::RePair();
 		}
 
+		if(!defined("DEBUG_DB")) {
+			return "";
+		}
+
 		if($query) {
 			// Safify query
 			$query = preg_replace("/([0-9a-f]){32}/", "********************************", $query); // Hides all hashes

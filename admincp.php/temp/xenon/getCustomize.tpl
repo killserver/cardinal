@@ -202,6 +202,48 @@ $(".iframe input").change(function() {
 	}
 	$('.iframe > div > div iframe').attr("src", ($(this).val().match(/\?/) ? $(this).val()+"&noShowAdmin" : $(this).val()+"?noShowAdmin"));
 });
+$(".uploadFavicon").click(function() {
+	if(jQuery("input[name='favicon']")!=null) {
+		if(jQuery("input[name='favicon']")[0].files.length>0) {
+			var formData = new FormData();
+			formData.append('favicon', jQuery("input[name='favicon']")[0].files[0]);
+			$.ajax({
+				url: './?pages=Customize&uploadFav=true',
+				data: formData,
+				processData: false,
+				contentType: false,
+				type: 'POST',
+				enctype: 'multipart/form-data',
+				success: function (data) {
+					toastr.success("{L_"Фавиконка установлена"}");
+					jQuery(".favicon").remove();
+				}
+			});
+		}
+	}
+	return false;
+});
+$(".uploadLogoSite").click(function() {
+	if(jQuery("input[name='logoSite']")!=null) {
+		if(jQuery("input[name='logoSite']")[0].files.length>0) {
+			var formData = new FormData();
+			formData.append('logoSite', jQuery("input[name='logoSite']")[0].files[0]);
+			$.ajax({
+				url: './?pages=Customize&uploadLogo=true',
+				data: formData,
+				processData: false,
+				contentType: false,
+				type: 'POST',
+				enctype: 'multipart/form-data',
+				success: function (data) {
+					toastr.success("{L_"Логотип сайта установлен"}");
+					jQuery(".logoSite").remove();
+				}
+			});
+		}
+	}
+	return false;
+});
 $(".sidebar-menu-inner").append('<div class="devices"><div class="hideDev fa-minus-square"><span>&nbsp;Скрыть панель</span></div><div class="resize-desktop fa-desktop active" data-resize="desktop"></div><div class="resize-tablet fa-tablet" data-resize="tablet"></div><div class="resize-mobile fa-mobile" data-resize="mobile"></div><div class="reload fa-retweet"></div></div>');
 $(".resize-desktop, .resize-tablet, .resize-mobile").click(function() {
 	$(".sidebar-menu-inner").find("[class*='resize-']").removeClass("active");

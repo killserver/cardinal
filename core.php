@@ -126,6 +126,9 @@ if(defined("DEBUG") || isset($_GET['debug']) || isset($_COOKIE['cardinal_debug']
 	if(!defined("DEBUG_ACTIVATED")) {
 		define("DEBUG_ACTIVATED", true);
 	}
+	if(!defined("DEBUG_DB")) {
+		define("DEBUG_DB", true);
+	}
 } else {
 	error_reporting(E_ALL ^ E_WARNING ^ E_DEPRECATED ^ E_NOTICE);
 	@ini_set('error_reporting', E_ALL ^ E_WARNING ^ E_DEPRECATED ^ E_NOTICE);
@@ -274,9 +277,18 @@ if(file_exists(PATH_MEDIA."definition.php")) {
 	include_once(PATH_MEDIA."definition.php");
 }
 
+if(!defined("DOING_AJAX") && isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest') {
+	define("DOING_AJAX", true);
+} elseif(!defined("DOING_AJAX") && getenv('HTTP_X_REQUESTED_WITH') && getenv('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest') {
+	define("DOING_AJAX", true);
+}
+
 if(!defined("DEVELOPER_MODE") && file_exists(PATH_MEDIA."develop.lock")) {
 	define("DEVELOPER_MODE", true);
 	define("ERROR_VIEW", true);
+	if(!defined("DEBUG_DB")) {
+		define("DEBUG_DB", true);
+	}
 }
 if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."isFrame.lock")) {
 	define("WITHOUT_DB", true);

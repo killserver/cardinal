@@ -135,6 +135,9 @@ class templates {
 		if(file_exists(PATH_SKINS.self::$skins.DS."functions.".$phpEx)) {
 			include_once(PATH_SKINS.self::$skins.DS."functions.".$phpEx);
 		}
+		if(!defined("TEMPLATEPATH")) {
+			define("TEMPLATEPATH", PATH_SKINS.self::$skins.DS);
+		}
 	}
 
     /**
@@ -2168,9 +2171,9 @@ if(!$test) {
 			self::$header = array();
 		}
 		if(!self::$isChangeHead) {
-			self::$header = array_merge(self::$header, $header);
+			self::$header = array_merge(self::$header, releaseSeo(array(), true), $header);
 		} else {
-			self::$header = array_merge($header, self::$header);
+			self::$header = array_merge($header, releaseSeo(array(), true), self::$header);
 		}
 		$manifest['mod_page'][HTTP::getip()]['title'] = self::$header['title'];
 		modules::manifest_set(array('mod_page', HTTP::getip(), 'title'), self::$header['title']);
@@ -2436,7 +2439,7 @@ if(!$test) {
 	}
 	
 	final public static function multipleHead() {
-		$ret = '<!--[if lt IE 7 ]> <html class="ie6"> <![endif]-->'.PHP_EOL.'<!--[if IE 7 ]> <html class="ie7"> <![endif]-->'.PHP_EOL.'<!--[if IE 8 ]> <html class="ie8"> <![endif]-->'.PHP_EOL.'<!--[if IE 9 ]> <html class="ie9"> <![endif]-->'.PHP_EOL.'<!--[if (gt IE 9)|!(IE)]><!--> <html class="no-ie"> <!--<![endif]-->';
+		$ret = '<!--[if lt IE 7 ]> <html class="ie6"> <![endif]-->'.PHP_EOL.'<!--[if IE 7 ]> <html class="ie7"> <![endif]-->'.PHP_EOL.'<!--[if IE 8 ]> <html class="ie8"> <![endif]-->'.PHP_EOL.'<!--[if IE 9]> <html class="ie9"> <![endif]-->'.PHP_EOL.'<html class="no-js">';
 		return $ret;
 	}
 

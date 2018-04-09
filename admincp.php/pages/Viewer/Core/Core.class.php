@@ -422,6 +422,13 @@ class Core {
 		if(empty($echoView) && $force) {
 			$echoView = $echo;
 		}
+		$pluginsForEditor = array();
+		if(($arr = config::Select("pluginsForEditor")) !== false) {
+			if(is_array($arr)) {
+				$pluginsForEditor = array_merge($pluginsForEditor, $arr);
+			}
+		}
+		$echos = str_replace("{pluginsForEditor}", implode(" ", $pluginsForEditor), $echos);
 		echo str_replace("{main_admin}", $echoView, $echos);
 	}
 	

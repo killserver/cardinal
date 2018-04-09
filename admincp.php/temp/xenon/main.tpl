@@ -503,7 +503,7 @@
 	
 	<!-- Imported styles on this page -->
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/toastr/toastr.min.css?1">
-	<link href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/x-editable/x-editable.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.7/css/jquery.fancybox.min.css" rel="stylesheet">
 	{css_list}
 	<!-- Bottom Scripts -->
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/bootstrap.min.js?1"></script>
@@ -519,7 +519,7 @@
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/datepicker/bootstrap-datepicker.js"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/timepicker/bootstrap-timepicker.min.js"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/colorpicker/bootstrap-colorpicker.min.js"></script>
-	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/x-editable/x-editable.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.7/js/jquery.fancybox.min.js"></script>
 
 	{js_list}
 	
@@ -529,15 +529,19 @@
 		$(document).ready(function(){
 			if(typeof(editorTextarea)!=="object") {
 				editorTextarea = {
-					selector: 'textarea',
+					selector: 'textarea:not(.onlyText)',
 					height: 500,
 					language : selectLang,
-					plugins: [
-						"advlist autolink lists link image charmap print preview anchor",
-						"searchreplace visualblocks code fullscreen",
-						"insertdatetime media table contextmenu paste imagetools responsivefilemanager localautosave"
+					plugins: ["{pluginsForEditor}"],
+					menubar: false,
+					toolbar: "styleselect | bold italic | alignleft aligncenter alignright | bullist numlist | outdent indent | image link localautosave fullscreen",
+					style_formats: [
+						{title: 'Header 2', format: 'h2'},
+						{title: 'Header 3', format: 'h3'},
+						{title: 'Header 4', format: 'h4'},
+						{title: 'Header 5', format: 'h5'},
+						{title: 'Header 6', format: 'h6'}
 					],
-					toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image responsivefilemanager localautosave",
 					content_css: [],
 					valid_elements : "*[*]",
 					forced_root_block : '',
@@ -570,9 +574,28 @@
 				}
 			}
 			tinymce.init(editorTextarea);
+			jQuery("body").on("click", '.iframe-btn', function() {
+				jQuery.fancybox.open({'href': jQuery(this).attr("href"), 'width': (jQuery("body").width()/1.5), 'height': (jQuery("body").height()/1.5), 'type': 'iframe', 'autoScale': false});
+				return false;
+			});
+		});
+	}
+	function responsive_filemanager_callback(field_id) {
+		var type = jQuery("#"+field_id).attr("data-accept");
+		var link = jQuery("#"+field_id).val();
+		var http_link = link;
+		link = link.replace(default_link, "");
+		jQuery("#"+field_id).val(link);
+		var par = jQuery("#"+field_id).parent();
+		jQuery("a[data-link='"+field_id+"']").remove();
+		jQuery(par).append('<a data-link="'+field_id+'" href="'+http_link+'"'+(type=="image" ? " class=\"showPreview\"" : "")+' target="_blank">{L_'Просмотреть'}</a>');
+		jQuery(".showPreview").each(function(i, elem) {
+			jQuery(elem).after("<br><img src='"+jQuery(elem).attr("href")+"' data-link='"+jQuery(elem).attr("data-link")+"' width='200'>");
 		});
 	}
 	</script>
+
+	<style type="text/css">.mce-branding-powered-by { display: none !important; }</style>
 
 	<!-- JavaScripts initializations and stuff -->
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-custom.js?1"></script>

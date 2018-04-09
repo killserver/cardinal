@@ -32,18 +32,29 @@
 [ajax]var linkForSubmit = "./?pages=Archer&type={ArcherPath}&pageType=Take{ArcherPage}{addition}";[/ajax]
 var i = 1;
 function removeInputFile(th, name, val) {
-	var bef = $('input[name="deleteArray['+name+']"]').val();
-	$('input[name="deleteArray['+name+']"]').val(val+","+bef);
-	$(th).parent().parent().remove();
+	var bef = jQuery('input[name="deleteArray['+name+']"]').val();
+	jQuery('input[name="deleteArray['+name+']"]').val(val+","+bef);
+	jQuery(th).parent().parent().remove();
 }
-$(document).ready(function() {
-	$(".showPreview").each(function(i, elem) {
-		$(elem).after("<br><img src='"+$(elem).attr("href")+"' width='200'>");
-	})
+jQuery(document).ready(function() {
+	jQuery(".showPreview").each(function(i, elem) {
+		jQuery(elem).after("<br><img src='"+jQuery(elem).attr("href")+"' width='200'>");
+	});
+	jQuery("body").on("click", ".accessRemove", function() {
+		var count = jQuery(".containerFiles[data-parent='"+jQuery(this).attr("data-parent")+"'] input").length;
+		if(count==1) {
+			jQuery(this).parent().parent().find("input").val("");
+			jQuery(this).parent().parent().find("img").remove();
+			jQuery(this).parent().parent().find("a[data-link]").remove();
+		} else {
+			jQuery(this).parent().parent().remove();
+		}
+		return false;
+	});
 });
 function addInputFile(th, name) {
 	var elem = jQuery(th).parent().find("div#inputForFile");
-	elem.append('<div><div class="col-sm-10"><input class="form-control" type="file" multiple="multiple"'+(elem.attr("data-accept") ? 'accept="'+elem.attr("data-accept")+'"' : "")+' name="'+name+'[]" placeholder="Выберите файл"></div><div class=\'col-sm-2\'><a class=\'btn btn-red btn-block fa-remove\' onclick=\'$(this).parent().parent().remove();\'></a></div></div>');
+	elem.append('<div><div class="col-sm-10"><input class="form-control" type="file" multiple="multiple"'+(elem.attr("data-accept") ? 'accept="'+elem.attr("data-accept")+'"' : "")+' name="'+name+'[]" placeholder="Выберите файл"></div><div class=\'col-sm-2\'><a class=\'btn btn-red btn-block fa-remove\' onclick=\'jQuery(this).parent().parent().remove();\'></a></div></div>');
 	jQuery("input[type='file'][accept*='image']").unbind("change").change(function() {
 		readURL(this);
 	});

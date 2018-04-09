@@ -3,6 +3,11 @@
 class Editor extends Core {
 
 	function __construct() {
+		if(defined("DISALLOW_FILE_EDIT")) {
+			if(is_bool(DISALLOW_FILE_EDIT) && DISALLOW_FILE_EDIT===true) {
+				return "";
+			}
+		}
 		if(Arr::get($_GET, 'tree', false)) {
 			Debug::activShow(false);
 			templates::gzip(false);

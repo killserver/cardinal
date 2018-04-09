@@ -96,7 +96,7 @@ if(!defined("VERSION_ADMIN_STYLE")) {
 	define("VERSION_ADMIN_STYLE", "1.7");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "90084");
+	define("INTVERSION", "90092");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "6.5");
@@ -152,6 +152,24 @@ $config = array_merge($config, array(
 	"defaultAdminSkin" => " ",
 	"accessChangeSkin" => "true",
 	"mainPageAdmin" => "?pages=main",
+	"pluginsForEditor" => array(
+		"advlist",
+		"anchor",
+		"autolink",
+		"code",
+		"contextmenu",
+		"charmap",
+		"fullscreen",
+		"lists",
+		"link",
+		"localautosave",
+		"media",
+		"image",
+		"imagetools",
+		"paste",
+		"responsivefilemanager",
+		"visualblocks",
+	),
 ));
 
 ?>

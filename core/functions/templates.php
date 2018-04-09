@@ -132,7 +132,7 @@ function releaseSeo($meta = array(), $return = false, $clear = true) {
 global $seoBlock;
 	$title = (isset($meta['title']) ? $meta['title'] : (isset($seoBlock['ogp']['title']) ? $seoBlock['ogp']['title'] : (isset($seoBlock['og']['title']) ? $seoBlock['og']['title'] : (isset($seoBlock['main']['title']) ? $seoBlock['main']['title'] : lang::get_lang("sitename")))));
 	$description = (isset($meta['description']) ? $meta['description'] : (isset($seoBlock['ogp']['description']) ? $seoBlock['ogp']['description'] : (isset($seoBlock['og']['description']) ? $seoBlock['og']['description'] : (isset($seoBlock['main']['description']) ? $seoBlock['main']['description'] : lang::get_lang("s_description")))));
-	$imageCheck = (isset($seoBlock['ogp']['image']) && (file_exists(ROOT_PATH.$seoBlock['ogp']['image']) || file_exists($seoBlock['ogp']['image']) || file_exists(config::Select("default_http_host").$seoBlock['ogp']['image']))) || (isset($seoBlock['main']['image_src']) && (file_exists(ROOT_PATH.$seoBlock['main']['image_src']) || file_exists($seoBlock['main']['image_src']) || file_exists(config::Select("default_http_host").$seoBlock['main']['image_src']))) || file_exists(ROOT_PATH."logo.jpg") || file_exists(ROOT_PATH."logo.png");
+	$imageCheck = (isset($seoBlock['ogp']['image']) && (file_exists(ROOT_PATH.$seoBlock['ogp']['image']) || file_exists($seoBlock['ogp']['image']) || file_exists(config::Select("default_http_host").$seoBlock['ogp']['image']))) || (isset($seoBlock['main']['image_src']) && (file_exists(ROOT_PATH.$seoBlock['main']['image_src']) || file_exists($seoBlock['main']['image_src']) || file_exists(config::Select("default_http_host").$seoBlock['main']['image_src']))) || file_exists(ROOT_PATH."logo.jpg") || file_exists(ROOT_PATH."logo.jpeg") || file_exists(ROOT_PATH."logo.png") || file_exists(ROOT_PATH."uploads".DS."logo-for-site.jpg") || file_exists(ROOT_PATH."uploads".DS."logo-for-site.jpeg") || file_exists(ROOT_PATH."uploads".DS."logo-for-site.png");
 	$type = (isset($seoBlock['ogp']['type']) ? $seoBlock['ogp']['type'] : (isset($seoBlock['og']['type']) ? $seoBlock['og']['type'] : "website"));
 	$link = (isset($meta['canonicalLink']) ? $meta['canonicalLink'] : (isset($meta['link']) ? $meta['link'] : (isset($seoBlock['og']['link']) ? $seoBlock['og']['link'] : (isset($seoBlock['ogp']['link']) ? $seoBlock['ogp']['link'] : (isset($seoBlock['main']['canonical']) ? $seoBlock['main']['canonical'] : (isset($seoBlock['main']['link']) ? $seoBlock['main']['link'] : (isset($seoBlock['main']['url']) ? $seoBlock['main']['url'] : "")))))));
 	$keywords = (isset($meta['keywords']) ? $meta['keywords'] : (isset($seoBlock['ogp']['keywords']) ? $seoBlock['ogp']['keywords'] : (isset($seoBlock['og']['keywords']) ? $seoBlock['og']['keywords'] : (isset($seoBlock['main']['keywords']) ? $seoBlock['main']['keywords'] : ""))));
@@ -154,6 +154,12 @@ global $seoBlock;
 			$imageLink = "{C_default_http_host}logo.jpg";
 		} else if(file_exists(ROOT_PATH."logo.png")) {
 			$imageLink = "{C_default_http_host}logo.png";
+		} else if(file_exists(ROOT_PATH."uploads".DS."logo-for-site.jpg")) {
+			$imageLink = "{C_default_http_host}uploads/logo-for-site.jpg";
+		} else if(file_exists(ROOT_PATH."uploads".DS."logo-for-site.jpeg")) {
+			$imageLink = "{C_default_http_host}uploads/logo-for-site.jpeg";
+		} else if(file_exists(ROOT_PATH."uploads".DS."logo-for-site.png")) {
+			$imageLink = "{C_default_http_host}uploads/logo-for-site.png";
 		} else {
 			$imageCheck = false;
 		}
@@ -266,6 +272,26 @@ function headers($array = array(), $clear = false, $no_js = false) {
 		$header .= "<link href=\"{C_default_http_host}favicon.jpeg\" rel=\"shortcut icon\" type=\"image/jpeg\" />\n";
 		$header .= "<link rel=\"shortcut icon\" type=\"image/jpeg\" href=\"{C_default_http_host}favicon.jpeg\" sizes=\"16x16\" />\n";
 		$header .= "<link rel=\"icon\" type=\"image/jpeg\" href=\"{C_default_http_host}favicon.jpeg\" sizes=\"16x16\" />\n";
+	}
+	if(file_exists(ROOT_PATH."uploads".DS."icon".DS."favicon-16x16.ico")) {
+		$header .= "<link href=\"{C_default_http_host}uploads/icon/favicon-16x16.ico\" rel=\"shortcut icon\" type=\"image/x-icon\" />\n";
+		$header .= "<link rel=\"shortcut icon\" type=\"x-icon\" href=\"{C_default_http_host}uploads/icon/favicon-16x16.ico\" sizes=\"16x16\" />\n";
+		$header .= "<link rel=\"icon\" type=\"x-icon\" href=\"{C_default_http_host}uploads/icon/favicon-16x16.ico\" sizes=\"16x16\" />\n";
+	}
+	if(file_exists(ROOT_PATH."uploads".DS."icon".DS."favicon-32x32.ico")) {
+		$header .= "<link href=\"{C_default_http_host}uploads/icon/favicon-32x32.ico\" rel=\"shortcut icon\" type=\"image/x-icon\" />\n";
+		$header .= "<link rel=\"shortcut icon\" type=\"x-icon\" href=\"{C_default_http_host}uploads/icon/favicon-32x32.ico\" sizes=\"32x32\" />\n";
+		$header .= "<link rel=\"icon\" type=\"x-icon\" href=\"{C_default_http_host}uploads/icon/favicon-32x32.ico\" sizes=\"32x32\" />\n";
+	}
+	if(file_exists(ROOT_PATH."uploads".DS."icon".DS."favicon-64x64.ico")) {
+		$header .= "<link href=\"{C_default_http_host}uploads/icon/favicon-64x64.ico\" rel=\"shortcut icon\" type=\"image/x-icon\" />\n";
+		$header .= "<link rel=\"shortcut icon\" type=\"x-icon\" href=\"{C_default_http_host}uploads/icon/favicon-64x64.ico\" sizes=\"64x64\" />\n";
+		$header .= "<link rel=\"icon\" type=\"x-icon\" href=\"{C_default_http_host}uploads/icon/favicon-64x64.ico\" sizes=\"64x64\" />\n";
+	}
+	if(file_exists(ROOT_PATH."uploads".DS."icon".DS."favicon-128x128.ico")) {
+		$header .= "<link href=\"{C_default_http_host}uploads/icon/favicon-128x128.ico\" rel=\"shortcut icon\" type=\"image/x-icon\" />\n";
+		$header .= "<link rel=\"shortcut icon\" type=\"x-icon\" href=\"{C_default_http_host}uploads/icon/favicon-128x128.ico\" sizes=\"128x128\" />\n";
+		$header .= "<link rel=\"icon\" type=\"x-icon\" href=\"{C_default_http_host}uploads/icon/favicon-128x128.ico\" sizes=\"128x128\" />\n";
 	}
 	if(!$clear) {
 		$skin = templates::get_skins();
