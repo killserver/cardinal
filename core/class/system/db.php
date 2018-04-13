@@ -353,7 +353,7 @@ class db {
 	}
 	
 	final public static function getTables($columns = true, $andType = false) {
-		if(sizeof(self::$loadedTable[$columns.$andType])==0 && self::connected()) {
+		if((!isset(self::$loadedTable[$columns.$andType]) || sizeof(self::$loadedTable[$columns.$andType])==0) && self::connected()) {
 			$loaded = array();
 			$sel = db::doquery("SHOW FULL TABLES", true);
 			while($row = db::fetch_assoc($sel)) {

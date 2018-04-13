@@ -142,7 +142,7 @@ class Languages extends Core {
 				$v = $this->translate($v, $newLang, $orLang);
 				lang::Update($newLang, $k, $v);
 			}
-			cardinal::RegAction("Создан новый язык \"".$newlang."\" в разделе языковой панели");
+			cardinal::RegAction("Создан новый язык \"".$newLang."\" в разделе языковой панели");
 			location("./?pages=Languages&page=main");
 			return true;
 		}

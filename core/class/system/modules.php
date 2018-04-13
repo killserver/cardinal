@@ -668,8 +668,14 @@ class modules {
 		$db = self::init_db();
 		$exists = $db->getTable($table_name);
 		foreach($fields as $k => $v) {
-			if($exists && in_array($k, $db->getTable($table_name))) {
-				$db->query("ALTER TABLE {{".$table_name."}} CHANGE `".$k."` `".$k."` ".(strpos($v, "CHARACTER")!==false ? $v : $v." CHARACTER SET ".self::get_config("db", "charset")." COLLATE ".self::get_config("db", "charset")."_general_ci"));
+			$or = $k;
+			if(isset($v['orName'])) {
+				$or = $v['orName'];
+				unset($v['orName']);
+				$v = implode(" ", $v);
+			}
+			if($exists && in_array($or, $exists)) {
+				$db->query("ALTER TABLE {{".$table_name."}} CHANGE `".$or."` `".$k."` ".(strpos($v, "CHARACTER")!==false ? $v : $v." CHARACTER SET ".self::get_config("db", "charset")." COLLATE ".self::get_config("db", "charset")."_general_ci"));
 			}
 		}
 		return true;

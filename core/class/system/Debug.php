@@ -115,7 +115,7 @@ class Debug {
 		templates::assign_var("count_get", sizeof($_GET));
 		$i = 0;
 		foreach($_GET as $k => $v) {
-			templates::assign_vars(array("key" => $k, "val" => $v), "gets", "get".$i);
+			templates::assign_vars(array("key" => $k, "val" => (is_string($v) ? $v : var_export($v, true))), "gets", "get".$i);
 			$i++;
 		}
 		/* End GET */
@@ -123,7 +123,7 @@ class Debug {
 		templates::assign_var("count_post", sizeof($_POST));
 		$i = 0;
 		foreach($_POST as $k => $v) {
-			templates::assign_vars(array("key" => $k, "val" => $v), "posts", "posts".$i);
+			templates::assign_vars(array("key" => $k, "val" => (is_string($v) ? $v : var_export($v, true))), "posts", "posts".$i);
 			$i++;
 		}
 		/* End POST */
@@ -131,7 +131,7 @@ class Debug {
 		templates::assign_var("count_cookie", sizeof($_COOKIE));
 		$i = 0;
 		foreach($_COOKIE as $k => $v) {
-			templates::assign_vars(array("key" => $k, "val" => $v), "cookies", "cookie".$i);
+			templates::assign_vars(array("key" => $k, "val" => (is_string($v) ? $v : var_export($v, true))), "cookies", "cookie".$i);
 			$i++;
 		}
 		/* End COOKIE */
@@ -346,25 +346,25 @@ class Debug {
 				$memoryNum = $size;
 				$memory = $size ? round($size / pow(1024, ($isize = floor(log($size, 1024)))), 2) . $filesizename[$isize] : '0 Bytes';
 				unset($size, $filesizename, $isize);
-				global $Timer;
-				if(strlen($Timer)>10) {
-					$time = microtime();
-					if(strpos($time, " ")!==false) {
-						$time = explode(" ", $time);
-						$time = current($time);
-					}
-					$Times = $time-$Timer;
-				} else {
-					$Times = $Timer;
-				}
-				$Times += $tmp;
-				$Times += $db_time;
-				if($Times<0) {
-					$Times = 0;
-				}
-				unset($Timer);
 			break;
 		}
+		global $Timer;
+		if(strlen($Timer)>10) {
+			$time = microtime();
+			if(strpos($time, " ")!==false) {
+				$time = explode(" ", $time);
+				$time = current($time);
+			}
+			$Times = $time-$Timer;
+		} else {
+			$Times = $Timer;
+		}
+		$Times += $tmp;
+		$Times += $db_time;
+		if($Times<0) {
+			$Times = 0;
+		}
+		unset($Timer);
 		$arr = array("memory" => $memory, "memoryNum" => $memoryNum, "time_work" => $Times, "included_files" => $include, "use_files" => $files, "work_template" => $tmp, "db" => array("time" => $db_time, "num" => $db_num, "list" => $db_querys));
 		unset($memory, $time, $incl_filesize, $incl_files, $include, $files, $tmp, $db_time, $db_num, $db_querys);
 		if(!$echo) {

@@ -411,6 +411,38 @@ function read_dir($dir, $type = "all", $addDir = false) {
 return $files;
 }
 
+function list_files($dir, $level = 1, $exclusions = array()) {
+	$files = array();
+	if(!$level) {
+		return false;
+	}
+	$dir = rtrim($dir, DS);
+	if(is_dir($dir)) {
+		if($dh = dir($dir)) {
+			while(($file = $dh->read()) !== false) {
+				if(in_array($file, array('.', '..' ), true)) {
+					continue;
+				}
+				if($file[0]==='.' || in_array($file, $exclusions, true)) {
+					continue;
+				}
+				if(is_dir($dir.DS.$file)) {
+					$files2 = list_files($dir.DS.$file.DS, ($level - 1), $exclusions);
+					if($files2!==false) {
+						$files = array_merge($files, $files2);
+					} else {
+						$files[] = $dir.DS.$file.DS;
+					}
+				} else {
+					$files[] = $dir.DS.$file;
+				}
+			}
+		$dh->close();
+		}
+	}
+return $files;
+}
+
 if(!function_exists("boolval")) {
 	function boolval($val) {
 		return (bool) $val;
@@ -568,6 +600,64 @@ function vdebug() {
 	}
 }
 
+function var_debug() {
+	$list = func_get_args();
+	$backtrace = debug_backtrace();
+	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "<b style=\"color:#80f;\">Called:</b> ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "");
+	if(sizeof($list)>0) {
+		echo call_user_func_array("var_debug_prepare", $list);
+	}
+	echo '</pre>';
+}
+
+function buildBacktrace($backtrace = array(), $withoutFirst = false) {
+	if(sizeof($backtrace)===0) {
+		$backtrace = debug_backtrace();
+	}
+	if($withoutFirst) {
+		if(isset($backtrace[0])) {
+			unset($backtrace[0]);
+		}
+	}
+	foreach($backtrace as $v) {
+		echo "<b style=\"color:#d11;\">Called:</b> ".$v['file']." [".$v['line']."]\n";
+	}
+}
+
+function var_debug_prepare($data, $withData = true) {
+	$type = gettype($data);
+	if(is_object($data) || is_array($data)) {
+		$num = sizeof($data);
+		foreach($data as $k => $v) {
+			$data[$k] = var_debug_prepare($v, false);
+		}
+	} else if(is_numeric($data)) {
+		$num = strlen($data);
+	} else if(is_bool($data)) {
+		$num = false;
+	} else if(is_null($data)) {
+		$num = false;
+		$type = false;
+	} else {
+		$num = strlen($data);
+		$data = htmlspecialchars($data);
+	}
+	if($withData) {
+		$list = ($type!==false || $num!==false ? '<font color="green">'.($type!==false ? $type : '').($num!==false ? '('.$num.')' : "").'</font>&nbsp;' : '');
+		ob_start();
+		var_dump($data);
+		$data = ob_get_clean();
+		if(($s = strpos($data, " "))!==false) {
+			$data = substr($data, $s);
+		} else if(($s = strpos($data, "("))!==false) {
+			$data = substr($data, $s);
+		}
+		$data = preg_replace("#=\>\n(.+?)([a-z])#", " => $2", $data);
+		$data = $list.$data;
+	}
+	return $data;
+}
+
 function is_ssl() {
 	if(
 		   (HTTP::getServer('HTTPS') && HTTP::getServer('HTTPS') !== 'off')
@@ -633,6 +723,10 @@ function pageBar($total, $current, $prefix = "", $postfix = "") {
 function callAjax() {
 	templates::$gzip = false;
 	Debug::activShow(false);
+}
+
+function generate_uuid4() {
+	return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mrand(0, 0xffff), mrand(0, 0xffff), mrand(0, 0xffff), mrand(0, 0x0fff) | 0x4000, mrand(0, 0x3fff) | 0x8000, mrand(0, 0xffff), mrand(0, 0xffff), mrand(0, 0xffff));
 }
 
 ?>
