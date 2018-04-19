@@ -6,7 +6,7 @@
 					<div class="xe-icon"><i class="linecons-params"></i></div>
 					<div class="xe-label">
 						<strong class="num">{new_version}</strong>
-						<span>{L_new_version}</span>
+						<span>{L_"новая версия"}</span>
 					</div>
 					</div>
 				</a>[/if {is_new}==new]
@@ -36,20 +36,6 @@
 						<div class="xe-label">
 							<strong class="num">{CachePHP}</strong>
 							<span>{L_"Cache Templates"}</span>
-						</div>
-					</div>
-				
-				</span>
-				
-				<span id="debug" class="col-md-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-sm-12"[if {debugpanelshow}==0] style="display:none;"[/if {debugpanelshow}==0]>
-					
-					<div class="xe-widget xe-counter xe-counter-orange">
-						<div class="xe-icon">
-							<i class="fa-cogs"></i>
-						</div>
-						<div class="xe-label">
-							<strong class="num">{L_"Активировать"}</strong>
-							<span>{L_"Debug Panel"}</span>
 						</div>
 					</div>
 				
@@ -96,6 +82,20 @@
 					</div>
 				
 				</span>
+				
+				<span id="debug" class="col-md-[if {C_FullMenu}==1]5[/if {C_FullMenu}==1][if {C_FullMenu}!=1]4[/if {C_FullMenu}!=1] col-sm-12"[if {debugpanelshow}==0] style="display:none;"[/if {debugpanelshow}==0]>
+					
+					<div class="xe-widget xe-counter xe-counter-orange">
+						<div class="xe-icon">
+							<i class="fa-cogs"></i>
+						</div>
+						<div class="xe-label">
+							<strong class="num">{L_"Активировать"}</strong>
+							<span>{L_"Debug Panel"}</span>
+						</div>
+					</div>
+				
+				</span>
 
 				{contentForAdmin}
 				
@@ -115,7 +115,7 @@
 				[if {is_new}==new]
 				<div class="col-sm-12">
 					<div class="panel panel-default">
-						<div class="panel-title">{L_list_changelog}</div>
+						<div class="panel-title">{L_"Список изменений"}</div>
 						<div class="panel-body">
 							<div class="scrollable" data-max-height="200">
 								{changelog}

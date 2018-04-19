@@ -262,28 +262,8 @@ if(!function_exists('random_bytes')) {
     }
 }
 
-function cardinal_version($check = "") {
-	$isChecked = defined("INTVERSION") ? INTVERSION : VERSION;
-	if(empty($check)) {
-		return $isChecked;
-	}
-	if(stripos($check, "-")!==false) {
-		$check = explode("-", $check);
-		$check = current($check);
-	}
-	if(class_exists("config", false) && method_exists("config", "Select") && config::Select("speed_update")) {
-		$if = ($check) > ($isChecked);
-	} else {
-		$checked = intval(str_replace(".", "0", $check));
-		$version = intval(str_replace(".", "0", $isChecked));
-		if(strlen($checked) > strlen($version)) {
-			$version = int_pad($version, strlen($checked));
-		} else if(strlen($checked) < strlen($version)) {
-			$checked = int_pad($checked, strlen($version));
-		}
-		$if = $checked>$version;
-	}
-	return $if;
+function cardinal_version($check = "", $old = "") {
+	return cardinal::CheckVersion($check, $old);
 }
 
 if(!defined("RAND_FLOAT_MT")) {
@@ -449,63 +429,6 @@ if(!function_exists("boolval")) {
 	}
 }
 
-function is_serialized($data) {
-	if(!is_string($data)) {
-		return false;
-	}
-	$data = trim($data);
-	if('N;' == $data) {
-		return true;
-	}
-	if(!preg_match('/^([adObis]):/', $data, $badions)) {
-		return false;
-	}
-	switch($badions[1]) {
-		case 'a':
-		case 'O':
-		case 's':
-			if (preg_match("/^".$badions[1].":[0-9]+:.*[;}]\$/s", $data)) {
-				return true;
-			}
-		break;
-		case 'b':
-		case 'i':
-		case 'd':
-			if(preg_match("/^".$badions[1].":[0-9.E-]+;\$/", $data)) {
-				return true;
-			}
-		break;
-	}
-	return false;
-}
-
-function is_xml($string) {
-	if(!defined('LIBXML_COMPACT')) {
-		new Exception('libxml is required to use is_xml()');
-		die();
-	}
-	$internal_errors = libxml_use_internal_errors();
-	libxml_use_internal_errors(true);
-	$result = simplexml_load_string($string) !== false;
-	libxml_use_internal_errors($internal_errors);
-	return $result;
-}
-
-function is_html($string) {
-	return strlen(strip_tags($string)) < strlen($string);
-}
-
-if(!function_exists('is_iterable')) {
-	/**
-	 * Check wether or not a variable is iterable (i.e array or \Traversable)
-	 *
-	 * @param  array|\Traversable $iterable
-	 * @return bool
-	 */
-	function is_iterable($iterable) {
-		return (is_array($iterable) || $iterable instanceof \Traversable);
-	}
-}
 if(!function_exists('iterable_to_array')) {
 	/**
 	 * Copy the iterable into an array. If the iterable is already an array, return it.
@@ -604,10 +527,14 @@ function var_debug() {
 	$list = func_get_args();
 	$backtrace = debug_backtrace();
 	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "<b style=\"color:#80f;\">Called:</b> ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "");
+	echo "<code>";
 	if(sizeof($list)>0) {
 		echo call_user_func_array("var_debug_prepare", $list);
 	}
+	echo "</code>";
 	echo '</pre>';
+	echo '<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/vs2015.min.css" /><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script><script>hljs.initHighlightingOnLoad();</script>';
 }
 
 function buildBacktrace($backtrace = array(), $withoutFirst = false) {

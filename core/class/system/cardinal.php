@@ -67,6 +67,30 @@ class cardinal {
 			die();
 		}
 	}
+	
+	final public static function CheckVersion($check, $old = "") {
+		$isChecked = defined("INTVERSION") ? INTVERSION : (defined("VERSION") ? VERSION : $old);
+		if(empty($check)) {
+			return $isChecked;
+		}
+		if(stripos($check, "-")!==false) {
+			$check = explode("-", $check);
+			$check = current($check);
+		}
+		if(class_exists("config", false) && method_exists("config", "Select") && config::Select("speed_update")) {
+			$if = ($check) > ($isChecked);
+		} else {
+			$checked = intval(str_replace(".", "0", $check));
+			$version = intval(str_replace(".", "0", $isChecked));
+			if(strlen($checked) > strlen($version)) {
+				$version = int_pad($version, strlen($checked));
+			} else if(strlen($checked) < strlen($version)) {
+				$checked = int_pad($checked, strlen($version));
+			}
+			$if = $checked>$version;
+		}
+		return $if;
+	}
 
 	final public static function SaveCardinal($v) {
 		$dv = $nv = "";

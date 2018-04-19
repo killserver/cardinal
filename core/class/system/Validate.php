@@ -589,6 +589,59 @@ class Validate {
 		return !preg_match('/[^,:{}\\[\\]0-9.\\-+Eaeflnr-u \\n\\r\\t]/', preg_replace('/"(\\.|[^"\\\\])*"/', '', $str));
 	}
 	
+	final public static function is_serialized($data) {
+		if(!is_string($data)) {
+			return false;
+		}
+		$data = trim($data);
+		if('N;' == $data) {
+			return true;
+		}
+		if(!preg_match('/^([adObis]):/', $data, $badions)) {
+			return false;
+		}
+		switch($badions[1]) {
+			case 'a':
+			case 'O':
+			case 's':
+				if (preg_match("/^".$badions[1].":[0-9]+:.*[;}]\$/s", $data)) {
+					return true;
+				}
+			break;
+			case 'b':
+			case 'i':
+			case 'd':
+				if(preg_match("/^".$badions[1].":[0-9.E-]+;\$/", $data)) {
+					return true;
+				}
+			break;
+		}
+		return false;
+	}
+
+	final public static function is_xml($string) {
+		if(!defined('LIBXML_COMPACT')) {
+			new Exception('libxml is required to use is_xml()');
+			die();
+		}
+		$internal_errors = libxml_use_internal_errors();
+		libxml_use_internal_errors(true);
+		$result = simplexml_load_string($string) !== false;
+		libxml_use_internal_errors($internal_errors);
+		return $result;
+	}
+
+	final public static function is_html($string) {
+		return strlen(strip_tags($string)) < strlen($string);
+	}
+
+	function is_uuid4($uuid) {
+		if(!is_string($uuid)) {
+			return false;
+		}
+		return (bool) preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/', $uuid);
+	}
+	
 }
 
 ?>

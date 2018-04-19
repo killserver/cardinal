@@ -31,7 +31,11 @@ class modules {
 	
 	final public static function checkObject($obj, $name, $checkParent = false) {
 		if(gettype($name)!="string") {
-			header("HTTP/1.0 520 Unknown Error");
+			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+				header("HTTP/1.0 520 Unknown Error");
+			} else {
+				header("HTTP/1.0 404 Not found");
+			}
 			throw new Exception("Error set #2 parameter");
 		}
 		if($checkParent === true && is_object($obj) && get_parent_class($obj)===$name) {
@@ -291,31 +295,8 @@ class modules {
 		}
 	}
 	
-	final public static function CheckVersion($check) {
-		if(function_exists("cardinal_version")) {
-			return cardinal_version($check);
-		} else {
-			$isChecked = (defined("INTVERSION") ? INTVERSION : (defined("VERSION") ? VERSION : $old));
-			if(empty($check)) {
-				return $isChecked;
-			}
-			if(stripos($check, "-")!==false) {
-				$check = explode("-", $check);
-				$check = current($check);
-			}
-			if(class_exists("config") && method_exists("config", "Select") && config::Select("speed_update")) {
-				$if = ($check)>($isChecked);
-			} else {
-				$checked = intval(str_replace(".", "", $check));
-				$version = intval(str_replace(".", "", $isChecked));
-				if(strlen($checked)>strlen($version)) {
-					$version = int_pad($version, strlen($checked));
-				}
-				$if = $checked>$version;
-			}
-			return $if;
-		}
-		return $if;
+	final public static function CheckVersion($check, $old = "") {
+		return cardinal::CheckVersion($check, $old);
 	}
 	
 	final private static function ExecHooks($module, $param = array()) {

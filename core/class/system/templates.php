@@ -252,6 +252,9 @@ class templates {
 	 * @param string $view Unique id for block data
      */
 	final public static function assign_vars($array, $block = "", $view = "") {
+		if($view==="") {
+			$view = uniqid();
+		}
 		if(empty($block)) {
 			foreach($array as $name => $value) {
 				self::$blocks[$name] = $value;
@@ -332,6 +335,9 @@ class templates {
 	 * @param string $block Block data for create array
      */
 	final public static function assign_var($name, $value, $block = "", $id = "") {
+		if($id==="") {
+			$id = uniqid();
+		}
 		if(empty($block)) {
 			self::$blocks[$name] = $value;
 		} else if(!empty($id)) {
@@ -1903,10 +1909,12 @@ if(!$test) {
 		imagecopyresampled($dest_img, $dest_imgs, 0, 0, 0, 0, $resizerWidth, $resizerHeight, $resizeWidth, $resizeHeight);
 
 		$thumb = imagecreatetruecolor($trimWidth, $trimHeight);
-		if(isset($arr['posX']) && $arr['posX']>=0 && $arr['posX']<=100) {
-			$posX = round(($arr['width'] - $trimWidth) * $arr['posX'] / 100);
-		} else {
-			$posX = round(($arr['width'] - $trimWidth) / 2);
+		if(isset($arr['width'])) {
+			if(isset($arr['posX']) && $arr['posX']>=0 && $arr['posX']<=100) {
+				$posX = round(($arr['width'] - $trimWidth) * $arr['posX'] / 100);
+			} else {
+				$posX = round(($arr['width'] - $trimWidth) / 2);
+			}
 		}
 		if(isset($arr['posY']) && $arr['posY']>=0 && $arr['posY']<=100) {
 			$posY = round(($resizeHeight - $trimHeight) * $arr['posY'] / 100);

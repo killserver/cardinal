@@ -2,14 +2,14 @@
 	<div class="col-md-12">
 		<a id="core-cardinal" class="btn btn-[if {is_download}==0]red download[/if {is_download}==0][if {is_download}==1]success install[/if {is_download}==1] btn-icon btn-icon-standalone btn-lg [if {is_locked}==1]locked[/if {is_locked}==1]">
 			<i class="fa-download"></i>
-			<span>[if {is_download}==0]{L_download}[/if {is_download}==0][if {is_download}==1]{L_install}[/if {is_download}==1] {L_new_versions} [{new_version}]</span>
+			<span>[if {is_download}==0]{L_"Скачать"}[/if {is_download}==0][if {is_download}==1]{L_"Установить"}[/if {is_download}==1] {L_"новую версию"} [{new_version}]</span>
 		</a>
 		<div class="progress progress-striped active">
 			<div class="progress-bar progress-bar-success" style="width:0%;"></div>
 		</div>
 		<div class="col-sm-12">
 			<div class="panel panel-default">
-				<div class="panel-title">{L_list_changelog}</div>
+				<div class="panel-title">{L_"Список изменений"}</div>
 				<div class="panel-body">
 					<div class="scrollable" data-max-height="200">
 						{changelog}
@@ -42,10 +42,10 @@ function rebuild() {
 					"showMethod": "fadeIn",
 					"hideMethod": "fadeOut"
 				};
-				toastr.success("{L_done_updates}", "{L_done_update}", opts);
+				toastr.success("{L_"Успешно установлено"}", "{L_"Обновление установлено"}", opts);
 				jQuery(".download").unbind("click");
 				jQuery("a#core-cardinal").removeClass("btn-red").removeClass("download").addClass("btn-success").addClass("install");
-				jQuery("a#core-cardinal span").html("{L_install} {L_new_versions} [{new_version}]");
+				jQuery("a#core-cardinal span").html("{L_"Установить"} {L_"новую версию"} [{new_version}]");
 				rebuild();
 			}).fail(function(data) {
 				var opts = {
@@ -62,7 +62,7 @@ function rebuild() {
 					"showMethod": "fadeIn",
 					"hideMethod": "fadeOut"
 				};
-				toastr.error(data, "{L_fail_update}", opts);
+				toastr.error(data, "{L_"Обновление провалилось"}", opts);
 			}).always(function() {
 				NProgress.done();
 			});
@@ -89,7 +89,7 @@ function rebuild() {
 					"showMethod": "fadeIn",
 					"hideMethod": "fadeOut"
 				};
-				toastr.success("{L_done_updates}", "{L_done_update}", opts);
+				toastr.success("{L_"Успешно установлено"}", "{L_"Обновление установлено"}", opts);
 			}).fail(function(data) {
 				var opts = {
 					"closeButton": true,
@@ -105,14 +105,14 @@ function rebuild() {
 					"showMethod": "fadeIn",
 					"hideMethod": "fadeOut"
 				};
-				toastr.error(data, "{L_fail_update}", opts);
+				toastr.error(data, "{L_"Обновление провалилось"}", opts);
 			}).always(function() {
 				NProgress.done();
 			});
 		}, 1000);
 	});
 	jQuery(".locked").off("click").click(function() {
-		alert("{L_install_locked}");
+		alert("{L_"Установка заблокирована"}");
 	});
 }
 jQuery(document).ready(function() {

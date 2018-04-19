@@ -739,7 +739,7 @@ class KernelArcher {
 			$this->countCall[$page] = 0;
 		}
 		$this->countCall[$page]++;
-		if(array_key_exists("countCall", $params) && is_string($func)) {
+		if(is_array($params) && array_key_exists("countCall", $params) && is_string($func)) {
 			$params = array_merge($params, array("countCall" => $this->countCall[$page]));
 		} elseif(is_array($func) && array_key_exists("countCall", $func)) {
 			$func = array_merge($func, array("countCall" => $this->countCall[$page]));
@@ -912,7 +912,7 @@ class KernelArcher {
 				$retType = "<textarea id=\"".$name."\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."\" class=\"form-control ckeditor\" rows=\"10\"".($block ? " disabled=\"disabled\"" : "").">".htmlspecialchars($val)."</textarea>";
 			break;
 			case "onlytextareatext":
-				$retType = "<textarea class=\"onlyText\" id=\"".$name."\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."\" class=\"form-control\" rows=\"10\"".($block ? " disabled=\"disabled\"" : "").">".htmlspecialchars($val)."</textarea>";
+				$retType = "<textarea class=\"onlyText form-control\" id=\"".$name."\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."\" rows=\"10\"".($block ? " disabled=\"disabled\"" : "").">".htmlspecialchars($val)."</textarea>";
 			break;
 			case "email":
 				$retType = "<div class=\"input-group\"><span class=\"input-group-addon\">@</span><input id=\"".$name."\" class=\"form-control\" type=\"email\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "")."></div>";
