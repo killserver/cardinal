@@ -36,7 +36,7 @@ class ArcherExample extends modules {
 	}
 
 	public static function RebuildShield($row) {
-		return $row;
+		return array($row);
 	}
 
 	public function RebuildTakeUpload($model, $field, $id, $file, $path, $type = "", $i = -1) {

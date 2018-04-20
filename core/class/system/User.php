@@ -286,7 +286,7 @@ class User {
 	}
 	
 	final public static function checkLogin() {
-		if(!is_array(self::$userInfo) || sizeof(self::$userInfo) == 0 || !isset(self::$userInfo[$first])) {
+		if(!is_array(self::$userInfo) || sizeof(self::$userInfo) == 0 || !isset(self::$userInfo['username'])) {
 			self::load();
 		}
 		return (isset(self::$userInfo['username']) && !empty(self::$userInfo['username']) ? true : false);
