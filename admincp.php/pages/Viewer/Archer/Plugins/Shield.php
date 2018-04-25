@@ -107,7 +107,13 @@ class Archer_Shield {
 			$infoField = "infoField";
 			$active = false;
 			$val = "{".$modelName.".".$d[$i]."}";
-			if($i!=0 && KernelArcher::$disabledQuickEditor===false) {
+			$activeQuickEditor = (is_bool(KernelArcher::$disabledQuickEditor) && KernelArcher::$disabledQuickEditor === false);
+			if(!$activeQuickEditor) {
+				if(is_array(KernelArcher::$disabledQuickEditor) && isset(KernelArcher::$disabledQuickEditor[$d[$i]]) && ((is_bool(KernelArcher::$disabledQuickEditor[$d[$i]]) && KernelArcher::$disabledQuickEditor[$d[$i]]===false) || (is_string(KernelArcher::$disabledQuickEditor[$d[$i]]) && KernelArcher::$disabledQuickEditor[$d[$i]]==="no") || (is_numeric(KernelArcher::$disabledQuickEditor[$d[$i]]) && KernelArcher::$disabledQuickEditor[$d[$i]]===0))) {
+					$activeQuickEditor = false;
+				}
+			}
+			if($i!=0 && $activeQuickEditor) {
 				$quickEditor = " data-pk=\"{".$modelName.".".$first."}\" data-name=\"".$d[$i]."\"";
 				if($type=="select" || $type=="array" || $type=="enum") {
 					$infoField = "";

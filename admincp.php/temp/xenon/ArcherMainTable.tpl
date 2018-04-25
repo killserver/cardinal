@@ -14,9 +14,9 @@
 [foreach block={ArcherPage}]<tr>
 	{ArcherData}
 	<td>
-		<a href="./?pages=Archer&type={ArcherTable}&pageType=Show&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-secondary btn-block">{L_view}</a>
-		<a href="./?pages=Archer&type={ArcherTable}&pageType=Edit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-edit btn-block">{L_edit}</a>
-		<a href="./?pages=Archer&type={ArcherTable}&pageType=Delete&viewId={{ArcherPage}.{ArcherFirst}}{addition}" onclick="confirmDelete();" class="btn btn-red btn-block">{L_delete}</a>
+		[if {{ArcherPage}.DisableView}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Show&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-secondary btn-block">{L_view}</a>[/if {{ArcherPage}.DisableView}!="yes"]
+		[if {{ArcherPage}.DisableEdit}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Edit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-edit btn-block">{L_edit}</a>[/if {{ArcherPage}.DisableEdit}!="yes"]
+		[if {{ArcherPage}.DisableRemove}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Delete&viewId={{ArcherPage}.{ArcherFirst}}{addition}" onclick="return confirmDelete();" class="btn btn-red btn-block">{L_delete}</a>[/if {{ArcherPage}.DisableRemove}!="yes"]
 	</td>
 </tr>[/foreach]
 </tbody>

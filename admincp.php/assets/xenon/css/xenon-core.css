@@ -910,6 +910,12 @@ body {
   padding: 0;
   overflow: hidden;
   list-style: none;
+  background: #1b1c1d;
+  margin: 0px -40px;
+  padding: 0px 40px;
+}
+.sidebar-menu .main-menu ul li:last-child a {
+    border: 0px;
 }
 .sidebar-menu .main-menu ul li {
   position: relative;

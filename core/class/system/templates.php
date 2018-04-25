@@ -1835,6 +1835,14 @@ if(!$test) {
 		$size_img = getimagesize($filename_ROOT_PATH);
 		$src_ratio = $size_img[0] / $size_img[1];
 
+		if(!isset($arr['width']) && !isset($arr['height'])) {
+			if($size_img[0] > 1000) {
+				$arr['width'] = $size_img[0]/5;
+			}
+			if($size_img[1] > 1000) {
+				$arr['height'] = $size_img[1]/5;
+			}
+		}
 		if(isset($arr['height']) && !isset($arr['width'])) {
 			$ratio = $arr['height'] / $size_img[1];
 			$setWidth = $size_img[0] * $ratio;

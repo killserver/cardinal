@@ -296,9 +296,9 @@ class Route {
 					}
 					if(!empty(self::$_langForce) && !isset($params['now_lang'])) {
 						$params['lang'] = self::$_langForce;
-					} else if(isset($params['now_lang']) && sizeof($newLang)>0 && isset($newLang[$params['now_lang']])) {
+					} else if(isset($params['now_lang']) && !empty($params['now_lang']) && sizeof($newLang)>0 && isset($newLang[$params['now_lang']])) {
 						$params['lang'] = $params['now_lang'];
-					} else if(isset($params['now_lang']) && sizeof($newLang)>0 && !isset($newLang[$params['now_lang']])) {
+					} else if(isset($params['now_lang']) && !empty($params['now_lang']) && sizeof($newLang)>0 && !isset($newLang[$params['now_lang']])) {
 						header("HTTP/1.1 301 Moved Permanently");
 						header("Location: ".substr($uri, 2));
 						die();
