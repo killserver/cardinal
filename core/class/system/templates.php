@@ -92,7 +92,6 @@ class templates {
 	private static $isChangeHead = false;
 	private static $typeTpl = "tpl";
 	private static $mainTpl = "main";
-	private static $pathToCache = "";
 	private static $mainSkins = "";
 	private static $accessEmpty = false;
 
@@ -102,7 +101,6 @@ class templates {
      */
 	final public function __construct($config = array()) {
 		self::SetConfig($config);
-		self::$pathToCache = PATH_CACHE_TEMP;
 		self::$dir_skins = substr(str_replace(ROOT_PATH, "", PATH_SKINS), 0, (-(strlen(DS))));
 	}
 
@@ -277,6 +275,16 @@ class templates {
 			unset(self::$blocks[$array][$view]);
 		}
 	}
+	
+	final public static function resetVar($name, $block = "", $id = "") {
+		if(empty($block) && isset(self::$blocks[$name])) {
+			unset(self::$blocks[$name]);
+		} else if(!empty($id) && isset(self::$blocks[$block][$id][$name])) {
+			unset(self::$blocks[$block][$id][$name]);
+		} else if(isset(self::$blocks[$block][$name])) {
+			unset(self::$blocks[$block][$name]);
+		}
+	}
 
 	final public static function getElements($file) {
 		$tpl = self::load_templates($file);
@@ -345,16 +353,6 @@ class templates {
 		} else {
 			self::$blocks[$block][self::$assignVarI][$name] = $value;
 			self::$assignVarI++;
-		}
-	}
-	
-	final public static function resetVar($name, $block = "", $id = "") {
-		if(empty($block) && isset(self::$blocks[$name])) {
-			unset(self::$blocks[$name]);
-		} else if(!empty($id) && isset(self::$blocks[$block][$id][$name])) {
-			unset(self::$blocks[$block][$id][$name]);
-		} else if(isset(self::$blocks[$block][$name])) {
-			unset(self::$blocks[$block][$name]);
 		}
 	}
 
@@ -709,85 +707,6 @@ class templates {
 		return "";
 	}
 
-	/**
-	 * Include created php-file template
-	 * @access private
-	 * @param string $tpl Rebuild template
-	 * @param string $file Execute template file
-	 * @return bool|string Return result including file
-     */
-	final private static function ParseTemp($tpl, $file) {
-		$del = false;
-		if($file==self::$dir_skins.DS.self::$skins.DS."null") {
-			$del = true;
-		}
-		$file = str_replace(array("/", DS, "-", ".."), array("-", "_", "_", "_"), $file);
-		$file = self::$pathToCache.$file.".".ROOT_EX;
-		$tpl = self::minify($tpl, true);
-		if(!file_exists($file)) {
-			file_put_contents($file, '<?php if(!defined("IS_CORE")) { echo "403 ERROR"; die(); } ?>'.$tpl);
-		}
-		if(file_exists($file)) {
-			ob_start();
-			$data = self::$blocks;
-			require($file);
-			$file_content = ob_get_clean();
-		} else {
-			return false;
-		}
-		if($del && file_exists($file)) {
-			unlink($file);
-		}
-		return $file_content;
-	}
-
-	/**
-	 * Re-Rebuild back in template
-	 * @access private
-	 * @param string $tpl Rebuild line
-	 * @return mixed Return re-rebuilding
-     */
-	final private static function RebuildOffPhp($tpl) {
-		$tpl = preg_replace("#<!-- FOREACH (.+?) -->#", '[foreach block=\\1]', $tpl);
-		$tpl = preg_replace("#<!-- ENDFOREACH (.+?) -->#", '[/foreach]', $tpl);
-		$tpl = preg_replace("#<!-- ENDFOREACH -->#", '[/foreach]', $tpl);
-		$tpl = preg_replace("#<!-- IF (.+?) -->#", "[if \\1]", $tpl);
-		$tpl = preg_replace("#<!-- ELSE -->#", "[else]", $tpl);
-		$tpl = preg_replace("#<!-- ELSEIF (.+?) -->#", "[else \\1]", $tpl);
-		$tpl = preg_replace("#<!-- ENDIF -->#", "[/if]", $tpl);
-		$tpl = preg_replace("#<!-- ENDIF (.+?) -->#", "[/if \\1]", $tpl);
-
-		$tpl = preg_replace("#\{% L_sprintf\(([\"|']|)([a-zA-Z0-9\-_]+)(\\1)\[([a-zA-Z0-9\-_]*?)\],(.*?)\) %\}#", '{L_sprintf(\\2[\\4],\\5)}', $tpl);
-		$tpl = preg_replace("#\{% L_sprintf\(()(.+?)()\[([a-zA-Z0-9\-_]*?)\],(.*?)\) %\}#", '{L_sprintf(\\2[\\4],\\5)}', $tpl);
-		$tpl = preg_replace("#\{% L_sprintf\(([\"|']|)(.+?)(\\1),(.*?)\) %\}#", '{L_sprintf(\\2,\\4)}', $tpl);
-		$tpl = preg_replace("#\{% L_sprintf\(()(.+?)(),(.*?)\) %\}#", '{L_sprintf(\\2,\\4)}', $tpl);
-		$tpl = preg_replace("#\{% L_([\"|']|)([a-zA-Z0-9\-_]+)([\"|']|)\[([a-zA-Z0-9\-_]*?)\] %\}#", '{L_\\2[\\4]}', $tpl);
-		$tpl = preg_replace("#\{% L_([\"|']|)(.+?)(\\1) %\}#", '{L_\\2}', $tpl);
-		$tpl = preg_replace("#\{% L_()(.+?)() %\}#", '{L_\\2}', $tpl);
-		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", '{C_\\1[\\2]}', $tpl);
-		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+) %\}#", '{C_\\1}', $tpl);
-		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", '{U_\\1[\\2]}', $tpl);
-		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+) %\}#", '{U_\\1}', $tpl);
-		$tpl = preg_replace("#\{% D_([a-zA-Z0-9\-_]+) %\}#", '{D_\\1}', $tpl);
-		$tpl = preg_replace("#\{% RP\[(.+?)\] %\}#", '{RP[\\1]}', $tpl);
-		$tpl = preg_replace("#\{% R_\[(.+?)\]\[(.+?)\] %\}#", '{R_[\\1][\\2]}', $tpl);
-		$tpl = preg_replace("#\{\$ R_\[(.+?)\]\[(.+?)\] \$\}#", '{R_[\\1][\\2]}', $tpl);
-		$tpl = preg_replace("#\{% R_\[(.+?)\] %\}#", '{R_[\\1]}', $tpl);
-		$tpl = preg_replace("#\{\$ R_\[(.+?)\] \$\}#", '{R_[\\1]}', $tpl);
-		$tpl = preg_replace("#\{% M_\[(.+?)\] %\}#", '{M_[\\1]}', $tpl);
-
-		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) %\}#is", '{\\1.\\2}', $tpl);
-		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+) %\}#is", '{\\1}', $tpl);
-
-
-		$tpl = preg_replace("#\{\# ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) \#\}#is", '{\\1.\\2}', $tpl);
-		$tpl = preg_replace("#\{\# ([a-zA-Z0-9\-_]+) \#\}#is", '{\\1}', $tpl);
-		if(defined("PERMISSION_PHP")) {
-			$tpl = preg_replace('#\<\?php(.*?)\?\>#isU', "", $tpl);
-		}
-		return $tpl;
-	}
-
     /**
      * Check equals mobile
      * @param string $type Type equals type if mobile, tablet or desktop
@@ -858,105 +777,10 @@ class templates {
 		}
 	}
 
-	/**
-	 * Rebuild template in php-file
-	 * @access private
-	 * @param string $tpl Original template
-	 * @param string $file Execute file template
-	 * @return mixed Result rebuild and including file
-     */
-	final private static function ParsePHP($tpl, $file = "") {
-		if(!config::Select("ParsePHP") || !file_exists(self::$pathToCache) || !is_dir(self::$pathToCache) || !is_writable(self::$pathToCache)) {
-			return self::RebuildOffPhp($tpl);
-		}
-		if(empty($file)) {
-			return $tpl;
-		}
-		$exp = str_replace(array("/", DS, "-", ".."), array("-", "_", "_", "_"), $file);
-		if(file_exists($file) && file_exists(self::$pathToCache.$exp.".md5")) {
-			$md5 = file_get_contents(self::$pathToCache.$exp.".md5");
-			if($md5 == md5($tpl)) {
-				return self::ParseTemp($tpl, $file);
-			}
-		} else {
-			$md5 = md5($tpl);
-			file_put_contents(self::$pathToCache.$exp.".md5", $md5);
-		}
-		unset($md5);
-		if(!defined("PERMISSION_PHP")) {
-			$safe = array(
-				"<?php" => "&lt;?php",
-				"<?" => "&lt;?",
-				"?>" => "?&gt;",
-			);
-			$tpl = str_replace(array_keys($safe), array_values($safe), $tpl);
-			if(strpos($tpl, "&lt;?xml")!==false) {
-				$safe = array(
-					"&lt;?xml" => '<?php echo \'<?xml\'; ?>',
-					"?&gt;" => '<?php echo \'?>\'; ?>',
-				);
-				$tpl = str_replace(array_keys($safe), array_values($safe), $tpl);
-			}
-		} else {
-			if(strpos($tpl, "<?xml")!==false) {
-				$safe = array(
-					"<?xml" => '<?php echo \'<?xml\'; ?>',
-				);
-				$tpl = str_replace(array_keys($safe), array_values($safe), $tpl);
-			}
-		}
-		$tpl = preg_replace("#<!-- FOREACH (.+?) -->#", '<?php if(isset($data[\'\\1\']) && is_array($data[\'\\1\']) && sizeof($data[\'\\1\'])>0) { foreach($data[\'\\1\'] as $\\1) { ?>', $tpl);
-		$tpl = preg_replace("#<!-- ENDFOREACH (.+?) -->#", '<?php } } ?>', $tpl);
-		$tpl = preg_replace("#<!-- ENDFOREACH -->#", '<?php } } ?>', $tpl);
-		$tpl = preg_replace("#<!-- IF (.+?) -->#", "<?php if(\\1) { ?>", $tpl);
-		$tpl = preg_replace("#<!-- ELSE -->#", "<?php } else { ?>", $tpl);
-		$tpl = preg_replace("#<!-- ELSEIF (.+?) -->#", "<?php } elseif(\\1) { ?>", $tpl);
-		$tpl = preg_replace("#<!-- ENDIF (.+?) -->#", "<?php } ?>", $tpl);
-		$tpl = preg_replace("#<!-- ENDIF -->#", "<?php } ?>", $tpl);
-
-		$tpl = preg_replace("#\{% L_sprintf\(([\"|']|)([a-zA-Z0-9\-_]+)([\"|']|)\[([a-zA-Z0-9\-_]*?)\],(.*?)\) %\}#", 'templates::slangf(array(null, \'\', \'\\2\', \'\', \'\\4\', \'\\5\'))', $tpl);
-		$tpl = preg_replace("#\{% L_sprintf\(([\"|']|)(.+?)([\"|']|),(.*?)\) %\}#", 'templates::slangf(array(null, \'\', \'\\2\', \'\', \'\\4\'))', $tpl);
-		$tpl = preg_replace("#\{% L_([\"|']|)([a-zA-Z0-9\-_]+)([\"|']|)\[([a-zA-Z0-9\-_]*?)\] %\}#", 'templates::lang(array(null, \'\', \'\\2\', \'\', \'\\4\'))', $tpl);
-		$tpl = preg_replace("#\{% L_([\"|']|)(.+?)([\"|']|) %\}#", 'templates::lang(array(null, \'\', \'\\2\'))', $tpl);
-		$tpl = preg_replace("#\{% L_()(.+?)() %\}#", 'templates::lang(array(null, \'\', \'\\2\', \'\'))', $tpl);
-		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", 'config::Select(\'\\1\', \'\\2\')', $tpl);
-		$tpl = preg_replace("#\{% C_([a-zA-Z0-9\-_]+) %\}#", 'config::Select(\'\\1\')', $tpl);
-		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\] %\}#", 'templates::user(array(null, \'\\1\', \'\\2\'))', $tpl);
-		$tpl = preg_replace("#\{% U_([a-zA-Z0-9\-_]+) %\}#", 'templates::user(array(null, \'\\1\'))', $tpl);
-		$tpl = preg_replace("#\{% D_([a-zA-Z0-9\-_]+) %\}#", 'templates::define(array(null, \'\\1\'))', $tpl);
-		$tpl = preg_replace("#\{% R_\[(.+?)\]\[(.+?)\] %\}#", 'templates::route(array(null, "\\1", "\\2"))', $tpl);
-		$tpl = preg_replace("#\{% M_\[(.+?)\] %\}#", 'templates::checkMobile(array(null, "\\1"))', $tpl);
-		$tpl = preg_replace("#\{% RP\[(.+?)\] %\}#", 'templates::routeparam(array(null, \'\\1\'))', $tpl);
-
-		$tpl = preg_replace("#\{\@ ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) \@\}#is", '(isset($\\1[\'\\2\']) ? $\\1[\'\\2\'] : \'\')', $tpl);
-		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) %\}#is", '$\\1[\'\\2\']', $tpl);
-		$tpl = preg_replace("#\{% ([a-zA-Z0-9\-_]+) %\}#is", '$data[\'\\1\']', $tpl);
-
-		$tpl = preg_replace("#\{L_sprintf\(([\"|']|)([a-zA-Z0-9\-_]+)(\\1)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", '<?php echo templates::slangf(array(null, \'\', \'\\2\', \'\', \'\\4\', \'\\5\')); ?>', $tpl);
-		$tpl = preg_replace("#\{L_sprintf\(()([a-zA-Z0-9\-_]+)()\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", '<?php echo templates::slangf(array(null, \'\', \'\\2\', \'\', \'\\4\', \'\\5\')); ?>', $tpl);
-		$tpl = preg_replace("#\{L_sprintf\(([\"|']|)(.+?)(\\1),(.*?)\)\}#", '<?php echo templates::slangf(array(null, \'\', \'\\2\', \'\', \'\\4\')); ?>', $tpl);
-		$tpl = preg_replace("#\{L_sprintf\(()(.+?)(),(.*?)\)\}#", '<?php echo templates::slangf(array(null, \'\', \'\\2\', \'\', \'\\4\')); ?>', $tpl);
-		$tpl = preg_replace("#\{L_([\"|']|)([a-zA-Z0-9\-_]+)(\\1)\[([a-zA-Z0-9\-_]*?)\]\}#", '<?php echo templates::lang(array(null, \'\', \'\\2\', \'\', \'\\4\')); ?>', $tpl);
-		$tpl = preg_replace("#\{L_()([a-zA-Z0-9\-_]+)()\[([a-zA-Z0-9\-_]*?)\]\}#", '<?php echo templates::lang(array(null, \'\', \'\\2\', \'\', \'\\4\')); ?>', $tpl);
-		$tpl = preg_replace("#\{L_()([a-zA-Z0-9\-_]+)()\[(.*?)\]\}#", '<?php echo templates::lang(array(null, \'\', \'\\2\', \'\', \'\\4\')); ?>', $tpl);
-		$tpl = preg_replace("#\{L_([\"|']|)(.+?)(\\1)\}#", '<?php echo templates::lang(array(null, \'\', \'\\2\')); ?>', $tpl);
-		$tpl = preg_replace("#\{L_()(.+?)()\}#", '<?php echo templates::lang(array(null, \'\', \'\\2\')); ?>', $tpl);
-		$tpl = preg_replace("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", '<?php echo config::Select(\'\\1\', \'\\2\'); ?>', $tpl);
-		$tpl = preg_replace("#\{C_([a-zA-Z0-9\-_]+)\}#", '<?php echo config::Select(\'\\1\'); ?>', $tpl);
-		$tpl = preg_replace("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", '<?php echo templates::user(array(null, \'\\1\', \'\\2\')); ?>', $tpl);
-		$tpl = preg_replace("#\{U_([a-zA-Z0-9\-_]+)\}#", '<?php echo templates::user(array(null, \'\\1\')); ?>', $tpl);
-		$tpl = preg_replace("#\{D_([a-zA-Z0-9\-_]+)\}#", '<?php echo templates::define(array(null, \'\\1\')); ?>', $tpl);
-		$tpl = preg_replace("#\{RP\[(.+?)\]\}#", '<?php echo templates::routeparam(array(null, \'\\1\')); ?>', $tpl);
-		$tpl = preg_replace("#\{R_\[(.+?)\]\[(.+?)\]\}#", '<?php echo templates::route(array(null, "\\1", "\\2")); ?>', $tpl);
-		$tpl = preg_replace("#\{R_\[(.+?)\]\}#", '<?php echo templates::route(array(null, "\\1")); ?>', $tpl);
-		$tpl = preg_replace("#\{\@ R_\[(.+?)\]\[(.+?)\] \@\}#", '<?php echo templates::route(array(null, \'\\1\', \\2)); ?>', $tpl);
-		$tpl = preg_replace("#\{\@ R_\[(.+?)\] \@\}#", '<?php echo templates::route(array(null, \'\\1\')); ?>', $tpl);
-		$tpl = preg_replace("#\{M_\[(.+?)\]\}#", '<?php echo templates::checkMobile(array(null, \'\\1\')); ?>', $tpl);
-
-		$tpl = preg_replace("#\{\# ([a-zA-Z0-9\-_]+)\.([a-zA-Z0-9\-_]+) \#\}#is", '<?php echo (isset($\\1[\'\\2\']) ? $\\1[\'\\2\'] : \'{\\1.\\2}\'); ?>', $tpl);
-		$tpl = preg_replace("#\{\# ([a-zA-Z0-9\-_]+) \#\}#is", '<?php echo (isset($data[\'\\1\']) ? $data[\'\\1\'] : \'{\\1}\'); ?>', $tpl);
-		$tpl = self::ParseTemp($tpl, $file);
-		return $tpl;
+	private static $mixins = array();
+	private static function mixinCache($arr) {
+		self::$mixins[$arr[1]] = $arr[2];
+		return "";
 	}
 
 	/**
@@ -968,8 +792,8 @@ class templates {
      */
 	final private static function ecomp($tmp, $file = "") {
 		$tmp = preg_replace("/\/\/\/\*\*\*(.+?)\*\*\*\/\/\//is", "", $tmp);
-		$tmp = self::ParsePHP($tmp, $file);
-		$tmp = self::callback_array("#\{include (.+?)=['\"](.*?)['\"]\}#", ("templates::includeFile"), $tmp);
+		$tmp = self::callback_array("#\[MIXIN name=(.+?)\](.*?)\[/MIXIN\]#is", "templates::mixinCache", $tmp);
+		$tmp = self::callback_array("#\{include (.+?)=['\"](.*?)['\"](|[\"'](.+?)[\"'])\}#", ("templates::includeFile"), $tmp);
 		$tmp = preg_replace("~\{\#is_last\[(\"|)(.*?)(\"|)\]\}~", "\\1", $tmp);
 		$tmp = self::callback_array("#\\[(not-group)=(.+?)\\](.+?)\\[/not-group\\]#is", ("templates::group"), $tmp);
 		$tmp = self::callback_array("#\\[(group)=(.+?)\\](.+?)\\[/group\\]#is", ("templates::group"), $tmp);
@@ -1022,6 +846,14 @@ class templates {
 		$tmp = self::callback_array("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tmp);
 		$tmp = self::callback_array("#\{FN_[\"'](.+?)[\"'],[\"'](.*?)[\"']\}#", "templates::callFn", $tmp);
 		return $tmp;
+	}
+
+	final private static function include_mixin($arr) {
+		$ret = $arr[0];
+		if(isset(self::$mixins[$arr[1]])) {
+			$ret = self::$mixins[$arr[1]];
+		}
+		return $ret;																																								
 	}
 
 	final private static function declension($arr) {
@@ -1179,6 +1011,9 @@ class templates {
 			$type = "yes";
 			$t = str_replace("==", "=", $array[1]);
 			$e = explode("=", $t);
+		} elseif(strpos($array[1], "mod") !== false) {
+			$type = "mod";
+			$e = explode("mod", $array[1]);
 		}
 		if(strpos($array[1], "!class_exists(") !== false) {
 			$type = "nce";
@@ -1335,6 +1170,35 @@ class templates {
 			} else {
 				return "";
 			}
+		} elseif($type == "mod") {
+			if(is_array($e)) {
+				$e = array_map("trim", $e);
+			}
+			if(((is_array($e) && sizeof($e)==2 && $e[0]!=="" && $e[0]>0 && $e[1]!=="" && $e[1]>0) || $else) && $good) {
+				if(($e[0]%$e[1])!=1) {
+					unset($e);
+					unset($type);
+					return $data;
+				} else {
+					unset($e);
+					unset($type);
+					return $ret;
+				}
+			} else if(((is_array($e) && sizeof($e)==2 && $e[0]!=="" && $e[0]>0) || $else) && $good) {
+				if(($e[0]%2)!=1) {
+					unset($e);
+					unset($type);
+					return $data;
+				} else {
+					unset($e);
+					unset($type);
+					return $ret;
+				}
+			} else {
+				unset($e);
+				unset($type);
+				return $ret;
+			}
 		}
 		return "";
 	}
@@ -1392,6 +1256,9 @@ class templates {
 		} else if($arr[1]=="content") {
 			unset($arr[1]);$arr = array_values($arr);
 			return self::include_content($arr);
+		} else if($arr[1]=="mixin") {
+			unset($arr[1]);$arr = array_values($arr);
+			return self::include_mixin($arr);
 		}
 	}
 
@@ -1577,8 +1444,8 @@ class templates {
 	 * @return array|mixed|NUll Done completed
      */
 	public static function comp_datas($tpl, $file = "null", $test = false) {
-		$tpl = self::ParsePHP($tpl, self::$dir_skins.DS.self::$skins.DS.$file);
-		$tpl = self::callback_array("#\{include (.+?)=['\"](.*?)['\"]\}#", ("templates::includeFile"), $tpl);
+		$tpl = self::callback_array("#\[MIXIN name=(.+?)\](.*?)\[/MIXIN\]#is", "templates::mixinCache", $tpl);
+		$tpl = self::callback_array("#\{include (.+?)=['\"](.*?)['\"](|[\"'](.+?)[\"'])\}#", ("templates::includeFile"), $tpl);
 		$tpl = self::callback_array("~\{is_last\[(\"|)(.+?)(\"|)\]\}~", ("templates::count_blocks"), $tpl);
 		$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tpl);
 		$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tpl);
@@ -1843,6 +1710,7 @@ if(!$test) {
 				$arr['height'] = $size_img[1]/5;
 			}
 		}
+
 		if(isset($arr['height']) && !isset($arr['width'])) {
 			$ratio = $arr['height'] / $size_img[1];
 			$setWidth = $size_img[0] * $ratio;

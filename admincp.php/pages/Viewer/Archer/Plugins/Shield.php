@@ -106,7 +106,7 @@ class Archer_Shield {
 			$quickEditor = "";
 			$infoField = "infoField";
 			$active = false;
-			$val = "{".$modelName.".".$d[$i]."}";
+			$val = "{L_\"{".$modelName.".".$d[$i]."}\"}";
 			$activeQuickEditor = (is_bool(KernelArcher::$disabledQuickEditor) && KernelArcher::$disabledQuickEditor === false);
 			if(!$activeQuickEditor) {
 				if(is_array(KernelArcher::$disabledQuickEditor) && isset(KernelArcher::$disabledQuickEditor[$d[$i]]) && ((is_bool(KernelArcher::$disabledQuickEditor[$d[$i]]) && KernelArcher::$disabledQuickEditor[$d[$i]]===false) || (is_string(KernelArcher::$disabledQuickEditor[$d[$i]]) && KernelArcher::$disabledQuickEditor[$d[$i]]==="no") || (is_numeric(KernelArcher::$disabledQuickEditor[$d[$i]]) && KernelArcher::$disabledQuickEditor[$d[$i]]===0))) {

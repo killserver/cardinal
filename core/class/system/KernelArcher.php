@@ -158,7 +158,7 @@ class KernelArcher {
 					$type = str_replace(DS, "/", $type);
 				}
 				$type = str_replace(DS, "/", $type);
-			} else if($model->getAttribute($k, "type")=="imageAccess" || $model->getAttribute($k, "type")=="fileAccess" || $model->getAttribute($k, "type")=="file" || $model->getAttribute($k, "type")=="fileArray" || $model->getAttribute($k, "type")=="image" || $model->getAttribute($k, "type")=="imageArray") {
+			} else if($model->getAttribute($k, "type")=="imageAccess" || $model->getAttribute($k, "type")=="fileAccess" || $model->getAttribute($k, "type")=="file" || $model->getAttribute($k, "type")=="fileArray" || $model->getAttribute($k, "type")=="image" || $model->getAttribute($k, "type")=="imageArray" || $model->getAttribute($k, "type")=="fileArrayAccess" || $model->getAttribute($k, "type")=="imageArrayAccess") {
 				if(!empty($post)) {
 					$type = $post;
 				} else {
@@ -399,7 +399,7 @@ class KernelArcher {
 					$type = (!$upload ? $v : $upload."?".time());
 					$type = str_replace(DS, "/", $type);
 				}
-			} else if($models->getAttribute($k, "type")=="imageAccess" || $models->getAttribute($k, "type")=="fileAccess" || $models->getAttribute($k, "type")=="file" || $models->getAttribute($k, "type")=="fileArray" || $models->getAttribute($k, "type")=="image" || $models->getAttribute($k, "type")=="imageArray") {
+			} else if($model->getAttribute($k, "type")=="imageAccess" || $model->getAttribute($k, "type")=="fileAccess" || $model->getAttribute($k, "type")=="file" || $model->getAttribute($k, "type")=="fileArray" || $model->getAttribute($k, "type")=="image" || $model->getAttribute($k, "type")=="imageArray" || $model->getAttribute($k, "type")=="fileArrayAccess" || $model->getAttribute($k, "type")=="imageArrayAccess") {
 				if(!empty($post)) {
 					$type = $post;
 				} else {
@@ -449,13 +449,17 @@ class KernelArcher {
 		if(Arr::get($_GET, "orderTo", false)) {
 			$addition .= "&orderTo=".Arr::get($_GET, "orderTo");
 		}
+		$ref = Arr::get($_GET, "ref", false);
+		if($ref===false) {
+			$ref = "{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition;
+		}
 		if(!empty($objTemplate)) {
 			if(isset($_GET['type'])) {
-				location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition, 3, false);
+				location($ref, 3, false);
 			}
 			$this->UnlimitedBladeWorks($objTemplate, $template, $load);
 		} else if(isset($_GET['type'])) {
-			location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition);
+			location($ref);
 		}
 	}
 	
@@ -481,7 +485,7 @@ class KernelArcher {
 		}
 		$list = $model->getArray();
 		foreach($list as $k => $v) {
-			if($model->getAttribute($k, "type")=="fileArray" || $model->getAttribute($k, "type")=="imageArray") {
+			if($model->getAttribute($k, "type")=="fileArray" || $model->getAttribute($k, "type")=="imageArray" || $model->getAttribute($k, "type")=="fileArrayAccess" || $model->getAttribute($k, "type")=="imageArrayAccess") {
 				$t = unserialize($v);
 				if(isset($t[0]) && is_array($t[0])) {
 					$t = array();
@@ -624,7 +628,7 @@ class KernelArcher {
 					if((is_array($exp) && isset($exp[0]) && file_exists(ROOT_PATH.$exp[0])) || (file_exists(ROOT_PATH.$val))) {
 						unlink(ROOT_PATH.(is_array($exp) && isset($exp[0]) ? $exp[0] : $val));
 					}
-				} else if($type=="imageArray" || $type=="fileArray") {
+				} else if($type=="imageArray" || $type=="fileArray" || $type=="fileArrayAccess" || $type=="imageArrayAccess") {
 					$exp = explode(",", $val);
 					for($i=0;$i<sizeof($exp);$i++) {
 						$exp[$i] = str_replace("/", DS, $exp[$i]);
@@ -879,7 +883,7 @@ class KernelArcher {
 					$vals = $val;
 				}
 				$parent = uniqid();
-				$datas = '<div class="row"><div class="col-sm-10"><input class="form-control imageAccess" id="'.$name.'" name="'.$name.'" type="text" value="'.$val.'" placeholder="'.($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "").'"'.($block ? " disabled=\"disabled\"" : "").($type=="imageAccess" ? " data-accept=\"image\"" : "").'><br>'.(!empty($val) ? '&nbsp;&nbsp;<a href="'.$vals.'"'.($type=="imageAccess" ? " class=\"showPreview\"" : "").' target="_blank">'.($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "").'</div><div class="col-sm-1"><a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/assets/tinymce/filemanager/dialog.php?type='.($type=="imageAccess" ? "1" : "2").'&field_id='.$name.'&relative_url=0" class="btn btn-icon btn-success iframe-btn"><i class="fa-plus"></i></a></div><div class="col-sm-1"><a href="#" class="btn btn-icon btn-red accessRemove" data-parent="'.$parent.'"><i class="fa-remove"></i></a></div></div>';
+				$datas = '<div class="row"><div class="col-sm-10"><input class="form-control imageAccess" id="'.$name.'" name="'.$name.'" type="text" value="'.$val.'" placeholder="'.($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "").'"'.($block ? " disabled=\"disabled\"" : "").($type=="imageAccess" ? " data-accept=\"image\"" : "").' value="'.htmlspecialchars($val).'"><br>'.(!empty($val) ? '&nbsp;&nbsp;<a href="'.$vals.'"'.($type=="imageAccess" ? " class=\"showPreview\"" : "").' target="_blank">'.($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "").'</div><div class="col-sm-1"><a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/assets/tinymce/filemanager/dialog.php?type='.($type=="imageAccess" ? "1" : "2").'&field_id='.$name.'&relative_url=0" class="btn btn-icon btn-success iframe-btn"><i class="fa-plus"></i></a></div><div class="col-sm-1"><a href="#" class="btn btn-icon btn-red accessRemove" data-parent="'.$parent.'"><i class="fa-remove"></i></a></div></div>';
 				$container = "<div class=\"containerFiles container-".$type."\" data-parent=\"".$parent."\">".$datas."</div>";
 				$retType = $container;
 			break;
@@ -901,7 +905,8 @@ class KernelArcher {
 				$enum = array_map("trim", $enum);
 				$retType .= "<div id=\"inputForFile\" class=\"row\" data-accept=\"".($type=="imageArrayAccess" ? "image/*" : "")."\">";
 				for($i=0;$i<sizeof($enum);$i++) {
-					$retType .= "<div class='array'>".(sizeof($enum)>1 ? "<div class='col-sm-1'>#".($i+1)."</div><div class='col-sm-9'>" : "<div class='col-sm-10'>")."<input class=\"form-control\" type=\"text\"".(sizeof($enum)==1 ? " multiple=\"multiple\"" : "")." disabled=\"disabled\" name=\"".$name.(sizeof($enum)>1 ? "[".$i."]" : "[]")."\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."\"".($block ? " disabled=\"disabled\"" : "").($type=="imageArrayAccess" ? " accept=\"image/*\"" : "")."></div><div class='col-sm-2'><a class='btn btn-red btn-block fa-remove' onclick='removeInputFile(this,\"".$name."\",\"".$i."\")'></a></div>".(!empty($val) ? "<div class='col-sm-12'><a href=\"{C_default_http_local}".$enum[$i]."\" class=\"showPreview\" target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a></div>" : "")."</div>";
+					$uid = rand();
+					$retType .= "<div class='array'>".(sizeof($enum)>1 ? "<div class='col-sm-1'>#".($i+1)."</div><div class='col-sm-8'>" : "<div class='col-sm-9'>")."<input class=\"form-control\" id=\"".$uid."\" type=\"text\"".(sizeof($enum)==1 ? " multiple=\"multiple\"" : "")."".($block ? " disabled=\"disabled\"" : "")." name=\"".$name.(sizeof($enum)>1 ? "[".$i."]" : "[]")."\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."\"".($block ? " disabled=\"disabled\"" : "").($type=="imageArrayAccess" ? " accept=\"image/*\" data-accept=\"image\"" : "")." value=\"".htmlspecialchars($enum[$i])."\"></div>".'<div class="col-sm-1"><a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/assets/xenon/js/tinymce/filemanager/dialog.php?type='.($type=="imageAccess" ? "1" : "2").'&field_id='.$uid.'&relative_url=0" class="btn btn-icon btn-success iframe-btn"><i class="fa-plus"></i></a></div>'."<div class='col-sm-2'><a class='btn btn-red btn-block fa-remove' onclick='removeInputFile(this,\"".$name."\",\"".$i."\")'></a></div>".(!empty($val) ? "<div class='col-sm-12'><a href=\"{C_default_http_local}".$enum[$i]."\" class=\"showPreview\" id=\"img".$uid."\" target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a></div>" : "")."</div>";
 				}
 				$retType .= "</div><br><a href=\"#\" onclick=\"addInputFile(this, '".$name."');return false;\" class=\"btn btn-white btn-block btn-icon btn-icon-standalone\"><i class=\"fa-upload\"></i><span>".($open ? "{L_'" : "")."Добавить".($open ? "'}" : "")."</span></a>";
 			break;

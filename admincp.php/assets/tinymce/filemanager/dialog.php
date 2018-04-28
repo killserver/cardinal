@@ -905,7 +905,7 @@ $files=$sorted;
 			foreach ($files as $nu=>$file_array) {
 				$file=$file_array['file'];
 
-				if($file == '.' || $file == '..' || $file_array['extension']==trans('Type_dir') || in_array($file, $hidden_files) || !in_array(fix_strtolower($file_array['extension']), $ext) || ($filter!='' && $n_files>$file_number_limit_js && stripos($file,$filter)===false))
+				if($file == '.' || $file == '..' || $file_array['extension']==trans('Type_dir') || in_array($file, $hidden_files) || hidden_mask($file, $hidden_mask) || !in_array(fix_strtolower($file_array['extension']), $ext) || ($filter!='' && $n_files>$file_number_limit_js && stripos($file,$filter)===false))
 					continue;
 
 				$filename=substr($file, 0, '-' . (strlen($file_array['extension']) + 1));

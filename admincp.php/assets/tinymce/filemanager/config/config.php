@@ -6,6 +6,18 @@ if(!userlevel::get("admin")) {
 }
 callAjax();
 templates::gzipActive(true);
+
+function hidden_mask($file, $mask) {
+	$ret = false;
+	foreach($mask as $v) {
+		if(preg_match("#".$v."#i", $file)) {
+			$ret = true;
+			break;
+		}
+	}
+	return $ret;
+}
+
 $skin = (!config::Select("skins", "admincp") ? "xenon" : config::Select("skins", "admincp"));
 $local = str_replace(array(ROOT_PATH, DS), array("", "/"), PATH_UPLOADS);
 $exec = substr($_SERVER['SCRIPT_NAME'], 1);
@@ -383,6 +395,7 @@ $config = array(
 	'hidden_folders'                          => array( 'manifest', "_thumbs" ),
 	// set the names of any files you want hidden. Remember these names will be hidden in all folders (eg "this_document.pdf", "that_image.jpg" )
 	'hidden_files'                            => array( '.htaccess', 'config.php', 'index.php', 'index.html', 'robots.txt' ),
+	'hidden_mask'                            => array( '.min' ),
 
 	/*******************
 	* URL upload

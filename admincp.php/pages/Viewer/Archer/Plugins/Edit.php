@@ -66,6 +66,8 @@ class Archer_Edit {
 		$tpl = str_replace("{ArcherPath}", str_replace(PREFIX_DB, "", $table), $tpl);
 		$tpl = str_replace("{ArcherMind}", "{L_".$page."}&nbsp;{L_".str_replace(PREFIX_DB, "", $table)."}", $tpl);
 		$tpl = str_replace("{ArcherData}", "\n".$body, $tpl);
+		$ref = Arr::get($_GET, "ref", false);
+		$tpl = str_replace("{ref}", ($ref!==false ? "&ref=".urlencode(htmlspecialchars(urldecode($ref))) : ""), $tpl);
 		//var_dump($tpl);die();
 		return $tpl;
 	}

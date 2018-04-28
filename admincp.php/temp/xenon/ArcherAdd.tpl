@@ -5,7 +5,7 @@
 				<h3 class="panel-title">{ArcherMind}</h3>
 			</div>
 			<div class="panel-body">
-				<form method="post" role="form" action="./?pages=Archer&type={ArcherPath}&pageType=Take{ArcherPage}{addition}" class="form-horizontal" enctype="multipart/form-data">[/!ajax]
+				<form method="post" role="form" action="./?pages=Archer&type={ArcherPath}&pageType=Take{ArcherPage}{addition}{ref}" class="form-horizontal" enctype="multipart/form-data">[/!ajax]
 					{ArcherData}
 					[!ajax]<button class="btn btn-savePage btn-icon btn-icon-standalone btn-icon-standalone-right btn-sm">
 						<i class="fa-save"></i>
@@ -29,7 +29,7 @@
 }
 </style>
 <script type="text/javascript">
-[ajax]var linkForSubmit = "./?pages=Archer&type={ArcherPath}&pageType=Take{ArcherPage}{addition}";[/ajax]
+[ajax]var linkForSubmit = "./?pages=Archer&type={ArcherPath}&pageType=Take{ArcherPage}{addition}{ref}";[/ajax]
 var i = 1;
 function removeInputFile(th, name, val) {
 	var bef = jQuery('input[name="deleteArray['+name+']"]').val();

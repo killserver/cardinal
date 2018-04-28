@@ -417,7 +417,7 @@
 						
 					</div>
 					
-					<div class="pull-right col-sm-1 text-muted">rev. {D_INTVERSION}</div>
+					<div class="pull-right col-sm-2 text-right text-muted">rev. {D_INTVERSION}</div>
 					
 				</div>
 				
@@ -586,10 +586,11 @@
 		var http_link = link;
 		link = link.replace(default_link, "");
 		jQuery("#"+field_id).val(link);
-		var par = jQuery("#"+field_id).parent();
-		jQuery("a[data-link='"+field_id+"']").remove();
-		jQuery(par).append('<a data-link="'+field_id+'" href="'+http_link+'"'+(type=="image" ? " class=\"showPreview\"" : "")+' target="_blank">{L_'Просмотреть'}</a>');
-		jQuery(".showPreview").each(function(i, elem) {
+		var par = jQuery("#img"+field_id).parent();
+		par.find("#img"+field_id).remove();
+		par.prepend('<a data-link="'+field_id+'" id="img'+field_id+'" href="'+http_link+'"'+(type=="image" || type=="imageArrayAccess" ? " class=\"showPreview new\"" : "")+' target="_blank">Просмотреть</a>');
+		jQuery(".showPreview.new").each(function(i, elem) {
+			jQuery(elem).parent().find("img").remove();
 			jQuery(elem).after("<br><img src='"+jQuery(elem).attr("href")+"' data-link='"+jQuery(elem).attr("data-link")+"' width='200'>");
 		});
 	}
