@@ -96,7 +96,7 @@ if(!defined("VERSION_ADMIN_STYLE")) {
 	define("VERSION_ADMIN_STYLE", "1.7");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "90128");
+	define("INTVERSION", "90135");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "6.5");
@@ -147,8 +147,10 @@ $config = array_merge($config, array(
 	"htmlPrefix" => array(
 		"og" => "http://ogp.me/ns",
 	),
-	"logoAdminMain" => "assets/xenon/images/logo@2x.png",
-	"logoAdminMobile" => "assets/xenon/images/logo-collapsed@2x.png",
+	"logoAdminMain" => "assets/xenon/images/logo.svg",
+	"logoAdminMainWidth" => "110",
+	"logoAdminMobile" => "assets/xenon/images/logo-collapsed.svg",
+	"logoAdminMobileWidth" => "40",
 	"defaultAdminSkin" => " ",
 	"accessChangeSkin" => "true",
 	"mainPageAdmin" => "?pages=main",

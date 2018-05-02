@@ -225,11 +225,11 @@
 					<!-- logo -->
 					<div class="logo">
 						<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/{C_mainPageAdmin}" class="logo-expanded">
-							<img src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/{C_logoAdminMain}" width="80" alt="" />
+							<img src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/{C_logoAdminMain}" width="{C_logoAdminMainWidth}" alt="" />
 						</a>
 						
 						<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/{C_mainPageAdmin}" class="logo-collapsed">
-							<img src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/{C_logoAdminMobile}" width="40" alt="" />
+							<img src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/{C_logoAdminMobile}" width="{C_logoAdminMobileWidth}" alt="" />
 						</a>
 					</div>
 					

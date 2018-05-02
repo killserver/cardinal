@@ -376,13 +376,28 @@ function or_search_file($file, $dir = "") {
 	}
 }
 
-function read_dir($dir, $type = "all", $addDir = false) {
+function read_dir($dir, $type = "all", $addDir = false, $recursive = false, $exclusions = array(), $returnArray = false) {
+	$exclusions[] = ".";
+	$exclusions[] = "..";
 	$files = array();
 	if(is_dir($dir)) {
 		if($dh = dir($dir)) {
 			while(($file = $dh->read()) !== false) {
-				if(($type=="dir" || is_file($dir.$file)) && (($type=="dir" || $type=="all") || strpos($file, $type)!==false) && $file!="." && $file!="..") {
-					$files[] = ($addDir ? $dir : "").$file;
+				if(in_array_strpos($file, $exclusions, true)) {
+					continue;
+				}
+				if($recursive && is_dir($dir.$file)) {
+					$fileZ = read_dir($dir.$file.DS, $type, $addDir, $recursive, $exclusions, $returnArray);
+					$files = array_merge($files, $fileZ);
+				} else if(($type=="dir" || is_file($dir.$file)) && (($type=="dir" || $type=="all") || (is_array($type) ? in_array_strpos($file, $type) : strpos($file, $type)!==false)) && $file!="." && $file!="..") {
+					if($returnArray) {
+						$dirN = rtrim($dir, DS);
+						$dirN = str_replace(ROOT_PATH, "", $dirN);
+						$files[$dirN]['path'] = $dirN;
+						$files[$dirN]['children'][] = $file;
+					} else {
+						$files[] = ($addDir ? $dir : "").$file;
+					}
 				}
 			}
 		$dh->close();

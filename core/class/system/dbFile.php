@@ -8,7 +8,7 @@ class dbFile {
 
 	private static $fileDefault = "dbData.dbFile";
 
-	final public static setFile($file) {
+	final public static function setFile($file) {
 		self::$fileDefault = $file;
 		return true;
 	}
@@ -90,7 +90,7 @@ class dbFile {
 		}
 		$file .= $file.".dbFile";
 		if(file_exists($file)) {
-			@unset($file);
+			@unlink($file);
 			return true;
 		}
 		return false;

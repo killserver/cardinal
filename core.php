@@ -56,6 +56,9 @@ foreach($targets as $target) {
 if(!defined("CLOSE_FUNCTION")) {
 	define("CLOSE_FUNCTION", ini_get("disable_functions"));
 }
+if(!defined("DEFINED_CLASSES")) {
+	define("DEFINED_CLASSES", implode(",", get_declared_classes()));
+}
 
 ini_set("max_execution_time", 0);
 if(strpos(CLOSE_FUNCTION, "set_time_limit")===false) {
