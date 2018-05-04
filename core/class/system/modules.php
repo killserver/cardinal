@@ -698,8 +698,8 @@ class modules {
 
 	final public static function actived($class, $set = "") {
 		$arr = array();
-		if(file_exists(PATH_CACHE_SYSTEM."modules.json")) {
-			$file = file_get_contents(PATH_CACHE_SYSTEM."modules.json");
+		if(file_exists(PATH_CACHE_USERDATA."modules.json")) {
+			$file = file_get_contents(PATH_CACHE_USERDATA."modules.json");
 			$arrs = json_decode($file, true);
 			$arr = array_merge($arr, $arrs);
 		}
@@ -708,7 +708,10 @@ class modules {
 				$arr[$class] = array();
 			}
 			$arr[$class]['active'] = $set;
-			@file_put_contents(PATH_CACHE_SYSTEM."modules.json", json_encode($arr));
+			if(!is_writable(PATH_CACHE_USERDATA)) {
+				@chmod(PATH_CACHE_USERDATA, 0777);
+			}
+			@file_put_contents(PATH_CACHE_USERDATA."modules.json", json_encode($arr));
 			return true;
 		} else {
 			return (isset($arr[$class]) && isset($arr[$class]['active']) && $arr[$class]['active']===true ? $arr[$class]['active'] : false);

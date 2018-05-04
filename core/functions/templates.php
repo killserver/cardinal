@@ -243,10 +243,12 @@ function AmperOr($str) {
 
 function headers($array = array(), $clear = false, $no_js = false) {
 	$header = "";
+	$array['title'] = cardinalEvent::execute("before_show_title", $array['title']);
+	$sitename = cardinalEvent::execute("before_show_sitename", htmlspecialchars(lang::get_lang("sitename")));
 	if(isset($array['title']) && !empty($array['title'])) {
 		$header .= "\t<title>".$array['title']."</title>\n";
 	} else {
-		$header .= "\t<title>".htmlspecialchars(lang::get_lang("sitename"))."</title>\n";
+		$header .= "\t<title>".$sitename."</title>\n";
 	}
 	$header .= "<meta name=\"generator\" content=\"Cardinal ".VERSION."\" />\n";
 	$header .= "<meta name=\"author\" content=\"".(isset($array['author']) ? $array['author'] : "Cardinal ".VERSION)."\" />\n";
@@ -310,13 +312,13 @@ function headers($array = array(), $clear = false, $no_js = false) {
 		$header .= '<!-- saved from url=(0014)about:internet -->'."\n";
 		$header .= '<meta name="apple-mobile-web-app-capable" content="yes">'."\n";
 		$header .= '<meta name="apple-mobile-web-app-status-barstyle" content="black-translucent">'."\n";
-		$header .= '<meta name="apple-mobile-web-app-title" content="'.htmlspecialchars(lang::get_lang("sitename")).'">'."\n";
+		$header .= '<meta name="apple-mobile-web-app-title" content="'.$sitename.'">'."\n";
 		$header .= '<meta name="format-detection" content="telephone=no">'."\n";
 		$header .= '<meta name="format-detection" content="address=no">'."\n";
 		$header .= '<meta name="google" value="notranslate">'."\n";
 		$header .= '<meta name="skype_toolbar" content="skype_toolbar_parser_compatible">'."\n";
 		$header .= '<meta name="msapplication-tap-highlight" content="no">'."\n";
-		$header .= '<meta name="application-name" content="'.htmlspecialchars(lang::get_lang("sitename")).'">'."\n";
+		$header .= '<meta name="application-name" content="'.$sitename.'">'."\n";
 		$header .= '<meta name="renderer" content="webkit">'."\n";
 		$header .= '<meta name="x5-fullscreen" content="true">'."\n";
 		$header .= '<meta name="rating" content="General">'."\n";
@@ -364,6 +366,9 @@ function headers($array = array(), $clear = false, $no_js = false) {
 		$header .= "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"".htmlspecialchars(lang::get_lang("sitename"))."\" href=\"{C_default_http_host}".$link_rss."\" />\n";
 		$header .= "<meta name=\"msapplication-TileColor\" content=\"#e0161d\"/>\n". //"<meta name=\"application-name\" content=\"{L_sitename}\" />\n".
 			"<meta name=\"msapplication-notification\" content=\"frequency=30;polling-uri=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=1;polling-uri2=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=2;polling-uri3=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=3;polling-uri4=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=4;polling-uri5=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=5; cycle=1\"/>\n\n";
+	}
+	if(isset($array['meta'])) {
+		$array['meta'] = cardinalEvent::execute("before_show_meta", $array['meta']);
 	}
 	if(isset($array['meta']['type_meta'])) {
 		$is_use = true;
@@ -415,6 +420,9 @@ function headers($array = array(), $clear = false, $no_js = false) {
 	}
 	if($is_use) {
 		$header .= "</span>";
+	}
+	if(isset($array['meta'])) {
+		$array['meta'] = cardinalEvent::execute("after_show_meta", $array['meta']);
 	}
 	if(isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && userlevel::get("admin") && !defined("IS_NOSHOWADMIN")) {
 		$links = array();
@@ -473,17 +481,17 @@ function configMetaData($null, $tmp) {
 
 function addAdminPanelToPage($page, $data) {
 	if(defined("ADMINCP_POSITION_BOTTOM")) {
-		$data = preg_replace("#<body(.*?)>#", "<body$1 data-body=\"bottom\">", $data);
+		$data = preg_replace("#<html(.*?)>#", "<html$1 data-body=\"bottom\">", $data);
 		$data = str_replace("adminCoreCardinal", "adminCoreCardinal bottom", $data);
 	}
-	if(preg_match('#<body(.*?)>#i', $data)) {
-		$data = preg_replace_callback('#<body(.*?)>#i', "callBackAdminPanelToPage", $data);
-	} elseif(preg_match('/<body(.*?)>/', $data)) {
-		$data = preg_replace('/<body(.*?)>/', '<body$1class="adminbarCardinal">', $data);
+	if(preg_match('#<html(.*?)>#i', $data)) {
+		$data = preg_replace_callback('#<html(.*?)>#i', "callBackAdminPanelToPage", $data);
+	} elseif(preg_match('/<html(.*?)>/', $data)) {
+		$data = preg_replace('/<html(.*?)>/', '<html$1class="adminbarCardinal">', $data);
 	} else {
-		$data = str_replace('<body>', '<body class="adminbarCardinal">', $data);
+		$data = str_replace('<html>', '<html class="adminbarCardinal">', $data);
 	}
-	$data = preg_replace("#<body(.*?)>#i", "<body$1 data-body=\"top\">", $data);
+	$data = preg_replace("#<html(.*?)>#i", "<html$1 data-body=\"top\">", $data);
 	$data = str_replace("</body>", templates::view($page)."</body>", $data);
 	return $data;
 }

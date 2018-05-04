@@ -2,61 +2,72 @@
 
 class cardinalEvent {
 	
-	private static $pageNow = "";
 	private static $collection = array();
 	
-	public static function addListener($page, $func, $data = "") {
-		if(is_array($func) && is_callable($func)) {
-			if(!isset(self::$collection[$page])) {
-				self::$collection[$page] = array();
+	public static function addListener($action, $callback, $params = "", $priority = 0) {
+		if(is_array($callback) && is_callable($callback)) {
+			if(!isset(self::$collection[$action])) {
+				self::$collection[$action] = array();
 			}
-			self::$collection[$page][] = array("fn" => $func, "data" => $data);
-		}
-		if(!is_array($func) && is_callable($func)) {
-			if(!isset(self::$collection[$page])) {
-				self::$collection[$page] = array();
+			if(isset(self::$collection[$action][$priority])) {
+				foreach(self::$collection[$action] as $pr => $datas) {
+					unset(self::$collection[$action][$pr]);
+					$pr++;
+					self::$collection[$action][$pr] = $datas;
+				}
 			}
-			self::$collection[$page][] = array("fn" => $func, "data" => $data);
+			self::$collection[$action][$priority] = array("fn" => $callback, "data" => $params);
 		}
-		if(is_array($page)) {
-			for($i=0;$i<sizeof($page);$i++) {
-				if(is_array($func) && is_callable($func)) {
-					if(!isset(self::$collection[$page[$i]])) {
-						self::$collection[$page[$i]] = array();
+		if(!is_array($callback) && is_callable($callback)) {
+			if(!isset(self::$collection[$action])) {
+				self::$collection[$action] = array();
+			}
+			if(isset(self::$collection[$action][$priority])) {
+				foreach(self::$collection[$action] as $pr => $datas) {
+					unset(self::$collection[$action][$pr]);
+					$pr++;
+					self::$collection[$action][$pr] = $datas;
+				}
+			}
+			self::$collection[$action][$priority] = array("fn" => $callback, "data" => $params);
+		}
+		if(is_array($action)) {
+			for($i=0;$i<sizeof($action);$i++) {
+				if(is_array($callback) && is_callable($callback)) {
+					if(!isset(self::$collection[$action[$i]])) {
+						self::$collection[$action[$i]] = array();
 					}
-					self::$collection[$page[$i]][] = array("fn" => $func, "data" => $data);
+					if(isset(self::$collection[$action][$priority])) {
+						foreach(self::$collection[$action] as $pr => $datas) {
+							unset(self::$collection[$action][$pr]);
+							$pr++;
+							self::$collection[$action][$pr] = $datas;
+						}
+					}
+					self::$collection[$action[$i]][$priority] = array("fn" => $callback, "data" => $params);
 				}
 			}
 		}
 	}
 	
-	public static function removeListener($page) {
-		if(is_array($page)) {
-			for($i=0;$i<sizeof($page);$i++) {
-				if(isset(self::$collection[$page[$i]])) {
-					unset(self::$collection[$page[$i]]);
+	public static function removeListener($action) {
+		if(is_array($action)) {
+			for($i=0;$i<sizeof($action);$i++) {
+				if(isset(self::$collection[$action[$i]])) {
+					unset(self::$collection[$action[$i]]);
 				}
 			}
 		} else {
-			if(isset(self::$collection[$page])) {
-				unset(self::$collection[$page]);
+			if(isset(self::$collection[$action])) {
+				unset(self::$collection[$action]);
 			}
 		}
 	}
 	
-	public static function setPage($page) {
-		if(is_object($page)) {
-			$page = get_class($page);
-		}
-		self::$pageNow = $page;
-	}
-	
-	public static function execute($page = "", $return = "") {
-		if(!empty($page)) {
-			self::$pageNow = $page;
-		}
-		if(!empty(self::$pageNow) && isset(self::$collection[self::$pageNow])) {
-			foreach(self::$collection[self::$pageNow] as $v) {
+	public static function execute($action, $return = false) {
+		if(!empty($action) && isset(self::$collection[$action])) {
+			ksort(self::$collection[$action]);
+			foreach(self::$collection[$action] as $v) {
 				$ret = call_user_func_array($v['fn'], array($v['data'], $return));
 				if(!empty($ret)) {
 					$return = $ret;

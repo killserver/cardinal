@@ -47,7 +47,10 @@ class cardinal {
 				include_dir(PATH_CRON_FILES, ".".ROOT_EX);
 				config::Update("cardinal_time", time());
 			}
-		} elseif(is_writable(PATH_CACHE)) {
+		} else {
+			if(!is_writable(PATH_CACHE)) {
+				@chmod(PATH_CACHE, 0777);
+			}
 			if(file_exists(PATH_CACHE."cron.txt")) {
 				$otime = filemtime(PATH_CACHE."cron.txt");
 			} else {
@@ -222,6 +225,9 @@ class cardinal {
 					} 
 				} else {
 					$save = true;
+				}
+				if(!is_writable($path)) {
+					@chmod($path, 0777);
 				}
 				if($save) {
 					$realpath = realpath($path);

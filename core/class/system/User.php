@@ -486,6 +486,9 @@ class User {
 			return true;
 		} else {
 			$users = array();
+			if(!is_writable(self::$path)) {
+				@chmod(self::$path, 0777);
+			}
 			if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
 				$file = file_get_contents(self::$path."userList.txt");
 				if(self::is_serialized($file)) {
@@ -590,6 +593,9 @@ class User {
 				$update[$k] = $v;
 			}
 			$users[$list[0]['username']] = array_merge($users[$list[0]['username']], $update);
+			if(!is_writable(self::$path)) {
+				@chmod(self::$path, 0777);
+			}
 			if(is_writable(self::$path)) {
 				file_put_contents(self::$path."userList.txt", serialize($users));
 			}

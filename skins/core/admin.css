@@ -27,7 +27,7 @@
 	-moz-box-shadow: 0em 0.1em 0.7em -0.25em #000;
 	box-shadow: 0em 0.1em 0.7em -0.25em #000;
 }
-body.onHoverAdminRight {
+html.onHoverAdminRight {
 	left: auto;
 	right: 0px;
 }
@@ -37,10 +37,10 @@ body.onHoverAdminRight {
 html:lang(he-il) .rtl .adminCoreCardinal *  {
  	font-family: Arial, sans-serif;
 }
-body {
-	padding-top: 2.3em !important;
+html {
+	padding-top: 2rem !important;
 }
-body[data-body='bottom'], body.onHoverAdmin {
+html[data-body='bottom'], html.onHoverAdmin {
 	padding-top: 0px !important;
 }
 .adminCoreCardinal.bottom {
@@ -50,18 +50,18 @@ body[data-body='bottom'], body.onHoverAdmin {
 	top: auto;
 }
 body .fixedForAdminCoreCardinal {
-	margin-top: 2.3em !important;
+	margin-top: 2rem !important;
 }
-body[data-body='bottom'] .fixedForAdminCoreCardinal {
+html[data-body='bottom'] .fixedForAdminCoreCardinal {
 	margin-top: 0em !important;
 }
-body.onHoverAdmin .adminCoreCardinal {
+html.onHoverAdmin .adminCoreCardinal {
     width: 3%;
     transition: all 300ms ease;
 }
-body.onHoverAdmin .adminCoreCardinal > .items,
-body.onHoverAdmin .adminCoreCardinal > .linkToAdmin,
-body.onHoverAdmin .adminCoreCardinal > .user {
+html.onHoverAdmin .adminCoreCardinal > .items,
+html.onHoverAdmin .adminCoreCardinal > .linkToAdmin,
+html.onHoverAdmin .adminCoreCardinal > .user {
     visibility: hidden;
     transform: scale(0);
     max-width: 0px;
@@ -71,12 +71,12 @@ body.onHoverAdmin .adminCoreCardinal > .user {
     margin-left: -1000%;
     transition: margin-left 300ms ease;
 }
-body.onHoverAdmin .adminCoreCardinal:hover {
+html.onHoverAdmin .adminCoreCardinal:hover {
     width: 100%;
 }
-body.onHoverAdmin .adminCoreCardinal:hover > .items,
-body.onHoverAdmin .adminCoreCardinal:hover > .linkToAdmin,
-body.onHoverAdmin .adminCoreCardinal:hover > .user {
+html.onHoverAdmin .adminCoreCardinal:hover > .items,
+html.onHoverAdmin .adminCoreCardinal:hover > .linkToAdmin,
+html.onHoverAdmin .adminCoreCardinal:hover > .user {
     margin-left: 0px;
     visibility: visible;
     transform: scale(1);
@@ -258,7 +258,7 @@ body.onHoverAdmin .adminCoreCardinal:hover > .user {
 	position: absolute;
 	margin-left: -3%;
 	top: -500%;
-	top: -100vh;
+	top: -110vh;
 	left: 0px;
 	background: #ac1f1f;
 	z-index: -1;
@@ -273,7 +273,7 @@ body.onHoverAdmin .adminCoreCardinal:hover > .user {
 	        transform-origin: 50% 0px;
 }
 .adminCoreCardinal > .more:hover > .elems {
-	top: 2.4em;
+	top: 3.2rem;
 }
 .adminCoreCardinal > .more > .elems > .items {
 	position: relative;
@@ -327,8 +327,8 @@ body.onHoverAdmin .adminCoreCardinal:hover > .user {
 	padding: 0.5em 0.75em;
 }
 @media(max-device-width: 900px) {
-	body {
-		padding-top: 5em !important;
+	html {
+		padding-top: 3.2rem !important;
 	}
 	.adminCoreCardinal {
 		font-size: 5vw;
@@ -397,5 +397,25 @@ body.onHoverAdmin .adminCoreCardinal:hover > .user {
 		display: block;
 		cursor: pointer;
 	}
-	.adminCoreCardinal > .more > .elems {right: 0px;left: auto;}
+	.adminCoreCardinal > .more > .elems {
+		right: 0px;
+		left: auto;
+		width: 98vw;
+		max-height: 0px;
+		overflow: auto;
+		top: 3.2rem;
+	}
+	.adminCoreCardinal > .more:hover > .elems {
+		max-height: calc(70vh - 3.2rem);
+	}
+	.adminCoreCardinal > .more > .elems > .items > a + .dropped {
+		position: relative;
+		left: 0;
+		background: #561010;
+		max-height: 0px;
+		overflow: hidden;
+	}
+	.adminCoreCardinal > .more > .elems > .items > a:hover + .dropped {
+		max-height: 100vh;
+	}
 }
