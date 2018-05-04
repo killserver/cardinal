@@ -22,6 +22,11 @@
     font: 12px Arial, Helvetica, sans-serif;
     letter-spacing: 0.5px;
 }
+@media(max-width:900px) {
+	#i-debug-panel {
+		max-width: 100%;
+	}
+}
 
 #i-debug-panel ul,
 #i-debug-panel li
