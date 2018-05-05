@@ -813,6 +813,7 @@ class KernelArcher {
 		$open = defined("ADMINCP_DIRECTORY");
 		$retType = "";
 		$hide = false;
+		$type = execEvent("KernelArcher::Viewing", $type);
 		switch($type) {
 			case "tinyint":
 			case "smallint":

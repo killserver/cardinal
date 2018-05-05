@@ -127,13 +127,7 @@ if(!$is_file && empty($file)) {
 	}
 }
 unset($page, $class, $method, $file, $is_file);
-$time = microtime();
-if(strpos($time, " ")!==false) {
-	$time = explode(" ", $time);
-	$time = current($time);
-}
-$Timer = $time-$Timer;
-$list = array("targets","session","manifest","Timer","config","target","phpEx","protocol","route","cache","lang","user","config_templates","server","pages","active","load","obj","templates","db");
+$list = array("targets","session","manifest","config","target","phpEx","protocol","route","cache","lang","user","config_templates","server","pages","active","load","obj","templates","db");
 for($i=0;$i<sizeof($list);$i++) {
 	unset($GLOBALS[$list[$i]]);
 }

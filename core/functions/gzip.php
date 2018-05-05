@@ -20,14 +20,8 @@ function CheckCanGzip() {
 // ToDo: Языковую панель на это дело надо вешать!
 function GzipOut() {
 global $config, $Timer, $manifest, $session;
-	if(strlen($Timer)>10) {
-		$time = microtime();
-		if(strpos($time, " ")!==false) {
-			$time = explode(" ", $time);
-			$time = current($time);
-		}
-		$Timer = $time-$Timer;
-	}
+	$time = microtime(true);
+	$Timers = $time-$Timer;
 	$debug = templates::$gzip;
 	$exit = templates::$gzipActive;
 	if($exit) {
@@ -39,10 +33,10 @@ global $config, $Timer, $manifest, $session;
 	$s = "";
 	$tmp = round(templates::$time, 5);
 	$dbs = round(db::$time, 5);
-	$Timer += $tmp;
-	$Timer += $dbs;
+	$Timers += $tmp;
+	$Timers += $dbs;
 	if($debug) {
-		$s = "\n<!-- Время выполнения скрипта ".($Timer>0 ? $Timer : 0)." секунд -->\n".
+		$s = "\n<!-- Время выполнения скрипта ".($Timers>0 ? $Timers : 0)." секунд -->\n".
 		"<!-- Время затраченное на компиляцию шаблонов ".($tmp>0 ? $tmp : 0)." секунд -->\n".
 		"<!-- Время затраченное на выполнение MySQL запросов: ".($dbs>0 ? $dbs : 0)." секунд -->\n".
 		"<!-- Общее количество MySQL запросов ".db::$num." -->";

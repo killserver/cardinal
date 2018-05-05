@@ -57,6 +57,9 @@ if(!defined("ERROR_DB")) {
 	define("ERROR_DB", 1);
 }
 
+if(!defined("DEBUG_MODE_ONLY_DEBUG")) {
+	define("DEBUG_MODE_ONLY_DEBUG", 1);
+}
 // Debug
 if(!defined("DEBUG_MEMORY")) {
 	define("DEBUG_MEMORY", 1);

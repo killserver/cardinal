@@ -20,6 +20,7 @@ die();
 
 function function_call($func_name, $func_arg = array()) {
 global $manifest;
+	$func_name = execEvent("function_called", $func_name);
 	if(isset($manifest['functions'][$func_name]) && is_array($manifest['functions'][$func_name]) && !is_callable($manifest['functions'][$func_name])) {
 		for($is=0;$is<sizeof($manifest['functions'][$func_name]);$is++) {
 			if(is_callable($manifest['functions'][$func_name][$is])) {

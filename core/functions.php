@@ -111,13 +111,18 @@ if(file_exists(PATH_MEDIA."config.route.".ROOT_EX)) {
 }
 $globalClass = array();
 include_dir(PATH_GLOBAL, ".class.".ROOT_EX);
+$globalClass = execEvent("global_class_loaded", $globalClass);
 include_dir(PATH_MODULES, ".class.".ROOT_EX);
+execEvent("modules_loaded");
 if(defined("PATH_MYMODULES") && file_exists(PATH_MYMODULES)) {
 	include_dir(PATH_MYMODULES, ".class.".ROOT_EX);
+	execEvent("my_modules_loaded");
 }
 include_dir();
+execEvent("functions_loaded");
 if(defined("PATH_MYFUNCTIONS") && file_exists(PATH_MYFUNCTIONS)) {
 	include_dir(PATH_MYFUNCTIONS);
+	execEvent("my_functions_loaded");
 }
 if(file_exists(ROOT_PATH.".env")) {
 	loadConfig(".env");

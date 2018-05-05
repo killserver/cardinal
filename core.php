@@ -315,7 +315,13 @@ if(strpos($Timer, " ")!==false) {
 	$Timer = current($Timer);
 }
 
+if(!defined("SYSTEM_TIME_START")) {
+	define("SYSTEM_TIME_START", time());
+}
+
 require_once(ROOT_PATH."core".DS."functions.".ROOT_EX);
+
+execEvent("init_core");
 
 HTTP::setSaveMime(PATH_CACHE_SYSTEM."mimeList.json");
 Validate::$host = config::Select("default_http_host");
@@ -323,15 +329,20 @@ Validate::$host = config::Select("default_http_host");
 $lang = array();
 if(file_exists(PATH_MEDIA."db.".ROOT_EX)) {
 	$db = new db();
+	$db = execEvent("init_db", $db);
 }
 $cache = new cache();
+$cache = execEvent("init_cache", $cache);
 $cnf = new config();
 $cnf->init();
 $config = $cnf->all();
 unset($cnf);
+$config = execEvent("init_config", $config);
 $langInit = new lang();
 $lang = $langInit->init_lang();
+$lang = execEvent("init_lang", $lang);
 $GLOBALS['_1225392420_']=Array(base64_decode('ZGVmaW5' .'lZA' .'=='),base64_decode('ZGVmaW5l'),base64_decode('aXNfd3JpdG' .'FibGU='),base64_decode('Zml' .'sZ' .'V9leG' .'lzdHM='),base64_decode('Z' .'m' .'ls' .'ZW' .'10aW1l'),base64_decode('dGltZQ=='),base64_decode('Z' .'GVm' .'aW' .'5l')); function _925531152($i){$a=Array('V0lUSE9VVF9EQg==','Q1JPTl9USU1F','Y2FyZGluYWxfdGltZQ==','Y3Jvbi50eHQ=','Y3Jvbi50eHQ=','Q1JPTl9USU1F');return base64_decode($a[$i]);} if(!$GLOBALS['_1225392420_'][0](_925531152(0))){$GLOBALS['_1225392420_'][1](_925531152(1),config::Select(_925531152(2)));new cardinal();}elseif($GLOBALS['_1225392420_'][2](PATH_CACHE)){if($GLOBALS['_1225392420_'][3](PATH_CACHE ._925531152(3))){$_0=$GLOBALS['_1225392420_'][4](PATH_CACHE ._925531152(4));}else{$_0=$GLOBALS['_1225392420_'][5]();}$GLOBALS['_1225392420_'][6](_925531152(5),$_0);new cardinal();}
+$config['charset'] = execEvent("set_charset", $config['charset']);
 if(function_exists("mb_internal_encoding") && mb_internal_encoding($config['charset'])) {
 	mb_internal_encoding($config['charset']);
 }
@@ -346,6 +357,11 @@ if(function_exists("mb_http_input") && mb_http_input($config['charset'])) {
 }
 if(strpos($config['charset'], "UTF")!==false && function_exists('mb_language')) {
 	mb_language('uni');
+}
+if(PHP_VERSION_ID>50600) {
+	ini_set("default_charset", $config['charset']);
+} else {
+	ini_set("iconv.internal_encoding", $config['charset']);
 }
 
 HTTP::$protocol = "http";
@@ -363,14 +379,16 @@ if(
 }
 
 cardinal::StartSession();
+execEvent("init_session");
 if(isset($sessionOnline) && is_writeable(PATH_CACHE_USERDATA)) {
 	clearstatcache();
 	$SessionDir = session_save_path();
 	$Timeout = 3 * 60;
+	$Timeout = execEvent("timeout_session_online", $Timeout);
 	$usersOnline = 0;
 	$online = 0;
 	if($Handler = @scandir($SessionDir)) {
-		for($i=2;$i<sizeof($Handler);$i++) {
+		for($i=0;$i<sizeof($Handler);$i++) {
 			if($Handler[$i]=="index.html"||$Handler[$i]=="index.".ROOT_EX) {
 				continue;
 			}
@@ -379,17 +397,13 @@ if(isset($sessionOnline) && is_writeable(PATH_CACHE_USERDATA)) {
 			}
 		}
 	}
+	$usersOnline = execEvent("get_session_online", $usersOnline);
 	if(file_exists(PATH_CACHE_USERDATA."userOnline.txt")) {
 		$online = file_get_contents(PATH_CACHE_USERDATA."userOnline.txt");
 	}
 	$online = max($online, $usersOnline);
+	$online = execEvent("max_session_online", $online);
 	@file_put_contents(PATH_CACHE_USERDATA."userOnline.txt", $online);
-}
-
-if(PHP_VERSION_ID>50600) {
-	ini_set("default_charset", $config['charset']);
-} else {
-	ini_set("iconv.internal_encoding", $config['charset']);
 }
 
 if(isset($config['date_timezone'])) {
@@ -416,6 +430,7 @@ if(defined("WITHOUT_DB") || !defined("INSTALLER")) {
 
 $templates = new templates($config_templates);
 templates::SetConfig($config_templates);
+$templates = execEvent("init_templates", $templates);
 header('Content-Type: text/html; charset='.config::Select('charset'));
 header('X-UA-Compatible: IE=edge');
 header("X-Content-Type-Options: SAMEORIGIN");
@@ -429,8 +444,10 @@ if(function_exists("header_remove")) {
 } else {
 	header('X-Powered-By:');
 }
+execEvent("set_headers");
 if(defined("DEBUG_ACTIVATED")) {
 	Debug::activation(720, true);
 }
 register_shutdown_function("GzipOut");
+execEvent("core_ready");
 ?>

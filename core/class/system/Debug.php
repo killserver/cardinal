@@ -3,40 +3,6 @@ if(!defined("IS_CORE")) {
 echo "403 ERROR";
 die();
 }
-if(!defined("DEBUG_MODE_ONLY_DEBUG")) {
-	define("DEBUG_MODE_ONLY_DEBUG", 1);
-}
-// Debug
-if(!defined("DEBUG_MEMORY")) {
-	define("DEBUG_MEMORY", 1);
-}
-if(!defined("DEBUG_TIME")) {
-	define("DEBUG_TIME", 2);
-}
-if(!defined("DEBUG_FILES")) {
-	define("DEBUG_FILES", 3);
-}
-if(!defined("DEBUG_INCLUDE")) {
-	define("DEBUG_INCLUDE", 4);
-}
-if(!defined("DEBUG_DB")) {
-	define("DEBUG_DB", 5);
-}
-if(!defined("DEBUG_TEMPLATE")) {
-	define("DEBUG_TEMPLATE", 6);
-}
-if(!defined("DEBUG_FILE")) {
-	define("DEBUG_FILE", 12);
-}
-if(!defined("DEBUG_CORE")) {
-	define("DEBUG_CORE", 24);
-}
-if(!defined("DEBUG_DBTEMP")) {
-	define("DEBUG_DBTEMP", 30);
-}
-if(!defined("DEBUG_ALL")) {
-	define("DEBUG_ALL", 720);
-}
 
 class Debug {
 	
@@ -167,6 +133,23 @@ class Debug {
 		fclose($fh);
 		return $lines;
 	}
+
+	final private static function switcher() {
+		$fn = func_get_args();
+		$check = $fn[0];
+		$array = $fn[1];
+		if(!is_array($array)) {
+			$array = array($array);
+		}
+		$ret = false;
+		for($i=0;$i<sizeof($array);$i++) {
+			if($array[$i]===$check) {
+				$ret = true;
+				break;
+			}
+		}
+		return $ret;
+	}
 	
 	final public static function DebugAll($type = "", $echo = false) {
 		if(empty($type)) {
@@ -175,196 +158,158 @@ class Debug {
 		$incl_files = $files = $db_querys = $include = array();
 		$memory = $memoryNum = $time = $incl_filesize = $filesize = $db_time = $db_num = $tmp = 0;
 		$filesizename = array(" Bytes", " Kb", " Mb", " Gb", " Tb", " Pb", " Eb", " Zb", " Yb");
-		switch($type) {
-			case DEBUG_MEMORY:
-				$size = sprintf("%u", memory_get_peak_usage()-MEMORY_GET);
-				$memoryNum = $size;
-				$memory = $size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes';
-				unset($size, $filesizename, $i);
-			break;
-			case DEBUG_TIME:
+		if(self::switcher($type, DEBUG_MEMORY)) {
+			$size = sprintf("%u", memory_get_peak_usage()-MEMORY_GET);
+			$memoryNum = $size;
+			$memory = $size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes';
+			unset($size, $filesizename, $i);
+		} else if(self::switcher($type, DEBUG_TIME)) {
 			global $Timer;
-				$time = microtime();
-				if(strpos($time, " ")!==false) {
-					$time = explode(" ", $time);
-					$time = current($time);
+			$time = microtime(true);
+			$Times = $time-$Timer;
+			$Times += $tmp;
+			$Times += $db_time;
+			if($Times<0) {
+				$Times = 0;
+			}
+		} else if(self::switcher($type, DEBUG_FILES)) {
+			$tmp_files = debug_backtrace();
+			$num = 0;
+			for($i=0;$i<sizeof($tmp_files);$i++) {
+				if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
+					$files[$num]['file'] = $tmp_files[$i]['file'];
+					$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
+					$files[$num]['size'] = filesize($tmp_files[$i]['file']);
+					$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
+					$num++;
 				}
-				$Times-=$Timer;
-				if($Times<0) {
-					$Times = 0;
+			}
+			unset($tmp_files, $filesizename, $i);
+		} else if(self::switcher($type, DEBUG_INCLUDE)) {
+			$num = 0;
+			$incl_files = get_included_files();
+			foreach($incl_files as $f) {
+				if(file_exists($f)) {
+					$include[$num]['file'] = $f;
+					$include[$num]['lines'] = self::FileLine($f);
+					$size = sprintf("%u", filesize($f));
+					$include[$num]['sizeNum'] = filesize($f);
+					$include[$num]['size'] = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
+					$num++;
 				}
-				unset($Timer);
-			break;
-			case DEBUG_FILES:
-				$tmp_files = debug_backtrace();
-				$num = 0;
-				for($i=0;$i<sizeof($tmp_files);$i++) {
-					if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
-						$files[$num]['file'] = $tmp_files[$i]['file'];
-						$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
-						$files[$num]['size'] = filesize($tmp_files[$i]['file']);
-						$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
-						$num++;
-					}
+			}
+			unset($size, $i);
+		} else if(self::switcher($type, DEBUG_DB)) {
+			$db_time = db::$time;
+			$db_num = db::$num;
+			$db_querys = db::$querys;
+		} else if(self::switcher($type, DEBUG_TEMPLATE)) {
+			$tmp = templates::$time;
+		} else if(self::switcher($type, array(DEBUG_MEMORY * DEBUG_TIME * DEBUG_FILES * DEBUG_INCLUDE, DEBUG_CORE))) {
+			$num = 0;
+			$incl_files = get_included_files();
+			foreach($incl_files as $f) {
+				if(file_exists($f)) {
+					$include[$num]['file'] = $f;
+					$include[$num]['lines'] = self::FileLine($f);
+					$size = sprintf("%u", filesize($f));
+					$include[$num]['sizeNum'] = filesize($f);
+					$include[$num]['size'] = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
+					$num++;
 				}
-				unset($tmp_files, $filesizename, $i);
-			break;
-			case DEBUG_INCLUDE:
-				$num = 0;
-				$incl_files = get_included_files();
-				foreach($incl_files as $f) {
-					if(file_exists($f)) {
-						$include[$num]['file'] = $f;
-						$include[$num]['lines'] = self::FileLine($f);
-						$size = sprintf("%u", filesize($f));
-						$include[$num]['sizeNum'] = filesize($f);
-						$include[$num]['size'] = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
-						$num++;
-					}
+			}
+			unset($size, $i);
+			$tmp_files = debug_backtrace();
+			$num = 0;
+			for($i=0;$i<sizeof($tmp_files);$i++) {
+				if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
+					$files[$num]['file'] = $tmp_files[$i]['file'];
+					$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
+					$files[$num]['size'] = filesize($tmp_files[$i]['file']);
+					$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
+					$num++;
 				}
-				unset($size, $i);
-			break;
-			case DEBUG_DB:
-				$db_time = db::$time;
-				$db_num = db::$num;
-				$db_querys = db::$querys;
-			break;
-			case DEBUG_TEMPLATE:
-				$tmp = templates::$time;
-			break;
-			case DEBUG_MEMORY * DEBUG_TIME * DEBUG_FILES * DEBUG_INCLUDE:
-			case DEBUG_CORE:
-				$num = 0;
-				$incl_files = get_included_files();
-				foreach($incl_files as $f) {
-					if(file_exists($f)) {
-						$include[$num]['file'] = $f;
-						$include[$num]['lines'] = self::FileLine($f);
-						$size = sprintf("%u", filesize($f));
-						$include[$num]['sizeNum'] = filesize($f);
-						$include[$num]['size'] = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
-						$num++;
-					}
+			}
+			unset($tmp_files, $i);
+			$size = sprintf("%u", memory_get_peak_usage()-MEMORY_GET);
+			$memoryNum = $size;
+			$memory = $size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes';
+			unset($size, $filesizename, $i);
+		} else if(self::switcher($type, array(DEBUG_FILES * DEBUG_INCLUDE, DEBUG_FILE))) {
+			$num = 0;
+			$incl_files = get_included_files();
+			foreach($incl_files as $f) {
+				if(file_exists($f)) {
+					$include[$num]['file'] = $f;
+					$include[$num]['lines'] = self::FileLine($f);
+					$size = sprintf("%u", filesize($f));
+					$include[$num]['sizeNum'] = filesize($f);
+					$include[$num]['size'] = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
+					$num++;
 				}
-				unset($size, $i);
-				$tmp_files = debug_backtrace();
-				$num = 0;
-				for($i=0;$i<sizeof($tmp_files);$i++) {
-					if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
-						$files[$num]['file'] = $tmp_files[$i]['file'];
-						$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
-						$files[$num]['size'] = filesize($tmp_files[$i]['file']);
-						$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
-						$num++;
-					}
+			}
+			unset($size, $i);
+			$tmp_files = debug_backtrace();
+			$num = 0;
+			for($i=0;$i<sizeof($tmp_files);$i++) {
+				if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
+					$files[$num]['file'] = $tmp_files[$i]['file'];
+					$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
+					$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
+					$files[$num]['size'] = filesize($tmp_files[$i]['file']);
+					$num++;
 				}
-				unset($tmp_files, $i);
-				$size = sprintf("%u", memory_get_peak_usage()-MEMORY_GET);
-				$memoryNum = $size;
-				$memory = $size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes';
-				unset($size, $filesizename, $i);
-				global $Timer;
-				$time = microtime();
-				if(strpos($time, " ")!==false) {
-					$time = explode(" ", $time);
-					$time = current($time);
+			}
+			unset($tmp_files, $filesizename, $i);
+		} else if(self::switcher($type, array(DEBUG_DB * DEBUG_TEMPLATE, DEBUG_DBTEMP))) {
+			$db_time = db::$time;
+			$db_num = db::$num;
+			$db_querys = db::$querys;
+			$tmp = templates::$time;
+		} else {
+			$tmp = templates::$time;
+			$db_time = db::$time;
+			$db_num = db::$num;
+			$db_querys = db::$querys;
+			$num = 0;
+			$incl_files = get_included_files();
+			foreach($incl_files as $f) {
+				if(file_exists($f)) {
+					$include[$num]['file'] = $f;
+					$include[$num]['lines'] = self::FileLine($f);
+					$size = sprintf("%u", filesize($f));
+					$include[$num]['sizeNum'] = filesize($f);
+					$include[$num]['size'] = ($size ? round($size / pow(1024, ($isize = floor(log($size, 1024)))), 2) . $filesizename[$isize] : '0 Bytes');
+					$num++;
 				}
-				$Times = $time-$Timer;
-				if($Times<0) {
-					$Times = 0;
+			}
+			unset($size, $isize);
+			$tmp_files = debug_backtrace();
+			$num = 0;
+			for($i=0;$i<sizeof($tmp_files);$i++) {
+				if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
+					$files[$num]['file'] = $tmp_files[$i]['file'];
+					$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
+					$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
+					$size = sprintf("%u", filesize($tmp_files[$i]['file']));
+					$files[$num]['size'] = ($size ? round($size / pow(1024, ($isize = floor(log($size, 1024)))), 2) . $filesizename[$isize] : '0 Bytes');
+					$num++;
 				}
-				unset($Timer);
-			break;
-			case DEBUG_FILES * DEBUG_INCLUDE:
-			case DEBUG_FILE:
-				$num = 0;
-				$incl_files = get_included_files();
-				foreach($incl_files as $f) {
-					if(file_exists($f)) {
-						$include[$num]['file'] = $f;
-						$include[$num]['lines'] = self::FileLine($f);
-						$size = sprintf("%u", filesize($f));
-						$include[$num]['sizeNum'] = filesize($f);
-						$include[$num]['size'] = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
-						$num++;
-					}
-				}
-				unset($size, $i);
-				$tmp_files = debug_backtrace();
-				$num = 0;
-				for($i=0;$i<sizeof($tmp_files);$i++) {
-					if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
-						$files[$num]['file'] = $tmp_files[$i]['file'];
-						$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
-						$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
-						$files[$num]['size'] = filesize($tmp_files[$i]['file']);
-						$num++;
-					}
-				}
-				unset($tmp_files, $filesizename, $i);
-			break;
-			case DEBUG_DB * DEBUG_TEMPLATE:
-			case DEBUG_DBTEMP:
-				$db_time = db::$time;
-				$db_num = db::$num;
-				$db_querys = db::$querys;
-				$tmp = templates::$time;
-			break;
-			case DEBUG_ALL:
-			default:
-				$tmp = templates::$time;
-				$db_time = db::$time;
-				$db_num = db::$num;
-				$db_querys = db::$querys;
-				$num = 0;
-				$incl_files = get_included_files();
-				foreach($incl_files as $f) {
-					if(file_exists($f)) {
-						$include[$num]['file'] = $f;
-						$include[$num]['lines'] = self::FileLine($f);
-						$size = sprintf("%u", filesize($f));
-						$include[$num]['sizeNum'] = filesize($f);
-						$include[$num]['size'] = ($size ? round($size / pow(1024, ($isize = floor(log($size, 1024)))), 2) . $filesizename[$isize] : '0 Bytes');
-						$num++;
-					}
-				}
-				unset($size, $isize);
-				$tmp_files = debug_backtrace();
-				$num = 0;
-				for($i=0;$i<sizeof($tmp_files);$i++) {
-					if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
-						$files[$num]['file'] = $tmp_files[$i]['file'];
-						$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
-						$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
-						$size = sprintf("%u", filesize($tmp_files[$i]['file']));
-						$files[$num]['size'] = ($size ? round($size / pow(1024, ($isize = floor(log($size, 1024)))), 2) . $filesizename[$isize] : '0 Bytes');
-						$num++;
-					}
-				}
-				unset($tmp_files, $isize);
-				$size = sprintf("%u", memory_get_peak_usage()-MEMORY_GET);
-				$memoryNum = $size;
-				$memory = $size ? round($size / pow(1024, ($isize = floor(log($size, 1024)))), 2) . $filesizename[$isize] : '0 Bytes';
-				unset($size, $filesizename, $isize);
-			break;
+			}
+			unset($tmp_files, $isize);
+			$size = sprintf("%u", memory_get_peak_usage()-MEMORY_GET);
+			$memoryNum = $size;
+			$memory = $size ? round($size / pow(1024, ($isize = floor(log($size, 1024)))), 2) . $filesizename[$isize] : '0 Bytes';
+			unset($size, $filesizename, $isize);
 		}
 		global $Timer;
-		if(strlen($Timer)>10) {
-			$time = microtime();
-			if(strpos($time, " ")!==false) {
-				$time = explode(" ", $time);
-				$time = current($time);
-			}
-			$Times = $time-$Timer;
-		} else {
-			$Times = $Timer;
-		}
+		$time = microtime(true);
+		$Times = $time-$Timer;
 		$Times += $tmp;
 		$Times += $db_time;
 		if($Times<0) {
 			$Times = 0;
 		}
-		unset($Timer);
 		$arr = array("memory" => $memory, "memoryNum" => $memoryNum, "time_work" => $Times, "included_files" => $include, "use_files" => $files, "work_template" => $tmp, "db" => array("time" => $db_time, "num" => $db_num, "list" => $db_querys));
 		unset($memory, $time, $incl_filesize, $incl_files, $include, $files, $tmp, $db_time, $db_num, $db_querys);
 		if(!$echo) {

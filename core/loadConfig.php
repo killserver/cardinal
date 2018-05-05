@@ -30,10 +30,23 @@ if(version_compare(PHP_VERSION, '5.1.2', '>=')) {
 	}
 }
 
+function addEvent() {
+	return call_user_func_array("cardinalEvent::addListener", func_get_args());
+}
+
+function removeEvent() {
+	return call_user_func_array("cardinalEvent::removeListener", func_get_args());
+}
+
+function execEvent() {
+	return call_user_func_array("cardinalEvent::execute", func_get_args());
+}
+
 $host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua");
 $config = array(
 	"charset" => "utf-8",
 );
+$config = execEvent("before_load_config", $config);
 if(file_exists(PATH_MEDIA."config.client.".ROOT_EX)) {
 	if(is_writable(PATH_MEDIA."config.client.".ROOT_EX)) {
 		chmod(PATH_MEDIA."config.client.".ROOT_EX, 0664);
@@ -131,6 +144,7 @@ if(file_exists(PATH_MEDIA."config.settings.".ROOT_EX)) {
 if(defined("DEBUG_ACTIVATED") && file_exists(PATH_MEDIA."config.dev.".ROOT_EX)) {
 	include_once(PATH_MEDIA."config.dev.".ROOT_EX);
 }
+$config = execEvent("after_load_config", $config);
 
 if(file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."paths.".ROOT_EX)) {
 	include_once(ROOT_PATH.ADMINCP_DIRECTORY.DS."paths.".ROOT_EX);
@@ -145,11 +159,13 @@ if(defined("WITHOUT_DB")) {
 			$file = file_get_contents(PATH_MEDIA."prefix_db.lock");
 		} elseif(is_writable(PATH_MEDIA."prefix_db.lock")) {
 			$file = "cd".uniqid();
-			file_put_contents(PATH_MEDIA."prefix_db.lock", $file);
+			@file_put_contents(PATH_MEDIA."prefix_db.lock", $file);
 		}
+		$file = execEvent("set_prefix_db", $file);
 		define("PREFIX_DB", $file);
 	}
 	$api_key = cardinal::GenApiKey();
+	$api_key = execEvent("set_api_key", $api_key);
 	$config = array_merge($config, array(
 		"api_key" => $api_key,
 	));
