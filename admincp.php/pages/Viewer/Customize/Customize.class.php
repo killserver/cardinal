@@ -224,7 +224,7 @@ class Customize extends Core {
 		}
 		foreach($sizes as $size) {
 			$ico_lib = new PHP_ICO( $image, array($size) );
-			$ico_lib->save_ico( $filename.DS."favicon".$size[0]."x".$size[1].".".$type );
+			$ico_lib->save_ico( $filename.DS."favicon-".$size[0]."x".$size[1].".".$type );
 		}
 	}
 	
