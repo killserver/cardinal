@@ -217,6 +217,9 @@ $(".uploadFavicon").click(function() {
 				success: function (data) {
 					toastr.success("{L_"Фавиконка установлена"}");
 					jQuery(".favicon").remove();
+				},
+				error: function(data) {
+					toastr.error(data.responseText);
 				}
 			});
 		}

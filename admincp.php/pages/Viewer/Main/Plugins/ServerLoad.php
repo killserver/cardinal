@@ -4,7 +4,10 @@ class Main_ServerLoad extends Main {
 
 	private function get_server_load() {
 		$load = false;
-		if(stristr(PHP_OS, 'win') && class_exists("COM", false)) {
+		if(stristr(PHP_OS, 'win')) {
+			if(!class_exists('COM', false)) {
+				return $load;
+			}
 			$wmi = new COM("Winmgmts://");
 			$server = $wmi->execquery("SELECT LoadPercentage FROM Win32_Processor");
 			$cpu_num = 0;
@@ -13,10 +16,11 @@ class Main_ServerLoad extends Main {
 				$cpu_num++;
 				$load_total += $cpu->loadpercentage;
 			}
-			$load = (int) round($load_total/$cpu_num);
-		} elseif(function_exists("sys_getloadavg")) {
-			$sys_load = sys_getloadavg();
-			$load = $sys_load[0]*100;
+			$load = round($load_total / $cpu_num);
+		} else {
+			$sys_loadavg = sys_getloadavg();
+			$sys_load = (is_array($sys_loadavg)) ? $sys_loadavg : array(0);
+			$load = array_sum($sys_load) / count($sys_load);
 		}
 		return ($load>100 ? 100 : $load);
 	}
