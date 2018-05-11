@@ -72,11 +72,7 @@ class userlevel {
 			$specials = array($specials);
 		}
 		if(!is_array($specials)) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("error levels");
 			die();
 		}

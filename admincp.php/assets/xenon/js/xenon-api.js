@@ -92,8 +92,17 @@ function hide_loading_bar()
 
 jQuery(document).ready(function() {
 	if(jQuery(".bgFon").length>0 && jQuery(".bgFon > span.imgHere").length>0) {
-		var rand = 1 - 0.5 + Math.random() * (12 - 1 + 1);
+		var rand1 = 1 - 0.5 + Math.random() * (12 - 1 + 1);
+		var rand2 = 269 - 0.5 + Math.random() * (329 - 269 + 1);
+		var rand = 0 - 0.5 + Math.random() * (10000 - 0 + 1);
+		rand = Math.round(rand);
+		var randShow = 0;
+		if(rand>0 && rand<400) {
+			randShow = rand1;
+		} else {
+			randShow = rand2;
+		}
 		jQuery(".bgFon").css("backgroundColor", "#000");
-		jQuery(".bgFon > span.imgHere").css("backgroundImage", "url('https://raw.githubusercontent.com/killserver/ForCardinal/master/bg/"+Math.round(rand)+".jpg')");
+		jQuery(".bgFon > span.imgHere").css("backgroundImage", "url('https://raw.githubusercontent.com/killserver/ForCardinal/master/bg/"+Math.round(randShow)+".jpg')");
 	}
 });

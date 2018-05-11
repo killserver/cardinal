@@ -14,6 +14,7 @@ $userlevels = array_replace($userlevels, array(
 		"access_clearcache_tmp" => "yes", // Доступ к очистке кеша шаблонов
 		"access_customize" => "yes", // Доступ к кастомизации шаблона
 		"access_debugpanel" => "yes", // Доступ к дебаг-панели, которая будет активироваться в админ-панели и постоянно находиться на сайте в любых разделах
+		"access_developer" => "yes", // Доступ к разрабатываемым разделам(ТОЛЬКО ДЛЯ РАЗРАБОТЧИКОВ!!!)
 		"access_editor" => "yes", // Доступ к редактору кода
 		"access_edittemplate" => "yes", // Доступ к редактору частей шаблонов
 		"access_languages" => "yes", // Доступ к языковой панели

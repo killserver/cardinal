@@ -253,6 +253,10 @@ $(".resize-desktop, .resize-tablet, .resize-mobile").click(function() {
 	$(this).addClass("active");
 	$(".iframe > div > div").removeClass("desktop tablet mobile").addClass($(this).attr("data-resize"));
 	$('.iframe > div > div iframe').contents().find("body").removeClass("desktop tablet mobile").addClass($(this).attr("data-resize"));
+	$('.iframe > div > div iframe').contents().find(".mobilescrollablecustomize").remove();
+	if($(this).attr("data-resize")=="mobile") {
+		$('.iframe > div > div iframe').contents().find("body").append("<style class='mobilescrollablecustomize'>body::-webkit-scrollbar{width:0px;}</style>");
+	}
 });
 $(".hideDev").click(function() {
 	if($(".sidebar-menu").hasClass("collapsed")) {

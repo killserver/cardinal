@@ -641,32 +641,6 @@ class templates {
 	}
 
 	/**
-	 * Review language data
-	 * @access private
-	 * @param array $array Datas language and he's parameters
-	 * @return string Return reviewed language data or original line
-     */
-	final private static function slangf($array) {
-		if(isset($array[5])) {
-			$decode = $array[5];
-			$vLang = modules::get_lang($array[2], $array[4]);
-		} else {
-			$decode = $array[4];
-			$vLang = modules::get_lang($array[2]);
-		}
-		if(!empty($vLang)) {
-			if(strpos(base64_decode($decode), ",") !==false) {
-				$arrays = explode(",", base64_decode($decode));
-				return self::sprintf($vLang, $arrays);
-			} else {
-				return sprintf($vLang, base64_decode($decode));
-			}
-		} else {
-			return "{L_".$array[2]."}";
-		}
-	}
-
-	/**
 	 * Get constant
 	 * @access private
 	 * @param array $array Get constant
@@ -781,71 +755,6 @@ class templates {
 	private static function mixinCache($arr) {
 		self::$mixins[$arr[1]] = $arr[2];
 		return "";
-	}
-
-	/**
-	 * "Last" compiling template before he view
-	 * @access private
-	 * @param string $tmp Template for last rebuild
-	 * @param string $file Execute file
-	 * @return array|mixed|NUll|string Result rebuild
-     */
-	final private static function ecomp($tmp, $file = "") {
-		$tmp = preg_replace("/\/\/\/\*\*\*(.+?)\*\*\*\/\/\//is", "", $tmp);
-		$tmp = self::callback_array("#\[MIXIN name=(.+?)\](.*?)\[/MIXIN\]#is", "templates::mixinCache", $tmp);
-		$tmp = self::callback_array("#\{include (.+?)=['\"](.*?)['\"](|[\"'](.+?)[\"'])\}#", ("templates::includeFile"), $tmp);
-		$tmp = preg_replace("~\{\#is_last\[(\"|)(.*?)(\"|)\]\}~", "\\1", $tmp);
-		$tmp = self::callback_array("#\\[(not-group)=(.+?)\\](.+?)\\[/not-group\\]#is", ("templates::group"), $tmp);
-		$tmp = self::callback_array("#\\[(group)=(.+?)\\](.+?)\\[/group\\]#is", ("templates::group"), $tmp);
-		$tmp = self::callback_array("#\{L_sprintf\(([\"|']|)([a-zA-Z0-9\-_]+)(\\1)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = self::callback_array("#\{L_sprintf\(()([a-zA-Z0-9\-_]+)()\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = self::callback_array("#\{L_sprintf\(([\"|']|)(.+?)(\\1),(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = self::callback_array("#\{L_sprintf\(()(.+?)(),(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = self::callback_array("#\{L_([\"|']|)([a-zA-Z0-9\-_]+)(\\1)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
-		$tmp = self::callback_array("#\{L_()([a-zA-Z0-9\-_]+)()\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
-		$tmp = self::callback_array("#\{L_()([a-zA-Z0-9\-_]+)()\[(.*?)\]\}#", ("templates::lang"), $tmp);
-		$tmp = self::callback_array("#\{L_([\"|']|)(.+?)(\\1)\}#", ("templates::lang"), $tmp);
-		$tmp = self::callback_array("#\{L_()(.+?)()\}#", ("templates::lang"), $tmp);
-		$tmp = self::callback_array("#\{LP_\[(.*?)\]\[(.*?)\](|\[(.*?)\])\}#", ("plural_form"), $tmp);
-		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tmp);
-		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tmp);
-		$tmp = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tmp);
-		$tmp = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tmp);
-		$tmp = self::callback_array("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tmp);
-		$tmp = self::callback_array("#\{RP\[(.+?)\]\}#", ("templates::routeparam"), $tmp);
-		$tmp = self::callback_array("#\{R_\[(.+?)\]\[(.+?)\]\}#", ("templates::route"), $tmp);
-		$tmp = self::callback_array("#\{R_\[(.+?)\]\}#", ("templates::route"), $tmp);
-		$tmp = self::callback_array("#\{M_\[(.+?)\]\}#", ("templates::checkMobile"), $tmp);
-		/*$tmp = str_replace("{reg_link}", config::Select('link', 'reg'), $tmp);
-		$tmp = str_replace("{login_link}", config::Select('link', 'login'), $tmp);
-		$tmp = str_replace("{logout-link}", config::Select('link', 'logout'), $tmp);
-		$tmp = str_replace("{lost_link}", config::Select('link', 'lost'), $tmp);
-		$tmp = str_replace("{login}", modules::get_user('username'), $tmp);
-		$tmp = str_replace("{addnews-link}", config::Select('link', 'add'), $tmp);
-		$tmp = str_replace("{lostpassword-link}", config::Select('link', 'recover'), $tmp);*/
-		$tmp = self::callback_array("#\{UL_(.*?)(|\[(.*?)\])\}#", ("templates::level"), $tmp);
-
-		//$tmp = self::callback_array('#\[page=(.*?)\]([^[]*)\[/page\]#i', ("templates::nowpage"), $tmp);
-		//$tmp = self::callback_array('#\[not-page=(.*?)\]([^[]*)\[/not-page\]#i', ("templates::npage"), $tmp);
-
-		$tmp = self::callback_array('#\[if (.+?)\](.*?)\[else \\1\](.*?)\[/if \\1\]#i', ("templates::is"), $tmp);
-		while(preg_match('~\[if (.+?)\]([^[]*)\[/if \\1\]~iU', $tmp)) {
-			$tmp = self::callback_array('~\[if (.+?)\]([^[]*)\[/if \\1\]~iU', ("templates::is"), $tmp);
-		}
-
-		$tmp = self::callback_array("#\\[if (.+?)\\](.*?)\\[else\\](.*?)\\[/if\\]#i", ("templates::is"), $tmp);
-		$tmp = self::callback_array('~\[if (.+?)\]([^[]*)\[/if\]~iU', ("templates::is"), $tmp);
-		while(preg_match('~\[if (.+?)\]([^[]*)\[/if\]~iU', $tmp)) {
-			$tmp = self::callback_array('~\[if (.+?)\]([^[]*)\[/if\]~iU', ("templates::is"), $tmp);
-		}
-		$tmp = self::callback_array("#\{S_data=['\"](.+?)['\"](|,['\"](.*?)['\"])\}#", ("templates::sys_date"), $tmp);
-		if(preg_match("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true)\}#", $tmp)) {
-			$tmp = self::callback_array("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true)\}#", "langdate", $tmp);
-		}
-		$tmp = self::callback_array("#\{F_['\"](.+?)['\"],['\"](.+?)['\"],['\"](.+?)['\"]\}#", "templates::declension", $tmp);
-		$tmp = self::callback_array("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tmp);
-		$tmp = self::callback_array("#\{FN_[\"'](.+?)[\"'],[\"'](.*?)[\"']\}#", "templates::callFn", $tmp);
-		return $tmp;
 	}
 
 	final private static function include_mixin($arr) {
@@ -1384,44 +1293,6 @@ class templates {
 		}
 	}
 
-	/**
-	 * "Not In Page". Check user without this page
-	 * @access private
-	 * @param array $array Array data
-	 * @return mixed Return part template if user without this page
-     */
-	/*final private static function npage($array) {
-	global $manifest;
-		if(strpos($array[1], "|")!==false) {
-			$search = explode("|", $array[1]);
-		} else {
-			$search = array($array[1]);
-		}
-		if(!in_array($manifest['mod_page'][HTTP::getip()]['page'], $search)) {
-			return $array[2];
-		}
-		return "";
-	}*/
-
-	/**
-	 * "In Page". Check user on this page
-	 * @access private
-	 * @param array $array Array data
-	 * @return mixed Return part template if user on this page
-     */
-	/*final private static function nowpage($array) {
-	global $manifest;
-		if(strpos($array[1], "|")!==false) {
-			$search = explode("|", $array[1]);
-		} else {
-			$search = array($array[1]);
-		}
-		if(in_array($manifest['mod_page'][HTTP::getip()]['page'], $search)) {
-			return $array[2];
-		}
-		return "";
-	}*/
-	
 	final private static function fmk($array) {
 		if(!isset($array[2]) || empty($array[2])) {
 			return "";
@@ -1433,94 +1304,6 @@ class templates {
 			return "";
 		}
 		return $file;
-	}
-
-	/**
-	 * Final completed template
-	 * @access public
-	 * @param string $tpl File template
-	 * @param string $file Sub file for completed
-	 * @param bool|false $test ToDo: WTF?!
-	 * @return array|mixed|NUll Done completed
-     */
-	public static function comp_datas($tpl, $file = "null", $test = false) {
-		$tpl = self::callback_array("#\[MIXIN name=(.+?)\](.*?)\[/MIXIN\]#is", "templates::mixinCache", $tpl);
-		$tpl = self::callback_array("#\{include (.+?)=['\"](.*?)['\"](|[\"'](.+?)[\"'])\}#", ("templates::includeFile"), $tpl);
-		$tpl = self::callback_array("~\{is_last\[(\"|)(.+?)(\"|)\]\}~", ("templates::count_blocks"), $tpl);
-		$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tpl);
-		$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tpl);
-		$tpl = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tpl);
-		$tpl = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tpl);
-		$tpl = self::callback_array("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tpl);
-		$tpl = self::callback_array("#\{UL_(.*?)(|\[(.*?)\])\}#", ("templates::level"), $tpl);
-		$tpl = self::callback_array("#\{FMK_(['\"])(.*?)\[(.*?)\]\}#", ("templates::fmk"), $tpl);
-		$tpl = self::callback_array("#\{M_\[(.+?)\]\}#", ("templates::checkMobile"), $tpl);
-		$tpl = self::callback_array("#\{RP\[([a-zA-Z0-9\-_]+)\]\}#", ("templates::routeparam"), $tpl);
-		//$tpl = self::callback_array('#\[page=(.*?)\](.*)\[/page\]#i', ("templates::nowpage"), $tpl);
-		//$tpl = self::callback_array('#\[not-page=(.*?)\](.*)\[/not-page\]#i', ("templates::npage"), $tpl);
-		if(modules::manifest_get(array("temp", "block"))!==false) {
-			self::$blocks = array_merge(self::$blocks, modules::manifest_get(array("temp", "block")));
-		}
-		$tpls = $tpl;
-		foreach(self::$blocks as $name => $val) {
-			if(is_array($name)) {
-				continue;
-			}
-			if(!is_array($val) && strpos($tpl, "{".$name."}") !== false) {
-				$tpls = str_replace("{".$name."}", $val, $tpls);
-			} else {
-				$tpls = self::callback_array("/{(.+?)\[(.+?)\]}/", ("templates::replace_tmp"), $tpls);
-			}
-		}
-if(!$test) {
-		$tpl = self::callback_array("#\{foreach\}([0-9]+)\{/foreach\}#i", ("templates::foreach_set"), $tpl);
-		$tpl = self::callback_array("#\\[foreach block=(.+?)\\](.+?)\\[/foreach $1\\]#is", ("templates::foreachs"), $tpls);
-		$tpl = self::callback_array("#\\[foreach block=(.+?)\\](.+?)\\[/foreach\\]#is", ("templates::foreachs"), $tpls);
-		$tpl = preg_replace("#\{foreach\}([0-9]+)\{/foreach\}#i", "", $tpl);
-		$tpl = self::callback_array("#\{count\[(.*?)\]\}#is", ("templates::countforeach"), $tpl);
-}
-		$array_use = array();
-		foreach(self::$blocks as $name => $val) {
-			if(is_array($name)) {
-				continue;
-			}
-			if(!is_array($val) && strpos($tpl, "{".$name."}") !== false) {
-				$tpl = str_replace("{".$name."}", $val, $tpl);
-				$array_use[$name] = $val;
-			} else {
-				$tpl = self::callback_array("/{(.+?)\[(.+?)\]}/", ("templates::replace_tmp"), $tpl);
-			}
-		}
-
-		$tpl = self::callback_array('#\[for ([0-9]+) to ([0-9]+)(| step=([0-9]+))\](.+?)\[/for\]#is', ("templates::fors"), $tpl);
-		$tpl = self::callback_array("#\\[ajax\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/ajax\\]#i", ("templates::ajax"), $tpl);
-		$tpl = self::callback_array("#\\[ajax\\]([\s\S]*?)\\[/ajax\\]#i", ("templates::ajax"), $tpl);
-		$tpl = self::callback_array("#\\[ajax_click\\]([\s\S]*?)\\[/ajax_click\\]#i", ("templates::ajax_click"), $tpl);
-		$tpl = self::callback_array("#\\[!ajax_click\\]([\s\S]*?)\\[/!ajax_click\\]#i", ("templates::ajax_click"), $tpl);
-		$tpl = self::callback_array("#\\[!ajax\\]([\s\S]*?)\\[/!ajax\\]#i", ("templates::ajax"), $tpl);
-
-		$tpl = self::callback_array('#\[if (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/if \\1\]#i', ("templates::is"), $tpl);
-		$tpl = self::callback_array('#\[if (.*?)\]([\s\S]*?)\[/if \\1\]#i', ("templates::is"), $tpl);
-
-		$tpl = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $tpl);
-		$tpl = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $tpl);
-
-		$tpl = self::callback_array("#\{S_data=['\"](.+?)['\"](|,['\"](.*?)['\"])\}#", ("templates::sys_date"), $tpl);
-		$tpl = self::callback_array("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tpl);
-		$tpl = self::callback_array("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
-		$tpl = self::callback_array("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
-		$tpl = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $tpl);
-		$tpl = self::callback_array("#\{IMG_[\"'](.+?)[\"']\}#", ("templates::imageRes"), $tpl);
-		$tpl = self::callback_array("#\{RETINA_[\"'](.+?)[\"'],[\"'](.+?)[\"'](|,[\"'](.+?)[\"'])\}#", ("templates::retinaImg"), $tpl);
-		$tpl = self::callback_array("#\{FN_[\"'](.+?)[\"'](,[\"'](.*?)[\"'])\}#", "templates::callFn", $tpl);
-		if(strpos($tpl, "[clear]") !== false) {
-			foreach($array_use as $name => $val) {
-				unset(self::$blocks[$name]);
-			}
-			unset($array_use);
-			$tpl = str_replace("[clear]", "", $tpl);
-		}
-		return $tpl;
 	}
 
 	final private static function callFn($arr) {
@@ -1971,7 +1754,7 @@ if(!$test) {
 	 * @param bool|false $test //ToDo: WTF?!
 	 * @return array|mixed|NUll|string Completed template
      */
-	final public static function completed_assign_vars($file, $dir = "null", $test = false) {
+	final public static function completed_assign_vars($file, $dir = "null") {
 		$time = self::time();
 		if($dir == "null") {
 			try {
@@ -1995,7 +1778,7 @@ if(!$test) {
 				die();
 			}
 		}
-		$tpl = self::comp_datas($tpl, $file, $test);
+		$tpl = self::comp_datas($tpl, $file);
 		if($dir == "null") {
 			$tpl = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $tpl);
 		} elseif(empty($dir)) {
@@ -2093,29 +1876,145 @@ if(!$test) {
 	}
 
 	/**
+	 * "Last" compiling template before he view
+	 * @access private
+	 * @param string $tmp Template for last rebuild
+	 * @param string $file Execute file
+	 * @return array|mixed|NUll|string Result rebuild
+     */
+	final private static function ecomp($tmp, $file = "null") {
+		$tmp = self::comp_datas($tmp, $file, "ecomp");
+		return $tmp;
+	}
+
+	/**
+	 * Final completed template
+	 * @access public
+	 * @param string $tpl File template
+	 * @param string $file Sub file for completed
+	 * @param bool|false $test ToDo: WTF?!
+	 * @return array|mixed|NUll Done completed
+     */
+	public static function comp_datas($tpl, $file = "null", $type = "all") {
+		$tpl = preg_replace("/\/\/\/\*\*\*(.+?)\*\*\*\/\/\//is", "", $tpl);
+		if($type=="all" || $type=="ecomp") {
+			$tpl = self::callback_array("#\\[(not-group)=(.+?)\\](.+?)\\[/not-group\\]#is", ("templates::group"), $tpl);
+			$tpl = self::callback_array("#\\[(group)=(.+?)\\](.+?)\\[/group\\]#is", ("templates::group"), $tpl);
+			$tpl = self::callback_array("#\[MIXIN name=(.+?)\](.*?)\[/MIXIN\]#is", "templates::mixinCache", $tpl);
+			$tpl = self::callback_array("#\{include (.+?)=['\"](.*?)['\"](|[\"'](.+?)[\"'])\}#", ("templates::includeFile"), $tpl);
+			$tpl = self::callback_array("~\{is_last\[(\"|)(.+?)(\"|)\]\}~", ("templates::count_blocks"), $tpl);
+			$tpl = self::callback_array("#\{UL_(.*?)(|\[(.*?)\])\}#", ("templates::level"), $tpl);
+			$tpl = self::callback_array("#\{LP_\[(.*?)\]\[(.*?)\](|\[(.*?)\])\}#", ("plural_form"), $tpl);
+			$tpl = self::callback_array("#\{RP\[([a-zA-Z0-9\-_]+)\]\}#", ("templates::routeparam"), $tpl);
+			$tpl = self::callback_array("#\{R_\[(.+?)\]\[(.+?)\]\}#", ("templates::route"), $tpl);
+			$tpl = self::callback_array("#\{R_\[(.+?)\]\}#", ("templates::route"), $tpl);
+			if(preg_match("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true)\}#", $tpl)) {
+				$tpl = self::callback_array("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true)\}#", "langdate", $tpl);
+			}
+			$tpl = self::callback_array("#\{F_['\"](.+?)['\"],['\"](.+?)['\"],['\"](.+?)['\"]\}#", "templates::declension", $tpl);
+		}
+
+		if($type=="all" || $type =="lcud") {
+			$tpl = self::callback_array("#\{L_([\"|']|)([a-zA-Z0-9\-_]+)(\\1)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tpl);
+			$tpl = self::callback_array("#\{L_()([a-zA-Z0-9\-_]+)()\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tpl);
+			$tpl = self::callback_array("#\{L_()([a-zA-Z0-9\-_]+)()\[(.*?)\]\}#", ("templates::lang"), $tpl);
+			$tpl = self::callback_array("#\{L_([\"|']|)(.+?)(\\1)\}#", ("templates::lang"), $tpl);
+			$tpl = self::callback_array("#\{L_()(.+?)()\}#", ("templates::lang"), $tpl);
+			$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tpl);
+			$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tpl);
+			$tpl = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tpl);
+			$tpl = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tpl);
+			$tpl = self::callback_array("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tpl);
+			$tpl = self::callback_array("#\{S_data=['\"](.+?)['\"](|,['\"](.*?)['\"])\}#", ("templates::sys_date"), $tpl);
+			$tpl = self::callback_array("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tpl);
+			$tpl = self::callback_array("#\{M_\[(.+?)\]\}#", ("templates::checkMobile"), $tpl);
+		}
+
+		if($type=="ecomp") {
+			$tpl = self::callback_array('#\[if (.+?)\](.*?)\[else \\1\](.*?)\[/if \\1\]#i', ("templates::is"), $tpl);
+			while(preg_match('~\[if (.+?)\]([^[]*)\[/if \\1\]~iU', $tpl)) {
+				$tpl = self::callback_array('~\[if (.+?)\]([^[]*)\[/if \\1\]~iU', ("templates::is"), $tpl);
+			}
+			$tpl = self::callback_array("#\\[if (.+?)\\](.*?)\\[else\\](.*?)\\[/if\\]#i", ("templates::is"), $tpl);
+			$tpl = self::callback_array('~\[if (.+?)\]([^[]*)\[/if\]~iU', ("templates::is"), $tpl);
+			while(preg_match('~\[if (.+?)\]([^[]*)\[/if\]~iU', $tpl)) {
+				$tpl = self::callback_array('~\[if (.+?)\]([^[]*)\[/if\]~iU', ("templates::is"), $tpl);
+			}
+		}
+
+		if($type=="all") {
+			$tpl = self::callback_array("#\{FMK_(['\"])(.*?)\[(.*?)\]\}#", ("templates::fmk"), $tpl);
+			$tpl = self::callback_array("#\{M_\[(.+?)\]\}#", ("templates::checkMobile"), $tpl);
+			if(modules::manifest_get(array("temp", "block"))!==false) {
+				self::$blocks = array_merge(self::$blocks, modules::manifest_get(array("temp", "block")));
+			}
+			$tpls = $tpl;
+			foreach(self::$blocks as $name => $val) {
+				if(is_array($name)) {
+					continue;
+				}
+				if(!is_array($val) && strpos($tpl, "{".$name."}") !== false) {
+					$tpls = str_replace("{".$name."}", $val, $tpls);
+				} else {
+					$tpls = self::callback_array("/{(.+?)\[(.+?)\]}/", ("templates::replace_tmp"), $tpls);
+				}
+			}
+			$tpl = self::callback_array("#\{foreach\}([0-9]+)\{/foreach\}#i", ("templates::foreach_set"), $tpl);
+			$tpl = self::callback_array("#\\[foreach block=(.+?)\\](.+?)\\[/foreach $1\\]#is", ("templates::foreachs"), $tpls);
+			$tpl = self::callback_array("#\\[foreach block=(.+?)\\](.+?)\\[/foreach\\]#is", ("templates::foreachs"), $tpls);
+			$tpl = preg_replace("#\{foreach\}([0-9]+)\{/foreach\}#i", "", $tpl);
+			$tpl = self::callback_array("#\{count\[(.*?)\]\}#is", ("templates::countforeach"), $tpl);
+			$array_use = array();
+			foreach(self::$blocks as $name => $val) {
+				if(is_array($name)) {
+					continue;
+				}
+				if(!is_array($val) && strpos($tpl, "{".$name."}") !== false) {
+					$tpl = str_replace("{".$name."}", $val, $tpl);
+					$array_use[$name] = $val;
+				} else {
+					$tpl = self::callback_array("/{(.+?)\[(.+?)\]}/", ("templates::replace_tmp"), $tpl);
+				}
+			}
+
+			$tpl = self::callback_array('#\[for ([0-9]+) to ([0-9]+)(| step=([0-9]+))\](.+?)\[/for\]#is', ("templates::fors"), $tpl);
+			$tpl = self::callback_array("#\\[ajax\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/ajax\\]#i", ("templates::ajax"), $tpl);
+			$tpl = self::callback_array("#\\[ajax\\]([\s\S]*?)\\[/ajax\\]#i", ("templates::ajax"), $tpl);
+			$tpl = self::callback_array("#\\[ajax_click\\]([\s\S]*?)\\[/ajax_click\\]#i", ("templates::ajax_click"), $tpl);
+			$tpl = self::callback_array("#\\[!ajax_click\\]([\s\S]*?)\\[/!ajax_click\\]#i", ("templates::ajax_click"), $tpl);
+			$tpl = self::callback_array("#\\[!ajax\\]([\s\S]*?)\\[/!ajax\\]#i", ("templates::ajax"), $tpl);
+
+			$tpl = self::callback_array('#\[if (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/if \\1\]#i', ("templates::is"), $tpl);
+			$tpl = self::callback_array('#\[if (.*?)\]([\s\S]*?)\[/if \\1\]#i', ("templates::is"), $tpl);
+
+			$tpl = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $tpl);
+			$tpl = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $tpl);
+
+			$tpl = self::callback_array("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
+			$tpl = self::callback_array("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
+			$tpl = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $tpl);
+			$tpl = self::callback_array("#\{IMG_[\"'](.+?)[\"']\}#", ("templates::imageRes"), $tpl);
+			$tpl = self::callback_array("#\{RETINA_[\"'](.+?)[\"'],[\"'](.+?)[\"'](|,[\"'](.+?)[\"'])\}#", ("templates::retinaImg"), $tpl);
+			$tpl = self::callback_array("#\{FN_[\"'](.+?)[\"'](,[\"'](.*?)[\"'])\}#", "templates::callFn", $tpl);
+			if(strpos($tpl, "[clear]") !== false) {
+				foreach($array_use as $name => $val) {
+					unset(self::$blocks[$name]);
+				}
+				unset($array_use);
+				$tpl = str_replace("[clear]", "", $tpl);
+			}
+		}
+		return $tpl;
+	}
+
+	/**
 	 * Completed special system variables
 	 * @access public
 	 * @param string $tmp Template for needed complete
 	 * @return array|mixed|NUll Result completed
      */
 	final public static function lcud($tmp) {
-		$tmp = self::callback_array("#\{L_sprintf\(([\"|']|)([a-zA-Z0-9\-_]+)(\\1)\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = self::callback_array("#\{L_sprintf\(()([a-zA-Z0-9\-_]+)()\[([a-zA-Z0-9\-_]*?)\],(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = self::callback_array("#\{L_sprintf\(([\"|']|)(.+?)(\\1),(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = self::callback_array("#\{L_sprintf\(()(.+?)(),(.*?)\)\}#", ("templates::slangf"), $tmp);
-		$tmp = self::callback_array("#\{L_([\"|']|)([a-zA-Z0-9\-_]+)(\\1)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
-		$tmp = self::callback_array("#\{L_()([a-zA-Z0-9\-_]+)()\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tmp);
-		$tmp = self::callback_array("#\{L_()([a-zA-Z0-9\-_]+)()\[(.*?)\]\}#", ("templates::lang"), $tmp);
-		$tmp = self::callback_array("#\{L_([\"|']|)(.+?)(\\1)\}#", ("templates::lang"), $tmp);
-		$tmp = self::callback_array("#\{L_()(.+?)()\}#", ("templates::lang"), $tmp);
-		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tmp);
-		$tmp = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tmp);
-		$tmp = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tmp);
-		$tmp = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tmp);
-		$tmp = self::callback_array("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tmp);
-		$tmp = self::callback_array("#\{S_data=['\"](.+?)['\"](|,['\"](.*?)['\"])\}#", ("templates::sys_date"), $tmp);
-		$tmp = self::callback_array("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tmp);
-		$tmp = self::callback_array("#\{M_\[(.+?)\]\}#", ("templates::checkMobile"), $tmp);
+		$tmp = self::comp_datas($tmp, "null", "lcud");
 	return $tmp;
 	}
 
@@ -2264,11 +2163,7 @@ if(!$test) {
 	 * @param string $msg Error message
      */
 	final private static function ErrorTemplate($msg, $file) {
-		if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-			header("HTTP/1.0 520 Unknown Error");
-		} else {
-			header("HTTP/1.0 404 Not found");
-		}
+		errorHeader();
 		$type = "main";
 		$orFile = $file;
 		if(strpos($file, ADMINCP_DIRECTORY)!==false) {

@@ -540,11 +540,7 @@ class User {
 		}
 		$id = $list[$size-1];
 		if(!is_string($id) && !is_numeric($id)) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Error in set ID for user");
 			die();
 		}
@@ -574,11 +570,7 @@ class User {
 				}
 			}
 			if(!isset($list[0]) || !isset($list[0]['username'])) {
-				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-					header("HTTP/1.0 520 Unknown Error");
-				} else {
-					header("HTTP/1.0 404 Not found");
-				}
+				errorHeader();
 				throw new Exception("Error username is not set", 1);
 				die();
 			}
@@ -627,11 +619,7 @@ class User {
 				}
 			}
 			if(!isset($list[0]) || !isset($list[0]['username'])) {
-				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-					header("HTTP/1.0 520 Unknown Error");
-				} else {
-					header("HTTP/1.0 404 Not found");
-				}
+				errorHeader();
 				throw new Exception("Error username is not set", 1);
 				die();
 			}

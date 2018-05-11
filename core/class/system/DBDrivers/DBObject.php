@@ -33,13 +33,17 @@ class DBObject implements ArrayAccess {
 	private static $usedCache = false;
 	private $listAdd = array();
 	
-	final public function getInstance() {
+	final public function getInstance($notClearTable = false) {
 		$th = clone $this;
 		$rt = get_object_vars($th);
 		foreach($rt as $k => $v) {
 			$th->{$k} = "";
 		}
-		$th->loadedTable = "";
+		if($notClearTable===false) {
+			$th->loadedTable = "";
+		} else {
+			$th->loadedTable = $this->loadedTable;
+		}
 		$th->groupBy = "";
 		$th->where = array();
 		$th->limit = 1;
@@ -417,12 +421,12 @@ class DBObject implements ArrayAccess {
 		return self::OrderByTo($name, $type);
 	}
 	
-	final public function Where($name, $to = "", $val = "", $type = "AND") {
-		$this->WhereTo($name, $to, $val, $type);
+	final public function Where($name, $to = false, $val = false, $type = "AND") {
+		return $this->WhereTo($name, $to, $val, $type);
 	}
 	
-	final public function WhereTo($name, $to = "", $val = "", $type = "AND") {
-		if(empty($to)) {
+	final public function WhereTo($name, $to = false, $val = false, $type = "AND") {
+		if($to===false) {
 			$to = $name;
 			$name = "";
 		}
@@ -430,7 +434,7 @@ class DBObject implements ArrayAccess {
 			$name = get_object_vars($this);
 			$name = key($name);
 		}
-		if($val==="") {
+		if($val===false) {
 			$val = $to;
 			if(is_numeric($to)) {
 				$to = "=";

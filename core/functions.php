@@ -55,6 +55,11 @@ global $globalClass;
 							continue;
 						}
 					}
+					if(strpos($file, "dev-")!==false) {
+						if(!isset($_COOKIE['dev']) && userlevels::get("developer")) {
+							continue;
+						}
+					}
 					if(is_dir($dir.DS.$file)) {
 						$useNew = true;
 					}

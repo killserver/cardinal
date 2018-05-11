@@ -94,21 +94,13 @@ class KernelArcher {
 	
 	function TakeAdd($model = "", $objTemplate = "", $template = "", $load = true) {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
 		$request = new Request();
 		if(sizeof($request->post)==0) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Error post data to kernal");
 			die();
 		}
@@ -220,11 +212,7 @@ class KernelArcher {
 	
 	function Add($model = "", $objTemplate = "") {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -277,11 +265,7 @@ class KernelArcher {
 			||
 			(!isset($file['type']) && !isset($file[5]))
 		) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Returned data for upload");
 			die();
 		}
@@ -321,21 +305,13 @@ class KernelArcher {
 	
 	function TakeEdit($model = "", $objTemplate = "", $template = "", $load = true) {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
 		$request = new Request();
 		if(sizeof($request->post)==0) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Error post data to kernal");
 			die();
 		}
@@ -465,11 +441,7 @@ class KernelArcher {
 	
 	function Edit($model = "", $objTemplate = "") {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -496,11 +468,7 @@ class KernelArcher {
 		$list = $model->getArray();
 		$firstId = current($list);
 		if(empty($firstId)) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Error type kernal get data");
 			die();
 		}
@@ -513,11 +481,7 @@ class KernelArcher {
 	
 	function Sorting($model, $objTemplate = "", $template = "") {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -564,11 +528,7 @@ class KernelArcher {
 	
 	function TakeDelete($model = "", $objTemplate = "", $template = "", $load = true) {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -661,11 +621,7 @@ class KernelArcher {
 	
 	function Show($model = "", $objTemplate = "", $template = "") {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -674,11 +630,7 @@ class KernelArcher {
 		$list = $lists->getArray();
 		$firstId = current($list);
 		if(empty($firstId)) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Error type kernal get data");
 			die();
 		}
@@ -710,17 +662,13 @@ class KernelArcher {
 	
 	function Shield($model = "", $objTemplate = "", $template = "", $load = true) {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
 		$objName = get_class($model);
 		$model->SetTable($this->selectTable);
-		$model->multiple();
+		$model->multiple(true);
 		$list = $model->Select();
 		if(is_object($list)) {
 			$list = $list->getArray();
@@ -729,7 +677,7 @@ class KernelArcher {
 		} elseif(is_array($list)) {
 			for($i=0;$i<sizeof($list);$i++) {
 				$subList = $list[$i]->getArray();
-				$subList = $this->callArr($subList, "ShieldFunc", array($subList), false);
+				$subList = $this->callArr($subList, "ShieldFunc", array($subList), array(), false);
 				$this->AddBlocks("Mains", $subList, $objName, $objName."-".current($subList));
 			}
 		}
@@ -749,13 +697,19 @@ class KernelArcher {
 			$func = array_merge($func, array("countCall" => $this->countCall[$page]));
 		}
 		if(isset(self::$callbackFunc[$page]) && is_string($func) && isset(self::$callbackFunc[$page][$func])) {
+			$return = $params;
 			for($i=0;$i<sizeof(self::$callbackFunc[$page][$func]);$i++) {
-				$return = call_user_func_array(self::$callbackFunc[$page][$func][$i], $params);
+				$return = call_user_func_array(self::$callbackFunc[$page][$func][$i], $return);
 			}
 		} else if(isset(self::$callbackFunc[$page]) && is_array($func)) {
 			$call = $func;
 			for($i=0;$i<sizeof(self::$callbackFunc[$page]);$i++) {
-				$call = call_user_func_array(self::$callbackFunc[$page][$i], $call);
+				$call1 = call_user_func_array(self::$callbackFunc[$page][$i], $call);
+				if(is_array($call1)) {
+					$call = $call1;
+				} else {
+					trigger_error(var_export(self::$callbackFunc[$page][$i], true)." return is not array - ignore");
+				}
 			}
 			if($single) {
 				$return = current($call);
@@ -772,11 +726,7 @@ class KernelArcher {
 			$model = $this->localModel;
 		}
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Error type kernal #1 parameter");
 			die();
 		}
@@ -988,11 +938,7 @@ class KernelArcher {
 	function UnlimitedBladeWorks() {
 		$num = func_num_args();
 		if(!Validate::range($num, 1, 3)) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Error num parameters for UnlimitedBladeWorks");
 			die();
 		}
@@ -1002,32 +948,20 @@ class KernelArcher {
 		if($num==1) {
 			$objTemplate = $list[0];
 			if(!is_string($objTemplate) && !is_object($objTemplate) && !is_array($objTemplate)) {
-				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-					header("HTTP/1.0 520 Unknown Error");
-				} else {
-					header("HTTP/1.0 404 Not found");
-				}
+				errorHeader();
 				throw new Exception("Error first parameter for UnlimitedBladeWorks");
 				die();
 			}
 		} elseif($num==2) {
 			$objTemplate = $list[0];
 			if(!is_string($objTemplate) && !is_object($objTemplate) && !is_array($objTemplate)) {
-				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-					header("HTTP/1.0 520 Unknown Error");
-				} else {
-					header("HTTP/1.0 404 Not found");
-				}
+				errorHeader();
 				throw new Exception("Error first parameter for UnlimitedBladeWorks");
 				die();
 			}
 			$template = $list[1];
 			if(!is_bool($template) && !is_string($template)) {
-				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-					header("HTTP/1.0 520 Unknown Error");
-				} else {
-					header("HTTP/1.0 404 Not found");
-				}
+				errorHeader();
 				throw new Exception("Error second parameter for UnlimitedBladeWorks");
 				die();
 			}
@@ -1038,31 +972,19 @@ class KernelArcher {
 		} elseif($num==3) {
 			$objTemplate = $list[0];
 			if(!is_string($objTemplate) && !is_object($objTemplate) && !is_array($objTemplate)) {
-				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-					header("HTTP/1.0 520 Unknown Error");
-				} else {
-					header("HTTP/1.0 404 Not found");
-				}
+				errorHeader();
 				throw new Exception("Error first parameter for UnlimitedBladeWorks");
 				die();
 			}
 			$template = $list[1];
 			if(!is_bool($template) && !is_string($template)) {
-				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-					header("HTTP/1.0 520 Unknown Error");
-				} else {
-					header("HTTP/1.0 404 Not found");
-				}
+				errorHeader();
 				throw new Exception("Error second parameter for UnlimitedBladeWorks");
 				die();
 			}
 			$load = $list[2];
 			if(!is_bool($load)) {
-				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-					header("HTTP/1.0 520 Unknown Error");
-				} else {
-					header("HTTP/1.0 404 Not found");
-				}
+				errorHeader();
 				throw new Exception("Error third parameter for UnlimitedBladeWorks");
 				die();
 			}

@@ -42,6 +42,16 @@ function execEvent() {
 	return call_user_func_array("cardinalEvent::execute", func_get_args());
 }
 
+function errorHeader() {
+	if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
+		header("HTTP/1.0 503 Service Temporarily Unavailable");
+		header('Status: 503 Service Temporarily Unavailable');
+	} else {
+		header("HTTP/1.0 404 Not found");
+		header('Status: 404 Not found');
+	}
+}
+
 $host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua");
 $config = array(
 	"charset" => "utf-8",

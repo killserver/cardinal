@@ -237,11 +237,7 @@ class db {
 	
 	final public static function config($config = array()) {
 		if(sizeof($config)==0 && ((defined("ROOT_PATH") && !file_exists(PATH_MEDIA."db.".ROOT_EX)) || (!defined("ROOT_PATH") && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX)))) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Config file for db or data in config is not correct");
 			die();
 		} else if(defined("ROOT_PATH") && file_exists(PATH_MEDIA."db.".ROOT_EX)) {
@@ -270,77 +266,49 @@ class db {
 			$port = config::Select('db', 'port');
 		} else {
 			if(!isset(self::$configInit['driver'])) {
-				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-					header("HTTP/1.0 520 Unknown Error");
-				} else {
-					header("HTTP/1.0 404 Not found");
-				}
+				errorHeader();
 				throw new Exception("Error! Driver is not set");
 				die();
 			} else {
 				self::$driver_name = self::$configInit['driver'];
 			}
 			if(!isset(self::$configInit['db'])) {
-				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-					header("HTTP/1.0 520 Unknown Error");
-				} else {
-					header("HTTP/1.0 404 Not found");
-				}
+				errorHeader();
 				throw new Exception("Error! DB is not set");
 				die();
 			} else {
 				self::$dbName = self::$configInit['db'];
 			}
 			if(!isset(self::$configInit['host'])) {
-				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-					header("HTTP/1.0 520 Unknown Error");
-				} else {
-					header("HTTP/1.0 404 Not found");
-				}
+				errorHeader();
 				throw new Exception("Error! Host is not set");
 				die();
 			} else {
 				$host = self::$configInit['host'];
 			}
 			if(!isset(self::$configInit['user'])) {
-				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-					header("HTTP/1.0 520 Unknown Error");
-				} else {
-					header("HTTP/1.0 404 Not found");
-				}
+				errorHeader();
 				throw new Exception("Error! User is not set");
 				die();
 			} else {
 				$user = self::$configInit['user'];
 			}
 			if(!isset(self::$configInit['pass'])) {
-				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-					header("HTTP/1.0 520 Unknown Error");
-				} else {
-					header("HTTP/1.0 404 Not found");
-				}
+				errorHeader();
 				throw new Exception("Error! Password is not set");
 				die();
 			} else {
 				$pass = self::$configInit['pass'];
 			}
 			if(!isset(self::$configInit['charset'])) {
-				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-					header("HTTP/1.0 520 Unknown Error");
-				} else {
-					header("HTTP/1.0 404 Not found");
-				}
+				errorHeader();
 				throw new Exception("Error! Charset is not set");
 				die();
 			} else {
 				$chst = self::$configInit['charset'];
 			}
 			if(!isset(self::$configInit['port'])) {
-				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-					header("HTTP/1.0 520 Unknown Error");
-				} else {
-					header("HTTP/1.0 404 Not found");
-				}
+				errorHeader();
 				throw new Exception("Error! Port is not set");
 				die();
 			} else {
@@ -503,11 +471,7 @@ class db {
 			$badword = true;
 		}
 		if($badword) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			$message = 'Привет, я не знаю то, что Вы пробовали сделать, но команда, которую Вы только послали базе данных, не выглядела очень дружественной и она была заблокированна.<br /><br />Ваш IP, и другие данные переданны администрации сервера. Удачи!.';
 			$report  = "Hacking attempt (".date("d.m.Y H:i:s")." - [".time()."]):\n";
 			$report .= ">Database Inforamation\n";
@@ -575,6 +539,7 @@ class db {
 			$db_name = config::Select('db','db');
 		} else {
 			if(!isset(self::$configInit['db'])) {
+				errorHeader();
 				throw new Exception("Error! DB is not set");
 			} else {
 				$db_name = self::$configInit['db'];
@@ -791,11 +756,7 @@ class db {
      * @param array $arr Info of query
      */
     final public static function error($arr) {
-		if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-			header("HTTP/1.0 520 Unknown Error");
-		} else {
-			header("HTTP/1.0 404 Not found");
-		}
+		errorHeader();
 		$mysql_error = $arr['mysql_error'];
 		$mysql_error_num = $arr['mysql_error_num'];
 		$query = $arr['query'];

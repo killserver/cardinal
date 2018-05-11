@@ -169,29 +169,17 @@ class cardinal {
 					continue;
 				}
 				if(isset($exp[$i][0]) && !empty($exp[$i][0]) && stripos($exp[$i][0], HTTP::getServer('HTTP_HOST'))!==false && isset($exp[$i][1]) && !empty($exp[$i][1]) && stripos($exp[$i][1], HTTP::getServer('SERVER_ADDR'))!==false) {//local ip
-					if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-						header("HTTP/1.0 520 Unknown Error");
-					} else {
-						header("HTTP/1.0 404 Not found");
-					}
+					errorHeader();
 					echo "Script is locked by server name and ip address";
 					die();
 				}
 				if(isset($exp[$i][0]) && !empty($exp[$i][0]) && stripos($exp[$i][0], HTTP::getServer('HTTP_HOST'))!==false) {
-					if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-						header("HTTP/1.0 520 Unknown Error");
-					} else {
-						header("HTTP/1.0 404 Not found");
-					}
+					errorHeader();
 					echo "Script is locked by server name";
 					die();
 				}
 				if(isset($exp[$i][1]) && !empty($exp[$i][1]) && stripos($exp[$i][1], HTTP::getServer('SERVER_ADDR'))!==false) {//local ip
-					if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-						header("HTTP/1.0 520 Unknown Error");
-					} else {
-						header("HTTP/1.0 404 Not found");
-					}
+					errorHeader();
 					echo "Script is locked by ip address";
 					die();
 				}
@@ -309,11 +297,7 @@ class cardinal {
 	
 	final public static function callbacks($module, $callback = "", $type = "add") {
 		if(!is_callable($callback) && $type == "add") {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Callback return error in called method");
 			die();
 		}
@@ -359,11 +343,7 @@ class cardinal {
 			}
 		}
 		if(empty($used_symbols)) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Error generate password");
 			die();
 		}

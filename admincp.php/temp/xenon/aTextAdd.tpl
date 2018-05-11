@@ -16,14 +16,8 @@
 						<label class="col-sm-2 control-label" for="field-1">{L_descr}</label>
 						<div class="col-sm-10">
 							{textarea}
-							<script type="text/template" id="descr">
-								<div class="row">
-									<div class="col-sm-11"><textarea id="editor" name="descr[]"></textarea></div>
-									<div class="col-sm-1"><a href="#" class="btn btn-red" onclick="return removed(this);">{L_delete}</a></div>
-								</div>
-							</script>
 							<br>
-							<a href="#" class="btn findAdd" onclick="return add();">{L_add}</a>
+							<a href="#" class="btn findAdd btn-success" onclick="return add();">{L_add}</a>
 						</div>
 					</div>
 					<button class="btn btn-blue btn-icon btn-icon-standalone btn-icon-standalone-right btn-sm">
@@ -35,30 +29,15 @@
 		</div>
 	</div>
 </div>
+<script type="text/template" id="descr">
+	<div class="row">
+		<div class="col-sm-11"><textarea id="editor" name="descr[]"></textarea></div>
+		<div class="col-sm-1"><a href="#" class="btn btn-red btn-block btn-icon" onclick="return removed(this);"><i class="fa fa-remove"></i></a></div>
+	</div>
+</script>
 <script type="text/javascript">
-if(typeof(editorTextarea)!="object") {
-	var editorTextarea = {
-		selector: 'textarea',
-		height: 500,
-		language : selectLang,
-		plugins: [
-			"advlist autolink lists link image charmap print preview anchor",
-			"searchreplace visualblocks code fullscreen",
-			"insertdatetime media table contextmenu paste imagetools responsivefilemanager"
-		],
-		toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image responsivefilemanager",
-		content_css: [],
-		valid_elements : "*[*]",
-		forced_root_block : '',
-		image_advtab: true, 
-		external_filemanager_path: default_admin_link+"assets/tinymce/filemanager/",
-		filemanager_title: "{L_"Загрузка файлов"}", 
-		external_plugins: { "filemanager" : default_admin_link+"assets/tinymce/filemanager/plugin.min.js"}
-	}
-}
-var template = jQuery("#descr").html();
-jQuery("#descr").remove();
-var lengthElem = jQuery("textarea").length;
+var template;
+var lengthElem = 0;
 function removed(th) {
 	jQuery(th).parent().parent().remove();
 	return false;
@@ -72,8 +51,13 @@ function add() {
 	return false;
 }
 jQuery(document).ready(function() {
-	for(var i=1;i<lengthElem+1;i++) {
-		tinymce.init(editorTextarea);
-	}
+	template = jQuery("#descr").html();
+	jQuery("#descr").remove();
+	lengthElem = jQuery("textarea").length;
+	setTimeout(function() {
+		for(var i=1;i<lengthElem+1;i++) {
+			tinymce.init(editorTextarea);
+		}
+	}, 1000);
 });
 </script>

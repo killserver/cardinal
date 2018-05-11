@@ -38,8 +38,8 @@ HTML;
 die();
 			break;
 			case "TakeAdd":
-				$model = modules::loadModels("ModelaText", (defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
-				$model->SetTable("{{aText}}");
+				$model = modules::loadModels("ModelaText", "aText");
+				$model->SetTable("aText");
 				$model->page = Saves::SaveOld($request->post->get("page"), true);
 				$post = $request->post->get("descr");
 				$post = array_map("trim", $post);
@@ -61,14 +61,14 @@ die();
 			case "Add":
 				$model = modules::loadModels("ModelaText", (defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
 				templates::assign_var("typePage", "Add");
-				templates::assign_var("textarea", '<div class="row"><div class="col-sm-11"><textarea id="editor1" name="descr[]"></textarea></div><div class="col-sm-1"><a href="#" class="btn btn-red" onclick="return removed(this);">{L_delete}</a></div></div>');
+				templates::assign_var("textarea", $this->buildDescr(0, ''));
 				templates::assign_vars($model->getArray());
 				$this->Prints("aTextAdd");
 				return;
 			break;
 			case "TakeEdit":
-				$model = modules::loadModels("ModelaText", (defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
-				$model->SetTable("{{aText}}");
+				$model->SetTable("aText");
+				$model = modules::loadModels("ModelaText", "aText");
 				$model->SetLimit(1);
 				$model->WhereTo($viewId);
 				
@@ -106,8 +106,8 @@ die();
 				}
 			break;
 			case "Edit":
-				$model = modules::loadModels("ModelaText", (defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
-				$model->SetTable("{{aText}}");
+				$model = modules::loadModels("ModelaText", "aText");
+				$model->SetTable("aText");
 				$model->SetLimit(1);
 				$model->WhereTo($viewId);
 				$model = $model->Select();
@@ -122,8 +122,8 @@ die();
 				$this->Prints("aTextAdd");
 			break;
 			case "Delete":
-				$model = modules::loadModels("ModelaText", (defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
-				$model->SetTable("{{aText}}");
+				$model = modules::loadModels("ModelaText", "aText");
+				$model->SetTable("aText");
 				$model->SetLimit(1);
 				$model->WhereTo($viewId);
 				$sel = $model->Select();
@@ -148,8 +148,8 @@ die();
 				}
 			break;
 			default:
-				$model = modules::loadModels("ModelaText", (defined("PREFIX_DB") ? PREFIX_DB : "")."aText");
-				$model->SetTable("{{aText}}");
+				$model = modules::loadModels("ModelaText", "aText");
+				$model->SetTable("aText");
 				$model->SetLimit(-1);
 				$list = $model->Select();
 				if(is_array($list)) {
@@ -168,7 +168,7 @@ die();
 	}
 		
 	function buildDescr($k, $d) {
-		return '<div class="row"><div class="col-sm-11"><textarea id="editor'.($k+1).'" name="descr[]">'.$d.'</textarea></div><div class="col-sm-1"><a href="#" class="btn btn-red" onclick="return removed(this);">{L_delete}</a></div></div>';
+		return '<div class="row"><div class="col-sm-11"><textarea id="editor'.($k+1).'" name="descr[]">'.$d.'</textarea></div><div class="col-sm-1"><a href="#" class="btn btn-red btn-block btn-icon" onclick="return removed(this);"><i class="fa fa-remove"></i></a></div></div>';
 	}
 	
 }
