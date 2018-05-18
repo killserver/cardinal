@@ -14,8 +14,10 @@
 class page {
 	
 	function __construct() {
-		header("HTTP/2.0 404 Not Found");
-		templates::error("{L_error_page}", "{L_error}");
+		HTTP::sendError();
+		$file = file_get_contents(PATH_SKINS."core".DS."404".DS."index.html");
+		$file = str_replace("{THEME}", get_module_url("404/", PATH_SKINS."core".DS."404"), $file);
+		HTTP::echos(templates::view($file));
 	}
 	
 }

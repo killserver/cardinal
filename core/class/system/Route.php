@@ -309,7 +309,11 @@ class Route {
 				}
 			}
 		}
-		$param = array('page' => $default, 'inPage' => "main", 'method' => '');
+		if($uri!==false) {
+			$param = array('page' => "error", 'inPage' => "main", 'method' => '');
+		} else {
+			$param = array('page' => $default, 'inPage' => "main", 'method' => '');
+		}
 		self::$_params = array_merge(self::$_params, $param);
 		return array('params' => $param, 'route' => "");
 	}

@@ -23,6 +23,7 @@ class DBObject implements ArrayAccess {
 	private $where = array();
 	private $limit = 1;
 	private $offset = 0;
+	private $exists = false;
 	private $orderBy = array();
 	private $Attributes = array();
 	private $selectAdd = array();
@@ -33,7 +34,7 @@ class DBObject implements ArrayAccess {
 	private static $usedCache = false;
 	private $listAdd = array();
 	
-	final public function getInstance($notClearTable = false) {
+	final public function getInstance($notClearTable = true) {
 		$th = clone $this;
 		$rt = get_object_vars($th);
 		foreach($rt as $k => $v) {
@@ -48,6 +49,7 @@ class DBObject implements ArrayAccess {
 		$th->where = array();
 		$th->limit = 1;
 		$th->offset = 0;
+		$th->exists = false;
 		$th->orderBy = array();
 		$th->Attributes = array();
 		$th->selectAdd = array();
@@ -101,6 +103,9 @@ class DBObject implements ArrayAccess {
 		}
 		if(isset($ret['offset'])) {
 			unset($ret['offset']);
+		}
+		if(isset($ret['exists'])) {
+			unset($ret['exists']);
 		}
 		if(isset($ret['orderBy'])) {
 			unset($ret['orderBy']);
@@ -205,6 +210,9 @@ class DBObject implements ArrayAccess {
 			if(isset($th->offset)) {
 				unset($th->offset);
 			}
+			if(isset($th->exists)) {
+				unset($th->exists);
+			}
 			if(isset($th->orderBy)) {
 				unset($th->orderBy);
 			}
@@ -259,11 +267,7 @@ class DBObject implements ArrayAccess {
 	final public function getAttributes($table) {
 		if(sizeof($this->Attributes)==0) {
 			if(empty($table)) {
-				if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-					header("HTTP/1.0 520 Unknown Error");
-				} else {
-					header("HTTP/1.0 404 Not found");
-				}
+				errorHeader();
 				throw new Exception("Table for get comments is not set or empty");
 				die();
 			}
@@ -289,11 +293,7 @@ class DBObject implements ArrayAccess {
 	
 	final public function setAttribute($field, $attr, $value) {
 		if(empty($field) || empty($attr) || empty($value)) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Data for attribute not set or empty");
 			die();
 		}
@@ -309,11 +309,7 @@ class DBObject implements ArrayAccess {
 			$table = $this->loadedTable;
 		}
 		if(empty($table)) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Table for get attribute is not set or empty");
 			die();
 		}
@@ -323,11 +319,7 @@ class DBObject implements ArrayAccess {
 		} elseif(isset($this->Attributes[$field]) && isset($this->Attributes[$field][$attr])) {
 			return $this->Attributes[$field][$attr];
 		} elseif(!$this->allowEmptyAttr) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Attribute \"".$attr."\" for field \"".$field."\" is not found in ".$table);
 			die();
 		} else {
@@ -337,11 +329,7 @@ class DBObject implements ArrayAccess {
 	
 	final public function switchAllowEmptyAttr($switch = "") {
 		if($switch==="" && ($switch!==false || $switch!==true)) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Switch for allowed empty attribute is not boolen");
 			die();
 		}
@@ -364,11 +352,7 @@ class DBObject implements ArrayAccess {
 				return (defined("ADMINCP_DIRECTORY") ? "{L_\"" : "").(!empty($this->Attributes[$name]["comment"]) ? $this->Attributes[$name]["comment"] : "").(defined("ADMINCP_DIRECTORY") ? "\"}" : "");
 			}
 		} else {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Field \"".$name."\" is not found in set table");
 			die();
 		}
@@ -386,11 +370,7 @@ class DBObject implements ArrayAccess {
 	
 	final public function SetLimit($limit, $move = false) {
 		if((!is_numeric($limit) || $limit == 0) && strpos($limit, ",")===false) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Error numeric from limit");
 			die();
 		}
@@ -402,11 +382,7 @@ class DBObject implements ArrayAccess {
 	
 	final public function SetOffset($offset) {
 		if((!is_numeric($offset) || $offset < -1)) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Error numeric from offset");
 			die();
 		}
@@ -473,6 +449,7 @@ class DBObject implements ArrayAccess {
 			}
 			$orders = substr($orders, 0, 0-strlen(", "));
 		}
+		$orders = trim($orders);
 		return (!empty($orders) ? " ORDER BY ".$orders." " : "");
 	}
 	
@@ -527,11 +504,7 @@ class DBObject implements ArrayAccess {
 	
 	final public function loadTable($name = "") {
 		if(empty($this->loadedTable) && empty($name)) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Table for loading is not set or empty");
 			die();
 		}
@@ -544,11 +517,7 @@ class DBObject implements ArrayAccess {
 		}
 		$row = db::doquery("SELECT EXISTS(SELECT 1 FROM `information_schema`.`tables` WHERE `table_schema` = '".db::$dbName."' AND `table_name` = '".$name."') AS `exists`");
 		if(!isset($row['exists']) || $row['exists'] != 1) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Table ".$name." is not exists");
 			die();
 		}
@@ -580,11 +549,7 @@ class DBObject implements ArrayAccess {
 		} else if(is_string($field) && !empty($field)) {
 			$this->selectAdd[$field] = $field;
 		} else {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("First parameter not array or string");
 			die();
 		}
@@ -599,11 +564,7 @@ class DBObject implements ArrayAccess {
 		$this->UnSetAll($keys);
 		$keys = array_keys($keys);
 		if(sizeof($keys)==0) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Fields is not set");
 			die();
 		}
@@ -635,11 +596,16 @@ class DBObject implements ArrayAccess {
 		$rel = db::doquery($sql, true);
 		if(!$this->multiple && db::num_rows($rel) <= 1) {
 			$ret = db::fetch_object($rel, get_class($this));
+			if(is_null($ret)) {
+				return $this;
+			}
 			if(is_object($ret)) {
 				foreach($this->pseudoFields as $k => $v) {
 					$ret->{$k} = $v;
 				}
 			}
+			$ret->exists = true;
+			$ret->loadedTable = $this->loadedTable;
 			db::free($rel);
 			if($cached && isset($fileCache)) {
 				$cacheData = serialize($ret);
@@ -648,6 +614,13 @@ class DBObject implements ArrayAccess {
 			return $ret;
 		} else {
 			$arr = array();
+			if($this->multiple && db::num_rows()==0) {
+				return array($this);
+			}
+			if(db::num_rows()==0) {
+				return $this;
+			}
+			$this->exists = true;
 			while($row = db::fetch_object($rel, get_class($this))) {
 				if(is_object($row)) {
 					foreach($this->pseudoFields as $k => $v) {
@@ -665,17 +638,17 @@ class DBObject implements ArrayAccess {
 		}
 	}
 
+	final public function Exists() {
+		return $this->exists;
+	}
+
 	final public function multiple($val = "") {
 		$this->multiple = ($val === "" ? (!$this->multiple ? true : false) : $val);
 	}
 
 	final public function getSelectQuery($table = "", $where = "", $orderBy = "", $limit = "", $offset = "", $groupby = "") {
 		if(empty($this->loadedTable) && empty($table)) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Table for select is not set or empty");
 			die();
 		}
@@ -702,11 +675,7 @@ class DBObject implements ArrayAccess {
 
 	final public function getMax($table = "", $where = "", $orderBy = "", $limit = "", $offset = "", $groupby = "") {
 		if(empty($this->loadedTable) && empty($table)) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Table for select is not set or empty");
 			die();
 		}
@@ -714,11 +683,7 @@ class DBObject implements ArrayAccess {
 		$this->UnSetAll($keys);
 		$keys = array_keys($keys);
 		if(sizeof($keys)==0) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Fields is not set");
 			die();
 		}
@@ -753,22 +718,14 @@ class DBObject implements ArrayAccess {
 
 	final public function Insert($table = "") {
 		if(empty($this->loadedTable) && empty($table)) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Table for insert is not set or empty");
 			die();
 		}
 		$arr = get_object_vars($this);
 		$this->UnSetAll($arr);
 		if(sizeof($arr)==0) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Fields is not set");
 			die();
 		}
@@ -806,31 +763,19 @@ class DBObject implements ArrayAccess {
 
 	final public function Update($table = "", $where = "", $orderBy = "", $limit = "", $groupby = "") {
 		if(empty($this->loadedTable) && empty($table)) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Table for update is not set or empty");
 			die();
 		}
 		if((!isset($this->where) || sizeof($this->where)==0) && empty($where)) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Сonditions for update is not set or empty");
 			die();
 		}
 		$arr = get_object_vars($this);
 		$this->UnSetAll($arr);
 		if(sizeof($arr)==0) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Fields is not set");
 			die();
 		}
@@ -838,11 +783,7 @@ class DBObject implements ArrayAccess {
 		foreach($arr as $k => $v) {
 			if($v!==""&&$v!==null) {
 				if(!is_string($v) && !is_numeric($v)) {
-					if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-						header("HTTP/1.0 520 Unknown Error");
-					} else {
-						header("HTTP/1.0 404 Not found");
-					}
+					errorHeader();
 					throw new Exception("Fields ".$k." is not string and not number");
 					die();
 				}
@@ -877,20 +818,12 @@ class DBObject implements ArrayAccess {
 
 	final public function Deletes($table = "", $where = "", $orderBy = "", $limit = "", $groupby = "") {
 		if(empty($this->loadedTable) && empty($table)) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Table for delete is not set or empty");
 			die();
 		}
 		if((!isset($this->where) || sizeof($this->where)==0) && empty($where)) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Сonditions for delete is not set or empty");
 			die();
 		}
@@ -904,11 +837,7 @@ class DBObject implements ArrayAccess {
 		$limit = $this->ReleaseLimit($limit);
 		$groupby = $this->ReleaseGroupBy($groupby);
 		if((!isset($this->where) || sizeof($this->where)==0) && empty($where)) {
-			if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
-				header("HTTP/1.0 520 Unknown Error");
-			} else {
-				header("HTTP/1.0 404 Not found");
-			}
+			errorHeader();
 			throw new Exception("Сonditions for delete is not set or empty");
 			die();
 		}

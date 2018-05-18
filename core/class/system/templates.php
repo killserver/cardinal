@@ -1653,12 +1653,12 @@ class templates {
 		return $sub;
 	}
 
-	final public static function loadObject($obj, $name = "", $callback = "") {
+	final public static function loadObject($obj, $name = "", &$i = 0) {
 		if(!is_object($obj) && !is_array($obj)) {
 			self::ErrorTemplate("First parameter is not object and not array");
 			die();
 		}
-		if(is_object($obj)) {
+		if(is_object($obj) && !($obj instanceof DBObject)) {
 			$arr = get_object_vars($obj);
 		} else {
 			$arr = $obj;
@@ -1674,7 +1674,6 @@ class templates {
 			self::ErrorTemplate("Name is not set");
 			die();
 		}
-		$i = 0;
 		foreach($arr as $k => $v) {
 			if(is_array($arr) && is_object($v) && $v instanceof DBObject && !empty($name)) {
 				$v = $v->getArray();
@@ -1683,25 +1682,32 @@ class templates {
 					$v = $vs;
 				}
 				self::assign_vars($v, $name, $k.$i);
+			} else if(is_object($arr) && $arr instanceof DBObject) {
+				$v = $arr->getArray();
+				$vs = cardinalEvent::execute("templates::loadObject", $v);
+				if(!empty($vs)) {
+					$v = $vs;
+				}
+				self::loadObject($v, $name, $i);
 			} else if(is_object($v) && $v instanceof DBObject) {
 				$v = $v->getArray();
 				$vs = cardinalEvent::execute("templates::loadObject", $v);
 				if(!empty($vs)) {
 					$v = $vs;
 				}
-				self::loadObject($v);
+				self::loadObject($v, $name, $i);
 			} else if(is_object($v)) {
 				$vs = cardinalEvent::execute("templates::loadObject", $v);
 				if(!empty($vs)) {
 					$v = $vs;
 				}
-				self::loadObject($v);
+				self::loadObject($v, $name, $i);
 			} else if(is_array($arr)) {
 				$vs = cardinalEvent::execute("templates::loadObject", $v);
 				if(!empty($vs)) {
 					$v = $vs;
 				}
-				self::assign_vars($v, $k, $k.$i);
+				self::assign_var($v, $k, $name, $name.$i);
 			} else {
 				$vs = cardinalEvent::execute("templates::loadObject", $v);
 				if(!empty($vs)) {
@@ -1709,8 +1715,8 @@ class templates {
 				}
 				self::assign_var($k, $v);
 			}
-			$i++;
 		}
+		$i++;
 		return true;
 	}
 
@@ -1920,6 +1926,19 @@ class templates {
 	public static function comp_datas($tpl, $file = "null", $type = "all") {
 		$tpl = preg_replace("/\/\/\/\*\*\*(.+?)\*\*\*\/\/\//is", "", $tpl);
 		if($type=="all" || $type=="ecomp") {
+			if(modules::manifest_get(array("temp", "block"))!==false) {
+				self::$blocks = array_merge(self::$blocks, modules::manifest_get(array("temp", "block")));
+			}
+			foreach(self::$blocks as $name => $val) {
+				if(is_array($name)) {
+					continue;
+				}
+				if(!is_array($val) && strpos($tpl, "{".$name."}") !== false) {
+					$tpl = str_replace("{".$name."}", $val, $tpl);
+				} else {
+					$tpl = self::callback_array("/{(.+?)\[(.+?)\]}/", ("templates::replace_tmp"), $tpl);
+				}
+			}
 			$tpl = self::callback_array("#\\[(not-group)=(.+?)\\](.+?)\\[/not-group\\]#is", ("templates::group"), $tpl);
 			$tpl = self::callback_array("#\\[(group)=(.+?)\\](.+?)\\[/group\\]#is", ("templates::group"), $tpl);
 			$tpl = self::callback_array("#\[MIXIN name=(.+?)\](.*?)\[/MIXIN\]#is", "templates::mixinCache", $tpl);
@@ -1931,12 +1950,12 @@ class templates {
 			$tpl = self::callback_array("#\{R_\[(.+?)\]\[(.+?)\]\}#", ("templates::route"), $tpl);
 			$tpl = self::callback_array("#\{R_\[(.+?)\]\}#", ("templates::route"), $tpl);
 			if(preg_match("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true)\}#", $tpl)) {
-				$tpl = self::callback_array("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true)\}#", "langdate", $tpl);
+				$tpl = self::callback_array("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,(true|false))\}#", "langdate", $tpl);
 			}
 			$tpl = self::callback_array("#\{F_['\"](.+?)['\"],['\"](.+?)['\"],['\"](.+?)['\"]\}#", "templates::declension", $tpl);
 		}
 
-		if($type=="all" || $type =="lcud") {
+		if($type=="all" || $type =="lcud" || $type =="ecomp") {
 			$tpl = self::callback_array("#\{L_([\"|']|)([a-zA-Z0-9\-_]+)(\\1)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tpl);
 			$tpl = self::callback_array("#\{L_()([a-zA-Z0-9\-_]+)()\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::lang"), $tpl);
 			$tpl = self::callback_array("#\{L_()([a-zA-Z0-9\-_]+)()\[(.*?)\]\}#", ("templates::lang"), $tpl);
@@ -1967,23 +1986,9 @@ class templates {
 		if($type=="all") {
 			$tpl = self::callback_array("#\{FMK_(['\"])(.*?)\[(.*?)\]\}#", ("templates::fmk"), $tpl);
 			$tpl = self::callback_array("#\{M_\[(.+?)\]\}#", ("templates::checkMobile"), $tpl);
-			if(modules::manifest_get(array("temp", "block"))!==false) {
-				self::$blocks = array_merge(self::$blocks, modules::manifest_get(array("temp", "block")));
-			}
-			$tpls = $tpl;
-			foreach(self::$blocks as $name => $val) {
-				if(is_array($name)) {
-					continue;
-				}
-				if(!is_array($val) && strpos($tpl, "{".$name."}") !== false) {
-					$tpls = str_replace("{".$name."}", $val, $tpls);
-				} else {
-					$tpls = self::callback_array("/{(.+?)\[(.+?)\]}/", ("templates::replace_tmp"), $tpls);
-				}
-			}
 			$tpl = self::callback_array("#\{foreach\}([0-9]+)\{/foreach\}#i", ("templates::foreach_set"), $tpl);
-			$tpl = self::callback_array("#\\[foreach block=(.+?)\\](.+?)\\[/foreach $1\\]#is", ("templates::foreachs"), $tpls);
-			$tpl = self::callback_array("#\\[foreach block=(.+?)\\](.+?)\\[/foreach\\]#is", ("templates::foreachs"), $tpls);
+			$tpl = self::callback_array("#\\[foreach block=(.+?)\\](.+?)\\[/foreach $1\\]#is", ("templates::foreachs"), $tpl);
+			$tpl = self::callback_array("#\\[foreach block=(.+?)\\](.+?)\\[/foreach\\]#is", ("templates::foreachs"), $tpl);
 			$tpl = preg_replace("#\{foreach\}([0-9]+)\{/foreach\}#i", "", $tpl);
 			$tpl = self::callback_array("#\{count\[(.*?)\]\}#is", ("templates::countforeach"), $tpl);
 			$array_use = array();
@@ -2066,34 +2071,6 @@ class templates {
 	 * @param array|string $header List headers or title
 	 */
 	final public static function templates($tmp, $header = "") { return self::completed($tmp, $header); }
-
-	/**
-	 * View error page
-	 * @access public
-	 * @param string $data Error message
-	 * @param string|array $header Title or array headers
-     */
-	final public static function error($data, $header = "") {
-		if(!is_array($header)) {
-			self::$header = array("title" => $header);
-		} else {
-			self::$header = $header;
-		}
-		if(is_array(self::$header) && !isset(self::$header['title'])) {
-			self::$header['title'] = "";
-		}
-		if(isset(self::$header['code']) && self::$header['code']=="404") {
-			$sapi_name = php_sapi_name();
-			if($sapi_name == 'cgi' OR $sapi_name == 'cgi-fcgi') {
-				header('Status: 404 Not Found');
-			}
-			header('HTTP/1.1 404 Not Found');
-		}
-		self::$blocks = array_merge(self::$blocks, array("error" => $data, "title" => (isset(self::$header['title']) ? self::$header['title'] : "")));
-		self::$tmp = self::completed_assign_vars("info");
-		self::display();
-		exit();
-	}
 
 	/**
 	 * Block data for replace

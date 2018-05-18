@@ -305,6 +305,30 @@ class HTTP {
 			return '';
 		}
 	}
+
+	final public static function sendError() {
+		self::sendHeader(404);
+	}
+
+	final public static function sendHeader($text = false, $code = false) {
+		if($text!==false && is_numeric($text) && $code===false) {
+			$status = self::StatusHeader($text);
+			$code = $text;
+		} else {
+			$status = $text;
+		}
+		if($text===false) {
+			$status = self::StatusHeader(200);
+		}
+		if($code===false) {
+			$code = 200;
+		}
+		$sapi_type = php_sapi_name();
+		if(strpos($sapi_type, 'cgi')!==false) {
+			header("Status: ".$code." ".$status);
+		}
+		header("HTTP/2.0 ".$code." ".$status);
+	}
 	
 	final public static function Location($link, $time = 0, $exit = true, $code = 301) {
 		if(defined("PHP_SAPI") && (PHP_SAPI != 'cgi-fcgi')) {

@@ -19,9 +19,9 @@ function CheckCanGzip() {
 
 // ToDo: Языковую панель на это дело надо вешать!
 function GzipOut() {
-global $config, $Timer, $manifest, $session;
-	$time = microtime(true);
-	$Timers = $time-$Timer;
+global $config, $manifest, $session;
+	$time = microtime_float();
+	$Timers = $time-SYSTEM_TIME_START_FLOAT;
 	$debug = templates::$gzip;
 	$exit = templates::$gzipActive;
 	if($exit) {

@@ -131,7 +131,7 @@ class SEO extends Core {
 			if(!isset($groups[$row['sLang']][$row['sPage']])) {
 				$groups[$row['sLang']][$row['sPage']] = array();
 			}
-			$groups[$row['sLang']][$row['sPage']]["seoBlock"] = $row;
+			$groups[$row['sLang']][$row['sPage']]["seoBlock"] = $this->repl($row);
 		}
 		db::doquery("SELECT * FROM {{aText}}", true);
 		while($row = db::fetch_assoc()) {
@@ -144,9 +144,22 @@ class SEO extends Core {
 			if(!isset($groups[$row['lang']][$row['page']])) {
 				$groups[$row['lang']][$row['page']] = array();
 			}
-			$groups[$row['lang']][$row['page']]["aText"] = $row;
+			$groups[$row['lang']][$row['page']]["aText"] = $this->repl($row);
 		}
 		return $groups;
+	}
+
+	function repl($arr) {
+		if(is_array($arr) || is_object($arr)) {
+			foreach($arr as $k => $v) {
+				$arr[$k] = $this->repl($v);
+			}
+		} else {
+			$arr = str_Replace("\r\n", "<br>", $arr);
+			$arr = str_Replace("\n", "<br>", $arr);
+			$arr = str_replace('"', '\"', $arr);
+		}
+		return $arr;
 	}
 
 }

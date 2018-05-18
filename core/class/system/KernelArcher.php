@@ -677,7 +677,7 @@ class KernelArcher {
 		} elseif(is_array($list)) {
 			for($i=0;$i<sizeof($list);$i++) {
 				$subList = $list[$i]->getArray();
-				$subList = $this->callArr($subList, "ShieldFunc", array($subList), array(), false);
+				$subList = $this->callArr($subList, "ShieldFunc", array($subList), array());
 				$this->AddBlocks("Mains", $subList, $objName, $objName."-".current($subList));
 			}
 		}

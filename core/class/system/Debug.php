@@ -164,9 +164,8 @@ class Debug {
 			$memory = $size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes';
 			unset($size, $filesizename, $i);
 		} else if(self::switcher($type, DEBUG_TIME)) {
-			global $Timer;
-			$time = microtime(true);
-			$Times = $time-$Timer;
+			$time = microtime_float();
+			$Times = $time-SYSTEM_TIME_START_FLOAT;
 			$Times += $tmp;
 			$Times += $db_time;
 			if($Times<0) {
@@ -302,9 +301,8 @@ class Debug {
 			$memory = $size ? round($size / pow(1024, ($isize = floor(log($size, 1024)))), 2) . $filesizename[$isize] : '0 Bytes';
 			unset($size, $filesizename, $isize);
 		}
-		global $Timer;
-		$time = microtime(true);
-		$Times = $time-$Timer;
+		$time = microtime_float();
+		$Times = $time-SYSTEM_TIME_START_FLOAT;
 		$Times += $tmp;
 		$Times += $db_time;
 		if($Times<0) {

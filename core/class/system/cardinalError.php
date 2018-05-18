@@ -143,9 +143,6 @@ class cardinalError {
 		if(php_sapi_name()==='cli') {
 			return true;
 		}
-		if(array_key_exists('SHELL', $_ENV)) {
-			return true;
-		}
 		if(empty($_SERVER['REMOTE_ADDR']) && !isset($_SERVER['HTTP_USER_AGENT']) && sizeof($_SERVER['argv'])>0) {
 			return true;
 		}
@@ -194,8 +191,35 @@ primary key `id`(`id`)
 					echo "\n";
 					die();
 				}
-				if(!defined("ERROR_VIEW")) {
-					self::viewOnPage("<div style=\"text-decoration:underline;\"><div style=\"padding-top: 10px;text-transform: uppercase;\"><h1>Error!</h1> <b>[" . self::FriendlyErrorType($e->getCode()) . "]</b> level error. Error code <h2 style=\"display:inline-block;\">(" . self::NextId($db) . ")</h2>. Please, report developer</div></div>");
+				if(file_exists(PATH_SKINS."phpError.tpl")) {
+					$file = file_get_contents(PATH_SKINS."phpError.tpl");
+					$file = str_replace(array(
+							"{code}",
+							"{message}",
+							"{file}",
+							"{line}",
+							"{trace}"
+					), array(
+							self::FriendlyErrorType($e->getCode()),
+							$e->getMessage(),
+							self::saves($file),
+							$e->getLine(),
+							nl2br(self::saves(self::getExceptionTraceAsString($e)))
+					), $file);
+					self::viewOnPage($file);
+				} else if(file_exists(PATH_SKINS."core".DS."503.tpl")) {
+					$tpl = file_get_contents(PATH_SKINS."core".DS."503.tpl");
+					$show = "";
+					$show .= "<span class=\"info\"><b>[" . self::FriendlyErrorType($e->getCode()) . "]</b> " . $e->getMessage() . " - " . self::saves($file) . " (" . $e->getLine() . ")</span>";
+					$error = str_replace(ROOT_PATH, DS, nl2br(self::saves(self::getExceptionTraceAsString($e))));
+					$show .= $error;
+					$tpl = str_replace("{error}", $show, $tpl);
+					self::viewOnPage($tpl);
+				} else {
+					self::viewOnPage("<div style=\"text-decoration:underline;\"><div style=\"padding-top: 10px; text-transform: uppercase;\">[" . self::FriendlyErrorType($e->getCode()) . "] " . $e->getMessage() . " - " . self::saves($file) . " (" . $e->getLine() . ")</div><br />\n<b>[" . self::FriendlyErrorType($e->getCode()) . "]</b></div><br />\n<span style=\"border:0.1em dotted black;padding:0.5em;display:block;\">" . nl2br(self::saves(self::getExceptionTraceAsString($e))) . "</span></div>");
+				}
+				/*if(!defined("ERROR_VIEW")) {
+					self::viewOnPage("<div style=\"text-decoration:underline;\"><div style=\"padding-top: 10px;text-transform: uppercase;\"><h1>Error!</h1> <b>[" . self::FriendlyErrorType($e->getCode()) . "]</b> level error. Error code <h2 style=\"display:inline-block;\">(" . self::NextId($db) . ")</h2>. Please, report developer</div></div>"));
 				} else {
 					if(file_exists(PATH_SKINS."phpError.tpl")) {
 						$file = file_get_contents(PATH_SKINS."phpError.tpl");
@@ -216,7 +240,7 @@ primary key `id`(`id`)
 					} else {
 						self::viewOnPage("<div style=\"text-decoration:underline;\"><div style=\"padding-top: 10px; text-transform: uppercase;\">[" . self::FriendlyErrorType($e->getCode()) . "] " . $e->getMessage() . " - " . self::saves($file) . " (" . $e->getLine() . ")</div><br />\n<b>[" . self::FriendlyErrorType($e->getCode()) . "]</b></div><br />\n<span style=\"border:0.1em dotted black;padding:0.5em;display:block;\">" . nl2br(self::saves(self::getExceptionTraceAsString($e))) . "</span></div>");
 					}
-				}
+				}*/
 			}
 			die();
 		}

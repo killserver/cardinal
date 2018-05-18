@@ -73,6 +73,10 @@ class JSONHelper {
     	}
 		return $data;
 	}
+
+	final public function encode() {
+		return call_user_func_array(array($this, "save"), func_get_args());
+	}
 	
 	final private function normalizer($data) {
 		$arr = array();

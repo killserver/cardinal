@@ -24,6 +24,10 @@ class Archer extends Core {
 		}
 		return $fc;
 	}
+
+	private function insertClone($k, $v) {
+		return "`".$k."` = ".$v;
+	}
 	
 	function __construct() {
 		$request = new Request();
@@ -93,6 +97,23 @@ class Archer extends Core {
 				$univ = new KernelArcher($typeUni, $model);
 				$univ->TakeEdit($model, array(&$this, "View"), "ArcherTakeAdd");
 			break;
+			case "Copy":
+				$model = modules::loadModel($upFirst);
+				$model->SetTable($typeUni);
+				$model->SetLimit(1);
+				$model->WhereTo("", $viewId);
+				$modelData = $model->Select();
+				$firstId = $model->getFirst();
+				$modelData = $modelData->getArray();
+				unset($modelData[$firstId]);
+				$models = $model->getInstance(true);
+				foreach($modelData as $k => $v) {
+					$models->{$k} = $v;
+				}
+				$models->Insert();
+				cardinal::RegAction("Клонирована запись ID:".$viewId." в таблице ".$typeUni);
+				location("./?pages=Archer&type=".$typeUni);
+			break;
 			/*
 			View model for edit data
 			*/
@@ -146,17 +167,6 @@ class Archer extends Core {
 				}
 				$univ = new KernelArcher($typeUni, $model);
 				$univ->Sorting($model, array(&$this, "View"));
-			break;
-			/*
-			View data in database
-			*/
-			case "Show":
-				$model = modules::loadModels("Model".$upFirst, $typeUni);
-				$model->SetTable($typeUni);
-				$model->SetLimit(1);
-				$model->WhereTo("", $viewId);
-				$univ = new KernelArcher($typeUni, $model);
-				$univ->Show($model, array(&$this, "View"));
 			break;
 			/*
 			Show all data in database for type

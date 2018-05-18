@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<title>Страница не найдена. Её украли</title>
+	<style>
+		body {
+			margin: 0px;
+		}
+		#viewprojects {
+			text-align: center;
+			background: rgba(144,12,12,1);
+			background: -moz-linear-gradient(left, rgba(0,0,0,1) 0%, rgba(144,12,12,1) 40%, rgba(144,12,12,1) 60%, rgba(0,0,0,1) 100%);
+			background: -webkit-gradient(left top, right top, color-stop(0%, rgba(0,0,0,1)), color-stop(40%, rgba(144,12,12,1)), color-stop(60%, rgba(144,12,12,1)), color-stop(100%, rgba(0,0,0,1)));
+			background: -webkit-linear-gradient(left, rgba(0,0,0,1) 0%, rgba(144,12,12,1) 40%, rgba(144,12,12,1) 60%, rgba(0,0,0,1) 100%);
+			background: -o-linear-gradient(left, rgba(0,0,0,1) 0%, rgba(144,12,12,1) 40%, rgba(144,12,12,1) 60%, rgba(0,0,0,1) 100%);
+			background: -ms-linear-gradient(left, rgba(0,0,0,1) 0%, rgba(144,12,12,1) 40%, rgba(144,12,12,1) 60%, rgba(0,0,0,1) 100%);
+			background: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(144,12,12,1) 40%, rgba(144,12,12,1) 60%, rgba(0,0,0,1) 100%);
+			filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#000000', endColorstr='#000000', GradientType=1 );
+			padding-top: 30px;
+			padding-bottom: 30px;
+			position: relative;
+			z-index: 10;
+		}
+		ul, ol, h1, h2, h3, h4, h5, h6 {
+			color: #666;
+			padding: 0px;
+			margin: 0px;
+		}
+		.clear {
+			clear: both;
+			display: block;
+		}
+		a {
+			text-decoration: none;
+			color: inherit;
+			margin: 0;
+			padding: 0;
+			font-size: 100%;
+			vertical-align: baseline;
+			background: transparent;
+		}
+		.fadeIn {
+			-webkit-animation: fadeIn 0.5s ease-in-out 0.5s both;
+			-moz-animation: fadeIn 0.5s ease-in-out 0.5s both;
+			-o-animation: fadeIn 0.5s ease-in-out 0.5s both;
+			-ms-animation: fadeIn 0.5s ease-in-out 0.5s both;
+			animation: fadeIn 0.5s ease-in-out 0.5s both;
+		}
+		.clearfix {
+			display: block;
+		}
+		.clearfix:after {
+			clear: both;
+			content: ' ';
+			display: block;
+			font-size: 0;
+			line-height: 0;
+			visibility: hidden;
+			width: 0;
+			height: 0;
+		}
+		h1 {
+			font-size: 40px;
+			line-height: 1em;
+			font-weight: normal;
+			font-family: 'Helvetica-neue', 'Helvetica', Arial, sans-serif;
+		}
+		.white, .white p {
+			color: #fff;
+		}
+		#wrapper404 h1, #wrapper404 p {
+			z-index: 10;
+			position: relative;
+			top: 70%;
+		}
+		.moveDown {
+			-webkit-animation: moveDown 1s ease-in-out both;
+			-moz-animation: moveDown 1s ease-in-out both;
+			-o-animation: moveDown 1s ease-in-out both;
+			-ms-animation: moveDown 1s ease-in-out both;
+			animation: moveDown 1s ease-in-out both;
+		}
+		.error404 .bgImage {
+			background-position: center 0;
+			color: #fff !important;
+			background-color: #000;
+		}
+		#stars404 {
+			position: absolute;
+			z-index: 0;
+			top: 0;
+			left: 0;
+			width: 100%;
+		}
+		#spaceman404 {
+			background: url({THEME}404spaceman.png) center center no-repeat;
+			position: absolute;
+			z-index: 1;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 800px;
+		}
+		#stars2404 {
+			position: absolute;
+			z-index: 2;
+			top: 0;
+			left: 0;
+			width: 100%;
+		}
+		.color555 {
+			color: #555;
+		}
+		.textaligncenter {
+			text-align: center;
+		}
+		.bgImage {
+			height: calc(100vh - 86px);
+		}
+		.padding3 {
+			padding-top: 2em;
+			padding-bottom: 3em;
+		}
+		.color555 {
+			color: #555;
+		}
+		.textaligncenter {
+			text-align: center;
+		}
+		.grid_full {
+			width: 100%;
+			margin-left: 0;
+			margin-right: 0;
+			clear: both;
+		}
+		.center {
+			margin-left: auto;
+			margin-right: auto;
+			float: none;
+			display: inherit;
+		}
+		.bgImage {
+			width: 100%;
+			height: 800px;
+			float: left;
+			z-index: 0;
+			background-size: cover;
+			display: block;
+			background-position: center center;
+			overflow: hidden;
+			-webkit-backface-visibility: hidden;
+			-moz-backface-visibility: hidden;
+			-ms-backface-visibility: hidden;
+			-o-backface-visibility: hidden;
+			backface-visibility: hidden;
+			background-repeat: no-repeat;
+		}
+		.grid_full {
+			width: 100%;
+			margin-left: 0;
+			margin-right: 0;
+			clear: both;
+		}
+		.error404 {
+			overflow: hidden;
+			max-height: 93vh;
+		}
+		body {
+			font-family: 'Helvetica-neue', 'Helvetica', Arial, sans-serif;
+			color: #333;
+			font-size: 18px;
+			line-height: 1.6em;
+			font-weight: 300;
+		}
+		body {
+			line-height: 1;
+		}
+		#viewprojects h3 {
+			color: #fff;
+		}
+		.bgImage { height: calc(100vh - 86px); }
+		li { list-style-type: none; }
+	</style>
+	<!--[if lte IE 8]>
+		<link rel="stylesheet" type="text/css" href="{THEME}ie.css"  />
+	<![endif]-->
+	<!--[if lt IE 9]>
+		<script src="{THEME}html5.js" type="text/javascript"></script>
+	<![endif]-->
+</head>
+<body class="error404">
+	<!--[if lt IE 9]>
+		<a href="http://browsehappy.com/?locale=en" title="upgrade Your Browser" class="ieMessage">Please upgrade your browser! Click here.<br><span>This website is best viewed using a modern browser.</span></a>
+	<![endif]-->
+	<div id="container" class="clear clearfix fadeIn1">
+		<section id="post-0" class="fadeIn clearfix grid_full error404 no-results not-found ">
+			<header id="wrapper404" class="fadeIn1 textaligncenter color555 grid_full center padding3 bgImage" style="padding-bottom: 2em;">
+				<h1 class="moveDown entry-title white" style="margin-bottom: 0.2em;font-weight:900;letter-spacing:0.15em;font-size:5em;">404</h1>
+				<p class="fadeIn2 colorCCC" style="margin-bottom: 1em;letter-spacing: 0.06em;">Страница не найдена</p>
+				<img id="stars404" class="plaxitem" data-xrange="10" data-yrange="10" src="{THEME}404stars2.png" alt="stars" />
+				<div id="spaceman404" class="plaxitem" data-xrange="30" data-yrange="30"></div>
+				<img id="stars2404" class="plaxitem" data-xrange="100" data-yrange="100" src="{THEME}404stars.png" alt="stars" />
+			</header>
+		</section>
+		<a href="{C_default_http_local}" id="viewprojects" class="fadeIn2 fade clear">
+			<ul id="menu-viewproject" class="menu">
+				<li id="menu-item-2025" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2025">
+					<h3>Вернуться на главную</h3>
+				</li>
+			</ul>
+		</a>
+	</div>		
+</div>
+<script type='text/javascript' src='{THEME}jquery.js'></script>
+<script type="text/javascript" src="{THEME}plax.js"></script>
+<script>	
+	jQuery(document).ready(function() {
+		jQuery('#wrapper404 .plaxitem').plaxify()
+		jQuery.plax.enable({ "activityTarget": jQuery('#wrapper404')})
+	});
+</script>
+
+</body>
+</html>

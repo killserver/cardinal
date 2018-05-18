@@ -85,15 +85,20 @@ class cardinal {
 			$check = explode("-", $check);
 			$check = current($check);
 		}
+		if($check<"2.0") {
+			return false;
+		}
 		if(class_exists("config", false) && method_exists("config", "Select") && config::Select("speed_update")) {
 			$if = ($check) > ($isChecked);
 		} else {
 			$checked = intval(str_replace(".", "0", $check));
 			$version = intval(str_replace(".", "0", $isChecked));
-			if(strlen($checked) > strlen($version)) {
-				$version = self::int_pad($version, strlen($checked));
-			} else if(strlen($checked) < strlen($version)) {
-				$checked = self::int_pad($checked, strlen($version));
+			if(!defined("INTVERSION")) {
+				if(strlen($checked) > strlen($version)) {
+					$version = int_pad($version, strlen($checked));
+				} else if(strlen($checked) < strlen($version)) {
+					$checked = int_pad($checked, strlen($version));
+				}
 			}
 			$if = $checked>$version;
 		}

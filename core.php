@@ -60,6 +60,14 @@ if(!defined("DEFINED_CLASSES")) {
 	define("DEFINED_CLASSES", implode(",", get_declared_classes()));
 }
 
+
+if ( ! function_exists( 'microtime_float' ) ) {
+	function microtime_float() {
+		list($usec, $sec) = explode( ' ', microtime() );
+		return ( (float)$usec + (float)$sec);
+	}
+}
+
 ini_set("max_execution_time", 0);
 if(strpos(CLOSE_FUNCTION, "set_time_limit")===false) {
 	set_time_limit(0);
@@ -309,14 +317,13 @@ if(!defined("PERMISSION_PHP") && file_exists(PATH_MEDIA."phpINtmp.lock")) {
 	define("PERMISSION_PHP", true);
 }
 
-$Timer = microtime(true);
-if(strpos($Timer, " ")!==false) {
-	$Timer = explode(" ", $Timer);
-	$Timer = current($Timer);
-}
+$Timer = microtime_float();
 
 if(!defined("SYSTEM_TIME_START")) {
 	define("SYSTEM_TIME_START", time());
+}
+if(!defined("SYSTEM_TIME_START_FLOAT")) {
+	define("SYSTEM_TIME_START_FLOAT", microtime_float());
 }
 
 require_once(ROOT_PATH."core".DS."functions.".ROOT_EX);

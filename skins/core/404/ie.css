@@ -1,0 +1,171 @@
+/*
+Styles for older IE versions (previous to IE9).
+*/
+
+body {
+	position: relative;
+}
+a {
+	color: #333;
+}
+
+#topSlider,
+.menubar .logo .rotating,
+.menubar .logo .agensname {
+	display: none;	
+}
+
+.center {
+	display: block;
+}
+.menubar .logo {
+	background: url(../img/agensLogoIe.png) no-repeat left center;
+	position: relative;
+	width: 125px;
+	height: 28px;
+	display: block;
+	float: left;
+	margin-top: 20px;
+}
+.home #container {
+	margin-top: 0;
+	z-index: -1;
+}
+#container {
+	z-index: -1;
+}
+.home .menubar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 9999;
+}
+#footer a,
+.darkBackground a {
+	color: #aaa;
+	background: none;
+}
+.ieMessage, .ieMessage:hover {
+	position: fixed;
+	display: block;
+	z-index: 999;
+	bottom: 0;
+	width: 100%;
+	background: #EF340F;
+	color: #fff;
+	text-transform: uppercase;
+	left: 0;
+	padding: 20px 0;
+	margin: 0;
+	font-size: 20px;
+	text-align: center;
+	font-family: 'ProximaNova-Semibold', Arial, sans-serif;
+	margin: 0;
+	line-height: 1em;
+}
+.ieMessage span {
+	width: 100%;
+	font-size: 14px;
+	clear: both;
+	text-transform: none;
+	font-family: 'ProximaNova-Regular', Arial, sans-serif;	
+}
+
+
+#contact table td:first-child {
+	display: none;
+}
+.clientgrid .client{
+	float: left;
+	display: block;
+}
+
+.phone, .email, .contactteam {
+	display: none;
+	background: none;
+}
+
+.social, .casecorner {
+	display: none !important;
+}
+#footer {
+	padding-bottom: 0;
+}
+
+
+.ourServices a {
+	display: block;
+	text-align: center;
+	padding-top: 110px;
+	padding-bottom: 20px;
+	margin-bottom:20px;
+	-webkit-transition: all 0.4s ease-out;
+	-moz-transition: all 0.4s ease-in-out;
+	-o-transition: all 0.4s ease-in-out;
+	transition: all 0.4s ease-in-out;
+	font-weight: 100;
+	
+}
+
+.ourServices #strategicdes,
+.ourServices #productdev,
+.ourServices #gamesint,
+.ourServices #digitalcon,
+.ourServices #strategy,
+.ourServices #htmlcss {
+	background: none;
+	padding-top: 20px;
+}
+
+.ourServices li {
+	display: block;
+	margin: 0;
+}
+.employee-mail {
+	background: none;
+	display: none;
+}
+.employee-position {
+	clear: both;
+}
+.single_employee {
+	float: left;
+	display: block;
+}
+.employee-item {
+	background-position: center center;
+}
+
+
+.grid_1,
+.grid_2,
+.grid_3,
+.grid_4,
+.grid_5,
+.grid_6,
+.grid_7,
+.grid_8,
+.grid_9,
+.grid_10,
+.grid_11,
+.grid_12,
+.grid_13,
+.grid_14,
+.grid_15,
+.grid_16,
+.grid_17,
+.grid_18,
+.grid_19,
+.grid_20,
+.grid_21,
+.grid_22,
+.grid_23,
+.grid_24 {
+	display:block;
+	float: left;
+	position: relative;
+	margin-left: 1%;
+	margin-right: 1%;
+}
+
+

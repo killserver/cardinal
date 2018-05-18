@@ -65,6 +65,7 @@
 	.form-inline table .input-group .input-group-addon {
 		width: 2%;
 	}
+	.table > tbody > tr[class*='get'] { cursor: pointer; }
 </style>
 <script type="text/template" id="temp">
 	<div class="form-group id-show-{uid}">
@@ -89,17 +90,17 @@
 	<table id="example-1" class="table table-striped table-bordered" cellspacing="0" width="100%">
 		<thead>
 			<tr>
-				<th>ID</th>
+				<th width="10%">ID</th>
 				<th>Page</th>
-				<th>Lang</th>
+				<th width="10%">Lang</th>
 				<th width="10%">{L_options}</th>
 			</tr>
 		</thead>
 		<tfoot>
 			<tr>
-				<th>ID</th>
+				<th width="10%">ID</th>
 				<th>Page</th>
-				<th>Lang</th>
+				<th width="10%">Lang</th>
 				<th width="10%">{L_options}</th>
 			</tr>
 			<tr>
@@ -119,21 +120,21 @@
 </script>
 <script type="text/template" class="tableGroupingData">
 	<tr class="get-{id}" data-id="{id}" data-link="{page}" data-lang="{lang}">
-		<td>{id}</td>
+		<td width="10%">{id}</td>
 		<td class="page">{page}</td>
-		<td class="lang">{lang}</td>
+		<td class="lang" width="10%">{lang}</td>
 		<td width="10%">
 			<a href="./?pages=SEO&page=Grouping&mod=Delete&viewId={id}" data-id="{id}" class="btn btn-red removeSEO">{L_delete}</a>
 		</td>
 	</tr>
-	<tr class="editor html-{id}">
-		<td width="100%" colspan="4"><div style="display:table;"></div></td><td style="display: none"></td><td style="display: none"></td><td style="display: none"></td>
+	<tr class="editor html-{id}" data-id="{id}" data-link="{page}" data-lang="{lang}">
+		<td style="display: none">{id}</td><td width="100%" colspan="4"><div style="display:table;"></div></td><td style="display: none"></td><td style="display: none"></td>
 	</tr>
 </script>
 <script type="text/template" id="descr">
 	<div class="row">
-		<div class="col-sm-11"><textarea class="form-horizontal" name="aText[descr][]">{descr}</textarea></div>
-		<div class="col-sm-1"><a href="#" class="btn btn-red btn-block btn-icon" onclick="return removed(this);"><i class="fa fa-remove"></i></a></div>
+		<div class="col-sm-10"><textarea class="form-horizontal" name="aText[descr][]">{descr}</textarea></div>
+		<div class="col-sm-2"><a href="#" class="btn btn-red btn-block btn-icon" onclick="return removed(this);"><i class="fa fa-remove"></i></a></div>
 	</div>
 </script>
 <script type="text/template" id="descrAdd">
@@ -280,34 +281,35 @@
 	});
 	function readJsonData(datas, type, key, lang) {
 		var seoBlockExists = false, aTextExists = false;
-		var hiddenElem = "", html = "";
+		var hiddenElem = "", htmls = "";
+		var editorSeoBlock = jQuery(".editorSeoBlock").html();
+		var editorAText = jQuery(".editorAText").html();
 		if(type=="seoBlock") {
-			var html = jQuery(".editorSeoBlock").html();
 			Object.keys(datas).forEach(function(k) {
 				if(k=="sId") {
-					html = html.replace(/\{sId\}/g, datas[k]);
+					editorSeoBlock = editorSeoBlock.replace(/\{sId\}/g, datas[k]);
 				} else if(k=="sPage") {
-					html = html.replace(/\{page\}/g, key);
-					html = html.replace(/\{pageShow\}/g, key.substr(1));
+					editorSeoBlock = editorSeoBlock.replace(/\{page\}/g, key);
+					editorSeoBlock = editorSeoBlock.replace(/\{pageShow\}/g, key.substr(1));
 				} else if(k=="sLang") {
-					html = html.replace(/\{lang\}/g, lang);
+					editorSeoBlock = editorSeoBlock.replace(/\{lang\}/g, lang);
 				} else if(k=="sTitle") {
-					html = html.replace(/\{sTitle\}/g, datas[k]);
+					editorSeoBlock = editorSeoBlock.replace(/\{sTitle\}/g, datas[k]);
 				} else if(k=="sMetaDescr") {
-					html = html.replace(/\{sMetaDescr\}/g, datas[k]);
+					editorSeoBlock = editorSeoBlock.replace(/\{sMetaDescr\}/g, datas[k]);
 				} else if(k=="sMetaRobots") {
-					html = html.replace(/\{sMetaRobots\}/g, datas[k]);
+					editorSeoBlock = editorSeoBlock.replace(/\{sMetaRobots\}/g, datas[k]);
 				} else if(k=="sMetaKeywords") {
-					html = html.replace(/\{sMetaKeywords\}/g, datas[k]);
+					editorSeoBlock = editorSeoBlock.replace(/\{sMetaKeywords\}/g, datas[k]);
 				} else if(k=="sRedirect") {
-					html = html.replace(/\{sRedirect\}/g, datas[k]);
+					editorSeoBlock = editorSeoBlock.replace(/\{sRedirect\}/g, datas[k]);
 				} else if(k=="sImage") {
-					html = html.replace(/\{sImage\}/g, datas[k]);
+					editorSeoBlock = editorSeoBlock.replace(/\{sImage\}/g, datas[k]);
 				}
 			});
+			htmls += editorSeoBlock;
 			seoBlockExists = true;
 		} else if(type=="aText") {
-			var html = jQuery(".editorAText").html();
 			Object.keys(datas).forEach(function(k) {
 				if(k=="text") {
 					var temp = "";
@@ -318,14 +320,15 @@
 						tmp += jQuery("#descrAdd").html();
 						temp += tmp;
 					}
-					html = html.replace(/\{html\}/g, temp);
+					editorAText = editorAText.replace(/\{html\}/g, temp);
 				} else if(k=="aId") {
-					html = html.replace(/\{aId\}/g, datas[k]);
+					editorAText = editorAText.replace(/\{aId\}/g, datas[k]);
 				}
 			});
+			htmls += editorAText;
 			aTextExists = true;
 		}
-		return {"html": html, "seoBlockExists": seoBlockExists, "aTextExists": aTextExists};
+		return {"html": htmls, "seoBlockExists": seoBlockExists, "aTextExists": aTextExists};
 	}
 	var html = "", editDatas = "";
 	var idSEO = 0;
@@ -336,12 +339,13 @@
 			tmp = tmp.replace(/\{id\}/g, idSEO);
 			tmp = tmp.replace(/\{page\}/g, uri);
 			tmp = tmp.replace(/\{lang\}/g, lang);
-			html = tmp;
+			html += tmp;
 		});
 	});
 	var tmp = jQuery(".tableGrouping").html();
 	tmp = tmp.replace(/\{getHTML\}/g, html);
 	jQuery(".grouping-data").html(tmp);
+	tableStruct = jQuery.extend(tableStruct, {"iDisplayLength": 50});
 	jQuery(document).ready(function() {
 		jQuery(".grouping-data table").dataTable(tableStruct);
 	});
@@ -371,6 +375,7 @@
 		return false;
 	});
 	jQuery(".table > tbody > tr.editor td div").hide();
+	var tpls = "";
 	jQuery("body").on("click", ".table > tbody > tr[class*='get-']", function(ev) {
 		var id = jQuery(this).attr("data-id");
 		var link = jQuery(this).attr("data-link");
@@ -378,28 +383,29 @@
 		var getElem = jQuery(".table > tbody > tr.html-"+id+".editor td > div");
 		if(getElem.html().length==0) {
 			var html = "";
+			var tmp = jQuery(".editorMark").html();
+			tmp = tmp.replace(/\{id\}/g, id);
+			tmp = tmp.replace(/\{link\}/g, link);
+			tmp = tmp.replace(/\{lang\}/g, lang);
+			var editor = "";
+			if(resElems[lang][link].seoBlockExists===false && resElems[lang][link].aTextExists!==false) {
+				editor = jQuery(".editorSeoBlock").html();
+			}
+			var data = "";
 			if(typeof(resElems[lang])!=="undefined" && typeof(resElems[lang][link])!=="undefined" && typeof(resElems[lang][link].editor)!=="undefined") {
-				var tmp = jQuery(".editorMark").html();
-				tmp = tmp.replace(/\{id\}/g, id);
-				tmp = tmp.replace(/\{link\}/g, link);
-				tmp = tmp.replace(/\{lang\}/g, lang);
-				tmp = tmp.replace(/\{editor\}/g, resElems[lang][link].editor);
-				html += tmp;
-			} else {
-				var tmp = jQuery(".editorMark").html();
-				tmp = tmp.replace(/\{id\}/g, id);
-				tmp = tmp.replace(/\{link\}/g, link);
-				tmp = tmp.replace(/\{lang\}/g, lang);
-				var editor = jQuery(".editorSeoBlock").html();
+				data = resElems[lang][link].editor;
+			}
+			if(resElems[lang][link].seoBlockExists!==false && resElems[lang][link].aTextExists===false) {
 				var editorAText = jQuery(".editorAText").html();
 				var tpl = template;
 				tpl = tpl.replace(/\{descr\}/g, "");
 				tpl += jQuery("#descrAdd").html();
 				editorAText = editorAText.replace(/\{html\}/g, tpl);
-				tmp = tmp.replace(/\{editor\}/g, editor+editorAText);
-				tmp = tmp.replace(/\{(.+?)\}/g, "");
-				html += tmp;
 			}
+			tmp = tmp.replace(/\{editor\}/g, editor+data+editorAText);
+			tpls = (tmp);
+			tmp = tmp.replace(/\{(.+?)\}/g, "");
+			html += tmp;
 			getElem.html(html);
 			var editor = jQuery.extend(editorTextarea, {selector: ".table > tbody > tr.html-"+id+".editor td > div textarea"});
 			tinymce.init(editor);

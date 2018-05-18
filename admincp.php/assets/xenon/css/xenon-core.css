@@ -7353,3 +7353,21 @@ span#doc_time .delimer {
         width: 95%;
     }
 }
+
+.sidebar-menu {
+  width: 287px;
+}
+
+.sidebar-menu .main-menu {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.sidebar-menu .logo-env {
+  padding: 30px 25px;
+}
+
+.sidebar-menu .main-menu a > i {
+  vertical-align: top;
+  margin-top: 0.1rem;
+}

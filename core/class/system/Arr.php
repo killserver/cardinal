@@ -259,6 +259,37 @@ class Arr {
 		return $array;
 	}
 	
+	final public static function filter($array, $callback = "") {
+		$list = func_get_args();
+		if(is_array($array)) {
+			return call_user_func_array(__CLASS__."::filterArr", $list);
+		} else {
+			return call_user_func_array(__CLASS__."::filterSelf", $list);
+		}
+	}
+	
+	final private static function filterSelf($callback, $array = array()) {
+		foreach(self::$array as $key => $val) {
+			if(is_array($val)) {
+				self::$array[$key] = self::filterSelf($callback, $val);
+			} else {
+				self::$array[$key] = call_user_func_array("array_filter", array($val, $callback));
+			}
+		}
+		return self::$array;
+	}
+	
+	final private static function filterArr($array, $callback) {
+		foreach($array as $key => $val) {
+			if(is_array($val)) {
+				$array[$key] = self::filterArr($val, $callback);
+			} else {
+				$array[$key] = call_user_func_array("array_filter", array($val, $callback));
+			}
+		}
+		return $array;
+	}
+	
 	final public static function wrap($array) {
 		return (!is_array($array) ? array($value) : $value);
 	}

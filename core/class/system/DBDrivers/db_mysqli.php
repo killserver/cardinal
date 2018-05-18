@@ -44,7 +44,7 @@ class db_mysqli extends DriverParam implements drivers {
 			}
 			return $ret;
 		} catch(Exception $ex) {
-			header("HTTP/1.0 520 Unknown Error");
+			errorHeader();
 			return false;
 		}
 	}
@@ -58,7 +58,7 @@ class db_mysqli extends DriverParam implements drivers {
 				}
 				return $ret;
 			} catch(Exception $ex) {
-				header("HTTP/1.0 520 Unknown Error");
+				errorHeader();
 				return false;
 			}
 		} else {
@@ -67,7 +67,7 @@ class db_mysqli extends DriverParam implements drivers {
 	}
 	public function connect($host, $user, $pass, $db, $charset, $port) {
 		if (!class_exists('mysqli')) {
-			header("HTTP/1.0 520 Unknown Error");
+			errorHeader();
 			if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
 				HTTP::echos('Server database MySQLi not support PHP');
 			} else {
@@ -76,7 +76,7 @@ class db_mysqli extends DriverParam implements drivers {
 			die();
 		}
 		if(!@$this->mc = mysqli_init()) {
-			header("HTTP/1.0 520 Unknown Error");
+			errorHeader();
 			if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
 				HTTP::echos("[error]");
 			} else {
@@ -91,7 +91,7 @@ class db_mysqli extends DriverParam implements drivers {
 				if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
 					HTTP::echos();
 				}
-				header("HTTP/1.0 520 Unknown Error");
+				errorHeader();
 				switch($this->mc->connect_errno) {
 					case 1044:
 					case 1045:
@@ -119,7 +119,7 @@ class db_mysqli extends DriverParam implements drivers {
 			$this->connecten = true;
 			$this->mc->autocommit(false);
 		} catch(Exception $e) {
-			header("HTTP/1.0 520 Unknown Error");
+			errorHeader();
 			if(class_exists("cardinalError")) {
 				cardinalError::handlePhpError($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
 			} else {

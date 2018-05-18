@@ -44,7 +44,7 @@ class Main_ServerLoad extends Main {
 		if(isset($_GET['getServerLoad'])) {
 			Debug::activShow(false);
 			templates::$gzip=false;
-			HTTP::echos(json_encode(array($this->get_server_load(), $this->get_server_memory_usage())));
+			HTTP::echos(json_encode(array(round($this->get_server_load(), 2), round($this->get_server_memory_usage(), 2))));
 			die();
 		}
 		templates::assign_var("cpuUseVisible", "1");
@@ -53,13 +53,13 @@ class Main_ServerLoad extends Main {
 			templates::assign_var("cpuUseVisible", "0");
 			templates::assign_var("cpuUse", "0");
 		} else {
-			templates::assign_var("cpuUse", $this->get_server_load());
+			templates::assign_var("cpuUse", round($this->get_server_load(), 2));
 		}
 		if($this->get_server_memory_usage()===false) {
 			templates::assign_var("memUseVisible", "0");
 			templates::assign_var("memUse", "0");
 		} else {
-			templates::assign_var("memUse", $this->get_server_memory_usage());
+			templates::assign_var("memUse", round($this->get_server_memory_usage(), 2));
 		}
 	}
 
