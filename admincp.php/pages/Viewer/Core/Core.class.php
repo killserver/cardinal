@@ -57,34 +57,6 @@ class Core {
 			}
 		}
 	}
-
-	protected function GetFullEditor($label, $name, $value, $lang = "ru", array $styles = array(), $id = "", $class = "col-sm-12") {
-		if(empty($id)) {
-			$id = "id".rand(0, PHP_INT_MAX);
-		}
-		$ret = '<div class="form-group"><label class="col-sm-12 control-label" for="'.$id.'">'.$label.'</label><div class="'.$class.'"><textarea name="'.$name.'" id="'.$id.'">'.$value.'</textarea></div></div>';
-		//<script src="assets/xenon/js/tinymce/tinymce.min.js"></script>
-		/*
-		$(document).ready(function(){
-	tinymce.init({
-	  selector: 'textarea',
-	  height: 500,
-	  language : "$lang",
-	  plugins: [
-	        "advlist autolink lists link image charmap print preview anchor",
-	        "searchreplace visualblocks code fullscreen",
-	        "insertdatetime media table contextmenu paste imagetools"
-	    ],
-	    toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image",
-	  // imagetools_cors_hosts: ['www.tinymce.com', 'codepen.io'],
-	  content_css: [
-	    '/skins/Constroy/css/style.css?1495788912',
-		'/skins/Constroy/css/fonts.css?1495788912'
-	  ]
-	});
-});
-		 */
-	}
 	
 	private function vsort(&$array) {
 		$arrs = array();
@@ -115,17 +87,35 @@ class Core {
 		}
 	}
 	
-	private function ParseDirSkins($dir, $parse = 1) {
+	private function ParseDirSkins($dir, $parse = 1, $getData = false) {
 		$skins = array();
+		$default_headers = array(
+			'Name' => 'Name',
+			'Description' => 'Description',
+			'Image' => 'Image',
+			'Changelog' => 'Changelog',
+			'Version' => 'Version',
+			"Screenshots" => "Screenshots",
+		);
 		if(is_dir($dir)) {
 			if($dh = dir($dir)) {
 				while(($file = $dh->read()) !== false) {
 					if(is_dir($dir.$file) && $parse == 1) {
 						$arrs = $this->ParseDirSkins($dir.$file, 2);
 						if(in_array("main.tpl", $arrs)) {
+							if($getData) {
+								$file = $this->get_file_data($dir.$file, $default_headers);
+								$file['dir'] = $dir;
+								$file['file'] = $file;
+							}
 							$skins[] = $file;
 						}
 					} else if($parse == 2) {
+						if($getData) {
+							$file = $this->get_file_data($dir.$file, $default_headers);
+							$file['dir'] = $dir;
+							$file['file'] = $file;
+						}
 						$skins[] = $file;
 					}
 				}
@@ -133,6 +123,22 @@ class Core {
 			}
 		}
 		return $skins;
+	}
+
+	private function get_file_data($file, $default_headers, $default = false) {
+		$fp = fopen($file, 'r');
+		$file_data = fread($fp, 8192);
+		fclose($fp);
+		$file_data = str_replace("\r", "\n", $file_data);
+		$ret = array();
+		foreach($default_headers as $field => $regex) {
+			if(preg_match('/^[ \t\/*#@]*'.preg_quote($regex, '/').':(.*)$/mi', $file_data, $match) && isset($match[1])) {
+				$ret[$field] = trim(preg_replace("/\s*(?:\*\/|\?>).*/", '', $match[1]));
+			} else if($default!==false) {
+				$ret[$field] = '';
+			}
+		}
+		return $ret;
 	}
 	
 	protected function ParseSkins($dir = "", $name = "skins", $sub_name = "") {
@@ -202,6 +208,67 @@ class Core {
 			}
 		}
 	}
+
+	private function loadMenu() {
+		$links = array();
+		if($dh = dir(ADMIN_MENU)) {
+			$i=1;
+			while(($file = $dh->read()) !== false) {
+				if($file != "index.".ROOT_EX && $file != "index.html" && $file != "." && $file != "..") {
+					include_once(ADMIN_MENU.$file);
+				}
+			}
+			$dh->close();
+		}
+		$this->vsort($links);
+		$all = 0;
+		$page_v = getenv("REQUEST_URI");
+		$now = str_replace(ADMINCP_DIRECTORY."/?", "", substr($page_v, 1, strlen($page_v)));
+		foreach($links as $name => $datas) {
+			if(isset($datas['item']) && is_array($datas['item'])) {
+				for($is=0;$is<sizeof($datas['item']);$is++) {
+					if(isset($datas['item'][$is]['access']) && !$datas['item'][$is]['access']) {
+						unset($datas['item'][$is]);
+					}
+				}
+				$datas['item'] = array_values($datas['item']);
+				if(sizeof($datas['item'])>1) {
+					$type = "cat";
+				} elseif(sizeof($datas['item'])==1) {
+					$datas['item'][0]['icon'] = (isset($datas['cat'][0]['icon']) ? $datas['cat'][0]['icon'] : "");
+					$datas['cat'] = $datas['item'];
+					unset($datas['item']);
+					$type = "item";
+				}
+			} else {
+				$type = "check";
+			}
+			$datas = array_values($datas);
+			for($i=0;$i<sizeof($datas);$i++) {
+				for($is=0;$is<sizeof($datas[$i]);$is++) {
+					if(isset($datas[$i][$is]['access']) && !$datas[$i][$is]['access']) {
+						continue;
+					}
+					if(sizeof($datas[$i])==1) {
+						$count = 0;
+					} else {
+						$count = sizeof($datas[$i])-1;
+					}
+					$is_now = str_replace(array("{C_default_http_host}", ADMINCP_DIRECTORY."/?"), "", $datas[$i][$is]['link']);
+					templates::assign_vars(array(
+						"value" => $datas[$i][$is]['title'],
+						"link" => $datas[$i][$is]['link'],
+						"is_now" => (($is_now==$now) ? "1" : "0"),
+						"type" => $type,
+						"type_st" => ($type=="cat"&&$datas[$i][$is]['type']=="cat" ? "start" : ""),
+						"type_end" => ($type=="cat"&&$count==$is&&$datas[$i][$is]['type']=="item" ? "end" : ""),
+						"icon" => (isset($datas[$i][$is]['icon']) ? $datas[$i][$is]['icon'] : " "),
+					), "menu", "m".$all.$i.$is);
+				}
+			}
+			$all++;
+		}
+	}
 	
 	private function CheckLoadPlugins($file) {
 		if(is_bool($this->load_adminmodules)) {
@@ -255,20 +322,6 @@ class Core {
 		}
 	}
 	
-	private function ReLoadLvl($arr) {
-		$level = -1;
-		for($y=0;$y<sizeof($arr);$y++) {
-			for($t=0;$t<sizeof($arr[$y]);$t++) {
-				if($level==-1 && isset($arr[$y]) && isset($arr[$y][$t]) && isset($arr[$y][$t]['access'])) {
-					$level = $arr[$y][$t]['access'];
-				} else {
-					$arr[$y][$t]['access'] = $level;
-				}
-			}
-		}
-		return $arr;
-	}
-	
 	protected function Prints($echo, $print = false, $force = false) {
 	global $lang;
 		if(!userlevel::get("admin") || !isset($_COOKIE[COOK_ADMIN_USER]) || !isset($_COOKIE[COOK_ADMIN_PASS])) {
@@ -295,7 +348,7 @@ class Core {
 		$this->ParseLang();
 		Route::RegParam("lang", config::Select("lang"));
 		$routeLang = HTTP::getServer(ROUTE_GET_URL);
-		preg_match("#/([a-zA-Z]+)/#", $routeLang, $arr);
+		preg_match("#^/([a-zA-Z]+)/#", $routeLang, $arr);
 		if(isset($arr[1])) {
 			$support = lang::support(true);
 			if(in_array($arr[1], $support)) {
@@ -325,60 +378,7 @@ class Core {
 		}
 		templates::assign_var("count_unmoder", $this->unmoder());
 		templates::assign_var("title_admin", $this->title());
-		$links = array();
-		if($dh = dir(ADMIN_MENU)) {
-			$i=1;
-			while(($file = $dh->read()) !== false) {
-				if($file != "index.".ROOT_EX && $file != "index.html" && $file != "." && $file != "..") {
-					include_once(ADMIN_MENU.$file);
-				}
-			}
-			$dh->close();
-		}
-		$this->vsort($links);
-		$all=0;
-		$level = modules::get_user('level');
-		$page_v = getenv("REQUEST_URI");
-		$now = str_replace(ADMINCP_DIRECTORY."/?", "", substr($page_v, 1, strlen($page_v)));
-		foreach($links as $name => $datas) {
-			if(isset($datas['item']) && is_array($datas['item'])) {
-				if(sizeof($datas['item'])>1) {
-					$type = "cat";
-				} else {
-					$datas['item'][0]['icon'] = (isset($datas['cat'][0]['icon']) ? $datas['cat'][0]['icon'] : "");
-					$datas['cat'] = $datas['item'];
-					unset($datas['item']);
-					$type = "item";
-				}
-			} else {
-
-				$type = "check";
-			}
-			$datas = array_values($datas);
-			for($i=0;$i<sizeof($datas);$i++) {
-				for($is=0;$is<sizeof($datas[$i]);$is++) {
-					if(isset($datas[$i][$is]['access']) && !$datas[$i][$is]['access']) {
-						continue;
-					}
-					if(sizeof($datas[$i])==1) {
-						$count = 0;
-					} else {
-						$count = sizeof($datas[$i])-1;
-					}
-					$is_now = str_replace(array("{C_default_http_host}", ADMINCP_DIRECTORY."/?"), "", $datas[$i][$is]['link']);
-					templates::assign_vars(array(
-						"value" => $datas[$i][$is]['title'],
-						"link" => $datas[$i][$is]['link'],
-						"is_now" => (($is_now==$now) ? "1" : "0"),
-						"type" => $type,
-						"type_st" => ($type=="cat"&&$datas[$i][$is]['type']=="cat" ? "start" : ""),
-						"type_end" => ($type=="cat"&&$count==$is&&$datas[$i][$is]['type']=="item" ? "end" : ""),
-						"icon" => (isset($datas[$i][$is]['icon']) ? $datas[$i][$is]['icon'] : " "),
-					), "menu", "m".$all.$i.$is);
-				}
-			}
-			$all++;
-		}
+		$this->loadMenu();
 		templates::assign_var("nowLangText", "{L_Languages}&nbsp;".nucfirst(lang::get_lg()));
 		templates::assign_var("nowLangImg", ADMIN_FLAGS_UI.lang::get_lg().".png");
 		$support = lang::support();

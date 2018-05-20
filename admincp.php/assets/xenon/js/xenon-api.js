@@ -91,6 +91,17 @@ function hide_loading_bar()
 }
 
 jQuery(document).ready(function() {
+	jQuery('.user-info-navbar .user-info-menu > li a[data-toggle="sidebar"]').on("click", function() {
+		if(localStorage.getItem("sidebar")!==null) {
+			localStorage.removeItem("sidebar");
+		} else {
+			localStorage.setItem("sidebar", "true");
+		}
+	});
+	if((sidebar = localStorage.getItem("sidebar"))!==null) {
+		if(sidebar=="true") { jQuery(".sidebar-menu").addClass("collapsed"); }
+		if(sidebar=="false") { jQuery(".sidebar-menu").removeClass("collapsed"); }
+	}
 	if(jQuery(".bgFon").length>0 && jQuery(".bgFon > span.imgHere").length>0) {
 		var rand1 = 1 - 0.5 + Math.random() * (12 - 1 + 1);
 		var rand2 = 269 - 0.5 + Math.random() * (329 - 269 + 1);

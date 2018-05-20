@@ -590,11 +590,16 @@ function adminPanelVsort(&$array) {
 function menuAdminHeader($arr, $isCat = false) {
 	$menu = "";
 	foreach($arr as $v) {
+		if(isset($v['items']) && sizeof($v['items'])==1) {
+			$item = current($v['items']);
+			$v['link'] = $item['link'];
+			unset($v['items']);
+		}
 		$cat = false;
 		if(isset($v['items'])) {
 			$cat = true;
 		}
-		$menu .= (!$isCat ? "<div class=\"items\">" : "")."<a href=\"".$v['link']."\"".($cat ? " class=\"subItem\"": "").">".(isset($v['icon']) && !empty($v['icon']) ? "<i class=\"".$v['icon']."\"></i>" : "")."<span>".$v['title']."</span></a>";
+		$menu .= (!$isCat ? "<div class=\"items".($cat ? " hasDropped" : "")."\">" : "")."<a href=\"".$v['link']."\"".($cat ? " class=\"subItem\"": "").">".(isset($v['icon']) && !empty($v['icon']) ? "<i class=\"".$v['icon']."\"></i>" : "")."<span>".$v['title']."</span></a>";
 		$menu .= ($cat ? "<div class=\"dropped\">" : "");
 		if($cat) {
 			$menu .= menuAdminHeader($v['items'], true);

@@ -7354,6 +7354,8 @@ span#doc_time .delimer {
     }
 }
 
+
+/* custom style */
 .sidebar-menu {
   width: 287px;
 }
@@ -7370,4 +7372,27 @@ span#doc_time .delimer {
 .sidebar-menu .main-menu a > i {
   vertical-align: top;
   margin-top: 0.1rem;
+}
+
+.sidebar-menu.collapsed .main-menu > li:not(.hasSubmenu) > a > span {
+    position: absolute;
+    background: #2c2e2f;
+    top: 0;
+    left: 100%;
+    color: #979898;
+    text-decoration: none;
+    padding: 13px 25px;
+    max-width: none;
+}
+.sidebar-menu.collapsed .main-menu > li:not(.hasSubmenu) > a:hover > span {
+    color: #fff;
+}
+.sidebar-menu.collapsed .main-menu > li:not(.hasSubmenu):hover > a > span {
+    display: block;
+}
+.sidebar-menu .main-menu > li > a:last-of-type {
+    border-bottom: 0px;
+}
+.sidebar-menu, .sidebar-menu.collapsed {
+    z-index: 100;
 }

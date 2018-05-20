@@ -150,7 +150,7 @@ html.onHoverAdmin .adminCoreCardinal:hover > .user {
 	color: #fff;
 	text-decoration: none;
 }
-.adminCoreCardinal > .items a.subItem:after {
+.adminCoreCardinal .items a.subItem:after {
 	content: '\f107';
 	font-family: 'FontAwesome' !important;
 	margin-left: 0.7em;
@@ -300,39 +300,22 @@ html.onHoverAdmin .adminCoreCardinal:hover > .user {
 	text-decoration: none;
 }
 .adminCoreCardinal > .more > .elems > .items > a + .dropped {
-	-webkit-transform: scale(0);
-	   -moz-transform: scale(0);
-	    -ms-transform: scale(0);
-	     -o-transform: scale(0);
-	        transform: scale(0);
 	-webkit-transition: all 300ms ease-in-out;
 	-o-transition: all 300ms ease-in-out;
 	-moz-transition: all 300ms ease-in-out;
 	transition: all 300ms ease-in-out;
-	-webkit-transform-origin: 100% 50%;
-	   -moz-transform-origin: 100% 50%;
-	    -ms-transform-origin: 100% 50%;
-	     -o-transform-origin: 100% 50%;
-	        transform-origin: 100% 50%;
-	width: 0px;
+	max-height: 0px;
 	overflow: hidden;
-	position: absolute;
-	left: -100%;
 	top: 0px;
-	background: #ac1f1f;
+	background: #480c0c;
 }
 .adminCoreCardinal > .more > .elems > .items:hover > a {
 	background: #7d1515;
 }
 .adminCoreCardinal > .more > .elems > .items:hover > a + .dropped {
-	-webkit-transform: scale(1);
-	   -moz-transform: scale(1);
-	    -ms-transform: scale(1);
-	     -o-transform: scale(1);
-	        transform: scale(1);
-	width: 100%;
+	max-height: 100vh;
 }
-.adminCoreCardinal > .more > .elems > .items:hover > a + .dropped a {
+.adminCoreCardinal > .more > .elems > .items > a + .dropped a {
 	padding: 0.5em 0.75em;
 	display: block;
 }

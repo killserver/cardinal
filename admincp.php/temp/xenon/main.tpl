@@ -15,7 +15,7 @@
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/fonts/linecons/css/linecons.css?1">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/fonts/fontawesome/css/font-awesome.min.css?1">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/bootstrap.css?1">
-	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-core.css?4">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-core.css?5">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-forms.css?1">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-components.css?10">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-skins.css?1">
@@ -264,12 +264,18 @@
 							</a>
 						</li>
 						[foreach block=menu]
-						[foreachif {menu.type_st}=="start"]<li>
+						[foreachif {menu.type_st}=="start"&&{menu.existSub}==false]<li>
 							<a href="{menu.link}">
 								<i class="{menu.icon}"></i>
 								<span class="title">{menu.value}</span>
 							</a>
-							<ul>[/foreachif {menu.type_st}=="start"]
+							<ul>[/foreachif {menu.type_st}=="start"&&{menu.existSub}==false]
+						[foreachif {menu.type_st}=="start"&&{menu.existSub}==true]<li class="hasSubmenu">
+							<a href="{menu.link}">
+								<i class="{menu.icon}"></i>
+								<span class="title">{menu.value}</span>
+							</a>
+							<ul>[/foreachif {menu.type_st}=="start"&&{menu.existSub}==true]
 								<li[foreachif {menu.is_now}==1] class="active"[/foreachif][foreachif {menu.type_st}=="start"] style="display:none;"[/foreachif {menu.type_st}=="start"]>
 									<a href="{menu.link}">
 										[foreachif {menu.type}=="item"]<i class="{menu.icon}"></i>[/foreachif {menu.type}=="item"]
@@ -510,7 +516,7 @@
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/TweenMax.min.js?1"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/resizeable.js?1"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/joinable.js?2"></script>
-	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-api.js?1"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-api.js?2"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-toggles.js?1"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-widgets.js?1"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/tinymce/tinymce.min.js?{S_time}"></script>

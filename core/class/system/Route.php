@@ -37,11 +37,17 @@ class Route {
 	private $_route_regex = "";
 	private $_defaults = array('page' => 'index', 'method' => '', 'inPage' => "main", 'host' => false);
 	private static $_params = array();
+	private static $_errorRoute = array('page' => "error", 'inPage' => "main", 'method' => '');
+	private static $_notFound = array('page' => '{default}', 'inPage' => "main", 'method' => '');
 	private static $_secret = "route";
 	private static $_config = array();
 	private static $_lang = "";
 	private static $_langForce = "";
 	private static $_loaded = "";
+
+	final public static function setSecret($name) {
+		self::$_secret = $name;
+	}
 	
 	final public static function Config($get) {
 		if(is_array($get)) {
@@ -264,6 +270,20 @@ class Route {
 		return (isset($arr[$k]) && !empty($arr[$k]));
 	}
 
+	final public static function setError($ret) {
+		if(!is_array($ret)) {
+			$ret = array("response" => $ret);
+		}
+		self::$_errorRoute = $ret;
+	}
+
+	final public static function setNotFound($ret) {
+		if(!is_array($ret)) {
+			$ret = array("response" => $ret);
+		}
+		self::$_notFound = $ret;
+	}
+
 	final public static function Load($default = "") {
 		$uri = getenv(ROUTE_GET_URL);
 		$len = strlen($uri);
@@ -310,9 +330,13 @@ class Route {
 			}
 		}
 		if($uri!==false) {
-			$param = array('page' => "error", 'inPage' => "main", 'method' => '');
+			$param = self::$_errorRoute;
 		} else {
-			$param = array('page' => $default, 'inPage' => "main", 'method' => '');
+			$notFound = self::$_notFound;
+			foreach($notFound as $k => $v) {
+				$notFound[$k] = str_replace('{default}', $default, $v);
+			}
+			$param = $notFound;
 		}
 		self::$_params = array_merge(self::$_params, $param);
 		return array('params' => $param, 'route' => "");
