@@ -49,7 +49,7 @@ class Archer_Shield {
 		$modelName = get_class($model);
 		$getExclude = KernelArcher::excludeField("get", "Shield");
 		$first = $model->getFirst();
-		$h = $model->getComments();
+		$h = $model->getComments(true);
 		$h = array_values($h);
 		$head = "";
 		$sortBy = array();

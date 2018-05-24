@@ -25,7 +25,6 @@ die();
 class modules {
 	
 	private static $load_modules = false;
-	private static $load_hooks = false;
 	private static $columns = array();
 	private static $access_user = array('id', 'username', 'alt_name', 'level', 'email', 'time_reg', 'last_activ', 'activ', 'avatar');
 	
@@ -277,73 +276,6 @@ class modules {
 	
 	final public static function CheckVersion($check, $old = "") {
 		return cardinal::CheckVersion($check, $old);
-	}
-	
-	final private static function ExecHooks($module, $param = array()) {
-		try {
-			$dir = PATH_HOOKS;
-			if(is_dir($dir)) {
-				if($dh = dir($dir)) {
-					while(($file = $dh->read()) !== false) {
-						if($file != "index.".ROOT_EX && $file != "." && $file != ".." && strpos($file, $module) !== false) {
-							require_once($dir.$file);
-							$class = str_replace(".".ROOT_EX, "", $file);
-							if(class_exists($class)) {
-								$classes = new $class();
-								if(method_exists($classes, "init_hook")) {
-									$classes->init_hook($param);
-								}
-								unset($classes);
-							}
-						}
-					}
-				$dh->close();
-				}
-			}
-			return true;
-		} catch(Exception $ex) {
-			return false;
-		}
-	}
-	
-	final public static function load_hooks($module, $param = array()) {
-		if(defined("WITHOUT_DB")) {
-			if(file_exists(PATH_HOOKS."loader.".ROOT_EX)) {
-				$hooksLoad = array();
-				include(PATH_HOOKS."loader.".ROOT_EX);
-				if(!isset($hooksLoad[$module])) {
-					return false;
-				}
-				return self::ExecHooks($module, $param);
-			} else if(file_exists(PATH_HOOKS."loader.default.".ROOT_EX)) {
-				$hooksLoad = array();
-				include(PATH_HOOKS."loader.default.".ROOT_EX);
-				if(!isset($hooksLoad[$module])) {
-					return false;
-				}
-				return self::ExecHooks($module, $param);
-			} else {
-				return false;
-			}
-		}
-		if(is_bool(self::$load_hooks)) {
-			$cache = self::init_cache();
-			if(!$cache->exists("load_hooks")) {
-				$db = self::init_db();
-				$db->doquery("SELECT `module` FROM {{modules}} WHERE `activ` LIKE \"yes\" AND `file` LIKE \"application%".$module.".class.".ROOT_EX."\"", true);
-				self::$load_hooks = array();
-				while($row = $db->fetch_assoc()) {
-					self::$load_hooks[$row['module']] = true;
-				}
-				$cache->set("load_hooks", self::$load_hooks);
-			} else {
-				self::$load_hooks = $cache->get("load_hooks");
-			}
-		}
-		if(!isset(self::$load_hooks[$module])) {
-			return false;
-		}
-		return self::ExecHooks($module, $param);
 	}
 	
 	final public static function load_modules($file, $load) {
@@ -608,7 +540,12 @@ class modules {
 		$exists = $db->getTable($table_name);
 		foreach($fields as $k => $v) {
 			if($exists && !in_array($k, $db->getTable($table_name))) {
-				$db->query("ALTER TABLE {{".$table_name."}} ADD `".$k."` ".(strpos($v, "CHARACTER")!==false ? $v : $v." CHARACTER SET ".self::get_config("db", "charset")." COLLATE ".self::get_config("db", "charset")."_general_ci"));
+				$comment = "";
+				if(isset($v['comment'])) {
+					$comment = $v['comment'];
+					$v = $v['value'];
+				}
+				$db->query("ALTER TABLE {{".$table_name."}} ADD `".$k."` ".(strpos($v, "CHARACTER")!==false ? $v : $v." CHARACTER SET ".self::get_config("db", "charset")." COLLATE ".self::get_config("db", "charset")."_general_ci").(!empty($comment) ? " COMMENT ".db::escape($comment) : ""));
 			}
 		}
 		return true;
@@ -636,7 +573,12 @@ class modules {
 				$v = implode(" ", $v);
 			}
 			if($exists && in_array($or, $exists)) {
-				$db->query("ALTER TABLE {{".$table_name."}} CHANGE `".$or."` `".$k."` ".(strpos($v, "CHARACTER")!==false ? $v : $v." CHARACTER SET ".self::get_config("db", "charset")." COLLATE ".self::get_config("db", "charset")."_general_ci"));
+				$comment = "";
+				if(isset($v['comment'])) {
+					$comment = $v['comment'];
+					$v = $v['value'];
+				}
+				$db->query("ALTER TABLE {{".$table_name."}} CHANGE `".$or."` `".$k."` ".(strpos($v, "CHARACTER")!==false ? $v : $v." CHARACTER SET ".self::get_config("db", "charset")." COLLATE ".self::get_config("db", "charset")."_general_ci").(!empty($comment) ? " COMMENT ".db::escape($comment) : ""));
 			}
 		}
 		return true;

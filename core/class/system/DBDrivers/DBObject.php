@@ -339,17 +339,17 @@ class DBObject implements ArrayAccess {
 		return $this->allowEmptyAttr;
 	}
 	
-	final public function getComment($table, $name = "", $empty = false) {
+	final public function getComment($table, $name = "", $empty = false, $readOnly = false) {
 		if(empty($name)) {
 			$name = $table;
 			$table = $this->loadedTable;
 		}
 		$this->getAttributes($table);
-		if(isset($this->pseudoFields[$name]) || (isset($this->Attributes[$name]) && isset($this->Attributes[$name]["comment"]))) {
+		if($readOnly || isset($this->pseudoFields[$name]) || (isset($this->Attributes[$name]) && isset($this->Attributes[$name]["comment"]))) {
 			if($empty === false) {
-				return (defined("ADMINCP_DIRECTORY") ? "{L_\"" : "").(!empty($this->Attributes[$name]["comment"]) ? $this->Attributes[$name]["comment"] : $name).(defined("ADMINCP_DIRECTORY") ? "\"}" : "");
+				return (defined("ADMINCP_DIRECTORY") ? "{L_\"" : "").(!$readOnly && !empty($this->Attributes[$name]["comment"]) ? $this->Attributes[$name]["comment"] : $name).(defined("ADMINCP_DIRECTORY") ? "\"}" : "");
 			} else {
-				return (defined("ADMINCP_DIRECTORY") ? "{L_\"" : "").(!empty($this->Attributes[$name]["comment"]) ? $this->Attributes[$name]["comment"] : "").(defined("ADMINCP_DIRECTORY") ? "\"}" : "");
+				return (defined("ADMINCP_DIRECTORY") ? "{L_\"" : "").(!$readOnly && !empty($this->Attributes[$name]["comment"]) ? $this->Attributes[$name]["comment"] : "").(defined("ADMINCP_DIRECTORY") ? "\"}" : "");
 			}
 		} else {
 			errorHeader();
@@ -358,12 +358,12 @@ class DBObject implements ArrayAccess {
 		}
 	}
 	
-	final public function getComments() {
+	final public function getComments($getOnlyAlt = false) {
 		$table = $this->loadedTable;
 		$ret = array();
 		$obj = $this->getArray();
 		foreach($obj as $field => $val) {
-			$ret[$field] = $this->getComment($table, $field);
+			$ret[$field] = $this->getComment($table, $field, false, $getOnlyAlt);
 		}
 		return $ret;
 	}
@@ -540,14 +540,22 @@ class DBObject implements ArrayAccess {
 		return $save.$data.$save;
 	}
 	
-	final public function AddToSelect($field) {
+	final public function AddToSelect($field, $altName = "") {
 		if(is_array($field) && sizeof($field)>0) {
 			$arr = array_values($field);
 			for($i=0;$i<sizeof($arr);$i++) {
-				$this->selectAdd[$arr[$i]] = $arr[$i];
+				$subname = (empty($altName) ? $arr[$i] : " AS ".$altName);
+				if(substr($arr[$i], 0, 1)!="(" && substr($arr[$i], -1, 1)!=")") {
+					$arr[$i] = "(".$arr[$i].")";
+				}
+				$this->selectAdd[$arr[$i]] = $arr[$i].$subname;
 			}
 		} else if(is_string($field) && !empty($field)) {
-			$this->selectAdd[$field] = $field;
+			$subname = (empty($altName) ? $field : " AS ".$altName);
+			if(substr($field, 0, 1)!="(" && substr($field, -1, 1)!=")") {
+				$field = "(".$field.")";
+			}
+			$this->selectAdd[$field] = $field.$subname;
 		} else {
 			errorHeader();
 			throw new Exception("First parameter not array or string");
@@ -635,6 +643,20 @@ class DBObject implements ArrayAccess {
 				file_put_contents($fileCache, $cacheData);
 			}
 			return $arr;
+		}
+	}
+
+	final public function __get($k) {
+		$attr = array();
+		$arr = $this->getArray();
+		foreach($arr as $field => $v) {
+			$r = $this->getAttribute($field, "comment");
+			$attr[$r] = $field;
+		}
+		if(isset($attr[$k]) && isset($this->{$attr[$k]})) {
+			return $this->{$attr[$k]};
+		} else {
+			return null;
 		}
 	}
 

@@ -96,7 +96,7 @@ class SettingUser extends Core {
 		}
 		file_put_contents(PATH_MEDIA."config.lang.".ROOT_EX, $lang);
 		cardinal::RegAction("Внесение изменений в настройки сайта V2");
-		setcookie("SaveDone", "1", time()+10);
+		setcookie("SaveDone", "1", time()+100);
 		location("./?pages=SettingUser");
 	}
 
@@ -116,11 +116,12 @@ class SettingUser extends Core {
 		}
 		sortByKey(self::$head);
 		sortByKey(self::$html);
+		templates::accessNull();
 		$tmp = str_replace("{head}", (sizeof(self::$head)>1 ? implode("", self::$head) : ""), $tmp);
 		$tmp = str_replace("{data}", implode("", self::$html), $tmp);
 		$name = lang::get_lang("sitename");
 		$descr = lang::get_lang("s_description");
-		$tmp = str_replace("{settingTitle}", (empty(self::$title) ? "{L_'Настройки'}" : self::$title), $tmp);
+		$this->title((empty(self::$title) ? "{L_'Настройки'}" : self::$title));
 		$tmp = str_replace("{sitename}", htmlspecialchars($name), $tmp);
 		$tmp = str_replace("{sitename}", htmlspecialchars($descr), $tmp);
 		$this->Prints($tmp, true);

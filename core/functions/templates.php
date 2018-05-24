@@ -300,6 +300,9 @@ function headers($array = array(), $clear = false, $no_js = false) {
 		$param = array();
 		$dprm = Route::param();
 		foreach($dprm as $k => $v) {
+			if(is_object($v)) {
+				$v = get_class($v);
+			}
 			$param[] = "\"".$k."\":\"".$v."\"";
 		}
 		unset($dprm);

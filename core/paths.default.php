@@ -56,9 +56,6 @@ if(!defined("PATH_GLOBAL")) {
 if(!defined("PATH_AUTOLOADS")) {
 	define("PATH_AUTOLOADS", ROOT_PATH."application".DS."autoload".DS);
 }
-if(!defined("PATH_HOOKS")) {
-	define("PATH_HOOKS", ROOT_PATH."application".DS."hooks".DS);
-}
 if(!defined("PATH_LOAD_LIBRARY")) {
 	define("PATH_LOAD_LIBRARY", ROOT_PATH."application".DS."library".DS);
 }

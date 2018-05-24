@@ -24,9 +24,6 @@ class ArcherExample extends modules {
 	}
 
 	public function RebuildShields($table, $page, $model, $tpl) {
-		if(!defined("DisableSort")) {
-			define("DisableSort", "0"); // отключение сортировки
-		}
 		return array($table, $page, $model, $tpl);
 	}
 

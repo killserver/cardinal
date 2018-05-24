@@ -95,9 +95,9 @@ class cardinal {
 			$version = intval(str_replace(".", "0", $isChecked));
 			if(!defined("INTVERSION")) {
 				if(strlen($checked) > strlen($version)) {
-					$version = int_pad($version, strlen($checked));
+					$version = self::int_pad($version, strlen($checked));
 				} else if(strlen($checked) < strlen($version)) {
-					$checked = int_pad($checked, strlen($version));
+					$checked = self::int_pad($checked, strlen($version));
 				}
 			}
 			$if = $checked>$version;

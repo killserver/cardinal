@@ -87,36 +87,44 @@ class Core {
 		}
 	}
 	
-	private function ParseDirSkins($dir, $parse = 1, $getData = false) {
+	protected function ParseDirSkins($dir, $getData = false, $parse = 1) {
 		$skins = array();
 		$default_headers = array(
 			'Name' => 'Name',
 			'Description' => 'Description',
 			'Image' => 'Image',
 			'Changelog' => 'Changelog',
+			"Author" => "Author",
 			'Version' => 'Version',
 			"Screenshots" => "Screenshots",
 		);
+		if(is_array($getData)) {
+			$default_headers = array_merge($default_headers, $getData);
+		}
 		if(is_dir($dir)) {
 			if($dh = dir($dir)) {
 				while(($file = $dh->read()) !== false) {
+					if($file=="." || $file=="..") {
+						continue;
+					}
 					if(is_dir($dir.$file) && $parse == 1) {
-						$arrs = $this->ParseDirSkins($dir.$file, 2);
-						if(in_array("main.tpl", $arrs)) {
-							if($getData) {
-								$file = $this->get_file_data($dir.$file, $default_headers);
-								$file['dir'] = $dir;
-								$file['file'] = $file;
-							}
-							$skins[] = $file;
-						}
-					} else if($parse == 2) {
+						$arrs = $this->ParseDirSkins($dir.$file.DS, $getData, 2);
+						$skins = array_merge($skins, $arrs);
+					} else if($parse == 2 && strpos($file, "main.tpl")!==false) {
 						if($getData) {
-							$file = $this->get_file_data($dir.$file, $default_headers);
-							$file['dir'] = $dir;
-							$file['file'] = $file;
+							if(file_exists($dir.DS."main.tpl")) {
+								$files = $this->get_file_data($dir.DS."main.tpl", $default_headers);
+							} else {
+								$files = array(
+									'Name' => basename($dir),
+								);
+							}
+							$files['dir'] = $dir;
+							$files['orName'] = basename($dir);
+							$files['file'] = $file;
+							$file = $files;
 						}
-						$skins[] = $file;
+						$skins = array_merge($skins, array($file));
 					}
 				}
 			$dh->close();
@@ -256,6 +264,7 @@ class Core {
 					}
 					$is_now = str_replace(array("{C_default_http_host}", ADMINCP_DIRECTORY."/?"), "", $datas[$i][$is]['link']);
 					templates::assign_vars(array(
+						"existSub" => ($type=="cat"&&sizeof($datas)>1 ? "true" : "false"),
 						"value" => $datas[$i][$is]['title'],
 						"link" => $datas[$i][$is]['link'],
 						"is_now" => (($is_now==$now) ? "1" : "0"),

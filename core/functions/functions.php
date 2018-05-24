@@ -545,7 +545,9 @@ function var_debug() {
 	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "<b style=\"color:#80f;\">Called:</b> ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "");
 	echo "<code>";
 	if(sizeof($list)>0) {
-		echo call_user_func_array("var_debug_prepare", $list);
+		foreach($list as $v) {
+			echo call_user_func_array("var_debug_prepare", array($v));
+		}
 	}
 	echo "</code>";
 	echo '</pre>';

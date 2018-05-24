@@ -62,6 +62,53 @@ class lang implements ArrayAccess {
 		}
 	return $langs;
 	}
+
+	final public static function in_array_strpos($str, $arr, $rebuild = false) {
+		$ret = false;
+		$arr = array_values($arr);
+		for($i=0;$i<sizeof($arr);$i++) {
+			if($rebuild) {
+				$res = strpos($arr[$i], $str)!==false;
+			} else {
+				$res = strpos($str, $arr[$i])!==false;
+			}
+			if($res) {
+				$ret = true;
+				break;
+			}
+		}
+		return $ret;
+	}
+
+	final private static function read_dir($dir, $type = "all", $exclusions = array()) {
+		if(function_exists("read_dir")) {
+			return read_dir($dir, $type, false, false, $exclusions);
+		}
+		$exclusions[] = ".";
+		$exclusions[] = "..";
+		$files = array();
+		if(is_dir($dir)) {
+			if($dh = dir($dir)) {
+				while(($file = $dh->read()) !== false) {
+					if(self::in_array_strpos($file, $exclusions, true)) {
+						continue;
+					}
+					if(($type=="dir" || is_file($dir.$file)) && (($type=="dir" || $type=="all") || (is_array($type) ? self::in_array_strpos($file, $type) : strpos($file, $type)!==false)) && $file!="." && $file!="..") {
+						$files[] = $file;
+					}
+				}
+			$dh->close();
+			}
+		}
+	return $files;
+	}
+	
+	final private static function nsubstr($text, $start, $end = "") {
+		if(empty($end)) {
+			$end = strlen($text);
+		}
+		return substr($text, $start, $end);
+	}
 	
 	final public static function support($clear = false) {
 		$arr = array();
@@ -74,7 +121,7 @@ class lang implements ArrayAccess {
 			}
 		} else {
 			$dirLangs = defined("PATH_CACHE_LANGS") ? PATH_CACHE_LANGS : dirname(__FILE__).DIRECTORY_SEPARATOR;
-			$dirLangs = read_dir($dirLangs, ".db");
+			$dirLangs = self::read_dir($dirLangs, ".db");
 			$arrLangs = array();
 			for($i=0;$i<sizeof($dirLangs);$i++) {
 				if(strpos($dirLangs[$i], "lang")===false) {
@@ -86,7 +133,7 @@ class lang implements ArrayAccess {
 			$arr = array_merge($arr, $arrLangs);
 		}
 		$pathLangs = (!defined("PATH_LANGS") ? dirname(__FILE__).DIRECTORY_SEPARATOR."lang".DIRECTORY_SEPARATOR : PATH_LANGS);
-		$langs = read_dir($pathLangs, "dir");
+		$langs = self::read_dir($pathLangs, "dir");
 		$arrLangs = array();
 		for($t=0;$t<sizeof($langs);$t++) {
 			if(strpos($langs[$t], ".html")===false && strpos($langs[$t], ".php")===false) {
@@ -97,7 +144,7 @@ class lang implements ArrayAccess {
 		$arr = array_values($arr);
 		if($clear) {
 			for($i=0;$i<sizeof($arr);$i++) {
-				$arr[$i] = nsubstr($arr[$i], 4, -3);
+				$arr[$i] = self::nsubstr($arr[$i], 4, -3);
 			}
 		}
 		return $arr;

@@ -70,19 +70,28 @@ class config implements ArrayAccess {
 				$configWDB = unserialize($file);
 			}
 			if(!empty($valTh)) {
-				if(!isset($configWDB[$name])) {
+				if(!isset($configWDB[$name]) || !is_array($configWDB[$name][$val])) {
 					$configWDB[$name] = array();
 				}
-				if(!isset($configWDB[$name][$val])) {
+				if(!isset($configWDB[$name][$val]) || !is_array($configWDB[$name][$val])) {
 					$configWDB[$name][$val] = array();
+				}
+				if(!isset($configWDB[$name][$val][$valS]) || !is_array($configWDB[$name][$val][$valS])) {
+					$configWDB[$name][$val][$valS] = array();
 				}
 				$configWDB[$name][$val][$valS] = $valTh;
 			} elseif(!empty($valS)) {
-				if(!isset($configWDB[$name])) {
+				if(!isset($configWDB[$name]) || !is_array($configWDB[$name])) {
 					$configWDB[$name] = array();
+				}
+				if(!isset($configWDB[$name][$val]) || !is_array($configWDB[$name][$val])) {
+					$configWDB[$name][$val] = array();
 				}
 				$configWDB[$name][$val] = $valS;
 			} else {
+				if(!isset($configWDB[$name]) || !is_array($configWDB[$name][$val])) {
+					$configWDB[$name] = array();
+				}
 				$configWDB[$name] = $val;
 			}
 			if(file_exists($filePATH)) {
@@ -174,23 +183,78 @@ class config implements ArrayAccess {
 		}
 	}
 	
-	final public static function Exists() {
-		if(func_num_args() == 0 || func_num_args() > 2) {
+	final public static function Append() {
+		if(func_num_args()<2) {
 			return false;
 		}
 		$list = func_get_args();
 		if(sizeof($list)==1 && strpos($list[0], ".")!==false) {
 			$list = explode(".", $list[0]);
 		}
-		if(isset($list[1]) && !empty($list[1]) && isset($list[2]) && !empty($list[2]) && isset(self::$config[$list[0]]) && isset(self::$config[$list[0]][$list[1]]) && isset(self::$config[$list[0]][$list[1]][$list[2]])) {
+		if(sizeof($list)==2) {
+			if(is_array(self::$config[$list[0]])) {
+				if(!is_array($list[1])) {
+					$list[1] = array($list[1]);
+				}
+				self::$config[$list[0]] = array_merge(self::$config[$list[0]], $list[1]);
+			} else if(is_string(self::$config[$list[0]]) || is_numeric(self::$config[$list[0]])) {
+				if(is_array($list[1])) {
+					$list[1] = implode(" ", $list[1]);
+				}
+				self::$config[$list[0]] .= $list[1];
+			} else {
+				self::$config[$list[0]] = $list[1];
+			}
 			return true;
-		} else if(isset($list[1]) && !empty($list[1]) && isset(self::$config[$list[0]]) && isset(self::$config[$list[0]][$list[1]])) {
-			return true;
-		} else if(isset(self::$config[$list[0]])) {
+		} else if(sizeof($list)==3) {
+			if(!is_array(self::$config[$list[0]])) {
+				self::$config[$list[0]] = array();
+			}
+			if(!is_array(self::$config[$list[0]][$list[1]])) {
+				self::$config[$list[0]][$list[1]] = array();
+			}
+			if(is_array(self::$config[$list[0]])) {
+				if(!is_array($list[1])) {
+					$list[1] = array($list[1]);
+				}
+				self::$config[$list[0]] = array_merge(self::$config[$list[0]], $list[1]);
+			} else if(is_string(self::$config[$list[0]]) || is_numeric(self::$config[$list[0]])) {
+				if(is_array($list[1])) {
+					$list[1] = implode(" ", $list[1]);
+				}
+				self::$config[$list[0]] .= $list[1];
+			} else {
+				self::$config[$list[0]][$list[1]] = $list[2];
+			}
 			return true;
 		} else {
 			return false;
 		}
+	}
+	
+	final public static function Exists() {
+		if(func_num_args() == 0 || func_num_args() > 3) {
+			return false;
+		}
+		$list = func_get_args();
+		if(sizeof($list)==1 && strpos($list[0], ".")!==false) {
+			$list = explode(".", $list[0]);
+		}
+		$ret = false;
+		if(isset($list[1]) && !empty($list[1]) && isset($list[2]) && !empty($list[2])) {
+			if(isset(self::$config[$list[0]]) && isset(self::$config[$list[0]][$list[1]]) && isset(self::$config[$list[0]][$list[1]][$list[2]])) {
+				$ret = true;
+			}
+		} else if(isset($list[1]) && !empty($list[1])) {
+			if(isset(self::$config[$list[0]]) && isset(self::$config[$list[0]][$list[1]])) {
+				$ret = true;
+			}
+		} else if(isset(self::$config[$list[0]])) {
+			$ret = true;
+		} else {
+			$ret = false;
+		}
+		return $ret;
 	}
 	
 	final public static function SetDefault($def) {
@@ -198,26 +262,30 @@ class config implements ArrayAccess {
 	}
 
 	final public static function Select() {
-		if(func_num_args() == 0 || func_num_args() > 2) {
+		if(func_num_args() == 0 || func_num_args() > 3) {
 			return false;
 		}
 		$list = func_get_args();
 		if(sizeof($list)==1 && strpos($list[0], ".")!==false) {
 			$list = explode(".", $list[0]);
 		}
-		if(isset($list[1]) && !empty($list[1]) && isset($list[2]) && !empty($list[2]) && isset(self::$config[$list[0]]) && isset(self::$config[$list[0]][$list[1]]) && isset(self::$config[$list[0]][$list[1]][$list[2]])) {
-			return self::$config[$list[0]][$list[1]][$list[2]];
-		} else if(isset($list[1]) && !empty($list[1]) && isset(self::$config[$list[0]]) && isset(self::$config[$list[0]][$list[1]])) {
-			return self::$config[$list[0]][$list[1]];
+		$ret = self::$default;
+		if(isset($list[0]) && !empty($list[0]) && isset($list[1]) && !empty($list[1]) && isset($list[2]) && !empty($list[2])) {
+			if(isset(self::$config[$list[0]]) && isset(self::$config[$list[0]][$list[1]]) && isset(self::$config[$list[0]][$list[1]][$list[2]])) {
+				$ret = self::$config[$list[0]][$list[1]][$list[2]];
+			}
+		} else if(isset($list[1]) && !empty($list[1])) {
+			if(isset(self::$config[$list[0]]) && isset(self::$config[$list[0]][$list[1]])) {
+				$ret = self::$config[$list[0]][$list[1]];
+			}
 		} else if(isset(self::$config[$list[0]])) {
-			return self::$config[$list[0]];
-		} else {
-			return self::$default;
+			$ret = self::$config[$list[0]];
 		}
+		return $ret;
 	}
 
 	final public static function Del() {
-		if(func_num_args() == 0 || func_num_args() > 2) {
+		if(func_num_args() == 0 || func_num_args() > 3) {
 			return false;
 		}
 		$list = func_get_args();
@@ -241,20 +309,11 @@ class config implements ArrayAccess {
 		}
 	}
 
-	final public static function Update($name, $data = "") {
+	final public static function Update() {
 		if(defined("WITHOUT_DB") || !class_exists("db") || !method_exists("db", "connected") || !db::connected()) {
-			/*if(strpos($data, ".")!==false) {
-				$exp = explode(".", $data);
-				if(sizeof($exp)==3) {
-					return self::initWithoutDB("edit", $name, $exp[0], $exp[1], $exp[2]);
-				} else if(sizeof($exp)==2) {
-					return self::initWithoutDB("edit", $name, $exp[0], $exp[1]);
-				} else {
-					return self::initWithoutDB("edit", $name, $exp[0]);
-				}
-			} else {*/
-				return self::initWithoutDB("edit", $name, $data);
-			/*}*/
+			$data = func_get_args();
+			array_unshift($data, "edit");
+			return call_user_func_array("self::initWithoutDB", $data);
 		}
 		db::doquery("REPLACE INTO {{config}} SET `config_value` = \"".$data."\", `config_name` = \"".$name."\"");
 		cache::Delete("config");
@@ -269,17 +328,25 @@ class config implements ArrayAccess {
 		if(strpos($val, ".")!==false) {
 			$val = explode(".", $val);
 		}
-		if(is_array($val) && sizeof($val)==3 && isset(self::$config[$val[0]]) && isset(self::$config[$val[0]][$val[1]]) && isset(self::$config[$val[0]][$val[1]][$val[2]])) {
-			return self::$config[$val[0]][$val[1]][$val[2]];
-		} else if(is_array($val) && sizeof($val)==2 && isset(self::$config[$val[0]]) && isset(self::$config[$val[0]][$val[1]])) {
-			return self::$config[$val[0]][$val[1]];
-		} else if(is_array($val) && sizeof($val)==1 && isset(self::$config[$val[0]])) {
-			return self::$config[$val[0]];
-		} else if(!empty($val) && isset(self::$config[$val])) {
-			return self::$config[$val];
-		} else {
-			return false;
+		$ret = false;
+		if(is_array($val) && sizeof($val)==3) {
+			if(isset(self::$config[$val[0]]) && isset(self::$config[$val[0]][$val[1]]) && isset(self::$config[$val[0]][$val[1]][$val[2]])) {
+				$ret = self::$config[$val[0]][$val[1]][$val[2]];
+			}
+		} else if(is_array($val) && sizeof($val)==2) {
+			if(isset(self::$config[$val[0]]) && isset(self::$config[$val[0]][$val[1]])) {
+				$ret = self::$config[$val[0]][$val[1]];
+			}
+		} else if(is_array($val) && sizeof($val)==1) {
+			if(isset(self::$config[$val[0]])) {
+				$ret = self::$config[$val[0]];
+			}
+		} else if(!empty($val)) {
+			if(isset(self::$config[$val])) {
+				$ret = self::$config[$val];
+			}
 		}
+		return $ret;
 	}
 	
 	final public function __set($name, $val) {

@@ -113,7 +113,7 @@ if(!$is_file && empty($file)) {
 	if($class == "page") {
 		view_pages($page);
 	}
-	if(class_exists($class)) {
+	if(is_object($class) || class_exists($class)) {
 		$page = new $class();
 		if(!empty($method) && method_exists($page, $method)) {
 			call_user_func_array(array(&$page, $method), $langPanel);

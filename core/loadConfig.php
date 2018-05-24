@@ -52,99 +52,102 @@ function errorHeader() {
 	}
 }
 
+
 $host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua");
+$protocol = "http";
+if(
+	   (isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+	|| (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && !empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')
+	|| (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && !empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] == 'on')
+	|| (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
+	|| (isset($_SERVER['HTTP_X_FORWARDED_PORT']) && $_SERVER['HTTP_X_FORWARDED_PORT'] == 443)
+	|| (isset($_SERVER['REQUEST_SCHEME']) && $_SERVER['REQUEST_SCHEME'] == 'https')
+	|| (isset($_SERVER['CF_VISITOR']) && $_SERVER['CF_VISITOR'] == '{"scheme":"https"}')
+	|| (isset($_SERVER['HTTP_CF_VISITOR']) && $_SERVER['HTTP_CF_VISITOR'] == '{"scheme":"https"}')
+) {
+	$protocol = "https";
+}
+$hostMD5 = substr(md5($host), 0, 6);
+if(isset($_SERVER['SCRIPT_NAME'])) {
+	$link = str_replace(array("index.".ROOT_EX, "install.".ROOT_EX, ADMINCP_DIRECTORY."/"), "", $_SERVER['SCRIPT_NAME']);
+} else {
+	$link = "/";
+}
+
+
+
+
 $config = array(
 	"charset" => "utf-8",
 );
 $config = execEvent("before_load_config", $config);
 if(file_exists(PATH_MEDIA."config.client.".ROOT_EX)) {
-	if(is_writable(PATH_MEDIA."config.client.".ROOT_EX)) {
-		chmod(PATH_MEDIA."config.client.".ROOT_EX, 0664);
+	if(!is_writable(PATH_MEDIA."config.client.".ROOT_EX)) {
+		@chmod(PATH_MEDIA."config.client.".ROOT_EX, 0664);
 	}
 	require_once(PATH_MEDIA."config.client.".ROOT_EX);
 }
-if(!defined("WITHOUT_DB") && file_exists(PATH_MEDIA."config.".ROOT_EX) && file_exists(PATH_MEDIA."db.".ROOT_EX)) {
+if(file_exists(PATH_MEDIA."config.global.".ROOT_EX)) {
 	require_once(PATH_MEDIA."config.global.".ROOT_EX);
-	require_once(PATH_MEDIA."config.".ROOT_EX);
-	if(file_exists(PATH_MEDIA."config.install.".ROOT_EX)) {
-		require_once(PATH_MEDIA."config.install.".ROOT_EX);
-	}
-	if(file_exists(PATH_MEDIA."config.".str_replace("www.", "", $host).".".ROOT_EX)) {
-		require_once(PATH_MEDIA."config.".str_replace("www.", "", $host).".".ROOT_EX);
-	}
-	require_once(PATH_MEDIA."db.".ROOT_EX);
-	if(file_exists(PATH_MEDIA."db.".str_replace("www.", "", $host).".".ROOT_EX)) {
-		require_once(PATH_MEDIA."db.".str_replace("www.", "", $host).".".ROOT_EX);
-	}
-} else {
-	if(!defined("WITHOUT_DB")) {
-		define("INSTALLER", true);
-	}
-	require_once(PATH_MEDIA."config.global.".ROOT_EX);
-	$protocol = "http";
-	if(
-		   (isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-		|| (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && !empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')
-		|| (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && !empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] == 'on')
-		|| (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
-		|| (isset($_SERVER['HTTP_X_FORWARDED_PORT']) && $_SERVER['HTTP_X_FORWARDED_PORT'] == 443)
-		|| (isset($_SERVER['REQUEST_SCHEME']) && $_SERVER['REQUEST_SCHEME'] == 'https')
-		|| (isset($_SERVER['CF_VISITOR']) && $_SERVER['CF_VISITOR'] == '{"scheme":"https"}')
-		|| (isset($_SERVER['HTTP_CF_VISITOR']) && $_SERVER['HTTP_CF_VISITOR'] == '{"scheme":"https"}')
-	) {
-		$protocol = "https";
-	}
-	if(defined("WITHOUT_DB")) {
-		$hostMD5 = substr(md5($host), 0, 6);
-		define("COOK_USER", "username_".$hostMD5);
-		define("COOK_PASS", "password_".$hostMD5);
-		define("COOK_ADMIN_USER", "admin_username_".$hostMD5);
-		define("COOK_ADMIN_PASS", "admin_password_".$hostMD5);
-		if(file_exists(PATH_MEDIA."config.default.".ROOT_EX)) {
-			require_once(PATH_MEDIA."config.default.".ROOT_EX);
-			if(defined("VERSION")) {
-				define("START_VERSION", VERSION);
-			}
-			if(isset($_SERVER['SCRIPT_NAME'])) {
-				$link = str_replace(array("index.".ROOT_EX, "install.".ROOT_EX, ADMINCP_DIRECTORY."/"), "", $_SERVER['SCRIPT_NAME']);
-			} else {
-				$link = "/";
-			}
-			$config = array_merge($config, array(
-				"default_http_local" => $link,
-				"default_http_hostname" => $host,
-				"default_http_host" => $protocol."://".$host.$link,
-			));
-			unset($link);
-		}
-		if(file_exists(PATH_MEDIA."config.".ROOT_EX)) {
-			require_once(PATH_MEDIA."config.".ROOT_EX);
-		}
-		if(file_exists(PATH_MEDIA."config.install.".ROOT_EX)) {
-			require_once(PATH_MEDIA."config.install.".ROOT_EX);
-		}
-		if(file_exists(PATH_MEDIA."config.".str_replace("www.", "", $host).".".ROOT_EX)) {
-			require_once(PATH_MEDIA."config.".str_replace("www.", "", $host).".".ROOT_EX);
-		}
-		if(file_exists(PATH_MEDIA."db.".ROOT_EX)) {
-			require_once(PATH_MEDIA."db.".ROOT_EX);
-		}
-		if(file_exists(PATH_MEDIA."db.".str_replace("www.", "", $host).".".ROOT_EX)) {
-			require_once(PATH_MEDIA."db.".str_replace("www.", "", $host).".".ROOT_EX);
-		}
-	}
-	if(!defined("WITHOUT_DB") && !defined("IS_INSTALLER") && (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], "install")===false)) {
-		if(isset($_SERVER['PHP_SELF'])) {
-			$link = str_replace(array("index.".ROOT_EX, "install.".ROOT_EX, ADMINCP_DIRECTORY."/"), "", $_SERVER['PHP_SELF']);
-		} else {
-			$link = "/";
-		}
-		header("Location: ".(isset($_SERVER['HTTP_HOST']) ? $protocol."://".$_SERVER['HTTP_HOST'] : "").$link."install.".ROOT_EX);
-		unset($link);
-		die();
-	}
 }
 
+
+
+if(!defined("COOK_USER")) {
+	define("COOK_USER", "username_".$hostMD5);
+}
+if(!defined("COOK_PASS")) {
+	define("COOK_PASS", "password_".$hostMD5);
+}
+if(!defined("COOK_ADMIN_USER")) {
+	define("COOK_ADMIN_USER", "admin_username_".$hostMD5);
+}
+if(!defined("COOK_ADMIN_PASS")) {
+	define("COOK_ADMIN_PASS", "admin_password_".$hostMD5);
+}
+if(defined("VERSION") && !defined("START_VERSION")) {
+	define("START_VERSION", VERSION);
+}
+if(!defined("WITHOUT_DB")) {
+	define("INSTALLER", true);
+}
+
+
+
+if(defined("WITHOUT_DB")) {
+	$config = array_merge($config, array(
+		"default_http_local" => $link,
+		"default_http_hostname" => $host,
+		"default_http_host" => $protocol."://".$host.$link,
+	));
+	unset($link);
+}
+if(!defined("WITHOUT_DB") && !defined("IS_INSTALLER") && (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], "install")===false)) {
+	if(isset($_SERVER['PHP_SELF'])) {
+		$link = str_replace(array("index.".ROOT_EX, "install.".ROOT_EX, ADMINCP_DIRECTORY."/"), "", $_SERVER['PHP_SELF']);
+	} else {
+		$link = "/";
+	}
+	header("Location: ".(isset($_SERVER['HTTP_HOST']) ? $protocol."://".$_SERVER['HTTP_HOST'] : "").$link."install.".ROOT_EX);
+	unset($link);
+	die();
+}
+
+if(file_exists(PATH_MEDIA."config.".ROOT_EX)) {
+	require_once(PATH_MEDIA."config.".ROOT_EX);
+}
+if(file_exists(PATH_MEDIA."config.install.".ROOT_EX)) {
+	require_once(PATH_MEDIA."config.install.".ROOT_EX);
+}
+if(file_exists(PATH_MEDIA."config.".str_replace("www.", "", $host).".".ROOT_EX)) {
+	require_once(PATH_MEDIA."config.".str_replace("www.", "", $host).".".ROOT_EX);
+}
+if(file_exists(PATH_MEDIA."db.".ROOT_EX)) {
+	require_once(PATH_MEDIA."db.".ROOT_EX);
+}
+if(file_exists(PATH_MEDIA."db.".str_replace("www.", "", $host).".".ROOT_EX)) {
+	require_once(PATH_MEDIA."db.".str_replace("www.", "", $host).".".ROOT_EX);
+}
 if(file_exists(PATH_MEDIA."config.init.".ROOT_EX)) {
 	include_once(PATH_MEDIA."config.init.".ROOT_EX);
 }

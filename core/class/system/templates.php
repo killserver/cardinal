@@ -607,14 +607,18 @@ class templates {
      */
 	final private static function config($array) {
 		if(class_exists("config") && method_exists("config", "Select")) {
-			if(isset($array[2])) {
+			if(isset($array[3])) {
+				$isset = config::Select($array[1], $array[2], $array[3]);
+			} else if(isset($array[2])) {
 				$isset = config::Select($array[1], $array[2]);
 			} else {
 				$isset = config::Select($array[1]);
 			}
 		} else {
 			global $config;
-			if(isset($array[2])) {
+			if(isset($array[3])) {
+				$isset = (isset($config[$array[1]]) && isset($config[$array[1]][$array[2]]) && isset($config[$array[1]][$array[2]][$array[3]]) ? $config[$array[1]][$array[2]][$array[3]] : false);
+			} else if(isset($array[2])) {
 				$isset = (isset($config[$array[1]]) && isset($config[$array[1]][$array[2]]) ? $config[$array[1]][$array[2]] : false);
 			} else {
 				$isset = (isset($config[$array[1]]) ? $config[$array[1]] : false);
@@ -1743,34 +1747,31 @@ class templates {
 	final public static function load_templates($file, $charset = "", $dir = "null") {
 		$time = self::time();
 		if($dir == "null") {
-			if(!file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".".self::$typeTpl)) {
-				self::ErrorTemplate("File \"".ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".".self::$typeTpl."\" is not exists", ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".".self::$typeTpl);
-				die();
-			}
-			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".".self::$typeTpl);
+			$tpl = self::loadFile(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".".self::$typeTpl);
 		} elseif($dir=="admin") {
-			if(!file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."temp".DS.$file.".".self::$typeTpl)) {
-				self::ErrorTemplate("File \"".ROOT_PATH.ADMINCP_DIRECTORY.DS."temp".DS.$file.".".self::$typeTpl."\" is not exists", ROOT_PATH.ADMINCP_DIRECTORY.DS."temp".DS.$file.".".self::$typeTpl);
-				die();
-			}
-			$tpl = file_get_contents(ROOT_PATH.ADMINCP_DIRECTORY.DS."temp".DS.$file.".".self::$typeTpl);
+			$tpl = self::loadFile(ROOT_PATH.ADMINCP_DIRECTORY.DS."temp".DS.$file.".".self::$typeTpl);
 		} elseif(empty($dir)) {
-			if(!file_exists(ROOT_PATH."".self::$dir_skins.DS.$file.".".self::$typeTpl)) {
-				self::ErrorTemplate("File \"".ROOT_PATH."".self::$dir_skins.DS.$file.".".self::$typeTpl."\" is not exists", ROOT_PATH."".self::$dir_skins.DS.$file.".".self::$typeTpl);
-				die();
-			}
-			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.$file.".".self::$typeTpl);
+			$tpl = self::loadFile(ROOT_PATH."".self::$dir_skins.DS.$file.".".self::$typeTpl);
 		} else {
-			if(!file_exists(ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".".self::$typeTpl)) {
-				self::ErrorTemplate("File \"".ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".".self::$typeTpl."\" is not exists", ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".".self::$typeTpl);
-				die();
-			}
-			$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".".self::$typeTpl);
+			$tpl = self::loadFile(ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".".self::$typeTpl);
 		}
 		if(!empty($charset)) {
 			$tpl = iconv($charset, modules::get_config("charset"), $tpl);
 		}
 		self::$time += self::time()-$time;
+		return $tpl;
+	}
+
+	final private static function loadFile($file) {
+		try {
+			$tpl = file_get_contents($file);
+		} catch(Exception $ex) {
+			$tpl = false;
+		}
+		if($tpl===false) {
+			self::ErrorTemplate("File \"".$file."\" is not exists", $file);
+			die();
+		}
 		return $tpl;
 	}
 
@@ -1785,26 +1786,11 @@ class templates {
 	final public static function completed_assign_vars($file, $dir = "null") {
 		$time = self::time();
 		if($dir == "null") {
-			try {
-				$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".".self::$typeTpl);
-			} catch(Exception $ex) {
-				self::ErrorTemplate("File \"".ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".".self::$typeTpl."\" is not exists", ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".".self::$typeTpl);
-				die();
-			}
+			$tpl = self::loadFile(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".".self::$typeTpl);
 		} elseif(empty($dir)) {
-			try {
-				$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.$file.".".self::$typeTpl);
-			} catch(Exception $ex) {
-				self::ErrorTemplate("File \"".ROOT_PATH."".self::$dir_skins.DS.$file.".".self::$typeTpl."\" is not exists", ROOT_PATH."".self::$dir_skins.DS.$file.".".self::$typeTpl);
-				die();
-			}
+			$tpl = self::loadFile(ROOT_PATH."".self::$dir_skins.DS.$file.".".self::$typeTpl);
 		} else {
-			try {
-				$tpl = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".".self::$typeTpl);
-			} catch(Exception $ex) {
-				self::ErrorTemplate("File \"".ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".".self::$typeTpl."\" is not exists", ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".".self::$typeTpl);
-				die();
-			}
+			$tpl = self::loadFile(ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".".self::$typeTpl);
 		}
 		$tpl = self::comp_datas($tpl, $file);
 		if($dir == "null") {
@@ -1961,8 +1947,9 @@ class templates {
 			$tpl = self::callback_array("#\{L_()([a-zA-Z0-9\-_]+)()\[(.*?)\]\}#", ("templates::lang"), $tpl);
 			$tpl = self::callback_array("#\{L_([\"|']|)(.+?)(\\1)\}#", ("templates::lang"), $tpl);
 			$tpl = self::callback_array("#\{L_()(.+?)()\}#", ("templates::lang"), $tpl);
-			$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tpl);
-			$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_]+)\}#", ("templates::config"), $tpl);
+			$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_\.]+)\[([a-zA-Z0-9\-_]*?)\]\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tpl);
+			$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_\.]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tpl);
+			$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_\.]+)\}#", ("templates::config"), $tpl);
 			$tpl = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::user"), $tpl);
 			$tpl = self::callback_array("#\{U_([a-zA-Z0-9\-_]+)\}#", ("templates::user"), $tpl);
 			$tpl = self::callback_array("#\{D_([a-zA-Z0-9\-_]+)\}#", ("templates::define"), $tpl);

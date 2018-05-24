@@ -150,25 +150,6 @@ class Archer extends Core {
 				location("./?pages=Archer&type=".$typeUni);
 			break;
 			/*
-			Sorting data in database
-			*/
-			case "Sort":
-				$model = modules::loadModels("Model".$upFirst, $typeUni);
-				$model->SetTable($typeUni);
-				$model->SetLimit(-1);
-				$model->OrderByTo($orderBy, $orderTo);
-				if(isset($_GET['catid'])) {
-					$model->WhereTo("catId", intval($_GET['catid']));
-				}
-				if(!empty($andWhere) && !empty($typeWhere) && !empty($dataWhere)) {
-					$model->Where($andWhere, $typeWhere, $dataWhere);
-				} else if(!empty($andWhere) && !empty($dataWhere)) {
-					$model->Where($andWhere, $dataWhere);
-				}
-				$univ = new KernelArcher($typeUni, $model);
-				$univ->Sorting($model, array(&$this, "View"));
-			break;
-			/*
 			Show all data in database for type
 			*/
 			case "Shield":

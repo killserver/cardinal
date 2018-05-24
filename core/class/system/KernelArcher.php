@@ -18,6 +18,10 @@ class KernelArcher {
 			$this->localModel = $model;
 		}
 	}
+
+	public static function getCallback() {
+		return self::$callbackFunc;
+	}
 	
 	public static function callback($page, $name, $call = "") {
 		if(!empty($call)) {
@@ -338,6 +342,18 @@ class KernelArcher {
 			
 			$post = $this->rebuildData($post);
 			$files = $this->rebuildData($files);
+			/////////
+			///
+			if(isset($delArray[$k])) {
+				for($countFilesArray=0;$countFilesArray<sizeof($delArray[$k]);$countFilesArray++) {
+					if(!empty($delArray[$k][$countFilesArray]) && isset($v[$delArray[$k][$countFilesArray]])) {
+						unset($v[$delArray[$k][$countFilesArray]]);
+					}
+				}
+				$v = array_values($v);
+			}
+			///
+			/////////
 			if(!empty($files) && ($models->getAttribute($k, "type")=="imageAccess" || $models->getAttribute($k, "type")=="fileAccess" || $models->getAttribute($k, "type")=="file" || $models->getAttribute($k, "type")=="fileArray" || $models->getAttribute($k, "type")=="image" || $models->getAttribute($k, "type")=="imageArray")) {
 				$type = $files;
 				if((!isset($type['error']) || is_array($type['error'])) && (!isset($type['name']) || is_array($type['name']))) {
@@ -348,18 +364,6 @@ class KernelArcher {
 					}
 					$counter = 0;
 					$types = array();
-					/////////
-					///
-					if(isset($delArray[$k])) {
-						for($countFilesArray=0;$countFilesArray<sizeof($delArray[$k]);$countFilesArray++) {
-							if(!empty($delArray[$k][$countFilesArray]) && isset($v[$delArray[$k][$countFilesArray]])) {
-								unset($v[$delArray[$k][$countFilesArray]]);
-							}
-						}
-						$v = array_values($v);
-					}
-					///
-					/////////
 					foreach($type as $ks => $vs) {
 						$upload = $this->UploadFile($models, $ks, $selectId, $vs, (is_array($uploads) && isset($uploads[$k]) ? $uploads[$k] : $uploads), $models->getAttribute($k, "allowUpload"), $viewI);
 						if(!empty($upload) || !empty($v)) {
@@ -476,53 +480,6 @@ class KernelArcher {
 		$tpl = $this->TraceOn("Edit", $model, "ArcherAdd");
 		if(!empty($objTemplate)) {
 			$this->UnlimitedBladeWorks($objTemplate, $tpl, false);
-		}
-	}
-	
-	function Sorting($model, $objTemplate = "", $template = "") {
-		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
-			errorHeader();
-			throw new Exception("Error type kernal #1 parameter");
-			die();
-		}
-		$objName = get_class($model);
-		if(Arr::get($_GET, 'save', false)) {
-			$first = $model->getFirst();
-			$orderBy = Arr::get($_GET, 'orderBy', false);
-			if(!$orderBy) {
-				HTTP::echos("Проверьте корректность данных");
-				die();
-			}
-			$data = array_keys($_POST);
-			$data = explode("&", $data[0]);
-			for($i=0;$i<sizeof($data);$i++) {
-				db::doquery("UPDATE `".$objName."` SET `".$orderBy."` = ".($i+1)." WHERE `".$first."` = ".$data[$i], true);
-			}
-			cardinal::RegAction("Сортировка данных в Арчере. Модель \"".$objName."\"");
-			HTTP::echos("Успешно обновили сортировку");
-			die();
-		}
-		$model->SetTable($this->selectTable);
-		$list = $model->Select();
-		if($list===null) {
-			$list = $model;
-		}
-		if(is_object($list)) {
-			$subList = $list->getArray();
-			$subList = $this->callArr($subList, "SortingFunc", array($subList));
-			$this->AddBlocks("Sort", $subList, $objName, $objName."-".current($subList));
-		} elseif(is_array($list)) {
-			for($i=0;$i<sizeof($list);$i++) {
-				$subList = $list[$i]->getArray();
-				$subList = $this->callArr($subList, "SortingFunc", array($subList));
-				$this->AddBlocks("Sort", $subList, $objName, $objName."-".current($subList));
-			}
-		}
-		if(empty($template)) {
-			$template = $this->TraceOn("Sorting", $list, "ArcherSorting");
-		}
-		if(!empty($objTemplate)) {
-			$this->UnlimitedBladeWorks($objTemplate, $template, false);
 		}
 	}
 	
@@ -677,7 +634,11 @@ class KernelArcher {
 		} elseif(is_array($list)) {
 			for($i=0;$i<sizeof($list);$i++) {
 				$subList = $list[$i]->getArray();
-				$subList = $this->callArr($subList, "ShieldFunc", array($subList), array());
+				$first = current($subList);
+				if(is_null($first)) {
+					continue;
+				}
+				$subList = $this->callArr($subList, "ShieldFunc", array($subList), array(), false);
 				$this->AddBlocks("Mains", $subList, $objName, $objName."-".current($subList));
 			}
 		}
@@ -777,6 +738,13 @@ class KernelArcher {
 			case "decimal":
 			case "real":
 				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"number\" step=\"0.01\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
+			break;
+			case "radio":
+				$radio = explode(",", $val);
+				$radio = array_map("trim", $radio);
+				for($i=0;$i<sizeof($radio);$i++) {
+					$retType .= "<label for=\"".$name."\"><input type=\"radio\" id=\"".$name."\" name=\"".$name."\" class=\"cbr cbr-blue\"".($block ? " disabled=\"disabled\"" : "")."".(!empty($default) && $default==$radio[$i] ? " checked=\"checked\"" : "")." value=\"".htmlspecialchars($radio[$i])."\">".($open ? "{L_'" : "").htmlspecialchars($radio[$i]).($open ? "'}" : "")."</label>";
+				}
 			break;
 			case "enum":
 				$enum = explode(",", $val);

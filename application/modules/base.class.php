@@ -25,4 +25,3 @@ class base extends modules {
 	}
 
 }
-modules::load_hooks("base");
