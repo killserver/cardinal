@@ -296,9 +296,9 @@ class modules {
 			}
 		}
 		if(defined("WITHOUT_DB")) {
-			if(file_exists(PATH_CACHE_SYSTEM."modules.json")) {
+			if(file_exists(PATH_CACHE_USERDATA."modules.json")) {
 				$modulesLoad = array();
-				$files = file_get_contents(PATH_CACHE_SYSTEM."modules.json");
+				$files = file_get_contents(PATH_CACHE_USERDATA."modules.json");
 				try {
 					$json = json_decode($files, true);
 					$modulesLoad = array_merge($modulesLoad, $json);
@@ -586,8 +586,8 @@ class modules {
 
 	final public static function initialize($class, $path = "") {
 		$arr = array();
-		if(file_exists(PATH_CACHE_SYSTEM."modules.json")) {
-			$file = file_get_contents(PATH_CACHE_SYSTEM."modules.json");
+		if(file_exists(PATH_CACHE_USERDATA."modules.json")) {
+			$file = file_get_contents(PATH_CACHE_USERDATA."modules.json");
 			$arrs = json_decode($file, true);
 			$arr = array_merge($arr, $arrs);
 			if(isset($arr[$class]) && isset($arr[$class]['active']) && $arr[$class]['active']!==true) {
@@ -599,7 +599,7 @@ class modules {
 					$arr[$class] = array();
 				}
 				$arr[$class] = array_merge($arr[$class], array("installTime" => time(), "version" => (property_exists($class, "version") ? $class::$version : "0.1")));
-				@file_put_contents(PATH_CACHE_SYSTEM."modules.json", json_encode($arr));
+				@file_put_contents(PATH_CACHE_USERDATA."modules.json", json_encode($arr));
 				cardinal::RegAction("Установка модуля \"".$class."\" версии ".(property_exists($class, "version") ? $class::$version : "0.1"));
 			}
 			if(isset($arr[$class]['installTime']) && class_exists($class, false) && isset($arr[$class]['version']) && property_exists($class, "version") && $class::$version > $arr[$class]['version']) {
@@ -610,7 +610,7 @@ class modules {
 					$arr[$class] = array();
 				}
 				$arr[$class] = array_merge($arr[$class], array("updateTime" => time(), "version" => $class::$version));
-				@file_put_contents(PATH_CACHE_SYSTEM."modules.json", json_encode($arr));
+				@file_put_contents(PATH_CACHE_USERDATA."modules.json", json_encode($arr));
 				cardinal::RegAction("Обновление модуля \"".$class."\" с версии ".$arr[$class]['version']." до версии ".$class::$version);
 			}
 		}
