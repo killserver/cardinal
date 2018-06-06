@@ -173,7 +173,7 @@ class config implements ArrayAccess {
 			self::$config[$list[0]] = $list[1];
 			return true;
 		} else if(sizeof($list)==3) {
-			if(!is_array(self::$config[$list[0]])) {
+			if(!isset(self::$config[$list[0]]) || !is_array(self::$config[$list[0]])) {
 				self::$config[$list[0]] = array();
 			}
 			self::$config[$list[0]][$list[1]] = $list[2];

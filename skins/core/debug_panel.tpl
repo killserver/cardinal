@@ -63,6 +63,7 @@ function DebugPanel_ShowHidePanel() {
 					<td class="num">{db_query.$id}</td>
 					<td style='color: green;'>
 						<pre>{db_query.query}</pre>
+						<pre style="color:#aaa;font-size:95%;">{db_query.file}&nbsp;[{db_query.line}]</pre>
 					</td>
 					<td>{db_query.time}</td>
 				</tr>[/foreach]

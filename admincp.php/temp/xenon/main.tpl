@@ -15,7 +15,7 @@
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/fonts/linecons/css/linecons.css?1">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/fonts/fontawesome/css/font-awesome.min.css?1">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/bootstrap.css?1">
-	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-core.css?5">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-core.css?4">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-forms.css?1">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-components.css?10">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-skins.css?1">
@@ -311,19 +311,26 @@
 						</a>
 					</li>
 					
+					[if {count[langListSupport]}>=2]<li class="dropdown hover-line language-switcher" style="min-height: 76px;">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><img src="{nowLangImg}">{nowLangText}</a>
+						<ul class="dropdown-menu languages">
+							[foreach block=langListSupport]<li><a href="./?setLanguage={langListSupport.langMenu}"><img src="{langListSupport.img}">{langListSupport.lang}</a></li>[/foreach]
+						</ul>
+					</li>[/if {count[langListSupport]}>=2]
+					
 					[if {count_Yui}==true]<li class="dropdown hover-line">
 						<a href="#" onclick="jQuery('#modal-yui').modal('show', {backdrop: 'static'});" title="{L_"Панель запуска Yui"}" alt="{L_"Панель запуска Yui"}">
 							<i class="fa-info"></i>
 						</a>
 					</li>[/if {count_Yui}==true]
 					
-					[if {count_unmoder}>=1]<li class="dropdown hover-line">
+					///***<li class="dropdown hover-line">
 						<a href="#" data-toggle="dropdown">
 							<i class="fa-bell-o"></i>
-							<span class="badge badge-purple">{count_unmoder}</span>
+							[if {count_unmoder}>=1]<span class="badge badge-purple">{count_unmoder}</span>[/if {count_unmoder}>=1]
 						</a>
 							
-						<ul class="dropdown-menu notifications">
+						[if {count_unmoder}>=1]<ul class="dropdown-menu notifications">
 							<li>
 								<ul class="dropdown-menu-list list-unstyled ps-scrollbar">
 									[foreach block=unmoders]<li class="active
@@ -339,26 +346,12 @@
 									</li>[/foreach]
 								</ul>
 							</li>
-							
-							<li class="external">
-								<a href="#">
-									<span>View all notifications</span>
-									<i class="fa-link-ext"></i>
-								</a>
-							</li>
-						</ul>
-					</li>[/if {count_unmoder}>=1]
-					
-					[if {count[langListSupport]}>=2]<li class="dropdown hover-line language-switcher" style="min-height: 76px;">
-						<a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><img src="{nowLangImg}">{nowLangText}</a>
-						<ul class="dropdown-menu languages">
-							[foreach block=langListSupport]<li><a href="./?setLanguage={langListSupport.langMenu}"><img src="{langListSupport.img}">{langListSupport.lang}</a></li>[/foreach]
-						</ul>
-					</li>[/if {count[langListSupport]}>=2]
+						</ul>[/if {count_unmoder}>=1]
+					</li>***///
 					
 				</ul>
 				
-				<div class="versionCardinal">{L_"Version"}: {D_VERSION}</div>
+				<div class="versionCardinal">{L_"Версия"}: {D_VERSION}</div>
 				
 				<!-- Right links for user info navbar -->
 				<ul class="user-info-menu right-links list-inline list-unstyled">
@@ -397,7 +390,10 @@
 					<h1 class="title">{title_admin}</h1>
 				</div>
 			</div>
-			<span class="content_admin">{main_admin}</span>
+			<span class="content_admin">
+				{info}
+				{main_admin}
+			</span>
 			<!-- Main Footer -->
 			<!-- Choose between footer styles: "footer-type-1" or "footer-type-2" -->
 			<!-- Add class "sticky" to  always stick the footer to the end of page (if page contents is small) -->
@@ -531,6 +527,13 @@
 	
 	<script>
 	var editorTextarea;
+	jQuery(".update-nag .dismiss").unbind("click").click(function() {
+		var th = this;
+		var id = jQuery(th).attr("data-code");
+		jQuery.post("{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=main&removeCode="+id, function(d) {
+			jQuery(th).parent().parent().hide(500, function() {jQuery(th).parent().parent().remove();});
+		});
+	});
 	if(typeof(disableAllEditors)==="undefined") {
 		$(document).ready(function(){
 			if(typeof(editorTextarea)!=="object") {

@@ -541,7 +541,7 @@ class modules {
 		foreach($fields as $k => $v) {
 			if($exists && !in_array($k, $db->getTable($table_name))) {
 				$comment = "";
-				if(isset($v['comment'])) {
+				if(is_array($v) && isset($v['comment'])) {
 					$comment = $v['comment'];
 					$v = $v['value'];
 				}
@@ -574,7 +574,7 @@ class modules {
 			}
 			if($exists && in_array($or, $exists)) {
 				$comment = "";
-				if(isset($v['comment'])) {
+				if(is_array($v) && isset($v['comment'])) {
 					$comment = $v['comment'];
 					$v = $v['value'];
 				}
@@ -618,7 +618,19 @@ class modules {
 		return true;
 	}
 
-	final public static function actived($class, $set = "") {
+	final public static function actived($class = "", $set = "") {
+		if($class==="") {
+			$d = debug_backtrace();
+			if(isset($d[0]) && isset($d[0]['file'])) {
+				$d = $d[0]['file'];
+				$d = basename($d);
+				$d = str_replace(array(".class.".ROOT_EX), "", $d);
+				$class = $d;
+			} else {
+				throw new Exception("Error get module name", 1);
+				die();
+			}
+		}
 		$arr = array();
 		if(file_exists(PATH_CACHE_USERDATA."modules.json")) {
 			$file = file_get_contents(PATH_CACHE_USERDATA."modules.json");

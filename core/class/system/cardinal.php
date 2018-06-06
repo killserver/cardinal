@@ -245,7 +245,7 @@ class cardinal {
 			// Start the session!
 			if(function_exists("session_status") && defined("PHP_SESSION_NONE") && session_status() == PHP_SESSION_NONE) {
 				$session = session_start();
-			} else if(!Arr::get($_COOKIE, "PHPSESSID") || session_id() == '') {
+			} else {
 				$session = session_start();
 			}
 

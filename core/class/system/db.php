@@ -321,39 +321,37 @@ class db {
 	}
 	
 	final public static function getTables($columns = true, $andType = false) {
-		if((!isset(self::$loadedTable[$columns.$andType]) || sizeof(self::$loadedTable[$columns.$andType])==0) && self::connected()) {
+		if(sizeof(self::$loadedTable)==0 && self::connected()) {
 			$loaded = array();
 			$sel = db::doquery("SHOW FULL TABLES", true);
 			while($row = db::fetch_assoc($sel)) {
 				$loaded[$row['Tables_in_'.strtolower(self::$dbName)]] = array();
-				if($columns) {
-					$res = db::query("SHOW COLUMNS FROM `".$row['Tables_in_'.strtolower(self::$dbName)]."`");
-					while($roz = db::fetch_assoc($res)) {
-						if($andType) {
-							$pos = strpos($roz['Type'], "(");
-							if($pos!==false) {
-								$roz['Type'] = substr($roz['Type'], 0, $pos);
-							}
-							$loaded[$row['Tables_in_'.strtolower(self::$dbName)]][$roz['Field']] = $roz['Type'];
-						} else {
-							$loaded[$row['Tables_in_'.strtolower(self::$dbName)]][$roz['Field']] = $roz['Field'];
-						}
+				$res = db::query("SHOW COLUMNS FROM `".$row['Tables_in_'.strtolower(self::$dbName)]."`");
+				while($roz = db::fetch_assoc($res)) {
+					$pos = strpos($roz['Type'], "(");
+					if($pos!==false) {
+						$roz['Type'] = substr($roz['Type'], 0, $pos);
 					}
-					if(!$andType) {
-						$loaded[$row['Tables_in_'.strtolower(self::$dbName)]] = array_values($loaded[$row['Tables_in_'.strtolower(self::$dbName)]]);
-					}
+					$loaded[$row['Tables_in_'.strtolower(self::$dbName)]][$roz['Field']] = $roz['Type'];
 				}
 			}
-			self::$loadedTable[$columns.$andType] = $loaded;
-			return self::$loadedTable[$columns.$andType];
-		} else {
-			return self::$loadedTable[$columns.$andType];
+			self::$loadedTable = $loaded;
+		} else if(self::connected()) {
+			$loaded = self::$loadedTable;
 		}
+		$ret = array();
+		foreach($loaded as $name => $fields) {
+			$ret[$name] = array();
+			if($columns && !$andType) {
+				$ret[$name] = array_keys($fields);
+			}
+		}
+		return $ret;
 	}
 	
 	final public static function getTable($name) {
 		$list = self::getTables();
-		if(defined("PREFIX_DB") && !empty(PREFIX_DB) && isset($list[PREFIX_DB.$name])) {
+		if(defined("PREFIX_DB") && PREFIX_DB!=="" && isset($list[PREFIX_DB.$name])) {
 			$name = PREFIX_DB.$name;
 		}
 		return (isset($list[$name]) ? $list[$name] : false);
@@ -361,7 +359,7 @@ class db {
 	
 	final public static function getColumnForTable($name, $field) {
 		$list = self::getTables();
-		if(defined("PREFIX_DB") && !empty(PREFIX_DB) && isset($list[PREFIX_DB.$name])) {
+		if(defined("PREFIX_DB") && PREFIX_DB!=="" && isset($list[PREFIX_DB.$name])) {
 			$name = PREFIX_DB.$name;
 		}
 		return (isset($list[$name]) && isset($list[$name][$field]) ? $list[$name][$field] : false);
@@ -524,7 +522,7 @@ class db {
      * @return string Int value last id element in table
      */
     final public static function last_id($table, $withoutPrefix = false) {
-		if(!$withoutPrefix && defined("PREFIX_DB") && !empty(PREFIX_DB)) {
+		if(!$withoutPrefix && defined("PREFIX_DB") && PREFIX_DB!=="") {
 			$table = PREFIX_DB.$table;
 		}
 		$table = self::doquery("SHOW TABLE STATUS LIKE '".$table."'");
@@ -572,6 +570,25 @@ class db {
 		}
 	}
 
+	final private static function getTrace($backtrace) {
+		$file = __FILE__;
+		$ret = false;
+		for($i=0;$i<sizeof($backtrace);$i++) {
+			if($backtrace[$i]['file']!=$file) {
+				$ret = $backtrace[$i];
+				foreach($ret as $k => $v) {
+					if(is_array($v)) {
+						unset($ret[$k]);
+					} else {
+						$ret[$k] = str_replace(ROOT_PATH, DS, $v);
+					}
+				}
+				break;
+			}
+		}
+		return $ret;
+	}
+
     /**
      * Just execute query
      * @param string $query Query for execute
@@ -581,7 +598,8 @@ class db {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return false;
 		}
-		if(strpos($query, '{{') !== false && defined("PREFIX_DB") && !empty(PREFIX_DB)) {
+		$caller = self::getTrace(debug_backtrace());
+		if(strpos($query, '{{') !== false && defined("PREFIX_DB") && PREFIX_DB!=="") {
 			if(preg_match("/CREATE|DROP/", $query)) {
 				$query = str_replace(array('{{', '}}'), array("`".PREFIX_DB, "`"), $query);
 			} else {
@@ -604,7 +622,9 @@ class db {
 		}
 		self::$time += $etime;
 		self::$num += 1;
-		self::$querys[] = array("time" => $etime, "query" => htmlspecialchars($query));
+		$arr = array("time" => $etime, "query" => htmlspecialchars($query));
+		$arr = array_merge($arr, $caller);
+		self::$querys[] = $arr;
 	return $return;
 	}
 

@@ -330,9 +330,53 @@ class Core {
 			}
 		}
 	}
+
+	protected function addInfo($echo, $type = "info", $closed = false, $time = -1) {
+		$arr = array();
+		if(isset($_COOKIE['infoSystem'])) {
+			$arr = array_merge($arr, json_decode($_COOKIE['infoSystem'], true));
+		}
+		if($type!="success" && $type!="warning" && $type!="error" && $type!="info") {
+			trigger_error("Error type for info");die();
+		}
+		$arr = array_merge($arr, array($echo => array("echo" => $echo, "type" => $type, "time" => ($time>-1 ? $time : time()+15), "closed" => $closed, "code" => generate_uuid4())));
+		$arrs = json_encode($arr);
+		HTTP::set_cookie("infoSystem", $arrs);
+		$_COOKIE['infoSystem'] = $arrs;
+		return $arr;
+	}
 	
 	protected function Prints($echo, $print = false, $force = false) {
 	global $lang;
+		if(isset($_GET['removeCode'])) {
+			if(!isset($_COOKIE['infoSystem'])) {
+				return false;
+			}
+			$isUnset = false;
+			$arrs = json_decode($_COOKIE['infoSystem'], true);
+			foreach($arrs as $k => $arr) {
+				if($arr['code'] == $_GET['removeCode'] || $arr['time'] < time()) {
+					$isUnset = true;
+					unset($arrs[$k]);
+					continue;
+				}
+			}
+			if($isUnset) {
+				if(sizeof($arrs)>0) {
+					$arrs = json_encode($arrs);
+					HTTP::set_cookie("infoSystem", $arrs);
+					$_COOKIE['infoSystem'] = $arrs;
+				} else {
+					HTTP::set_cookie("infoSystem", "", true);
+					unset($_COOKIE['infoSystem']);
+				}
+			}
+			HTTP::echos("done");
+			return false;
+		}
+		/*$this->addInfo("test");
+		$arr = $this->addInfo("test2", "warning");
+		$arr = $this->addInfo("test3", "success", true);*/
 		if(!userlevel::get("admin") || !isset($_COOKIE[COOK_ADMIN_USER]) || !isset($_COOKIE[COOK_ADMIN_PASS])) {
 			$ref = urlencode(str_replace(ROOT_PATH, "", cut(getenv("REQUEST_URI"), "/".ADMINCP_DIRECTORY."/")));
 			location("{C_default_http_host}".ADMINCP_DIRECTORY."/?pages=Login".(!empty($ref) ? "&ref=".$ref : ""));
@@ -426,6 +470,47 @@ class Core {
 			}
 		}
 		$echos = str_replace("{css_list}", $css_echo, $echos);
+		$ret = "";
+		$info = array();
+		if(isset($_COOKIE['infoSystem'])) {
+			$info = json_decode($_COOKIE['infoSystem'], true);
+		}
+		$info = execEvent("admin_core_prints_info", $info);
+		if(sizeof($info)>0) {
+			$isUnset = false;
+			foreach($info as $k => $arr) {
+				if($arr['time']<time()) {
+					$isUnset = true;
+					unset($info[$k]);
+					continue;
+				}
+				$class = array("update-nag");
+				if(isset($arr['block']) || (isset($arr['closed']) && $arr['closed'])) {
+					$class[] = "block";
+				}
+				if(isset($arr['type'])) {
+					$class[] = $arr['type'];
+				} else {
+					$class[] = "info";
+				}
+				if(isset($arr['closed']) && $arr['closed']) {
+					$class[] = "is-dismissible";
+				}
+				$rt = '<div><div class="'.implode(" ", $class).'"><span>'.$arr['echo'].'</span>'.(isset($arr['closed']) && $arr['closed'] ? '<button type="button" class="dismiss" data-code="'.$arr['code'].'"><span class="text">{L_"Скрыть это уведомление"}.</span></button>' : '').'</div></div>';
+				$ret .= $rt;
+			}
+			if($isUnset) {
+				if(sizeof($info)>0) {
+					$info = json_encode($info);
+					HTTP::set_cookie("infoSystem", $info);
+					$_COOKIE['infoSystem'] = $info;
+				} else {
+					HTTP::set_cookie("infoSystem", "", true);
+					unset($_COOKIE['infoSystem']);
+				}
+			}
+		}
+		$echos = str_Replace("{info}", $ret, $echos);
 		$echo = str_replace("{contentForAdmin}", self::$content, $echo);
 		$echoView = templates::view($echo);
 		if(empty($echoView) && $force) {

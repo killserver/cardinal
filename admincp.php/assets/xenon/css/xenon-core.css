@@ -7279,7 +7279,7 @@ pre {
   display: -moz-inline-box;
   display: -ms-inline-flexbox;
   display: inline-flex;
-  width: 40%;
+  width: 30%;
   font-size: 22px;
   -webkit-box-align: center;
   -webkit-align-items: center;
@@ -7395,4 +7395,92 @@ span#doc_time .delimer {
 }
 .sidebar-menu, .sidebar-menu.collapsed {
     z-index: 100;
+}
+
+.update-nag {
+    display: inline-block;
+    line-height: 19px;
+    padding: 11px 15px;
+    font-size: 14px;
+    text-align: left;
+    margin: 0px 0px 25px 0px;
+    background-color: #fff;
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+    color: #3e3f3f;
+    border-left: 4px solid;
+}
+.update-nag.block {
+    display: block;
+}
+.update-nag.is-dismissible {
+    padding-right: 38px;
+    position: relative
+}
+.update-nag.success {
+    border-left-color: #46b450
+}
+.update-nag.success.alt {
+    background-color: #ecf7ed
+}
+.update-nag.warning {
+    border-left-color: #ffb900
+}
+.update-nag.warning.alt {
+    background-color: #fff8e5
+}
+.update-nag.error {
+    border-left-color: #dc3232
+}
+.update-nag.error.alt {
+    background-color: #fbeaea
+}
+.update-nag.info {
+    border-left-color: #00a0d2
+}
+.update-nag.info.alt {
+    background-color: #e5f5fa
+}
+.update-nag span {
+    margin: 0.5em 0;
+    padding: 2px
+}
+.update-nag a {
+    color: #0e62c7;
+}
+.update-nag .text {
+    border: 0;
+    clip: rect(1px,1px,1px,1px);
+    -webkit-clip-path: inset(50%);
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+    word-wrap: normal!important
+}
+.update-nag .dismiss {
+    position: absolute;
+    top: 0;
+    right: 1px;
+    border: none;
+    margin: 0;
+    padding: 10px;
+    background: 0 0;
+    color: #72777c;
+    cursor: pointer
+}
+.update-nag .dismiss:before {
+    background: 0 0;
+    color: #72777c;
+    content: "\f00d";
+    display: block;
+    font: 400 16px/20px FontAwesome;
+    speak: none;
+    height: 20px;
+    text-align: center;
+    width: 20px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale
 }

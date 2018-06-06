@@ -176,7 +176,7 @@ class Debug {
 			$num = 0;
 			for($i=0;$i<sizeof($tmp_files);$i++) {
 				if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
-					$files[$num]['file'] = $tmp_files[$i]['file'];
+					$files[$num]['file'] = str_replace(ROOT_PATH, DS, $tmp_files[$i]['file']);
 					$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
 					$files[$num]['size'] = filesize($tmp_files[$i]['file']);
 					$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
@@ -189,7 +189,7 @@ class Debug {
 			$incl_files = get_included_files();
 			foreach($incl_files as $f) {
 				if(file_exists($f)) {
-					$include[$num]['file'] = $f;
+					$include[$num]['file'] = str_replace(ROOT_PATH, DS, $f);
 					$include[$num]['lines'] = self::FileLine($f);
 					$size = sprintf("%u", filesize($f));
 					$include[$num]['sizeNum'] = filesize($f);
@@ -209,7 +209,7 @@ class Debug {
 			$incl_files = get_included_files();
 			foreach($incl_files as $f) {
 				if(file_exists($f)) {
-					$include[$num]['file'] = $f;
+					$include[$num]['file'] = str_replace(ROOT_PATH, DS, $f);
 					$include[$num]['lines'] = self::FileLine($f);
 					$size = sprintf("%u", filesize($f));
 					$include[$num]['sizeNum'] = filesize($f);
@@ -222,7 +222,7 @@ class Debug {
 			$num = 0;
 			for($i=0;$i<sizeof($tmp_files);$i++) {
 				if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
-					$files[$num]['file'] = $tmp_files[$i]['file'];
+					$files[$num]['file'] = str_replace(ROOT_PATH, DS, $tmp_files[$i]['file']);
 					$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
 					$files[$num]['size'] = filesize($tmp_files[$i]['file']);
 					$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
@@ -239,7 +239,7 @@ class Debug {
 			$incl_files = get_included_files();
 			foreach($incl_files as $f) {
 				if(file_exists($f)) {
-					$include[$num]['file'] = $f;
+					$include[$num]['file'] = str_replace(ROOT_PATH, DS, $f);
 					$include[$num]['lines'] = self::FileLine($f);
 					$size = sprintf("%u", filesize($f));
 					$include[$num]['sizeNum'] = filesize($f);
@@ -252,7 +252,7 @@ class Debug {
 			$num = 0;
 			for($i=0;$i<sizeof($tmp_files);$i++) {
 				if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
-					$files[$num]['file'] = $tmp_files[$i]['file'];
+					$files[$num]['file'] = str_replace(ROOT_PATH, DS, $tmp_files[$i]['file']);
 					$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
 					$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
 					$files[$num]['size'] = filesize($tmp_files[$i]['file']);
@@ -274,7 +274,7 @@ class Debug {
 			$incl_files = get_included_files();
 			foreach($incl_files as $f) {
 				if(file_exists($f)) {
-					$include[$num]['file'] = $f;
+					$include[$num]['file'] = str_replace(ROOT_PATH, DS, $f);
 					$include[$num]['lines'] = self::FileLine($f);
 					$size = sprintf("%u", filesize($f));
 					$include[$num]['sizeNum'] = filesize($f);
@@ -287,7 +287,7 @@ class Debug {
 			$num = 0;
 			for($i=0;$i<sizeof($tmp_files);$i++) {
 				if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
-					$files[$num]['file'] = $tmp_files[$i]['file'];
+					$files[$num]['file'] = str_replace(ROOT_PATH, DS, $tmp_files[$i]['file']);
 					$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
 					$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
 					$size = sprintf("%u", filesize($tmp_files[$i]['file']));

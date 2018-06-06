@@ -60,11 +60,10 @@ if(!defined("DEFINED_CLASSES")) {
 	define("DEFINED_CLASSES", implode(",", get_declared_classes()));
 }
 
-
-if ( ! function_exists( 'microtime_float' ) ) {
+if(!function_exists('microtime_float')) {
 	function microtime_float() {
-		list($usec, $sec) = explode( ' ', microtime() );
-		return ( (float)$usec + (float)$sec);
+		list($usec, $sec) = explode(' ', microtime());
+		return ((float)$usec + (float)$sec);
 	}
 }
 
