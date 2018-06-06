@@ -41,12 +41,12 @@ class Archer extends Core {
 		$orderBy = $request->get->get("orderBy", false);
 		$orderTo = $request->get->get("orderTo", "ASC");
 		$removePrefix = false;
-		if(defined("PREFIX_DB") && !empty(PREFIX_DB) && strpos($typeUni, PREFIX_DB)!==false) {
+		if(defined("PREFIX_DB") && PREFIX_DB!=="" && strpos($typeUni, PREFIX_DB)!==false) {
 			$typeUni = str_replace(PREFIX_DB, "", $typeUni);
 			$removePrefix = true;
 		}
 		$upFirst = (function_exists("nucfirst") ? nucfirst($typeUni) : $this->nucfirst($typeUni));
-		if(defined("PREFIX_DB") && !empty(PREFIX_DB)) {
+		if(defined("PREFIX_DB") && PREFIX_DB!=="") {
 			$typeUni = PREFIX_DB.$typeUni;
 		}
 		switch($page) {

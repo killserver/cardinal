@@ -67,7 +67,7 @@ class DBObject implements ArrayAccess {
 	}
 	
 	final private function clearCache($table) {
-		if(!defined("PATH_CACHE_SYSTEM") || empty(PATH_CACHE_SYSTEM)) {
+		if(!defined("PATH_CACHE_SYSTEM") || PATH_CACHE_SYSTEM==="") {
 			return false;
 		}
 		if(is_dir(PATH_CACHE_SYSTEM)) {
@@ -141,14 +141,14 @@ class DBObject implements ArrayAccess {
 		} else {
 			$save = $addSave;
 		}
-		if($force === true && defined("PREFIX_DB") && !empty(PREFIX_DB) && strpos($query, PREFIX_DB)===false) {
+		if($force === true && defined("PREFIX_DB") && PREFIX_DB!=="" && strpos($query, PREFIX_DB)===false) {
 			$arr = db::getTables();
 			$arr = array_keys($arr);
 			for($i=0;$i<sizeof($arr);$i++) {
 				$t = str_replace(PREFIX_DB, "", $arr[$i]);
 				$query = str_replace(array($arr[$i], $t), $save.PREFIX_DB.$t.$save, $query);
 			}
-		} else if(strpos($query, '{{') !== false && defined("PREFIX_DB") && !empty(PREFIX_DB) && strpos($query, PREFIX_DB)===false) {
+		} else if(strpos($query, '{{') !== false && defined("PREFIX_DB") && PREFIX_DB!=="" && strpos($query, PREFIX_DB)===false) {
 			if(preg_match("/CREATE|DROP/", $query)) {
 				$query = str_replace(array('{{', '}}'), array($save.PREFIX_DB, $save), $query);
 			} else {
@@ -589,11 +589,11 @@ class DBObject implements ArrayAccess {
 		$groupby = $this->ReleaseGroupBy($groupby);
 		$table = $this->addPrefixTable($table);
 		$sql = "SELECT ".implode(", ", array_map(array(&$this, "getFieldForSelect"), $keys))." FROM ".$table.$where.$groupby.$orderBy.$limit.$offset;
-		if(defined("PATH_CACHE_SYSTEM") && !empty(PATH_CACHE_SYSTEM)) {
+		if(defined("PATH_CACHE_SYSTEM") && PATH_CACHE_SYSTEM!=="") {
 			$fileCache = PATH_CACHE_SYSTEM.$table."_".md5($sql).".cache";
 		}
 		$cached = false;
-		if(defined("PATH_CACHE_SYSTEM") && !empty(PATH_CACHE_SYSTEM) && file_exists(PATH_CACHE_SYSTEM) && is_writeable(PATH_CACHE_SYSTEM) && is_bool(self::$usedCache) && self::$usedCache===true) {
+		if(defined("PATH_CACHE_SYSTEM") && PATH_CACHE_SYSTEM!=="" && file_exists(PATH_CACHE_SYSTEM) && is_writeable(PATH_CACHE_SYSTEM) && is_bool(self::$usedCache) && self::$usedCache===true) {
 			$cached = true;
 		}
 		if($cached && isset($fileCache) && file_exists($fileCache)) {

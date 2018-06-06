@@ -321,8 +321,8 @@ class db {
 	}
 	
 	final public static function getTables($columns = true, $andType = false) {
+		$loaded = array();
 		if(sizeof(self::$loadedTable)==0 && self::connected()) {
-			$loaded = array();
 			$sel = db::doquery("SHOW FULL TABLES", true);
 			while($row = db::fetch_assoc($sel)) {
 				$loaded[$row['Tables_in_'.strtolower(self::$dbName)]] = array();
