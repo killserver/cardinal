@@ -384,6 +384,8 @@ if(
 	HTTP::$protocol = "https";
 }
 
+$sessionOnline = false;
+$session = false;
 cardinal::StartSession();
 execEvent("init_session");
 if(isset($sessionOnline) && is_writeable(PATH_CACHE_USERDATA)) {

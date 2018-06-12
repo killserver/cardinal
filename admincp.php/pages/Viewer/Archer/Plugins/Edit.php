@@ -18,6 +18,14 @@ class Archer_Edit {
 				$list = call_user_func_array(KernelArcher::$editModel["Edit"][$i], array($list, $getExclude));
 			}
 		}
+		if(isset($_GET['get'])) {
+			$k = $_GET['get'];
+			$l = $models->getAttribute($k, 'type');
+			$field = KernelArcher::Viewing($l, $k, "", "", false, false, "", true);
+			$field = templates::view($field);
+			vdump($field);
+			die();
+		}
 		$where = $whereData = "";
 		$addition = "";
 		if(Arr::get($_GET, "Where", false)) {
@@ -42,9 +50,16 @@ class Archer_Edit {
 			$isAjax = true;
 		}
 		$body = "";
+		$supportedLang = array();
 		foreach($list as $k => $v) {
 			if(in_array($k, $getExclude)) {
 				continue;
+			}
+			$attr = $models->getAttribute($k, "Attr");
+			$lang = "";
+			if($attr==="supportLang") {
+				$lang = $models->getAttribute($k, "Lang");
+				$supportedLang[$lang] = array("lang" => $lang);
 			}
 			$l = $models->getAttribute($k, 'type');
 			$default = ($where==$k ? $whereData : $models->getAttribute($k, 'default'));
@@ -59,7 +74,11 @@ class Archer_Edit {
 				$default = (!empty($where) && !empty($whereData) && $where==$k && isset($v[$whereData]) ? $v[$whereData] : (empty($v) ? $default : $v));
 				$v = implode(",", $typeData);
 			}
-			$body .= KernelArcher::Viewing($l, $k, $v, $default, false, $isAjax);
+			$body .= KernelArcher::Viewing($l, $k, $v, $default, false, $isAjax, $lang);
+		}
+		sortByKey($supportedLang);
+		foreach($supportedLang as $v) {
+			templates::assign_vars($v, "supportedLang");
 		}
 		$tpl = str_replace("{addition}", $addition, $tpl);
 		$tpl = str_replace("{ArcherPage}", $page.($page!="Add" ? "&viewId=".$isId : ""), $tpl);

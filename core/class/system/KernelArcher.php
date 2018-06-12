@@ -720,11 +720,11 @@ class KernelArcher {
 		call_user_func_array("templates::assign_var", array($arr['name'], $arr['value']));
 	}
 	
-	public static function Viewing($type, $name, $val, $default = "", $block = false, $isAjax = false) {
+	public static function Viewing($type, $name, $val, $default = "", $block = false, $isAjax = false, $lang = "", $hide = false) {
 		$open = defined("ADMINCP_DIRECTORY");
 		$retType = "";
-		$hide = false;
-		$type = execEvent("KernelArcher::Viewing", $type);
+		$type = execEvent("KernelArcher::ViewingType", $type);
+		$val = execEvent("KernelArcher::ViewingValue", $val);
 		switch($type) {
 			case "tinyint":
 			case "smallint":
@@ -899,7 +899,13 @@ class KernelArcher {
 			}
 			$retType = $this->view($type, $name, $val, $default, $block);
 		}
-		$ret = (!$hide ? "<div class=\"".(!$block ? "form-group" : "row")." block-".$name."\"><label class=\"col-sm-".($isAjax ? "2" : "3")." control-label\" for=\"".$name."\">{L_".$name."}</label><div class=\"col-sm-".($isAjax ? "10" : "9")."\">" : "").$retType.(!$hide ? "</div></div>\n" : "");
+		$grouper = "";
+		$grouperLang = "";
+		if($lang!=="") {
+			$grouper = str_replace($lang, "", $name);
+			$grouperLang = str_replace($grouper, "", $name);
+		}
+		$ret = (!$hide ? "<div class=\"".(!$block ? "form-group" : "row")." block-".$name."\"".($lang!=="" ? " data-group=\"".$grouper."\" data-lang=\"".$grouperLang."\"" : "")."><label class=\"col-sm-".($isAjax ? "2" : "3")." control-label\" for=\"".$name."\">{L_".$name."}</label><div class=\"col-sm-".($isAjax ? "10" : "9")."\">" : "").$retType.(!$hide ? "</div></div>\n" : "");
 		return $ret;
 	}
 	

@@ -79,14 +79,14 @@ class Archer_Shield {
 		}
 		$counts = 0;
 		for($i=0;$i<sizeof($h);$i++) {
-			if($this->in_array_strpos($h[$i], $getExclude)) {
+			$altName = str_replace(array("{L_\"", "\"}"), "", $h[$i]);
+			if($this->in_array_strpos($altName, $getExclude)) {
 				continue;
 			}
 			if($myOrder && ($res = $this->ordering($myOrderName, $h[$i]))!==false) {
 				$orderById = $i;
 				$orderBySort = $res;
 			}
-			$altName = str_replace(array("{L_\"", "\"}"), "", $h[$i]);
 			if(isset(KernelArcher::$sortBy) && is_array(KernelArcher::$sortBy) && sizeof(KernelArcher::$sortBy)>0 && in_array($h[$i], KernelArcher::$sortBy)) {
 				$sortBy[] = "'".$altName."'";
 			}

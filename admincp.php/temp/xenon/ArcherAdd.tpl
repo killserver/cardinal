@@ -6,6 +6,12 @@
 			</div>
 			<div class="panel-body">
 				<form method="post" role="form" action="./?pages=Archer&type={ArcherPath}&pageType=Take{ArcherPage}{addition}{ref}" class="form-horizontal" enctype="multipart/form-data">[/!ajax]
+					[if {count[supportedLang]}>=1]<ul class="nav nav-tabs nav-tabs-justified" data-support="lang">
+						[foreach block=supportedLang]<li>
+							<a href="#home-3" data-toggle="tab" data-lang="{supportedLang.lang}">{supportedLang.lang}</a>
+						</li>[/foreach]
+					</ul>[/if {count[supportedLang]}>=1]
+					<br><br>
 					{ArcherData}
 					[!ajax]<button class="btn btn-savePage btn-icon btn-icon-standalone btn-icon-standalone-right btn-sm">
 						<i class="fa-save"></i>
@@ -27,8 +33,37 @@
 #inputForFile .array:last-of-type {
     border-bottom: 0px
 }
+.panel-body .nav.nav-tabs > li > a {
+	border: 1px solid #ddd;
+}
 </style>
 <script type="text/javascript">
+function ucfirst(text) {
+	var textNew = "";
+	textNew += text.substr(0, 1).toUpperCase();
+	textNew += text.substr(1);
+	return textNew;
+}
+
+var selectLangForm = ucfirst(selectLang);
+$(".form-horizontal ul li a[data-lang='"+selectLangForm+"']").parent().addClass("active");
+$(".form-horizontal .form-group[data-group][data-lang]").each(function(i, elem) {
+	if($(elem).attr("data-lang")===selectLangForm) {
+		$(elem).css("display", "block");
+	} else {
+		$(elem).css("display", "none");
+	}
+});
+$(".form-horizontal ul li a").click(function() {
+	var lang = $(this).attr("data-lang");
+	$(".form-horizontal .form-group[data-group][data-lang]").each(function(i, elem) {
+		if($(elem).attr("data-lang")===lang) {
+			$(elem).css("display", "block");
+		} else {
+			$(elem).css("display", "none");
+		}
+	});
+});
 [ajax]var linkForSubmit = "./?pages=Archer&type={ArcherPath}&pageType=Take{ArcherPage}{addition}{ref}";[/ajax]
 var i = 1;
 function removeInputFile(th, name, val) {

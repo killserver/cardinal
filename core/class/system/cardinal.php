@@ -194,7 +194,7 @@ class cardinal {
 
 	final public static function StartSession($timeout = 0, $probability = 100, $cookie_domain = '/') {
 	global $session, $sessionOnline;
-		if(!is_bool($session)) {
+		if(is_bool($session) && $session===false) {
 			if($timeout===0) {
 				$timeout = time()+(120*24*60*60);
 			}
