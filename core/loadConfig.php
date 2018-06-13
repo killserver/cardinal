@@ -33,9 +33,16 @@ if(version_compare(PHP_VERSION, '5.1.2', '>=')) {
 function addEvent() {
 	return call_user_func_array("cardinalEvent::addListener", func_get_args());
 }
+function addEventRef() {
+	return call_user_func_array("cardinalEvent::addListenerRef", func_get_args());
+}
 
 function removeEvent() {
 	return call_user_func_array("cardinalEvent::removeListener", func_get_args());
+}
+
+function removeEventRef() {
+	return call_user_func_array("cardinalEvent::removeListenerRef", func_get_args());
 }
 
 function execEvent() {

@@ -27,10 +27,18 @@ class Core {
 	private static $modules = array();
 	private static $js = array();
 	private static $css = array();
-	private static $content = "";
+	private static $content = array("before" => "", "after" => "");
 
 	public static function addContent($data) {
-		self::$content .= $data;
+		self::$content['before'] .= $data;
+	}
+
+	public static function addContentBefore($data) {
+		self::$content['before'] .= $data;
+	}
+
+	public static function addContentAfter($data) {
+		self::$content['after'] .= $data;
 	}
 	
 	public static function __callStatic($call, $args) {
@@ -336,7 +344,7 @@ class Core {
 		}
 	}
 
-	protected function addInfo($echo, $type = "info", $closed = false, $time = -1) {
+	public static function addInfo($echo, $type = "info", $closed = false, $time = -1) {
 		$arr = array();
 		if(isset($_COOKIE['infoSystem'])) {
 			$arr = array_merge($arr, json_decode($_COOKIE['infoSystem'], true));
@@ -515,11 +523,18 @@ class Core {
 				}
 			}
 		}
-		$echos = str_Replace("{info}", $ret, $echos);
-		if(strpos($echo, "{contentForAdmin}")!==false) {
-			$echo = str_replace("{contentForAdmin}", self::$content, $echo);
+		if(strpos($echos, "{info}")!==false) {
+			$echos = str_Replace("{info}", $ret, $echos);
 		} else {
-			$echo = self::$content.$echo;
+			$echos = $ret.$echos;
+		}
+		if(strpos($echo, "{contentForAdmin}")!==false) {
+			$echo = str_replace("{contentForAdmin}", self::$content['before'], $echo);
+		} else {
+			$echo = self::$content['before'].$echo.self::$content['after'];
+		}
+		if(strpos($echo, "{contentForAdmin}")!==false) {
+			$echo .= self::$content['after'];
 		}
 		$echoView = templates::view($echo);
 		if(empty($echoView) && $force) {
