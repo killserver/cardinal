@@ -99,7 +99,10 @@ class cardinalEvent {
 		return self::$events;
 	}
 	
-	public static function execute($action, $return = false) {
+	public static function execute($action) {
+		$args = func_get_args();
+		array_shift($args);
+		$return = (isset($args[0]) ? $args[0] : false);
 		if(!empty($action) && !isset(self::$events[$action])) {
 			$loader = debug_backtrace();
 			if($loader[1]['function'] == 'execEvent') {
@@ -112,7 +115,42 @@ class cardinalEvent {
 		if(!empty($action) && isset(self::$collection[$action])) {
 			ksort(self::$collection[$action]);
 			foreach(self::$collection[$action] as $v) {
-				$ret = call_user_func_array($v['fn'], array($v['data'], $return));
+				$data = array();
+				if($v['data']!=="") {
+					$data[] = $v['data'];
+				}
+				$data = array_merge($data, $args);
+				$ret = call_user_func_array($v['fn'], $data);
+				if(!empty($ret)) {
+					$return = $ret;
+				}
+			}
+			return $return;
+		} else {
+			return $return;
+		}
+	}
+	
+	public static function executeRef($action, &$ref1 = "", &$ref2 = "", &$ref3 = "", &$ref4 = "", &$ref5 = "", &$ref6 = "", &$ref7 = "", &$ref8 = "") {
+		$return = ($ref1!==null ? $ref1 : false);
+		if(!empty($action) && !isset(self::$events[$action])) {
+			$loader = debug_backtrace();
+			if($loader[1]['function'] == 'execEvent') {
+				$loader = $loader[1];
+			} else if($loader[0]['function'] == 'execute') {
+				$loader = $loader[0];
+			}
+			self::$events[$action] = $loader;
+		}
+		if(!empty($action) && isset(self::$collection[$action])) {
+			ksort(self::$collection[$action]);
+			foreach(self::$collection[$action] as $v) {
+				if($v['data']!=="") {
+					$data = array($v['data'], &$ref1, &$ref2, &$ref3, &$ref4, &$ref5, &$ref6, &$ref7, &$ref8);
+				} else {
+					$data = array(&$ref1, &$ref2, &$ref3, &$ref4, &$ref5, &$ref6, &$ref7, &$ref8);
+				}
+				$ret = call_user_func_array($v['fn'], $data);
 				if(!empty($ret)) {
 					$return = $ret;
 				}

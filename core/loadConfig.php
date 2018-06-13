@@ -42,6 +42,10 @@ function execEvent() {
 	return call_user_func_array("cardinalEvent::execute", func_get_args());
 }
 
+function execEventRef($action, &$args1 = "", &$args2 = "", &$args3 = "", &$args4 = "", &$args5 = "", &$args6 = "", &$args7 = "", &$args8 = "") {
+	return call_user_func_array("cardinalEvent::executeRef", array($action, &$args1, &$args2, &$args3, &$args4, &$args5, &$args6, &$args7, &$args8));
+}
+
 function errorHeader() {
 	if(!isset($_SERVER['HTTP_CF_VISITOR'])) {
 		header("HTTP/1.0 503 Service Temporarily Unavailable");

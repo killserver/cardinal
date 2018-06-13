@@ -82,16 +82,26 @@ if($resp!==false) {
 } else {
 	$view = "Main";
 }
+$view = execEvent("admin_page", $view);
 
 if(in_array($view, array_keys($defined))) {
 	$view = $defined[$view];
 }
 $in_page = $view;
 if(class_exists($view)) {
+	if(!defined("ADMIN_PAGE_NOW")) {
+		define("ADMIN_PAGE_NOW", $view);
+	}
+	execEvent("admin_ready");
 	if(method_exists(''.$view, 'start')) {
 		call_user_func(array(&$view, "start"));
 	}
 	new $view();
+} else {
+	$in_page = "Errors";
+	$in_page = execEvent("admin_page_notfound", $in_page);
+    include_once(ADMIN_VIEWER.$in_page.DS.$in_page.".class.".ROOT_EX);
+    new $in_page();
 }
 
 ?>

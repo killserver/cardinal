@@ -219,19 +219,24 @@ class Core {
 
 	private function loadMenu() {
 		$links = array();
-		if($dh = dir(ADMIN_MENU)) {
-			$i=1;
-			while(($file = $dh->read()) !== false) {
-				if($file != "index.".ROOT_EX && $file != "index.html" && $file != "." && $file != "..") {
-					include_once(ADMIN_MENU.$file);
+		$loadMenu = true;
+		execEventRef("admin_menu_ready", $links, $loadMenu);
+		if($loadMenu) {
+			if($dh = dir(ADMIN_MENU)) {
+				$i=1;
+				while(($file = $dh->read()) !== false) {
+					if($file != "index.".ROOT_EX && $file != "index.html" && $file != "." && $file != "..") {
+						include_once(ADMIN_MENU.$file);
+					}
 				}
+				$dh->close();
 			}
-			$dh->close();
 		}
 		$this->vsort($links);
 		$all = 0;
 		$page_v = getenv("REQUEST_URI");
 		$now = str_replace(ADMINCP_DIRECTORY."/?", "", substr($page_v, 1, strlen($page_v)));
+		execEventRef("admin_menu_loaded", $links, $now);
 		foreach($links as $name => $datas) {
 			if(isset($datas['item']) && is_array($datas['item'])) {
 				for($is=0;$is<sizeof($datas['item']);$is++) {
@@ -339,7 +344,7 @@ class Core {
 		if($type!="success" && $type!="warning" && $type!="error" && $type!="info") {
 			trigger_error("Error type for info");die();
 		}
-		$arr = array_merge($arr, array($echo => array("echo" => $echo, "type" => $type, "time" => ($time>-1 ? $time : time()+15), "closed" => $closed, "code" => generate_uuid4())));
+		$arr = array_merge($arr, array($echo => array("echo" => $echo, "type" => $type, "time" => ($time>-1 ? ($time<time() ? time()+$time : $time) : time()+15), "closed" => $closed, "code" => generate_uuid4())));
 		$arrs = json_encode($arr);
 		HTTP::set_cookie("infoSystem", $arrs);
 		$_COOKIE['infoSystem'] = $arrs;
@@ -511,7 +516,11 @@ class Core {
 			}
 		}
 		$echos = str_Replace("{info}", $ret, $echos);
-		$echo = str_replace("{contentForAdmin}", self::$content, $echo);
+		if(strpos($echo, "{contentForAdmin}")!==false) {
+			$echo = str_replace("{contentForAdmin}", self::$content, $echo);
+		} else {
+			$echo = self::$content.$echo;
+		}
 		$echoView = templates::view($echo);
 		if(empty($echoView) && $force) {
 			$echoView = $echo;

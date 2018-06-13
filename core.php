@@ -67,7 +67,7 @@ if(!function_exists('microtime_float')) {
 	}
 }
 
-ini_set("max_execution_time", 0);
+@ini_set("max_execution_time", 0);
 if(strpos(CLOSE_FUNCTION, "set_time_limit")===false) {
 	set_time_limit(0);
 }
@@ -83,6 +83,7 @@ if(version_compare(PHP_VERSION, '5.3', '<')) {
 @ini_set('post_max_size', '200M');
 @ini_set('max_file_uploads', '80');
 @ini_set('scream.enabled', false);
+@ini_set('gd.jpeg_ignore_warning', 1);
 
 $manifest = array(
 	"before_ini_class" => array(), //configuration pages and modules before load
