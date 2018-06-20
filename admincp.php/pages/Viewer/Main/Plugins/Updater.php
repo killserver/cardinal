@@ -53,7 +53,7 @@ class Main_Updater extends Main {
 		}
 		$prs = new Parser('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/intversion.txt?'.date("d-m-Y-H"));
 		$vid = $prs->get();
-		$if = cardinal::checkVersion($vid);
+		$if = cardinal::CheckVersion($vid);
 		if($if) {
 			$prs = new Parser('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/version.txt?'.date("d-m-Y-H"));
 			$vid = $prs->get();
@@ -66,7 +66,7 @@ class Main_Updater extends Main {
 				$changelog = "";
 				$list = explode("\n", $vids);
 				for($i=sizeof($list)-1;$i>0;$i--) {
-					$if = cardinal::checkVersion($list[$i]);
+					$if = cardinal::CheckVersion($list[$i]);
 					if($if) {
 						$prs = new Parser('https://raw.githubusercontent.com/killserver/cardinal/trunk/changelog/'.$list[$i].'.txt');
 						$changelog .= $prs->get()."\n\n\n\n";

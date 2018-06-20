@@ -99,7 +99,7 @@ if(!defined("VERSION_ADMIN_STYLE")) {
 	define("VERSION_ADMIN_STYLE", "1.8");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "101720");
+	define("INTVERSION", "101865");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "6.5");
@@ -130,7 +130,7 @@ if(!defined("LANGUAGE_SUPPORT_SERVICE")) {
 	define("LANGUAGE_SUPPORT_SERVICE", "https://raw.githubusercontent.com/killserver/ForCardinal/master/translateSupport.serialize");
 }
 if(!defined("ROUTE_GET_URL")) {
-	define("ROUTE_GET_URL", "PATH_INFO");
+	define("ROUTE_GET_URL", "REQUEST_URI");
 }
 
 $config = array_merge($config, array(

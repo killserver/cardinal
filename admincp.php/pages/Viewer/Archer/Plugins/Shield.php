@@ -113,6 +113,13 @@ class Archer_Shield {
 					$activeQuickEditor = false;
 				}
 			}
+			if($type=="date") {
+				$val = "{S_langdata=\"{".$modelName.".".$d[$i]."}\",\"d F Y\"}";
+			} else if($type=="time") {
+				$val = "{S_langdata=\"{".$modelName.".".$d[$i]."}\",\"H:i:s\"}";
+			} else if($type=="datetime") {
+				$val = "{S_langdata=\"{".$modelName.".".$d[$i]."}\",\"d F Y H:i:s\"}";
+			}
 			if($i!=0 && $activeQuickEditor) {
 				$quickEditor = " data-pk=\"{".$modelName.".".$first."}\" data-name=\"".$d[$i]."\"";
 				if($type=="select" || $type=="array" || $type=="enum") {
@@ -121,15 +128,12 @@ class Archer_Shield {
 				} else if($type=="date") {
 					$active = true;
 					$quickEditor .= " data-type=\"date\"";
-					$val = date("d F Y", $val);
 				} else if($type=="time") {
 					$active = true;
 					$quickEditor .= " data-type=\"time\"";
-					$val = date("H:i:s", $val);
 				} else if($type=="datetime") {
 					$active = true;
 					$quickEditor .= " data-type=\"datetime\"";
-					$val = date("d F Y H:i:s", $val);
 				} else if($type=="int" || $type=="price" || $type=="tinyint" || $type=="smallint" || $type=="mediumint" || $type=="bigint") {
 					$active = true;
 					$quickEditor .= " data-type=\"number\"";

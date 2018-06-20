@@ -69,7 +69,7 @@ class JSONHelper {
     final public function save($normal = false) {
     	$data = json_encode(get_object_vars($this), JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
     	if($normal) {
-    		$data = $this->normalizer($data);
+    		$data = self::normalizer($data);
     	}
 		return $data;
 	}
@@ -78,7 +78,7 @@ class JSONHelper {
 		return call_user_func_array(array($this, "save"), func_get_args());
 	}
 	
-	final private function normalizer($data) {
+	final public static function normalizer($data) {
 		$arr = array();
 		$tab = 1;
 		$d = false;

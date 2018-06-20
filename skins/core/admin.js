@@ -1,3 +1,6 @@
+if(typeof(jQuery)==="undefined") {
+	var element = document.createElement("script");element.src = default_link+'skins/core/jquery-3.2.1.min.js';document.body.appendChild(element);
+}
 var checkedAdmin = setInterval(function() {
 	if(typeof(jQuery)!=="undefined") {
 		jQuery(document).ready(function(){

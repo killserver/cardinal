@@ -319,6 +319,11 @@ class db {
 			self::connect($host, $user, $pass, self::$dbName, $chst, $port);
 		}
 	}
+
+	final public static function flushCacheTables() {
+		self::$loadedTable = array();
+		return true;
+	}
 	
 	final public static function getTables($columns = true, $andType = false) {
 		$loaded = array();

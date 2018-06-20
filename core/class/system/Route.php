@@ -286,6 +286,10 @@ class Route {
 
 	final public static function Load($default = "") {
 		$uri = getenv(ROUTE_GET_URL);
+		$len = strlen("/index.php");
+		if(substr($uri, 0, $len)==="/index.php") {
+			$uri = substr($uri, $len);
+		}
 		$len = strlen($uri);
 		if(strpos($uri, "&")!==false) {
 			$len = strpos($uri, "&")-1;

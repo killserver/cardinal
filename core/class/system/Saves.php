@@ -263,6 +263,7 @@ class Saves {
 		if($delete) {
 			$val = str_replace(array("<strong>", "</strong>", "<p>", "</p>"), array("<b>", "</b>", "", ""), $val);
 		}
+		$val = self::remove_invisible_characters($val, false);
 		return $val;
 	}
 

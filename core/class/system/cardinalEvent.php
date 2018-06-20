@@ -4,6 +4,7 @@ class cardinalEvent {
 	
 	private static $collection = array();
 	private static $events = array();
+	private static $loader = array();
 
 	private static function add($action, $callback, $ref = false, $params = "", $priority = false, $loader = false) {
 		if($ref===false) {
@@ -50,41 +51,39 @@ class cardinalEvent {
 			self::$collection[$typeEvent][$action][$priority] = array("fn" => $callback, "data" => $params, "loader" => $loader);
 		}
 	}
+
+	public static function loader($arr) {
+		self::$loader = $arr;
+	}
 	
 	public static function addListener($action, $callback, $params = "", $priority = false) {
-		$loader = debug_backtrace();
-		if($loader[1]['function'] == 'addEventRef') {
-			$loader = $loader[1];
-		} else if($loader[1]['function'] == 'addEvent') {
-			$loader = $loader[1];
-		} else if($loader[0]['function'] == 'addListener') {
-			$loader = $loader[0];
+		if(sizeof(self::$loader)==0) {
+			$loader = debug_backtrace();
+			self::$loader = $loader[0];
 		}
 		if(is_array($action)) {
 			for($i=0;$i<sizeof($action);$i++) {
-				self::add($action[$i], $callback, false, $params, $priority, $loader);
+				self::add($action[$i], $callback, false, $params, $priority, self::$loader);
 			}
 		} else {
-			self::add($action, $callback, false, $params, $priority, $loader);
+			self::add($action, $callback, false, $params, $priority, self::$loader);
 		}
+		self::$loader = array();
 	}
 	
 	public static function addListenerRef($action, $callback, $params = "", $priority = false) {
-		$loader = debug_backtrace();
-		if($loader[1]['function'] == 'addEventRef') {
-			$loader = $loader[1];
-		} else if($loader[1]['function'] == 'addEvent') {
-			$loader = $loader[1];
-		} else if($loader[0]['function'] == 'addListener') {
-			$loader = $loader[0];
+		if(sizeof(self::$loader)==0) {
+			$loader = debug_backtrace();
+			self::$loader = $loader[0];
 		}
 		if(is_array($action)) {
 			for($i=0;$i<sizeof($action);$i++) {
-				self::add($action[$i], $callback, true, $params, $priority, $loader);
+				self::add($action[$i], $callback, true, $params, $priority, self::$loader);
 			}
 		} else {
-			self::add($action, $callback, true, $params, $priority, $loader);
+			self::add($action, $callback, true, $params, $priority, self::$loader);
 		}
+		self::$loader = array();
 	}
 	
 	public static function removeListener($action) {
@@ -152,15 +151,12 @@ class cardinalEvent {
 		array_shift($args);
 		$return = (isset($args[0]) ? $args[0] : false);
 		if(!empty($action) && !isset(self::$events[$action])) {
-			$loader = debug_backtrace();
-			if($loader[1]['function'] == 'execEventRef') {
-				$loader = $loader[1];
-			} else if($loader[1]['function'] == 'execEvent') {
-				$loader = $loader[1];
-			} else if($loader[0]['function'] == 'execute') {
-				$loader = $loader[0];
+			if(sizeof(self::$loader)==0) {
+				$loader = debug_backtrace();
+				self::$loader = $loader[0];
 			}
-			self::$events[$action] = $loader;
+			self::$events[$action] = self::$loader;
+			self::$loader = array();
 		}
 		if(!empty($action) && isset(self::$collection['standart']) && isset(self::$collection['standart'][$action])) {
 			ksort(self::$collection['standart'][$action]);
@@ -184,15 +180,12 @@ class cardinalEvent {
 	public static function executeRef($action, &$ref1 = "", &$ref2 = "", &$ref3 = "", &$ref4 = "", &$ref5 = "", &$ref6 = "", &$ref7 = "", &$ref8 = "") {
 		$return = ($ref1!==null ? $ref1 : false);
 		if(!empty($action) && !isset(self::$events[$action])) {
-			$loader = debug_backtrace();
-			if($loader[1]['function'] == 'execEventRef') {
-				$loader = $loader[1];
-			} else if($loader[1]['function'] == 'execEvent') {
-				$loader = $loader[1];
-			} else if($loader[0]['function'] == 'execute') {
-				$loader = $loader[0];
+			if(sizeof(self::$loader)==0) {
+				$loader = debug_backtrace();
+				self::$loader = $loader[0];
 			}
-			self::$events[$action] = $loader;
+			self::$events[$action] = self::$loader;
+			self::$loader = array();
 		}
 		if(!empty($action) && isset(self::$collection['ref']) && isset(self::$collection['ref'][$action])) {
 			ksort(self::$collection['ref'][$action]);

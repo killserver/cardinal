@@ -213,6 +213,7 @@ FileETag None
 	RewriteEngine On
 	RewriteCond %{HTTP_HOST} ^www\.(.*)$
 	RewriteRule ^(.*)$ http://%1/$1 [L,R=301]
+	RewriteRule ^index\.php$ - [L]
 	RewriteRule ^(.*)index\.(php|html|phtml|htm|php3|php4|php5|phps|pl|cgi?)$ /$1 [R=301,NC,L]
 	<IfModule brotli_module.c>
 		# Serve brotli compressed CSS files if they exist
@@ -248,5 +249,5 @@ FileETag None
 	RewriteRule ^changelog.txt$ changelog.php [L]
 	RewriteCond %{REQUEST_FILENAME} !-d
 	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteRule .* index.php/$0 [PT]
+	RewriteRule . index.php [L]
 </IfModule>

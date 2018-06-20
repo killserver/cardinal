@@ -7,18 +7,25 @@
 			<div class="panel-body">
 				<form method="post" role="form" action="./?pages=UserLevels&mod={typePage}" method="post" class="form-horizontal" enctype="multipart/form-data">
 					<div class="form-group">
-						<label class="col-sm-2 control-label" for="field-1">{L_"Название уровня доступа"}</label>
-						<div class="col-sm-10">
-							<input type="text" name="page" class="form-control" id="field-1" value="{name}"[if {isSystem}=="yes"] disabled="disabled"[/if {isSystem}=="yes"]>
+						<label class="col-sm-3 control-label" for="field-1">{L_"Название уровня доступа"}</label>
+						<div class="col-sm-9">
+							<input type="text" class="form-control" id="field-1" value="{name}"[if {isSystem}=="yes"] disabled="disabled"[/if {isSystem}=="yes"]>
 						</div>
 					</div>
-					<div class="form-group">[foreach block=levelChange]
-						<label class="col-sm-8 col-md-4 control-label" for="field-{levelChange.$id}">{L_"Доступ к"}&nbsp;"{levelChange.level}"</label>
-						<div class="col-sm-4 col-md-2">
-							<input type="checkbox" id="field-{levelChange.$id}" name="accessTo{levelChange.level}" class="iswitch iswitch-primary"[foreachif {levelChange.checked}=="yes"] checked="checked"[/foreachif {levelChange.checked}=="yes"]>
-						</div>[/foreach]
+					<div class="col-xs-12">
+						<div class="form-group">
+							[foreach block=levelChange]<div class="col-xs-12 col-md-4">
+								<div class="form-group">
+									<label class="col-xs-8 col-md-10 control-label" for="field-{levelChange.$id}">{L_"Доступ к"}&nbsp;"{L_"{levelChange.level}"}"</label>
+									<div class="col-xs-4 col-md-2">
+										<input type="hidden" name="userlevels[access_{levelChange.name}]" value="no">
+										<input type="checkbox" id="field-{levelChange.$id}" name="userlevels[access_{levelChange.name}]" class="iswitch iswitch-primary" value="yes"[foreachif {levelChange.checked}=="yes"] checked="checked"[/foreachif {levelChange.checked}=="yes"]>
+									</div>
+								</div>
+							</div>[/foreach]
+						</div>
 					</div>
-					<button class="btn btn-blue btn-icon btn-icon-standalone btn-icon-standalone-right btn-sm pull-right" disabled="disabled">
+					<button class="btn btn-blue btn-icon btn-icon-standalone btn-icon-standalone-right btn-sm pull-right">
 						<i class="fa-save"></i>
 						<span>{L_save}</span>
 					</button>

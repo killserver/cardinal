@@ -50,6 +50,9 @@ class Archer extends Core {
 			$typeUni = PREFIX_DB.$typeUni;
 		}
 		switch($page) {
+			case "sleep":
+
+			break;
 			/*
 			Quick save data in database
 			*/

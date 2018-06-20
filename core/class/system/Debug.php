@@ -78,25 +78,40 @@ class Debug {
 		templates::assign_var("total_includesize", $size);
 		/* End Include */
 		/* Start GET */
-		templates::assign_var("count_get", sizeof($_GET));
+		if(is_array($_GET)) {
+			$get = $_GET;
+		} else {
+			$get = array();
+		}
+		templates::assign_var("count_get", sizeof($get));
 		$i = 0;
-		foreach($_GET as $k => $v) {
+		foreach($get as $k => $v) {
 			templates::assign_vars(array("key" => $k, "val" => (is_string($v) ? $v : var_export($v, true))), "gets", "get".$i);
 			$i++;
 		}
 		/* End GET */
 		/* Start POST */
-		templates::assign_var("count_post", sizeof($_POST));
+		if(is_array($_POST)) {
+			$post = $_POST;
+		} else {
+			$post = array();
+		}
+		templates::assign_var("count_post", sizeof($post));
 		$i = 0;
-		foreach($_POST as $k => $v) {
+		foreach($post as $k => $v) {
 			templates::assign_vars(array("key" => $k, "val" => (is_string($v) ? $v : var_export($v, true))), "posts", "posts".$i);
 			$i++;
 		}
 		/* End POST */
 		/* Start COOKIE */
-		templates::assign_var("count_cookie", sizeof($_COOKIE));
+		if(is_array($_COOKIE)) {
+			$cookie = $_COOKIE;
+		} else {
+			$cookie = array();
+		}
+		templates::assign_var("count_cookie", sizeof($cookie));
 		$i = 0;
-		foreach($_COOKIE as $k => $v) {
+		foreach($cookie as $k => $v) {
 			templates::assign_vars(array("key" => $k, "val" => (is_string($v) ? $v : var_export($v, true))), "cookies", "cookie".$i);
 			$i++;
 		}

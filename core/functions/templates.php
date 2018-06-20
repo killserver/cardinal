@@ -90,7 +90,7 @@ global $user, $manifest;
 		}
 	}
 	if(isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && userlevel::get("admin") && Arr::get($_GET, "noShowAdmin", false)===false) {
-		$sRet .= '<script type="text/javascript" src="{C_default_http_local}'.get_site_path(PATH_SKINS).'core/admin.min.js" defer="defer"></script>';
+		$sRet .= '<script type="text/javascript" src="{C_default_http_local}'.get_site_path(PATH_SKINS).'core/admin.min.js?{S_time}" defer="defer"></script>';
 	}
 	if(sizeof($manifest['jscss'])>0) {
 		if(isset($manifest['jscss']['css']) && isset($manifest['jscss']['css']['link']) && is_array($manifest['jscss']['css']['link']) && sizeof($manifest['jscss']['css']['link'])>0) {

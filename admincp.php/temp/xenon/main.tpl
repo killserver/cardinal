@@ -278,7 +278,7 @@
 							<ul>[/foreachif {menu.type_st}=="start"&&{menu.existSub}==true]
 								<li[foreachif {menu.is_now}==1] class="active"[/foreachif][foreachif {menu.type_st}=="start"] style="display:none;"[/foreachif {menu.type_st}=="start"]>
 									<a href="{menu.link}">
-										[foreachif {menu.type}=="item"]<i class="{menu.icon}"></i>[/foreachif {menu.type}=="item"]
+										<i class="{menu.icon}"></i>
 										<span class="title">{menu.value}</span>
 									</a>
 								</li>
@@ -537,50 +537,7 @@
 	if(typeof(disableAllEditors)==="undefined") {
 		$(document).ready(function(){
 			if(typeof(editorTextarea)!=="object") {
-				editorTextarea = {
-					selector: 'textarea:not(.onlyText)',
-					height: 500,
-					language : selectLang,
-					plugins: ["{pluginsForEditor}"],
-					menubar: false,
-					toolbar: "styleselect | bold italic | alignleft aligncenter alignright | bullist numlist | outdent indent | image link localautosave fullscreen",
-					style_formats: [
-						{title: 'Header 2', format: 'h2'},
-						{title: 'Header 3', format: 'h3'},
-						{title: 'Header 4', format: 'h4'},
-						{title: 'Header 5', format: 'h5'},
-						{title: 'Header 6', format: 'h6'}
-					],
-					content_css: [],
-					valid_elements : "*[*]",
-					forced_root_block : '',
-					image_advtab: true, 
-					external_filemanager_path: default_admin_link+"assets/tinymce/filemanager/",
-					filemanager_title: "{L_"Загрузка файлов"}", 
-					external_plugins: { "filemanager" : default_admin_link+"assets/tinymce/filemanager/plugin.min.js"},
-					readonly: (typeof(readOnlyEditor)=="undefined" ? 0 : 1),
-					las_seconds: 15,
-					las_nVersions: 15,
-					las_keyName: "LocalAutoSave",
-					las_callback: function() {
-						var content = this.content; //content saved
-						var time = this.time; //time on save action
-						console.log(content);
-						console.log(time);
-					},
-					cleanup: false,
-					verify_html: false,
-					cleanup_on_startup: false,
-					validate_children: false,
-					remove_redundant_brs: false,
-					remove_linebreaks: false,
-					force_p_newlines: false,
-					force_br_newlines: false,
-					valid_children: "+li[p|img|br|strong],+ol[p|img|br|strong],+ul[p|img|br|strong]",
-					validate: false,
-					fix_table_elements: false,
-					fix_list_elements: false,
-				}
+				editorTextarea = {configTinymce};
 			}
 			tinymce.init(editorTextarea);
 			jQuery("body").on("click", '.iframe-btn', function() {

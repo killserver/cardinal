@@ -911,8 +911,8 @@ body {
   overflow: hidden;
   list-style: none;
   background: #1b1c1d;
-  margin: 0px -40px;
-  padding: 0px 40px;
+  margin: 0px -20px;
+  padding: 0px 20px;
 }
 .sidebar-menu .main-menu ul li:last-child a {
     border: 0px;
@@ -7483,4 +7483,13 @@ span#doc_time .delimer {
     width: 20px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale
+}
+
+.sidebar-menu .main-menu ul li a {
+  position: relative;
+}
+
+.sidebar-menu .main-menu ul li a i {
+  position: absolute;
+  left: 10px;
 }

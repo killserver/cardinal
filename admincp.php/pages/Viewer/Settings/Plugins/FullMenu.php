@@ -6,7 +6,7 @@ class Settings_FullMenu extends Settings {
 		Settings::AddFunc(array("name" => "FullMenu", "func" => array(&$this, "PluginSave")));
 		Settings::AddNav(array(array(
 			"subname" => "FullMenu",
-			"name" => "{L_FullMenu}",
+			"name" => "{L_\"Полное боковое меню\"}",
 			"options" => "{include templates=\"FullMenu.tpl,\"}",
 		)));
 	}

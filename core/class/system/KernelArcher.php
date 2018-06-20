@@ -115,6 +115,8 @@ class KernelArcher {
 		$firstId = $model->getFirst();
 		$selectId = $model->{$firstId};
 		$model = $this->callArr($model, "TakeAddModel", array($model, $firstId, "countCall" => ""));
+		$model = execEvent("KernelArcher-TakeAddModel-Before", $model, $firstId);
+		$model = execEvent("KernelArcher-TakeAddModel", $model, $firstId);
 		unset($model->{$firstId});
 		$list = $model->getArray();
 		if(isset($model->pathForUpload)) {
@@ -181,6 +183,7 @@ class KernelArcher {
 			$model->{$k} = $type;
 		}
 		$model = $this->callArr($model, "TakeAddModel", array($model, $firstId, "countCall" => ""));
+		$model = execEvent("KernelArcher-TakeAddModel-After", $model, $firstId);
 		$getExclude = KernelArcher::excludeField("get", "Edit");
 		for($i=0;$i<sizeof($getExclude);$i++) {
 			if(isset($model->{$getExclude[$i]})) {
@@ -326,6 +329,8 @@ class KernelArcher {
 		$firstId = $models->getFirst();
 		$selectId = $models->{$firstId};
 		$models = $this->callArr($models, "TakeEditModel", array($models, $firstId, "countCall" => ""));
+		$model = execEvent("KernelArcher-TakeEditModel-Before", $model, $firstId);
+		$model = execEvent("KernelArcher-TakeEditModel", $model, $firstId);
 		unset($model->{$firstId});
 		$list = $models->getArray();
 		if(isset($model->pathForUpload)) {
@@ -406,6 +411,7 @@ class KernelArcher {
 			$model->{$k} = $type;
 		}
 		$model = $this->callArr($model, "TakeEditModel", array($model, $firstId, "countCall" => ""));
+		$model = execEvent("KernelArcher-TakeEditModel-After", $model, $firstId);
 		$getExclude = KernelArcher::excludeField("get", "Edit");
 		for($i=0;$i<sizeof($getExclude);$i++) {
 			if(isset($model->{$getExclude[$i]})) {
@@ -496,6 +502,8 @@ class KernelArcher {
 			$models = $model;
 		}
 		$del = $this->callArr($model, "TakeDelete", array($model, $models));
+		$del = execEvent("KernelArcher-TakeDelete-Before", $model, $models);
+		$del = execEvent("KernelArcher-TakeDelete", $model, $models);
 		if(is_array($del) && isset($del['model'])) {
 			$model = $del['model'];
 		}
@@ -561,6 +569,7 @@ class KernelArcher {
 			db::doquery("INSERT INTO {{trashBin}} SET `tTable` = ".db::escape($this->selectTable).", `tData` = ".db::escape(json_encode($models)).", `tTime`= UNIX_TIMESTAMP(), `tIp` = '".HTTP::getip()."'");
 			cardinal::RegAction("Перемещение данных в Арчере в корзину. Модель \"".$modelName."\". ИД: \"".$first."\"");
 		}
+		$del = execEvent("KernelArcher-TakeDelete-After", $model);
 		$list = $model->Deletes();
 		$addition = "";
 		if(Arr::get($_GET, "ShowPages", false)) {
@@ -626,7 +635,9 @@ class KernelArcher {
 		$objName = get_class($model);
 		$model->SetTable($this->selectTable);
 		$model->multiple(true);
+		$model = execEvent("KernelArcher-Shield-Before-Data", $model);
 		$list = $model->Select();
+		$list = execEvent("KernelArcher-Shield-Data", $list);
 		if(is_object($list)) {
 			$list = $list->getArray();
 			$list = $this->callArr($list, "ShieldFunc", array($list));
@@ -638,7 +649,7 @@ class KernelArcher {
 				if(is_null($first)) {
 					continue;
 				}
-				$subList = $this->callArr($subList, "ShieldFunc", array($subList), array(), false);
+				$subList = $this->callArr($subList, "ShieldFunc", array($subList), array());
 				$this->AddBlocks("Mains", $subList, $objName, $objName."-".current($subList));
 			}
 		}

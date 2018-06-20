@@ -247,12 +247,13 @@ class Core {
 		execEventRef("admin_menu_loaded", $links, $now);
 		foreach($links as $name => $datas) {
 			if(isset($datas['item']) && is_array($datas['item'])) {
+				$newArr = array();
 				for($is=0;$is<sizeof($datas['item']);$is++) {
-					if(isset($datas['item'][$is]['access']) && !$datas['item'][$is]['access']) {
-						unset($datas['item'][$is]);
+					if(isset($datas['item'][$is]['access']) && $datas['item'][$is]['access']===true) {
+						$newArr[] = $datas['item'][$is];
 					}
 				}
-				$datas['item'] = array_values($datas['item']);
+				$datas['item'] = array_values($newArr);
 				if(sizeof($datas['item'])>1) {
 					$type = "cat";
 				} elseif(sizeof($datas['item'])==1) {
@@ -540,13 +541,33 @@ class Core {
 		if(empty($echoView) && $force) {
 			$echoView = $echo;
 		}
-		$pluginsForEditor = array();
-		if(($arr = config::Select("pluginsForEditor")) !== false) {
-			if(is_array($arr)) {
-				$pluginsForEditor = array_merge($pluginsForEditor, $arr);
+		$configTinymce = execEvent("configTinymce", false);
+		if($configTinymce===false) {
+			$sublink = array();
+			if(isset($_GET['pages']) || Route::param("in_page", false)) {
+				if(($sublinke = Route::param("in_page", false))!==false) {
+					$sublink[] = $sublinke;
+				} else if(isset($_GET['pages'])) {
+					$sublink[] = $_GET['pages'];
+				}
+			}
+			if(isset($_GET['type']) || Route::param("type", false)) {
+				if(($sublinke = Route::param("type", false))!==false) {
+					$sublink[] = $sublinke;
+				} else if(isset($_GET['type'])) {
+					$sublink[] = $_GET['pages'];
+				}
+			}
+			$sublink = implode("-", $sublink);
+			if(file_exists(PATH_CACHE_USERDATA.$sublink.".json")) {
+				$configTinymce = file_get_contents(PATH_CACHE_USERDATA.$sublink.".json");
+			} else if(file_exists(PATH_CACHE_USERDATA."configTinymce.json")) {
+				$configTinymce = file_get_contents(PATH_CACHE_USERDATA."configTinymce.json");
+			} else {
+				$configTinymce = file_get_contents(PATH_MEDIA."configTinymce.json");
 			}
 		}
-		$echos = str_replace("{pluginsForEditor}", implode(" ", $pluginsForEditor), $echos);
+		$echos = str_replace("{configTinymce}", $configTinymce, $echos);
 		echo str_replace("{main_admin}", $echoView, $echos);
 	}
 	

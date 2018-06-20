@@ -31,9 +31,13 @@ if(version_compare(PHP_VERSION, '5.1.2', '>=')) {
 }
 
 function addEvent() {
+	$loader = debug_backtrace();
+	cardinalEvent::loader($loader[0]);
 	return call_user_func_array("cardinalEvent::addListener", func_get_args());
 }
 function addEventRef() {
+	$loader = debug_backtrace();
+	cardinalEvent::loader($loader[0]);
 	return call_user_func_array("cardinalEvent::addListenerRef", func_get_args());
 }
 
@@ -46,10 +50,14 @@ function removeEventRef() {
 }
 
 function execEvent() {
+	$loader = debug_backtrace();
+	cardinalEvent::loader($loader[0]);
 	return call_user_func_array("cardinalEvent::execute", func_get_args());
 }
 
 function execEventRef($action, &$args1 = "", &$args2 = "", &$args3 = "", &$args4 = "", &$args5 = "", &$args6 = "", &$args7 = "", &$args8 = "") {
+	$loader = debug_backtrace();
+	cardinalEvent::loader($loader[0]);
 	return call_user_func_array("cardinalEvent::executeRef", array($action, &$args1, &$args2, &$args3, &$args4, &$args5, &$args6, &$args7, &$args8));
 }
 

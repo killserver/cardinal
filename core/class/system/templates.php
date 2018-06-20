@@ -277,14 +277,35 @@ class templates {
 		}
 		if(empty($block)) {
 			foreach($array as $name => $value) {
+				if(is_bool($value)) {
+					if($value===true) {
+						$value = "true";
+					} else if($value===false) {
+						$value = "false";
+					}
+				}
 				self::$blocks[$name] = $value;
 			}
 		} elseif(!empty($view)) {
 			foreach($array as $name => $value) {
+				if(is_bool($value)) {
+					if($value===true) {
+						$value = "true";
+					} else if($value===false) {
+						$value = "false";
+					}
+				}
 				self::$blocks[$block][$view][$name] = $value;
 			}
 		} else {
 			foreach($array as $name => $value) {
+				if(is_bool($value)) {
+					if($value===true) {
+						$value = "true";
+					} else if($value===false) {
+						$value = "false";
+					}
+				}
 				self::$blocks[$block][$name] = $value;
 			}
 		}
@@ -367,6 +388,13 @@ class templates {
 	final public static function assign_var($name, $value, $block = "", $id = "") {
 		if($id==="") {
 			$id = uniqid();
+		}
+		if(is_bool($value)) {
+			if($value===true) {
+				$value = "true";
+			} else if($value===false) {
+				$value = "false";
+			}
 		}
 		if(empty($block)) {
 			self::$blocks[$name] = $value;
@@ -972,6 +1000,12 @@ class templates {
 			if(strpos($e, "{")!==false) {
 				$e = preg_replace("#\{(.+?)\}#", "$1", $e);
 			}
+		} elseif($array[1]=="true") {
+			$type = "yes";
+			$e = array($array[1], $array[1]);
+		} elseif($array[1]=="false") {
+			$type = "not";
+			$e = array($array[1], $array[1]);
 		}
 		if(!isset($type)) return false;
 		if($type == "UL") {
@@ -1071,7 +1105,7 @@ class templates {
 			}
 		} elseif($type == "empty") {
 			$e = str_replace("\"", "", $e);
-			if((empty($e) || $else) && $good) {
+			if(($e==="" || $else) && $good) {
 				unset($e);
 				unset($type);
 				return $data;
@@ -1082,7 +1116,7 @@ class templates {
 			}
 		} elseif($type == "not_empty") {
 			$e = str_replace("\"", "", $e);
-			if((!empty($e) || isset(self::$blocks[$e]) || $else) && $good) {
+			if(($e!=="" || isset(self::$blocks[$e]) || $else) && $good) {
 				unset($e);
 				unset($type);
 				return $data;
@@ -1931,7 +1965,9 @@ class templates {
 			$tpl = self::callback_array("#\{include (.+?)=['\"](.*?)['\"](|[\"'](.+?)[\"'])\}#", ("templates::includeFile"), $tpl);
 			$tpl = self::callback_array("~\{is_last\[(\"|)(.+?)(\"|)\]\}~", ("templates::count_blocks"), $tpl);
 			$tpl = self::callback_array("#\{UL_(.*?)(|\[(.*?)\])\}#", ("templates::level"), $tpl);
-			$tpl = self::callback_array("#\{LP_\[(.*?)\]\[(.*?)\](|\[(.*?)\])\}#", ("plural_form"), $tpl);
+			if(function_exists("plural_form")) {
+				$tpl = self::callback_array("#\{LP_\[(.*?)\]\[(.*?)\](|\[(.*?)\])\}#", ("plural_form"), $tpl);
+			}
 			$tpl = self::callback_array("#\{RP\[([a-zA-Z0-9\-_]+)\]\}#", ("templates::routeparam"), $tpl);
 			$tpl = self::callback_array("#\{R_\[(.+?)\]\[(.+?)\]\}#", ("templates::route"), $tpl);
 			$tpl = self::callback_array("#\{R_\[(.+?)\]\}#", ("templates::route"), $tpl);

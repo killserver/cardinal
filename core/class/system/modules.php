@@ -25,7 +25,6 @@ die();
 class modules {
 	
 	private static $load_modules = false;
-	private static $columns = array();
 	private static $access_user = array('id', 'username', 'alt_name', 'level', 'email', 'time_reg', 'last_activ', 'activ', 'avatar');
 	
 	final public static function checkObject($obj, $name, $checkParent = false) {
@@ -526,12 +525,14 @@ class modules {
 			$db->query("DROP TABLE IF EXISTS {{".$table_name."}};");
 		}
 		$db->query("CREATE TABLE IF NOT EXISTS {{".$table_name."}} (".$fields.") ENGINE=MyISAM;");
+		$db->flushCacheTables();
 		return true;
 	}
 	
 	final public static function drop_table($table_name) {
 		$db = self::init_db();
 		$db->query("DROP TABLE IF EXISTS {{".$table_name."}};");
+		$db->flushCacheTables();
 		return true;
 	}
 	
@@ -545,9 +546,10 @@ class modules {
 					$comment = $v['comment'];
 					$v = $v['value'];
 				}
-				$db->query("ALTER TABLE {{".$table_name."}} ADD `".$k."` ".(strpos($v, "CHARACTER")!==false ? $v : $v." CHARACTER SET ".self::get_config("db", "charset")." COLLATE ".self::get_config("db", "charset")."_general_ci").(!empty($comment) ? " COMMENT ".db::escape($comment) : ""));
+				$db->query("ALTER TABLE {{".$table_name."}} ADD `".$k."` ".(strpos($v, "CHARACTER")!==false ? $v : $v." COLLATE ".self::get_config("db", "charset")."_general_ci").(!empty($comment) ? " COMMENT ".db::escape($comment) : ""));
 			}
 		}
+		$db->flushCacheTables();
 		return true;
 	}
 	
@@ -559,6 +561,7 @@ class modules {
 				$db->query("ALTER TABLE {{".$table_name."}} DROP COLUMN `".$v."`");
 			}
 		}
+		$db->flushCacheTables();
 		return true;
 	}
 	
@@ -581,6 +584,7 @@ class modules {
 				$db->query("ALTER TABLE {{".$table_name."}} CHANGE `".$or."` `".$k."` ".(strpos($v, "CHARACTER")!==false ? $v : $v." CHARACTER SET ".self::get_config("db", "charset")." COLLATE ".self::get_config("db", "charset")."_general_ci").(!empty($comment) ? " COMMENT ".db::escape($comment) : ""));
 			}
 		}
+		$db->flushCacheTables();
 		return true;
 	}
 
@@ -675,7 +679,7 @@ class modules {
 		}
 		$REDIRECT_URL = $server;
 		$Lang = Route::param('lang');
-		$REDIRECT_URL = preg_replace('#'.self::get_config("default_http_local").$Lang.'#', '', $REDIRECT_URL);
+		$REDIRECT_URL = preg_replace('#^'.self::get_config("default_http_local").$Lang.'#', '', $REDIRECT_URL);
 		if(empty($REDIRECT_URL)) {
 			$REDIRECT_URL = self::get_config("default_http_local");
 		}

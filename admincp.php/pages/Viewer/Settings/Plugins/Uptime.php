@@ -6,7 +6,7 @@ class Settings_Uptime extends Settings {
 		Settings::AddFunc(array("name" => "Uptime", "func" => array(&$this, "PluginSave")));
 		Settings::AddNav(array(array(
 			"subname" => "uptime",
-			"name" => "{L_uptime}",
+			"name" => "{L_\"Время работы\"}",
 			"options" => "{include templates=\"Uptime.tpl,\"}",
 		)));
 	}

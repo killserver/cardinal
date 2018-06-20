@@ -3,6 +3,35 @@
 class UserLevels extends Core {
 	
 	function __construct() {
+		$userlevelName = array(
+			"admin" => "админ-панели",
+			"antivirus" => "антивирусу",
+			"atextadmin" => "модулю AText",
+			"clearcache_all" => "очистке всего кеша",
+			"clearcache_data" => "очистке кеша данных",
+			"clearcache_tmp" => "очистке кеша шаблонов",
+			"customize" => "кастомизации шаблона",
+			"debugpanel" => "дебаг-панели, которая будет активироваться в админ-панели и постоянно находиться на сайте в любых разделах",
+			"developer" => "разрабатываемым разделам(ТОЛЬКО ДЛЯ РАЗРАБОТЧИКОВ!!!)",
+			"editor" => "редактору кода",
+			"edittemplate" => "редактору частей шаблонов",
+			"languages" => "языковой панели",
+			"loginadmin" => "списку действий в админ-панели",
+			"logs" => "отчётам ошибок на сайте",
+			"phpinfo" => "системной информации о сервере",
+			"recyclebin" => "корзине данных, куда помещаются данные на 30 дней после удаления их из таблиц при помощи Арчера",
+			"seo" => "СЕО-мета",
+			"seoBlock" => "СЕО-блоку",
+			"settings" => "примитивным настройкам для заказчика",
+			"settinguser" => "расширенным настройкам для системного администратора",
+			"showloads" => "просмотру загрузки сервера",
+			"updates" => "возможности обновлять движок из админ-панели",
+			"userlevels" => "уровням доступа",
+			"users" => "списку пользователей",
+			"yui_admin" => "настройке системы YUI",
+			"site" => "сайту",
+		);
+		$userlevelName = execEvent("userlevel_all", $userlevelName);
 		$userlevels = userlevel::all();
 		$myLevel = User::get("level");
 		if(Arr::get($_GET, 'mod', false) && Arr::get($_GET, 'mod')=="Add") {
@@ -33,12 +62,45 @@ class UserLevels extends Core {
 			}
 			$levels = array_flip($levels);
 			$userlevels = $userlevels[$_GET['id']];
+			$userlevels = execEvent("userlevel_".$_GET['id'], $userlevels);
+			if(sizeof($_POST)>0) {
+				$userlevels = userlevel::all();
+				$userlevels[$_GET['id']] = $_POST['userlevels'];
+				$txt = '<?php if(!defined("IS_CORE")) { echo "403 ERROR"; die(); } $userlevels = array_replace($userlevels, array(';
+				foreach($userlevels as $id => $access) {
+					$txt .= '"'.$id.'" => array(';
+					$keys = array_keys($access);
+					for($i=0;$i<sizeof($keys);$i++) {
+						$txt .= ' "'.$keys[$i].'" => "'.$access[$keys[$i]].'", ';
+					}
+					$txt .= '),';
+				}
+				$txt .= '));';
+				if(!@is_writable(PATH_MEDIA)) {
+					@chmod(PATH_MEDIA, 0777);
+				}
+				if(file_exists(PATH_MEDIA."userlevels.".ROOT_EX)) {
+					if(!@is_writable(PATH_MEDIA."userlevels.".ROOT_EX)) {
+						@chmod(PATH_MEDIA."userlevels.".ROOT_EX, 0777);
+					}
+					@unlink(PATH_MEDIA."userlevels.".ROOT_EX);
+				}
+				file_put_contents(PATH_MEDIA."userlevels.".ROOT_EX, $txt);
+				location("./?pages=UserLevels");
+				return false;
+			}
+			templates::assign_var("level_id", intval($_GET['id']));
 			templates::assign_var("name", $levels[$_GET['id']]);
 			templates::assign_var("isSystem", "yes");
-			templates::assign_var("typePage", "Add");
+			templates::assign_var("typePage", "Edit&id=".$_GET['id']);
 			$i = 0;
-			foreach($userlevels as $key => $value) {
-				templates::assign_var("level", str_replace("access_", "", $key), "levelChange", "lvl".($i+1));
+			foreach($userlevelName as $name => $lang) {
+				$value = "no";
+				if(isset($userlevels["access_".$name])) {
+					$value = "yes";
+				}
+				templates::assign_var("name", $name, "levelChange", "lvl".($i+1));
+				templates::assign_var("level", $lang, "levelChange", "lvl".($i+1));
 				templates::assign_var("checked", ($value=="yes" ? "yes" : "no"), "levelChange", "lvl".($i+1));
 				$i++;
 			}

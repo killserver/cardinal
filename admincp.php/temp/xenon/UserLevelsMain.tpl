@@ -1,4 +1,4 @@
-<center><a href="./?pages=UserLevels&mod=Add" class="btn btn-secondary">{L_add}</a></center>
+<!--center><a href="./?pages=UserLevels&mod=Add" class="btn btn-secondary">{L_add}</a></center-->
 <table id="example-1" class="table table-striped table-bordered" cellspacing="0" width="100%">
 <thead>
 	<tr>

@@ -10,6 +10,7 @@ class Archer_Edit {
 	public function Headers($table, $page, $models, $tpl) {
 		$getExclude = KernelArcher::excludeField("get", "Edit");
 		$list = $models->getArray();
+		$list = execEvent("archer_list_ready", $list);
 		$first = $models->getFirst();
 		$isId = $list[$first];
 		unset($list[$first]);
@@ -18,6 +19,7 @@ class Archer_Edit {
 				$list = call_user_func_array(KernelArcher::$editModel["Edit"][$i], array($list, $getExclude));
 			}
 		}
+		$list = execEvent("archer_list_done", $list);
 		if(isset($_GET['get'])) {
 			$k = $_GET['get'];
 			$l = $models->getAttribute($k, 'type');
@@ -51,6 +53,7 @@ class Archer_Edit {
 		}
 		$body = "";
 		$supportedLang = array();
+		$fields = array();
 		foreach($list as $k => $v) {
 			if(in_array($k, $getExclude)) {
 				continue;
@@ -62,6 +65,7 @@ class Archer_Edit {
 				$supportedLang[$lang] = array("lang" => $lang);
 			}
 			$l = $models->getAttribute($k, 'type');
+			$fields[$k] = array("type" => $l, "value" => $v);
 			$default = ($where==$k ? $whereData : $models->getAttribute($k, 'default'));
 			$typeData = $models->getAttribute($k, "typeData");
 			if(is_array($v) && (!empty($where) && !empty($whereData) && $where==$k && isset($v[$whereData]) || isset($v['default']))) {
@@ -77,6 +81,8 @@ class Archer_Edit {
 			$body .= KernelArcher::Viewing($l, $k, $v, $default, false, $isAjax, $lang);
 		}
 		sortByKey($supportedLang);
+		execEvent("archer_data_ready", $fields, $supportedLang);
+		$body = execEvent("archer_body_ready", $body);
 		foreach($supportedLang as $v) {
 			templates::assign_vars($v, "supportedLang");
 		}
