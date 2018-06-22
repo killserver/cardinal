@@ -512,16 +512,8 @@ if(!function_exists("hex2bin")) {
 
 function vdump() {
 	$list = func_get_args();
-	$last = end($list);
-	if(is_string($last) && sizeof($list)>1) {
-		$title = $last;
-		$last = key($list);
-		unset($list[$last]);
-	} else {
-		$title = "";
-	}
 	$backtrace = debug_backtrace();
-	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "<b style=\"color:#00f;\">Called:</b> ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "").(!empty($title) ? "<b>".$title."</b>\n\n" : '');
+	echo '<pre style="text-align:left;margin:0.5rem 0rem;background:#222;color:#fff;padding:0.5rem;"><div style="background:#fff;padding:0.5rem;">'. (isset($backtrace[0]) ? "<b style=\"color:#00f;text-decoration:underline;font-weight:bold;font-size:1rem;\">Called:</b><span style=\"color:#00f;text-decoration:underline;\"> ".$backtrace[0]['file']." [".$backtrace[0]['line']."]" : "")."</span></div>".(isset($backtrace[0]) ? "\n" : "");
 	if(sizeof($list)>0) {
 		call_user_func_array("var_dump", $list);
 	}

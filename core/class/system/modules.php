@@ -686,6 +686,23 @@ class modules {
 		return $REDIRECT_URL;
 	}
 
+	public static function getDataLang($data, $lang) {
+		$slang = self::init_lang();
+		$slang = $slang->support(true);
+		$slang = array_map("ucfirst", $slang);
+		$arr = array();
+		foreach($data as $k => $v) {
+			$key = substr($k, -2);
+			if(!in_array($key, $slang)) {
+				$arr[$k] = $v;
+			} else if($key===$lang) {
+				$k = substr($k, 0, -2);
+				$arr[$k] = $v;
+			}
+		}
+		return $arr;
+	}
+
 }
 
 ?>

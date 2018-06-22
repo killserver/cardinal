@@ -9,7 +9,7 @@ $links['System']["cat"][] = array(
 'link' => "#",
 'title' => "{L_\"Системное\"}",
 'type' => "cat",
-'access' => (userlevel::get("recyclebin") && file_exists(PATH_CACHE_USERDATA."trashBin.lock")) || userlevel::get("phpinfo") || userlevel::get("logs") || userlevel::get("loginadmin") || $active || userlevel::get("userlevels") || (userlevel::get("users") && !defined("WITHOUT_DB")) || (userlevel::get("antivirus") && is_writable(PATH_CACHE_SYSTEM.DS)) || userlevel::get("yui_admin"),
+'access' => (userlevel::get("recyclebin") && file_exists(PATH_CACHE_USERDATA."trashBin.lock")) || userlevel::get("phpinfo") || userlevel::get("logs") || userlevel::get("loginadmin") || $active || userlevel::get("userlevels") || (userlevel::get("users") && !defined("WITHOUT_DB")) || (userlevel::get("antivirus") && is_writable(PATH_CACHE_SYSTEM.DS)) || userlevel::get("yui_admin") || ((!defined("WITHOUT_DB") || db::connected()) && userlevel::get("atextadmin")),
 'icon' => 'fa-dashboard',
 );
 $links['System']["item"][] = array(
@@ -76,5 +76,12 @@ $links['System']["item"][] = array(
 'type' => "item",
 'access' => userlevel::get("yui_admin"),
 'icon' => 'fa-book',
+);
+$links['System']["item"][] = array(
+'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=ATextAdmin",
+'title' => "{L_\"Редактирование текста на страницах\"}",
+'type' => "item",
+'access' => (!defined("WITHOUT_DB") || db::connected()) && userlevel::get("atextadmin"),
+'icon' => 'fa-folder-o',
 );
 ?>

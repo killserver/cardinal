@@ -180,6 +180,7 @@ $config = array_merge($config, array(
 	"gzip" => false,
 	"mobyActive" => false,
 	"default_http_mobyhost" => "",
+	"new_method_uri" => true,
 	"uses" => array(
 		"Mobile Detect" => "2.8.28",
 		"PHPMailer" => "6.0.2",

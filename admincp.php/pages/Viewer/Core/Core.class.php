@@ -567,6 +567,9 @@ class Core {
 				$configTinymce = file_get_contents(PATH_MEDIA."configTinymce.json");
 			}
 		}
+		$lang = lang::support(true);
+		$lang = array_map("nucfirst", $lang);
+		$echos = str_replace("{langSupport}", json_encode($lang), $echos);
 		$echos = str_replace("{configTinymce}", $configTinymce, $echos);
 		echo str_replace("{main_admin}", $echoView, $echos);
 	}

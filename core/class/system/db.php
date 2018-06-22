@@ -511,7 +511,7 @@ class db {
 				if(!empty($only)) {
 					return self::$qid;
 				} else {
-					return self::fetch_array();
+					return self::fetch_assoc();
 				}
 			} else {
 				return self::$qid;
@@ -582,9 +582,7 @@ class db {
 			if($backtrace[$i]['file']!=$file) {
 				$ret = $backtrace[$i];
 				foreach($ret as $k => $v) {
-					if(is_array($v)) {
-						unset($ret[$k]);
-					} else {
+					if(is_string($v)) {
 						$ret[$k] = str_replace(ROOT_PATH, DS, $v);
 					}
 				}

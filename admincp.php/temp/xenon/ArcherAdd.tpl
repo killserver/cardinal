@@ -64,6 +64,55 @@ $(".form-horizontal ul li a").click(function() {
 		}
 	});
 });
+function ucfirst(text) { return text.substr(0, 1).toUpperCase()+text.substr(1); }
+selectedLang = ucfirst(selectLang);
+var arrLang = [];
+for(var i=0;i<langSupport.length;i++) {
+	if(langSupport[i]!=selectedLang) { arrLang[arrLang.length] = langSupport[i]; }
+}
+langSupport = arrLang;
+$(document).ready(function() {
+	setTimeout(function() {
+		$("form > div").each(function(i, elem) {
+			var block = $(elem).attr("class").replace("form-group block-", "");
+			var tt = tinymce.get(block);
+			if(tt!=null) {
+				tt.on("input", function() {
+					var text = this.getContent();
+					var name = this.id;
+					for(var i=0;i<langSupport.length;i++) {
+						name = name.replace(new RegExp(selectedLang, "g"), "");
+						name = name.replace(new RegExp(langSupport[i], "g"), "");
+						var sup = tinymce.get(name+langSupport[i]);
+						if(sup!=null && sup.getContent()==text.substr(0, text.length-1)) {
+							tinymce.get(name+langSupport[i]).setContent(text);
+						}
+					}
+				});
+			} else {
+				var ret = false;
+				if(block.indexOf(selectedLang)>-1) {
+					ret = true;
+				}
+				if(ret) {
+					$(elem).find("textarea,input").on("input", function() {
+						var name = this.id;
+						var text = this.value;
+						for(var i=0;i<langSupport.length;i++) {
+							name = name.replace(new RegExp(selectedLang, "g"), "");
+							name = name.replace(new RegExp(langSupport[i], "g"), "");
+							var data = $("#"+name+langSupport[i]);
+							console.log(data.val(), text);
+							if(data!=null && data.val()==text.substr(0, text.length-1)) {
+								data.val(text);
+							}
+						}
+					});
+				}
+			}
+		});
+	}, 2000);
+});
 [ajax]var linkForSubmit = "./?pages=Archer&type={ArcherPath}&pageType=Take{ArcherPage}{addition}{ref}";[/ajax]
 var i = 1;
 function removeInputFile(th, name, val) {

@@ -3,7 +3,9 @@
 class SettingUser_Main extends SettingUser {
 
 	function __construct() {
-		self::add("{include templates=\"Main.tpl,SettingUser\"}", "{L_'Настройка системы'}");
+		$echos = "{include templates=\"Main.tpl,SettingUser\"}";
+		$echos = execEvent("settinguser_main", $echos);
+		self::add($echos, "{L_'Настройка системы'}");
 	}
 
 }

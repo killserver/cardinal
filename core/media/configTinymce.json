@@ -2,9 +2,9 @@
 	"selector": "textarea:not(.onlyText)",
 	"height": 500,
 	"language" : selectLang,
-	"plugins": ["advlist", "anchor", "autolink", "code", "contextmenu", "charmap", "fullscreen", "lists", "link", "localautosave", "media", "image", "imagetools", "paste", "responsivefilemanager", "visualblocks"],
+	"plugins": ["advlist", "autolink", "code", "charmap", "fullscreen", "lists", "link", "localautosave", "media", "image", "imagetools", "paste", "responsivefilemanager", "visualblocks"],
 	"menubar": false,
-	"toolbar": "styleselect | bold italic | alignleft aligncenter alignright | bullist numlist | outdent indent | image link localautosave fullscreen",
+	"toolbar": "styleselect | bold italic | alignleft aligncenter alignright | bullist numlist | outdent indent | image link localautosave code fullscreen",
 	"style_formats": [
 		{"title": "Header 1", "format": "h1"},
 		{"title": "Header 2", "format": "h2"},

@@ -44,11 +44,6 @@ class Main extends Core {
 		} else {
 			templates::assign_var("debugpanelshow", "0");
 		}
-		if(userlevel::get("showloads")) {
-			templates::assign_var("showLoads", "1");
-		} else {
-			templates::assign_var("showLoads", "0");
-		}
 		if(userlevel::get("clearcache_all")) {
 			templates::assign_var("clearCacheAll", "1");
 		} else {

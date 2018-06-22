@@ -60,10 +60,13 @@ class userlevel {
 	 * @param string $get Checking access
 	 * @return bool Result access
      */
-	final public static function get($get) {
+	final public static function get($get = "") {
 		$all = self::all();
 		$username = User::get('username');
 		$level = User::get('level');
+		if($get==="") {
+			return $all[$level];
+		}
 		$specials = User::get('specials');
 		if(is_bool($specials)) {
 			$specials = array();

@@ -476,6 +476,9 @@ class templates {
 			$dd = $text;
 			$nams = array_keys($data[$key[$i]]);$vals = array_values($data[$key[$i]]);
 			for($is=0;$is<sizeof($data[$key[$i]]);$is++) {
+				if(!is_string($vals[$is])) {
+					$vals[$is] = var_export($vals[$is], true);
+				}
 				$new = str_replace('{$id}', $num, $dd);
 				$new = str_replace('{$rid}', $rnum, $new);
 				$new = str_replace('{'.$array[1].'.$id}', $num, $new);

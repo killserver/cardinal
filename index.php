@@ -66,6 +66,9 @@ if(!empty($server) || (defined("ROUTE_GET_URL") && isset($_SERVER[ROUTE_GET_URL]
 } else {
 	$page = "main";
 }
+if(config::Select("new_method_uri")) {
+	Route::newMethod();
+}
 Route::Build(array(
 	"route" => modules::manifest_get('route'),
 ), 2);

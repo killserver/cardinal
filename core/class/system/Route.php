@@ -44,6 +44,11 @@ class Route {
 	private static $_lang = "";
 	private static $_langForce = "";
 	private static $_loaded = "";
+	private static $_newMethod = false;
+
+	final public static function newMethod() {
+		self::$_newMethod = true;
+	}
 
 	final public static function setSecret($name) {
 		self::$_secret = $name;
@@ -286,18 +291,35 @@ class Route {
 
 	final public static function Load($default = "") {
 		$uri = getenv(ROUTE_GET_URL);
-		$len = strlen("/index.php");
+		$v = getenv("SCRIPT_NAME");
+		$len = "index.php";
+		if(($pos = strpos($v, "index.php"))!==false) {
+			$v = substr($v, 0, $pos-$len);
+		}
+		$len = strlen("index.php");
 		if(substr($uri, 0, $len)==="/index.php") {
 			$uri = substr($uri, $len);
 		}
 		$len = strlen($uri);
 		if(strpos($uri, "&")!==false) {
-			$len = strpos($uri, "&")-1;
+			$len = strpos($uri, "&");
 		}
 		if(strpos($uri, "?")!==false) {
-			$len = strpos($uri, "?")-1;
+			$len = strpos($uri, "?");
 		}
-		$uri = substr($uri, 1, $len);
+		if($len>0) {
+			$uri = substr($uri, 0, $len);
+		} else {
+			$uri = "";
+		}
+		if($v!=="/") {
+			$uri = str_replace($v, "", $uri);
+		} else {
+			$uri = substr($uri, 1);
+		}
+		if($uri===$v) {
+			return array('params' => array("pages" => "main"), 'route' => "");
+		}
 		if(!isset($GLOBALS[self::$_secret])) {
 			return false;
 		}
@@ -324,7 +346,7 @@ class Route {
 						$params['lang'] = $params['now_lang'];
 					} else if(isset($params['now_lang']) && !empty($params['now_lang']) && sizeof($newLang)>0 && !isset($newLang[$params['now_lang']])) {
 						header("HTTP/1.1 301 Moved Permanently");
-						header("Location: ".substr($uri, 2));
+						header("Location: ".$v.substr($uri, 3));
 						die();
 					}
 					self::$_loaded = $uri;
@@ -417,7 +439,10 @@ class Route {
 			}
 			$uri = str_replace($key, $params[$param], $uri);
 		}
-		$uri = preg_replace('#//+#', '/', rtrim($uri, '/'));
+		if(self::$_newMethod===false) {
+			$uri = rtrim($uri, "/");
+		}
+		$uri = preg_replace('#//+#', '/', $uri);
 		if(self::Config("rewrite")) {
 			return $uri;
 		} else {

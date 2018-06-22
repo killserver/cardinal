@@ -28,6 +28,10 @@
 		var default_admin_link = "{C_default_http_host}{D_ADMINCP_DIRECTORY}/";
 		var default_localadmin_link = "{C_default_http_local}{D_ADMINCP_DIRECTORY}/";
 		var selectLang = "{langPanel}";
+		var langSupport = '{langSupport}';
+		try {
+			langSupport = JSON.parse(langSupport);
+		} catch(Exception) {}
 	</script>
 
 	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->

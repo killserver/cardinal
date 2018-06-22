@@ -17,7 +17,7 @@ var checkedAdmin = setInterval(function() {
 				});
 				for(var i=0;i<elemsFirst.length;i++) {
 					var widthEl = elemsFirst[i].width();
-					if((jQuery(window).width()-userWidth-linkAdmin-270) < width){
+					if((jQuery(window).width()-userWidth-linkAdmin-350) < width){
 						elems.push(elemsFirst[i]);
 						jQuery(elemsFirst[i]).remove();
 					}
