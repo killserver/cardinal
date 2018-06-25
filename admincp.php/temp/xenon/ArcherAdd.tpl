@@ -71,21 +71,26 @@ for(var i=0;i<langSupport.length;i++) {
 	if(langSupport[i]!=selectedLang) { arrLang[arrLang.length] = langSupport[i]; }
 }
 langSupport = arrLang;
+var onInteractive = {};
 $(document).ready(function() {
 	setTimeout(function() {
 		$("form > div").each(function(i, elem) {
 			var block = $(elem).attr("class").replace("form-group block-", "");
 			var tt = tinymce.get(block);
 			if(tt!=null) {
-				tt.on("input", function() {
+				tt.on("focus", function() {
+					onInteractive[this.id] = true;
+				});
+				tt.on("keydown paste cut change", function() {
 					var text = this.getContent();
 					var name = this.id;
 					for(var i=0;i<langSupport.length;i++) {
-						name = name.replace(new RegExp(selectedLang, "g"), "");
-						name = name.replace(new RegExp(langSupport[i], "g"), "");
-						var sup = tinymce.get(name+langSupport[i]);
-						if(sup!=null && sup.getContent()==text.substr(0, text.length-1)) {
-							tinymce.get(name+langSupport[i]).setContent(text);
+						name1 = name.replace(new RegExp(selectedLang, "g"), "");
+						name1 = name1.replace(new RegExp(langSupport[i], "g"), "");
+						var sup = tinymce.get(name1+langSupport[i]);
+						if(sup!=null && typeof(onInteractive[name1+langSupport[i]])==="undefined") {
+							sup.setContent(text);
+							sup.undoManager.add({content: text});
 						}
 					}
 				});
@@ -95,15 +100,14 @@ $(document).ready(function() {
 					ret = true;
 				}
 				if(ret) {
-					$(elem).find("textarea,input").on("input", function() {
+					$(elem).find("textarea,input").on("keydown paste cut", function() {
 						var name = this.id;
 						var text = this.value;
 						for(var i=0;i<langSupport.length;i++) {
 							name = name.replace(new RegExp(selectedLang, "g"), "");
 							name = name.replace(new RegExp(langSupport[i], "g"), "");
 							var data = $("#"+name+langSupport[i]);
-							console.log(data.val(), text);
-							if(data!=null && data.val()==text.substr(0, text.length-1)) {
+							if(data!=null && (data.val()=="" || data.val()==text.substr(0, text.length-1))) {
 								data.val(text);
 							}
 						}
@@ -149,6 +153,7 @@ function readURL(input) {
 		var reader = new FileReader();
 		reader.onload = function(e) {
 			jQuery(input).parent().find(".tmpImage").remove();
+			jQuery(input).parent().find("img").remove();
 			jQuery(input).parent().append('<div class="tmpImage" style="background: #333; display: table;"><img src="'+e.target.result+'" width="200" style="opacity: 0.75;"></div>');
 		}
 		reader.readAsDataURL(input.files[input.files.length-1]);
