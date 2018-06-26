@@ -32,13 +32,22 @@ class DBObject implements ArrayAccess {
 	private $pseudoFields = array();
 	private $multiple = false;
 	private static $usedCache = false;
+	private $allowedRus = false;
 	private $listAdd = array();
+
+	final public function __construct($table = "") {
+		if($table!=="") {
+			$this->loadedTable = $table;
+		}
+	}
 	
 	final public function getInstance($notClearTable = true) {
 		$th = clone $this;
 		$rt = get_object_vars($th);
 		foreach($rt as $k => $v) {
-			$th->{$k} = "";
+			if(!in_array($k, $this->rus)) {
+				$th->{$k} = "";
+			}
 		}
 		if($notClearTable===false) {
 			$th->loadedTable = "";
@@ -58,6 +67,7 @@ class DBObject implements ArrayAccess {
 		$th->pseudoFields = array();
 		$th->multiple = false;
 		$th->listAdd = array();
+		$th->allowedRus = false;
 		return $th;
 	}
 	
@@ -130,6 +140,9 @@ class DBObject implements ArrayAccess {
 		}
 		if(isset($ret['listAdd'])) {
 			unset($ret['listAdd']);
+		}
+		if(isset($ret['allowedRus'])) {
+			unset($ret['allowedRus']);
 		}
 	}
 	
@@ -236,6 +249,9 @@ class DBObject implements ArrayAccess {
 			}
 			if(isset($th->listAdd)) {
 				unset($th->listAdd);
+			}
+			if(isset($th->allowedRus)) {
+				unset($th->allowedRus);
 			}
 		} else {
 			for($i=0;$i<sizeof($th);$i++) {
@@ -474,7 +490,7 @@ class DBObject implements ArrayAccess {
 		if($limits<1) {
 			$limits = "";
 		}
-		return (!empty($limits) && $this->multiple===false ? " LIMIT ".$limits." " : "");
+		return (!empty($limits) || $limits==1 ? " LIMIT ".$limits." " : "");
 	}
 	
 	final private function ReleaseOffset($offset = "") {
@@ -619,7 +635,7 @@ class DBObject implements ArrayAccess {
 				$cacheData = serialize($ret);
 				file_put_contents($fileCache, $cacheData);
 			}
-			return $ret;
+			return $this->getRus($ret);
 		} else {
 			$arr = array();
 			if($this->multiple && db::num_rows()==0) {
@@ -635,7 +651,7 @@ class DBObject implements ArrayAccess {
 						$row->{$k} = $v;
 					}
 				}
-				$arr[] = $row;
+				$arr[] = $this->getRus($row);
 			}
 			db::free($rel);
 			if($cached && isset($fileCache)) {
@@ -644,6 +660,31 @@ class DBObject implements ArrayAccess {
 			}
 			return $arr;
 		}
+	}
+
+	final public function allowedRus($val = true) {
+		$this->allowedRus = $val;
+	}
+
+	final private function getRus($arr) {
+		if($this->allowedRus===false) {
+			return $arr;
+		}
+		foreach($arr as $field => $v) {
+			if(is_Array($v) || is_object($v)) {
+				$v = $this->getRus($v);
+				$arr[$field] = $v;
+				continue;
+			}
+			$r = $this->getAttribute($field, "comment");
+			if($r==="") {
+				$r = $field;
+				$arr->{$r} = $v;
+			} else {
+				$arr->addPseudoField($r, $v);
+			}
+		}
+		return $arr;
 	}
 
 	final public function __get($k) {
@@ -666,6 +707,9 @@ class DBObject implements ArrayAccess {
 
 	final public function multiple($val = "") {
 		$this->multiple = ($val === "" ? (!$this->multiple ? true : false) : $val);
+		if($this->multiple===true) {
+			$this->limit = 0;
+		}
 	}
 
 	final public function getSelectQuery($table = "", $where = "", $orderBy = "", $limit = "", $offset = "", $groupby = "") {
@@ -881,6 +925,18 @@ class DBObject implements ArrayAccess {
 	
 	final public function addPseudoField($name, $val = "") {
 		$this->pseudoFields[$name] = $val;
+		return true;
+	}
+	
+	final public function getPseudoField($name = "", $def = false) {
+		if($name==="") {
+			return $this->pseudoFields;
+		}
+		if(isset($this->pseudoFields[$name])) {
+			return $this->pseudoFields[$name];
+		} else {
+			return $def;
+		}
 		return true;
 	}
 	

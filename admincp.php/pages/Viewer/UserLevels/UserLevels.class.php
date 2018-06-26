@@ -22,8 +22,8 @@ class UserLevels extends Core {
 			"recyclebin" => "корзине данных, куда помещаются данные на 30 дней после удаления их из таблиц при помощи Арчера",
 			"seo" => "СЕО-мета",
 			"seoBlock" => "СЕО-блоку",
-			"settings" => "примитивным настройкам для заказчика",
-			"settinguser" => "расширенным настройкам для системного администратора",
+			"settinguser" => "примитивным настройкам для заказчика",
+			"settings" => "расширенным настройкам для системного администратора",
 			"showloads" => "просмотру загрузки сервера",
 			"updates" => "возможности обновлять движок из админ-панели",
 			"userlevels" => "уровням доступа",
@@ -66,12 +66,17 @@ class UserLevels extends Core {
 			if(sizeof($_POST)>0) {
 				$userlevels = userlevel::all();
 				$userlevels[$_GET['id']] = $_POST['userlevels'];
+				foreach($userlevels[$_GET['id']] as $k => $v) {
+					if($userlevels[$_GET['id']][$k]=="no") {
+						unset($userlevels[$_GET['id']][$k]);
+					}
+				}
 				$txt = '<?php if(!defined("IS_CORE")) { echo "403 ERROR"; die(); } $userlevels = array_replace($userlevels, array(';
 				foreach($userlevels as $id => $access) {
 					$txt .= '"'.$id.'" => array(';
 					$keys = array_keys($access);
 					for($i=0;$i<sizeof($keys);$i++) {
-						$txt .= ' "'.$keys[$i].'" => "'.$access[$keys[$i]].'", ';
+						$txt .= ' "'.$keys[$i].'" => "'.$access[$keys[$i]].'", '.PHP_EOL;
 					}
 					$txt .= '),';
 				}
@@ -96,7 +101,7 @@ class UserLevels extends Core {
 			$i = 0;
 			foreach($userlevelName as $name => $lang) {
 				$value = "no";
-				if(isset($userlevels["access_".$name])) {
+				if(isset($userlevels["access_".$name]) && $userlevels["access_".$name]=="yes") {
 					$value = "yes";
 				}
 				templates::assign_var("name", $name, "levelChange", "lvl".($i+1));

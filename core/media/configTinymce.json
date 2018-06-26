@@ -4,7 +4,7 @@
 	"language" : selectLang,
 	"plugins": ["advlist", "autolink", "code", "charmap", "fullscreen", "lists", "link", "localautosave", "media", "image", "imagetools", "paste", "responsivefilemanager", "visualblocks"],
 	"menubar": false,
-	"toolbar": "styleselect | bold italic | alignleft aligncenter alignright | bullist numlist | outdent indent | image link localautosave code fullscreen",
+	"toolbar": "styleselect | bold italic | alignleft aligncenter alignright | bullist numlist | outdent indent | image link localautosave code fullscreen responsivefilemanager",
 	"style_formats": [
 		{"title": "Header 1", "format": "h1"},
 		{"title": "Header 2", "format": "h2"},
@@ -35,9 +35,9 @@
 	"paste_as_text": true,
 /* remove this */
 	"las_callback": function() { var content = this.content; /*content saved*/ var time = this.time; /* time on save action */ console.log(content); console.log(time); },
-	"external_filemanager_path": default_admin_link+"/assets/tinymce/filemanager/",
+	"external_filemanager_path": default_admin_link+"assets/tinymce/filemanager/",
 	"filemanager_title": "{L_'Загрузка файлов'}", 
-	"external_plugins": { "filemanager" : default_admin_link+"/assets/tinymce/filemanager/plugin.min.js"},
+	"external_plugins": { "filemanager" : default_admin_link+"assets/tinymce/filemanager/plugin.min.js"},
 	"readonly": (typeof(readOnlyEditor)=='undefined' ? 0 : 1)
 /* remove this */
 }

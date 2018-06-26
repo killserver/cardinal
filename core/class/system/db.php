@@ -325,7 +325,7 @@ class db {
 		return true;
 	}
 	
-	final public static function getTables($columns = true, $andType = false) {
+	final public static function getTables($columns = true, $andType = false, $full = false) {
 		$loaded = array();
 		if(sizeof(self::$loadedTable)==0 && self::connected()) {
 			$sel = db::doquery("SHOW FULL TABLES", true);
@@ -333,10 +333,6 @@ class db {
 				$loaded[$row['Tables_in_'.strtolower(self::$dbName)]] = array();
 				$res = db::query("SHOW COLUMNS FROM `".$row['Tables_in_'.strtolower(self::$dbName)]."`");
 				while($roz = db::fetch_assoc($res)) {
-					$pos = strpos($roz['Type'], "(");
-					if($pos!==false) {
-						$roz['Type'] = substr($roz['Type'], 0, $pos);
-					}
 					$loaded[$row['Tables_in_'.strtolower(self::$dbName)]][$roz['Field']] = $roz['Type'];
 				}
 			}
@@ -349,6 +345,20 @@ class db {
 			$ret[$name] = array();
 			if($columns && !$andType) {
 				$ret[$name] = array_keys($fields);
+			} else if($columns && $andType && !$full) {
+				$keys = array_keys($fields);
+				$retz = array();
+				for($i=0;$i<sizeof($keys);$i++) {
+					$type = $fields[$keys[$i]];
+					$pos = strpos($type, "(");
+					if($pos!==false) {
+						$type = substr($type, 0, $pos);
+					}
+					$retz[$keys[$i]] = $type;
+				}
+				$ret[$name] = $retz;
+			} else if($columns && $andType && $full) {
+				$ret[$name] = $fields;
 			}
 		}
 		return $ret;

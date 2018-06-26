@@ -111,7 +111,7 @@ class modules {
 					return true;
 				} else {
 					if(class_exists($class, false)) {
-						$ret = new $class();
+						$ret = new $class($autoload);
 						if(method_exists($ret, "init_model")) {
 							$ret->init_model($autoload);
 						}
@@ -129,7 +129,7 @@ class modules {
 			}
 		}
 		if(class_exists($class, false)) {
-			$ret = new $class();
+			$ret = new $class($autoload);
 			if(method_exists($ret, "init_model")) {
 				$ret->init_model($autoload);
 			}
@@ -142,7 +142,7 @@ class modules {
 	}
 
 	final public static function loadModel($model) {
-		return self::loadModels("Model".ucfirst($model), $model);
+		return self::loadModels("Model".ucfirst($model), "{{".$model."}}");
 	}
 	
 	final public static function loader($class, $standard = array()) {
@@ -546,7 +546,7 @@ class modules {
 					$comment = $v['comment'];
 					$v = $v['value'];
 				}
-				$db->query("ALTER TABLE {{".$table_name."}} ADD `".$k."` ".(strpos($v, "CHARACTER")!==false ? $v : $v." COLLATE ".self::get_config("db", "charset")."_general_ci").(!empty($comment) ? " COMMENT ".db::escape($comment) : ""));
+				$db->query("ALTER TABLE {{".$table_name."}} ADD `".$k."` ".(strpos($v, "COLLATE")!==false ? $v : $v." COLLATE ".self::get_config("db", "charset")."_general_ci").(!empty($comment) ? " COMMENT ".db::escape($comment) : ""));
 			}
 		}
 		$db->flushCacheTables();
@@ -581,7 +581,7 @@ class modules {
 					$comment = $v['comment'];
 					$v = $v['value'];
 				}
-				$db->query("ALTER TABLE {{".$table_name."}} CHANGE `".$or."` `".$k."` ".(strpos($v, "CHARACTER")!==false ? $v : $v." CHARACTER SET ".self::get_config("db", "charset")." COLLATE ".self::get_config("db", "charset")."_general_ci").(!empty($comment) ? " COMMENT ".db::escape($comment) : ""));
+				$db->query("ALTER TABLE {{".$table_name."}} CHANGE `".$or."` `".$k."` ".(strpos($v, "COLLATE")!==false ? $v : $v." COLLATE ".self::get_config("db", "charset")."_general_ci").(!empty($comment) ? " COMMENT ".db::escape($comment) : ""));
 			}
 		}
 		$db->flushCacheTables();
@@ -691,6 +691,13 @@ class modules {
 		$slang = $slang->support(true);
 		$slang = array_map("ucfirst", $slang);
 		$arr = array();
+		if($data instanceof DBObject) {
+			$data = clone $data;
+			$keys = $data->getPseudoField();
+			foreach($keys as $k => $v) {
+				$data->{$k} = $v;
+			}
+		}
 		foreach($data as $k => $v) {
 			$key = substr($k, -2);
 			if(!in_array($key, $slang)) {

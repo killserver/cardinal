@@ -126,7 +126,7 @@ function removeInputFile(th, name, val) {
 }
 jQuery(document).ready(function() {
 	jQuery(".showPreview").each(function(i, elem) {
-		jQuery(elem).after("<br><img src='"+jQuery(elem).attr("href")+"' width='200'>");
+		jQuery(elem).after("<br><img src='"+jQuery(elem).attr("href")+"' width='200' style='background:#333;padding:2rem'>");
 	});
 	jQuery("body").on("click", ".accessRemove", function() {
 		var count = jQuery(".containerFiles[data-parent='"+jQuery(this).attr("data-parent")+"'] input").length;

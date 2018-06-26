@@ -513,7 +513,7 @@ if(!function_exists("hex2bin")) {
 function vdump() {
 	$list = func_get_args();
 	$backtrace = debug_backtrace();
-	echo '<pre style="text-align:left;margin:0.5rem 0rem;background:#222;color:#fff;padding:0.5rem;"><div style="background:#fff;padding:0.5rem;">'. (isset($backtrace[0]) ? "<b style=\"color:#00f;text-decoration:underline;font-weight:bold;font-size:1rem;\">Called:</b><span style=\"color:#00f;text-decoration:underline;\"> ".$backtrace[0]['file']." [".$backtrace[0]['line']."]" : "")."</span></div>".(isset($backtrace[0]) ? "\n" : "");
+	echo '<pre style="text-align:left;margin:0.5rem 0rem;background:#222;color:#fff;padding:0.5rem;"><div style="background:#fff;padding:0.5rem;">'. (isset($backtrace[0]) ? "<b style=\"color:#00f;text-decoration:underline;font-weight:bold;font-size:1rem;\">Called:</b><span style=\"color:#00f;text-decoration:underline;\"> ".$backtrace[0]['file']." [".$backtrace[0]['line']."]&nbsp;<i>".date("d-m-Y H:i:s", fileatime($backtrace[0]['file']))."</i>" : "")."</span></div>".(isset($backtrace[0]) ? "\n" : "");
 	if(sizeof($list)>0) {
 		call_user_func_array("var_dump", $list);
 	}
@@ -545,6 +545,23 @@ function var_debug() {
 	echo '</pre>';
 	echo '<link rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/vs2015.min.css" /><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script><script>hljs.initHighlightingOnLoad();</script>';
+}
+
+function cdie() {
+	$list = func_get_args();
+	$backtrace = debug_backtrace();
+	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "<b style=\"color:#80f;\">Called:</b> ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "");
+	echo "<code>";
+	if(sizeof($list)>0) {
+		foreach($list as $v) {
+			echo call_user_func_array("var_debug_prepare", array($v));
+		}
+	}
+	echo "</code>";
+	echo '</pre>';
+	echo '<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/vs2015.min.css" /><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script><script>hljs.initHighlightingOnLoad();</script>';
+    die();
 }
 
 function buildBacktrace($backtrace = array(), $withoutFirst = false) {

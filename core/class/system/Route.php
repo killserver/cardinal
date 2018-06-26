@@ -294,7 +294,7 @@ class Route {
 		$v = getenv("SCRIPT_NAME");
 		$len = "index.php";
 		if(($pos = strpos($v, "index.php"))!==false) {
-			$v = substr($v, 0, $pos-$len);
+			$v = substr($v, 0, $pos);
 		}
 		$len = strlen("index.php");
 		if(substr($uri, 0, $len)==="/index.php") {
@@ -314,8 +314,6 @@ class Route {
 		}
 		if($v!=="/") {
 			$uri = str_replace($v, "", $uri);
-		} else {
-			$uri = substr($uri, 1);
 		}
 		if($uri===$v) {
 			return array('params' => array("pages" => "main"), 'route' => "");
