@@ -396,6 +396,11 @@ function ToTranslit($var, $rep = false, $norm = false) {
 	if(!is_array($translate)) {
 		$translate = array();
 	}
+	$var = preg_replace("/[^a-z0-9\_\-.]+/mi", "", $var);
+	$var = preg_replace('#[\-]+#i', '-', $var);
+	$var = preg_replace('#[.]+#i', '.', $var);
+	$var = str_ireplace(".php", "", $var);
+	$var = str_ireplace(".php", ".ppp", $var);
 	$var = strtolowers($var);
 	$var = html_entity_decode($var);
 	if($rep) {
@@ -410,7 +415,14 @@ function ToTranslit($var, $rep = false, $norm = false) {
 	} else {
 		$translate = array_merge($translate, array(" " => "_", "\\" => "", "/" => "", "'" => "", "$" => "", "#" => "", "@" => "", "!" => "", "%" => "", "^" => "", "&quot;" => "", "&" => "", "*" => "", "(" => "", ")" => "", "," => "", "." => "", "?" => "", ":" => "", "=" => "", "+" => "", "\"" => "'", "№" => ""));
 	}
-return strtr($var, $translate);
+	$var = strtr($var, $translate);
+	if(strlen($var)>200) {
+		$var = substr($var, 0, 200);
+		if(($temp_max = strrpos($var, '-'))!==false) {
+			$var = substr($var, 0, $temp_max);
+		}
+	}
+	return $var;
 }
 
 function plural_form($arr){return function_call('plural_form', array($arr));}

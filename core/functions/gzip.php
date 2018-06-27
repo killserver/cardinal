@@ -45,6 +45,9 @@ global $config, $manifest, $session;
 		$s .="\n<!-- Затрачено оперативной памяти ".round((memory_get_peak_usage()-MEMORY_GET)/(1024*1024),2)." MB -->";
 	}
 	header("Last-Modified: " . date('r', time()) ." GMT");
+	if(!preg_match('%^(http:|https:)?//(www.)?(webvisor.com)%', $_SERVER['HTTP_REFERER'])) {
+		@header("X-Frame-Options: SAMEORIGIN");
+	}
 	if((function_exists("ob_get_length") && ob_get_length()>0) && (config::Select('gzip') != "yes" || isset($manifest['gzip']) && !$manifest['gzip'])) {
 		if($debug) {
 			echo $s;
