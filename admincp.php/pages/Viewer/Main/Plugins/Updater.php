@@ -65,6 +65,7 @@ class Main_Updater extends Main {
 				$vids = $prs->get();
 				$changelog = "";
 				$list = explode("\n", $vids);
+				$list = array_map("trim", $list);
 				for($i=sizeof($list)-1;$i>0;$i--) {
 					$if = cardinal::CheckVersion($list[$i]);
 					if($if) {
