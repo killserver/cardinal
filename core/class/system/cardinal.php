@@ -69,8 +69,12 @@ class cardinal {
 	}
 	
 	final public static function CheckVersion($check = "", $old = "") {
-		$isChecked = ($old!=="" ? $old : (defined("INTVERSION") ? INTVERSION : (defined("VERSION") ? VERSION : $old)));
-		if(empty($check)) {
+		if(class_exists("config", false) && method_exists("config", "Select") && config::Select("speed_update")) {
+			$isChecked = ($old!=="" ? $old : (defined("INTVERSION") ? INTVERSION : (defined("VERSION") ? VERSION : "1.0")));
+		} else {
+			$isChecked = ($old!=="" ? $old : (defined("VERSION") ? VERSION : "1.0"));
+		}
+		if($check==="") {
 			return $isChecked;
 		}
 		if(stripos($check, "-")!==false) {
@@ -80,14 +84,9 @@ class cardinal {
 		if($check<"2.0") {
 			return false;
 		}
-		if(class_exists("config", false) && method_exists("config", "Select") && config::Select("speed_update")) {
-			$if = ($check) > ($isChecked);
-		} else {
-			$checked = floatval($check);
-			$version = floatval($isChecked);
-			$if = $checked > $version;
-		}
-		return $if;
+		$checked = floatval($check);
+		$version = floatval($isChecked);
+		return ($checked > $version);
 	}
 
 	final public static function SaveCardinal($v) {
