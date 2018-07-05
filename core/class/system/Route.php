@@ -243,7 +243,6 @@ class Route {
 	final private static function PreDefault($url) {
 		$page = $url;
 		if(!empty($url)) {
-			$page = substr($url, 1);
 			if(strpos($page, "&") !== false) {
 				$pages = explode("&", $page);
 				if(empty($pages[0])) {
@@ -298,17 +297,17 @@ class Route {
 		}
 		$len = strlen("index.php");
 		if(substr($uri, 0, $len)==="/index.php") {
-			$uri = substr($uri, $len);
+			$uri = substr($uri, $len)-1;
 		}
 		$len = strlen($uri);
 		if(strpos($uri, "&")!==false) {
-			$len = strpos($uri, "&");
+			$len = strpos($uri, "&")-1;
 		}
 		if(strpos($uri, "?")!==false) {
-			$len = strpos($uri, "?");
+			$len = strpos($uri, "?")-1;
 		}
 		if($len>0) {
-			$uri = substr($uri, 0, $len);
+			$uri = substr($uri, 1, $len);
 		} else {
 			$uri = "";
 		}

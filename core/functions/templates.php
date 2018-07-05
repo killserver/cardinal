@@ -314,7 +314,7 @@ function headers($array = array(), $clear = false, $no_js = false) {
 		$header .= (defined("ENABLED_SUPPORTS") ? '<script type="text/javascript" src="{C_default_http_host}js/supports.min.js" async="true"></script>'."\n" : "");
 		$header .= '<!-- saved from url=(0014)about:internet -->'."\n";
 		$header .= '<meta name="apple-mobile-web-app-capable" content="yes">'."\n";
-		$header .= '<meta name="apple-mobile-web-app-status-barstyle" content="black-translucent">'."\n";
+		$header .= '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">'."\n";
 		$header .= '<meta name="apple-mobile-web-app-title" content="'.$sitename.'">'."\n";
 		$header .= '<meta name="format-detection" content="telephone=no">'."\n";
 		$header .= '<meta name="format-detection" content="address=no">'."\n";

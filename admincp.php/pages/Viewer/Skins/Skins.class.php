@@ -12,7 +12,7 @@ class Skins extends Core {
 		for($i=0;$i<sizeof($arr);$i++) {
 			if(!isset($arr[$i]['Image'])) {
 				$arr[$i]['IS_Image'] = "false";
-				$arr[$i]['Image'] = 'data:img/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAQAAABuBnYAAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAHdElNRQfiBRUMCyt+LeEbAAAAI0lEQVQI12O895+BgYGBgUGREUIzMaABwgKMUCMY7v8n2wwAv+QE6yFMzH8AAAAASUVORK5CYII==';
+				$arr[$i]['Image'] = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAALElEQVQYGWO8d+/efwYkoKioiMRjYGBC4WHhUK6A8T8QIJt8//59ZC493AAAQssKpBK4F5AAAAAASUVORK5CYII=';
 			} else {
 				$arr[$i]['IS_Image'] = "true";
 			}

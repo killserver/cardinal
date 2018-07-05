@@ -396,7 +396,6 @@ function ToTranslit($var, $rep = false, $norm = false) {
 	if(!is_array($translate)) {
 		$translate = array();
 	}
-	$var = preg_replace("/[^a-z0-9\_\-.]+/mi", "", $var);
 	$var = preg_replace('#[\-]+#i', '-', $var);
 	$var = preg_replace('#[.]+#i', '.', $var);
 	$var = str_ireplace(".php", "", $var);
@@ -453,7 +452,9 @@ function or_plural_form($arr) {
 function _e($arr){return function_call('_e', func_get_args());}
 function or__e() {
 	$ret = func_get_args();
-	$rets = modules::applyParam($ret, 'before', __FUNCTION__);
+	if(class_exists("cardinalEvent") && method_exists("cardinalEvent", "execute")) {
+		$rets = cardinalEvent::execute("_e_before", $ret);
+	}
 	$ret = call_user_func_array("modules::get_lang", $rets);
 	if(is_bool($ret)) {
 		$ret = $rets;

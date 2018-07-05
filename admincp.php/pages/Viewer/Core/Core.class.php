@@ -122,10 +122,17 @@ class Core {
 						if($getData) {
 							if(file_exists($dir.DS."main.tpl")) {
 								$files = $this->get_file_data($dir.DS."main.tpl", $default_headers);
+								if(!isset($files['Name'])) {
+									$files['Name'] = basename($dir);
+								}
 							} else {
 								$files = array(
 									'Name' => basename($dir),
 								);
+							}
+							if(file_exists($dir.DS."info.".ROOT_EX)) {
+								$data = require_once($dir.DS."info.".ROOT_EX);
+								$files = array_merge($files, $data);
 							}
 							$files['dir'] = $dir;
 							$files['orName'] = basename($dir);

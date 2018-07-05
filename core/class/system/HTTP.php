@@ -340,14 +340,18 @@ class HTTP {
 				header_remove("Location");
 			}
 			$link = self::ClearLocation($link);
-			$link = cardinalEvent::execute("HTTP::Location", $link);
+			if(class_exists("cardinalEvent") && method_exists("cardinalEvent", "execute")) {
+				$link = cardinalEvent::execute("HTTP::Location", $link);
+			}
 			header("Location: ".$link);
 		} else {
 			if(function_exists("header_remove")) {
 				header_remove("Refresh");
 			}
 			$link = self::ClearLocation($link);
-			$link = cardinalEvent::execute("HTTP::Location", $link);
+			if(class_exists("cardinalEvent") && method_exists("cardinalEvent", "execute")) {
+				$link = cardinalEvent::execute("HTTP::Location", $link);
+			}
 			header("Refresh: ".$time."; url=".$link);
 		}
 		if($exit) {
@@ -388,8 +392,9 @@ class HTTP {
 	}
 	
 	final public static function echos($echo = "", $die = false) {
-		$echo = cardinal::callbacks("echo", $echo, "call");
-		$echo = cardinalEvent::execute("HTTP::echos", $echo);
+		if(class_exists("cardinalEvent") && method_exists("cardinalEvent", "execute")) {
+			$echo = cardinalEvent::execute("HTTP::echos", $echo);
+		}
 		if(!empty($echo)) {
 			echo $echo;
 			unset($echo);

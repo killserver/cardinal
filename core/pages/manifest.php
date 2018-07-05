@@ -20,7 +20,7 @@ class page {
 		}
 		$echo .= "\nNETWORK:\n*";
 		HTTP::echos($echo);
-		unlink(PATH_MANIFEST.$filePath.".txt");
+		//unlink(PATH_MANIFEST.$filePath.".txt");
 		die();
 	}
 	

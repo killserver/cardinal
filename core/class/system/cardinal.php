@@ -29,18 +29,15 @@ class cardinal {
 	
 	public function __construct() {
 		self::active();
-		if(!defined("IS_BOT")) {
-            if (HTTP::getServer('HTTP_USER_AGENT')) {
-            	$userAgent = HTTP::getServer('HTTP_USER_AGENT');
-            	if(!$this->robots($userAgent)) {
-                    define("IS_BOT", false);
-	            } else {
-                    define("IS_BOT", true);
-	            }
-            } else {
-                define("IS_BOT", true);
-            }
-        }
+		self::cron();
+		if(class_exists("cardinalAdded")) {
+			new cardinalAdded();
+		} else {
+			die();
+		}
+	}
+
+	final public static function cron() {
 		if(!defined("WITHOUT_DB")) {
 			$otime = config::Select("cardinal_time");
 			if($otime >= time()-12*60*60) {
@@ -56,18 +53,13 @@ class cardinal {
 			} else {
 				$otime = time();
 			}
-			if($otime >= time()-12*60*60) {
+			if(($otime+12*60*60) <= time()) {
 				include_dir(PATH_CRON_FILES, ".".ROOT_EX, true);
 				if(file_exists(PATH_CACHE."cron.txt")) {
 					unlink(PATH_CACHE."cron.txt");
 				}
 				file_put_contents(PATH_CACHE."cron.txt", "");
 			}
-		}
-		if(class_exists("cardinalAdded")) {
-			new cardinalAdded();
-		} else {
-			die();
 		}
 	}
 	
@@ -120,31 +112,12 @@ class cardinal {
 		return $v;
 	}
 	
-	final private function robots($userAgent) {
-		if(!isset($userAgent) || empty($userAgent) || is_bool($userAgent)) {
-			return false;
-		}
-		$arr = array();
-		$bot_list = config::Select('robots');
-		if(!is_bool($bot_list)) {
-			$pcre = array_keys($bot_list);
-			$dats = array_values($bot_list);
-			for($i=0;$i<sizeof($pcre);$i++) {
-				$arr["#.*".$pcre[$i].".*#si"] = $dats[$i];
-			}
-			$result = preg_replace(array_keys($arr), $arr, $userAgent);
-			return $result == $userAgent ? false : $result;
-		} else {
-			return false;
-		}
-	}
-	
 	final private static function or_create_pass($pass) {
 		$pass = md5(md5($pass).$pass);
 		$pass = strrev($pass);
 		$pass = sha1($pass);
 		$pass = bin2hex($pass);
-	return md5(md5($pass).$pass);
+		return md5(md5($pass).$pass);
 	}
 	
 	final public static function change_pass($class = "", $method = "") {
@@ -294,13 +267,9 @@ class cardinal {
 			return $data;
 		}
 	}
-
-	//delete in feature
-	final public static function hackers($page, $referer = "") {
-		
-	}
 	
 	final public static function callbacks($module, $callback = "", $type = "add") {
+		throw trigger_error("Warning! This function well be removed in new version");
 		if(!is_callable($callback) && $type == "add") {
 			errorHeader();
 			throw new Exception("Callback return error in called method");

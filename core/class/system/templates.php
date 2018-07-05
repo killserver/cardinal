@@ -2291,6 +2291,9 @@ class templates {
 		if(isset(self::$module['head']['after'])) {
 			$head .= self::$module['head']['after'];
 		}
+		if(strpos($head, '<meta name="theme-color"')===false) {
+			$head .= '<meta name="theme-color" content="#AC1F1F">';
+		}
 		$h = str_replace("{headers}", $head, $h);
 
 		$body = "";
@@ -2333,9 +2336,8 @@ class templates {
 		if(config::Select("manifestCache")) {
 			$h = self::linkToHeader($h);
 		}
-		$h = self::minify($h);
 		$h = self::callback_array("#\{<html>\}#", ("templates::multipleHead"), $h);
-		if(!preg_match("#<html.*?lang=['\"](.+?)['\"].*?>#is", $h)) {
+		if(!preg_match("#<html.*?lang=['\"](.+?)['\"].*?>#iU", $h)) {
 			$rLang = Route::param('lang');
 			if(!$rLang && !empty($rLang)) {
 				$lang = $rLang;
@@ -2352,6 +2354,7 @@ class templates {
 			}
 			$h = preg_replace("#<html(.*?)>#is", "<html$1 prefix=\"".implode(" ", $arr)."\">", $h);
 		}
+		$h = self::minify($h);
 		$h = cardinalEvent::execute("templates::display", $h);
 		HTTP::echos($h);
 		unset($h, $body, $lang);
@@ -2397,20 +2400,24 @@ class templates {
 				$link[1] = array_values($link[1]);
 				$linkAll = array_merge($linkAll, $link[1]);
 			}
+			$mdLink = $linkAll;
 			for($i=0;$i<sizeof($linkAll);$i++) {
 				$time = time();
-				if(strpos($linkAll[$i], "".$time)!==false) {
-					$linkAll[$i] = str_replace($time, "", $linkAll[$i]);
+				if(strpos($mdLink[$i], "".$time)!==false) {
+					$mdLink[$i] = str_replace($time, "", $mdLink[$i]);
 				}
 				if(strpos($linkAll[$i], "&")!==false && strpos($linkAll[$i], "&amp;")===false) {
 					$linkAll[$i] = str_replace("&", "&amp;", $linkAll[$i]);
 				}
 			}
+			$mdLink = array_unique($mdLink);
+			$mdLink = array_values($mdLink);
 			$linkAll = array_unique($linkAll);
 			$linkAll = array_values($linkAll);
 			if(isset($linkAll) && is_Array($linkAll) && sizeof($linkAll)>0) {
 				$linkAll = serialize($linkAll);
-				$md5 = var_export($linkAll, true);
+				$mdLink = serialize($mdLink);
+				$md5 = var_export($mdLink, true);
 				$md5 = md5($md5);
 				if(!file_exists(PATH_MANIFEST.$md5.".txt")) {
 					file_put_contents(PATH_MANIFEST.$md5.".txt", $linkAll);

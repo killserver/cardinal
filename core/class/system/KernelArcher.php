@@ -126,8 +126,8 @@ class KernelArcher {
 			$uploads = str_Replace(ROOT_PATH, "", PATH_UPLOADS);
 		}
 		foreach($list as $k => $v) {
-			$files = $request->files->get($k, false);
-			$post = $request->post->get($k, false);
+			$files = $request->files->get($k, "");
+			$post = $request->post->get($k, "");
 			$post = $this->rebuildData($post);
 			$files = $this->rebuildData($files);
 			if(!empty($files) && ($model->getAttribute($k, "type")=="imageAccess" || $model->getAttribute($k, "type")=="fileAccess" || $model->getAttribute($k, "type")=="file" || $model->getAttribute($k, "type")=="fileArray" || $model->getAttribute($k, "type")=="image" || $model->getAttribute($k, "type")=="imageArray")) {
@@ -249,11 +249,15 @@ class KernelArcher {
 	
 	function rebuildData(&$arr) {
 		if(is_array($arr)) {
+			$ret = array();
 			foreach($arr as $k => $v) {
 				if(empty($v)) {
-					unset($arr[$k]);
+					$ret[$k] = "";
+				} else {
+					$ret[$k] = $v;
 				}
 			}
+			$arr = $ret;
 		}
 		return $arr;
 	}
@@ -342,8 +346,8 @@ class KernelArcher {
 		$delArray = $request->post->get("deleteArray", array());
 		$delArray = array_map(function($v) { return explode(",", $v); }, ($delArray));
 		foreach($list as $k => $v) {
-			$files = $request->files->get($k, false);
-			$post = $request->post->get($k, false);
+			$files = $request->files->get($k, "");
+			$post = $request->post->get($k, "");
 			
 			$post = $this->rebuildData($post);
 			$files = $this->rebuildData($files);

@@ -797,9 +797,7 @@ class DBObject implements ArrayAccess {
 		}
 		$forUpdate = array();
 		foreach($arr as $k => $v) {
-			if($v!=="") {
-				$forUpdate[$k] = $v;
-			}
+			$forUpdate[$k] = $v;
 		}
 		if(empty($table)) {
 			$table = $this->loadedTable;
@@ -847,14 +845,12 @@ class DBObject implements ArrayAccess {
 		}
 		$forUpdate = array();
 		foreach($arr as $k => $v) {
-			if($v!==""&&$v!==null) {
-				if(!is_string($v) && !is_numeric($v)) {
-					errorHeader();
-					throw new Exception("Fields ".$k." is not string and not number");
-					die();
-				}
-				$forUpdate[$k] = $v;
+			if(!is_string($v) && !is_numeric($v)) {
+				errorHeader();
+				throw new Exception("Fields ".$k." is not string and not number");
+				die();
 			}
+			$forUpdate[$k] = $v;
 		}
 		if(empty($table)) {
 			$table = $this->loadedTable;

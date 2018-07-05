@@ -99,12 +99,9 @@ $manifest = array(
 	"route" => array(), //routification
 	"define" => array(), //used in templates, method "define"
 	"lang" => array(), //in class lang
-	//"bbcodes" => array(), //in colorit
-	//"cbbcode" => array(), //in clear_bbcode
 	"const" => array(), //is define for modules
 	"params" => array(), //is use in call module and get/send parameters
 	"dependency_modules" => array(), //dependency logic modules and need update his
-	"applyParam" => array(),
 	"gzip" => false,
 	"session_destroy" => false,
 	"jscss" => array(),
@@ -443,6 +440,7 @@ $templates = execEvent("init_templates", $templates);
 header('Content-Type: text/html; charset='.config::Select('charset'));
 header('X-UA-Compatible: IE=edge');
 header("X-Content-Type-Options: SAMEORIGIN");
+header("X-Frame-Options: SAMEORIGIN");
 header("X-XSS-Protection: 1; mode=block");
 header('Cache-Control: max-age');
 header("Cardinal: ".cardinal::SaveCardinal(VERSION));

@@ -40,37 +40,6 @@ class modules {
 			return false;
 		}
 	}
-	
-	final public static function setParam($name, $type, $func) {
-	global $manifest;
-		if(isset($manifest['applyParam']) && !isset($manifest['applyParam'][$name])) {
-			$manifest['applyParam'][$name] = array();
-			$manifest['applyParam'][$name][$type] = array();
-			$manifest['applyParam'][$name][$type][] = $func;
-			return true;
-		} else if(isset($manifest['applyParam']) && isset($manifest['applyParam'][$name]) && !isset($manifest['applyParam'][$name][$type])) {
-			$manifest['applyParam'][$name][$type] = array();
-			$manifest['applyParam'][$name][$type][] = $func;
-			return true;
-		} else if(isset($manifest['applyParam']) && isset($manifest['applyParam'][$name]) && isset($manifest['applyParam'][$name][$type])) {
-			$manifest['applyParam'][$name][$type][] = $func;
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	final public static function applyParam($param, $type, $name) {
-	global $manifest;
-		if(isset($manifest['applyParam']) && isset($manifest['applyParam'][$name]) && is_array($manifest['applyParam'][$name]) && sizeof($manifest['applyParam'][$name])>0 && isset($manifest['applyParam'][$name][$type]) && is_array($manifest['applyParam'][$name][$type]) && sizeof($manifest['applyParam'][$name][$type])>0) {
-			for($i=0;$i<sizeof($manifest['applyParam'][$name][$type]);$i++) {
-				for($z=0;$z<sizeof($param);$z++) {
-					$param[$z] = call_user_func_array($manifest['applyParam'][$name][$type][$i], array($param[$z]));
-				}
-			}
-		}
-		return $param;
-	}
 
 	final public static function get_config($get, $array = "", $default = false) {
 	global $config;
@@ -215,7 +184,9 @@ class modules {
 		} else if(func_num_args()>0) {
 			$return = func_get_args();
 		}
-		$return = self::applyParam($return, 'after', "_e");
+		if(class_exists("cardinalEvent") && method_exists("cardinalEvent", "execute")) {
+			$return = cardinalEvent::execute("_e_after", $return);
+		}
 		return self::implodeData("", $return);
 	}
 	

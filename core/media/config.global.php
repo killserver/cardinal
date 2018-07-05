@@ -159,7 +159,7 @@ $config = array_merge($config, array(
 	"gzip" => "yes",
 	"gzip_output" => true,
 	
-	"viewport" => "width=device-width, initial-scale=1, shrink-to-fit=no, minimal-ui",
+	"viewport" => "width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover, minimal-ui",
 
 	"default_http_local" => "/",
 	"default_http_hostname" => "online-killer.pp.ua",

@@ -109,8 +109,8 @@ html.onHoverAdmin .adminCoreCardinal:hover > .user {
 	text-indent: 0;
 	z-index: 99999;
 }
-.adminCoreCardinal * {font-family: 'Maven Pro', sans-serif !important;font-size: 13px;color: #fff;text-decoration: none !important;}
-.adminCoreCardinal i { font-family: 'FontAwesome' !important; padding: 0px 0.35em; font-style: normal; }
+.adminCoreCardinal * { font-family: 'Maven Pro', sans-serif !important;font-size: 13px !important;color: #fff !important;text-decoration: none !important; letter-spacing: 0px !important; }
+.adminCoreCardinal i { font-family: 'FontAwesome' !important; padding: 0px 0.35em !important; font-style: normal !important; }
 .adminCoreCardinal > .logo {
 	width: 3.3em;
 	height: 2.4em;
