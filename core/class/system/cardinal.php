@@ -69,7 +69,7 @@ class cardinal {
 	}
 	
 	final public static function CheckVersion($check = "", $old = "") {
-		$isChecked = ($old!=="" ? $old : (defined("VERSION") ? VERSION : $old));
+		$isChecked = ($old!=="" ? $old : (defined("INTVERSION") ? INTVERSION : (defined("VERSION") ? VERSION : $old)));
 		if(empty($check)) {
 			return $isChecked;
 		}

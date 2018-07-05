@@ -114,14 +114,12 @@ class Updaters extends Core {
 		} else {
 			templates::assign_var("is_download", "0");
 		}
-		$prs = new Parser('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/version.txt?'.date("d-m-Y-H"));
+		$prs = new Parser('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/intversion.txt?'.date("d-m-Y-H"));
 		$vid = $prs->get();
-		if(config::Select("speed_update")) {
-			$if = ($vid)>(VERSION);
-		} else {
-			$if = intval(str_replace(".", "", $vid))>intval(str_replace(".", "", VERSION));
-		}
+		$if = cardinal::CheckVersion($vid);
 		if($if) {
+			$prs = new Parser('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/version.txt?'.date("d-m-Y-H"));
+			$vid = $prs->get();
 			templates::assign_var("new_version", $vid);
 			templates::assign_var("is_new", "1");
 			$file = PATH_CACHE_SYSTEM."version_".str_replace("-", "_", $vid).".txt";

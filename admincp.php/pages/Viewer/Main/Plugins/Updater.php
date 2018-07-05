@@ -51,10 +51,12 @@ class Main_Updater extends Main {
 			templates::assign_var("is_new", "old");
 			return;
 		}
-		$prs = new Parser('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/version.txt?'.date("d-m-Y-H"));
+		$prs = new Parser('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/intversion.txt?'.date("d-m-Y-H"));
 		$vid = $prs->get();
 		$if = cardinal::CheckVersion($vid);
 		if($if) {
+			$prs = new Parser('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/version.txt?'.date("d-m-Y-H"));
+			$vid = $prs->get();
 			$dir = PATH_CACHE_SYSTEM;
 			$file = $dir."version_".str_replace("-", "_", $vid).".txt";
 			$changelog = "";
