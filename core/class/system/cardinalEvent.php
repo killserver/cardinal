@@ -146,10 +146,11 @@ class cardinalEvent {
 		return self::$events;
 	}
 	
-	public static function execute($action) {
+	public static function execute($action, $data = "") {
 		$args = func_get_args();
 		array_shift($args);
-		$return = (isset($args[0]) ? $args[0] : false);
+		array_shift($args);
+		$return = (isset($args[0]) ? $args[0] : $data);
 		if(!empty($action) && !isset(self::$events[$action])) {
 			if(sizeof(self::$loader)==0) {
 				$loader = debug_backtrace();
@@ -160,13 +161,13 @@ class cardinalEvent {
 		}
 		if(!empty($action) && isset(self::$collection['standart']) && isset(self::$collection['standart'][$action])) {
 			ksort(self::$collection['standart'][$action]);
-			$return = "";
 			foreach(self::$collection['standart'][$action] as $v) {
 				$data = array();
+				if($v['data']!=="") {
+					$data[0] = $v['data'];
+				}
 				if($return!=="") {
-					$data[] = $return;
-				} else if($v['data']!=="") {
-					$data[] = $v['data'];
+					$data[1] = $return;
 				}
 				$data = array_merge($data, $args);
 				$ret = call_user_func_array($v['fn'], $data);
@@ -195,8 +196,9 @@ class cardinalEvent {
 			$return = "";
 			foreach(self::$collection['ref'][$action] as $v) {
 				if($return!=="") {
-					$data = array($return, &$ref1, &$ref2, &$ref3, &$ref4, &$ref5, &$ref6, &$ref7, &$ref8);
-				} else if($v['data']!=="") {
+					$v['data'] = $return;
+				}
+				if($v['data']!=="") {
 					$data = array($v['data'], &$ref1, &$ref2, &$ref3, &$ref4, &$ref5, &$ref6, &$ref7, &$ref8);
 				} else {
 					$data = array(&$ref1, &$ref2, &$ref3, &$ref4, &$ref5, &$ref6, &$ref7, &$ref8);
