@@ -566,8 +566,8 @@ class Core {
 				}
 			}
 			$sublink = implode("-", $sublink);
-			if(file_exists(PATH_CACHE_USERDATA.$sublink.".json")) {
-				$configTinymce = file_get_contents(PATH_CACHE_USERDATA.$sublink.".json");
+			if(file_exists(PATH_CACHE_USERDATA."configTinymce-".$sublink.".json")) {
+				$configTinymce = file_get_contents(PATH_CACHE_USERDATA."configTinymce-".$sublink.".json");
 			} else if(file_exists(PATH_CACHE_USERDATA."configTinymce.json")) {
 				$configTinymce = file_get_contents(PATH_CACHE_USERDATA."configTinymce.json");
 			} else {

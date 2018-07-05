@@ -160,9 +160,12 @@ class cardinalEvent {
 		}
 		if(!empty($action) && isset(self::$collection['standart']) && isset(self::$collection['standart'][$action])) {
 			ksort(self::$collection['standart'][$action]);
+			$return = "";
 			foreach(self::$collection['standart'][$action] as $v) {
 				$data = array();
-				if($v['data']!=="") {
+				if($return!=="") {
+					$data[] = $return;
+				} else if($v['data']!=="") {
 					$data[] = $v['data'];
 				}
 				$data = array_merge($data, $args);
@@ -189,8 +192,11 @@ class cardinalEvent {
 		}
 		if(!empty($action) && isset(self::$collection['ref']) && isset(self::$collection['ref'][$action])) {
 			ksort(self::$collection['ref'][$action]);
+			$return = "";
 			foreach(self::$collection['ref'][$action] as $v) {
-				if($v['data']!=="") {
+				if($return!=="") {
+					$data = array($return, &$ref1, &$ref2, &$ref3, &$ref4, &$ref5, &$ref6, &$ref7, &$ref8);
+				} else if($v['data']!=="") {
 					$data = array($v['data'], &$ref1, &$ref2, &$ref3, &$ref4, &$ref5, &$ref6, &$ref7, &$ref8);
 				} else {
 					$data = array(&$ref1, &$ref2, &$ref3, &$ref4, &$ref5, &$ref6, &$ref7, &$ref8);

@@ -60,7 +60,7 @@ class Archer_Shield {
 			}
 		}
 		$orderById = 0;
-		$orderBySort = "asc";
+		$orderBySort = "desc";
 		$myOrderName = "";
 		$myOrder = false;
 		if(isset(KernelArcher::$orderBy) && is_array(KernelArcher::$orderBy)) {
