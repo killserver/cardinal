@@ -264,7 +264,7 @@
 						<li[if {C_deactiveMainMenu}==1] style="display:none;"[/if {C_deactiveMainMenu}==1]>
 							<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/{C_mainPageAdmin}">
 								<i class="linecons-cog"></i>
-								<span class="title">{L_"Main admin"}</span>
+								<span class="title">{L_"Консоль"}</span>
 							</a>
 						</li>
 						[foreach block=menu]

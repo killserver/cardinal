@@ -353,43 +353,100 @@ class Core {
 	}
 
 	public static function addInfo($echo, $type = "info", $closed = false, $time = -1) {
-		$arr = array();
-		if(isset($_COOKIE['infoSystem'])) {
-			$arr = array_merge($arr, json_decode($_COOKIE['infoSystem'], true));
+		$users = $arr = array();
+		$userNow = "";
+		if(class_exists("User") && method_exists("User", "All")) {
+			$users = User::All();
+			$users = array_keys($users);
+			$userNow = User::get("username");
 		}
-		if($type!="success" && $type!="warning" && $type!="error" && $type!="info") {
-			trigger_error("Error type for info");die();
+		for($i=0;$i<sizeof($users);$i++) {
+			$dirToSave = PATH_CACHE_USERDATA;
+			$pathToSave = $dirToSave."infoSystem-".$users[$i].".txt";
+			if(file_exists($dirToSave) && is_readable($dirToSave) && file_exists($pathToSave) && is_readable($pathToSave)) {
+				$file = file_get_contents($pathToSave);
+				$file = json_decode($file, true);
+				$arr = array_merge($arr, $file);
+			}
+			if($type!="success" && $type!="warning" && $type!="error" && $type!="info") {
+				trigger_error("Error type for info");die();
+			}
+			if(isset($arr[$echo])) {
+				$arr[$echo]['echo'] = $echo;
+				$arr[$echo]['type'] = $type;
+				$arr[$echo]['time'] = ($time>-1 ? ($time<time() ? time()+$time : $time) : time()+90);
+				$arr[$echo]['closed'] = $closed;
+			} else {
+				$arr = array_merge($arr, array($echo => array("echo" => $echo, "type" => $type, "time" => ($time>-1 ? ($time<time() ? time()+$time : $time) : time()+90), "closed" => $closed, "code" => generate_uuid4())));
+			}
+			$arrs = json_encode($arr);
+			if(file_exists($dirToSave) && !is_writable($dirToSave)) {
+				@chmod($dirToSave, 0777);
+			}
+			if(file_exists($dirToSave) && is_readable($dirToSave) && file_exists($pathToSave) && !is_writable($pathToSave)) {
+				@chmod($pathToSave, 0777);
+			}
+			file_put_contents($pathToSave, $arrs);
 		}
-		$arr = array_merge($arr, array($echo => array("echo" => $echo, "type" => $type, "time" => ($time>-1 ? ($time<time() ? time()+$time : $time) : time()+15), "closed" => $closed, "code" => generate_uuid4())));
-		$arrs = json_encode($arr);
-		HTTP::set_cookie("infoSystem", $arrs);
-		$_COOKIE['infoSystem'] = $arrs;
 		return $arr;
 	}
 	
 	protected function Prints($echo, $print = false, $force = false) {
 	global $lang;
+		$users = array();
+		$userNow = "";
+		if(class_exists("User") && method_exists("User", "All")) {
+			$users = User::All();
+			$users = array_keys($users);
+			$userNow = User::get("username");
+		}
+		$dirToSave = PATH_CACHE_USERDATA;
+		$pathToSave = $dirToSave."infoSystem-".$userNow.".txt";
 		if(isset($_GET['removeCode'])) {
-			if(!isset($_COOKIE['infoSystem'])) {
+			if(sizeof($users)==0 || !in_array($userNow, $users)) {
 				return false;
 			}
+			if(file_exists($dirToSave) && !is_readable($dirToSave)) {
+				@chmod($dirToSave, 0777);
+			}
+			if(!file_exists($pathToSave)) {
+				return false;
+			}
+			if(!is_readable($pathToSave)) {
+				@chmod($pathToSave, 0777);
+			}
+			$file = file_get_contents($pathToSave);
 			$isUnset = false;
-			$arrs = json_decode($_COOKIE['infoSystem'], true);
+			$arrs = json_decode($file, true);
 			foreach($arrs as $k => $arr) {
-				if($arr['code'] == $_GET['removeCode'] || $arr['time'] < time()) {
+				if($arr['time'] < time()) {
 					$isUnset = true;
 					unset($arrs[$k]);
 					continue;
+				}
+				if($arr['code'] == $_GET['removeCode']) {
+					$isUnset = true;
+					$arrs[$k]['hide'] = true;
 				}
 			}
 			if($isUnset) {
 				if(sizeof($arrs)>0) {
 					$arrs = json_encode($arrs);
-					HTTP::set_cookie("infoSystem", $arrs);
-					$_COOKIE['infoSystem'] = $arrs;
+					if(file_exists($dirToSave) && !is_writable($dirToSave)) {
+						@chmod($dirToSave, 0777);
+					}
+					if(file_exists($dirToSave) && is_readable($dirToSave) && file_exists($pathToSave) && !is_writable($pathToSave)) {
+						@chmod($pathToSave, 0777);
+					}
+					file_put_contents($pathToSave, $arrs);
 				} else {
-					HTTP::set_cookie("infoSystem", "", true);
-					unset($_COOKIE['infoSystem']);
+					if(file_exists($dirToSave) && !is_writable($dirToSave)) {
+						@chmod($dirToSave, 0777);
+					}
+					if(file_exists($dirToSave) && is_readable($dirToSave) && file_exists($pathToSave) && !is_writable($pathToSave)) {
+						@chmod($pathToSave, 0777);
+					}
+					@unlink($pathToSave);
 				}
 			}
 			HTTP::echos("done");
@@ -438,6 +495,7 @@ class Core {
 		if(!$print) {
 			$echo = (templates::completed_assign_vars($echo, null));
 		}
+		execEvent("admin_print_ready");
 		if(isset($_POST['jajax']) || isset($_GET['jajax'])) {
 			HTTP::echos(templates::view($echo));
 			return;
@@ -493,13 +551,17 @@ class Core {
 		$echos = str_replace("{css_list}", $css_echo, $echos);
 		$ret = "";
 		$info = array();
-		if(isset($_COOKIE['infoSystem'])) {
-			$info = json_decode($_COOKIE['infoSystem'], true);
+		if(sizeof($users)>0 && in_array($userNow, $users) && file_exists($dirToSave) && is_readable($dirToSave) && file_exists($pathToSave) && is_readable($pathToSave)) {
+			$file = file_get_contents($pathToSave);
+			$info = json_decode($file, true);
 		}
 		$info = execEvent("admin_core_prints_info", $info);
 		if(sizeof($info)>0) {
 			$isUnset = false;
 			foreach($info as $k => $arr) {
+				if(isset($arr['hide']) && $arr['hide']===true) {
+					continue;
+				}
 				if($arr['time']<time()) {
 					$isUnset = true;
 					unset($info[$k]);
@@ -522,12 +584,22 @@ class Core {
 			}
 			if($isUnset) {
 				if(sizeof($info)>0) {
-					$info = json_encode($info);
-					HTTP::set_cookie("infoSystem", $info);
-					$_COOKIE['infoSystem'] = $info;
+					$arrs = json_encode($info);
+					if(file_exists($dirToSave) && !is_writable($dirToSave)) {
+						@chmod($dirToSave, 0777);
+					}
+					if(file_exists($dirToSave) && is_readable($dirToSave) && file_exists($pathToSave) && !is_writable($pathToSave)) {
+						@chmod($pathToSave, 0777);
+					}
+					file_put_contents($pathToSave, $arrs);
 				} else {
-					HTTP::set_cookie("infoSystem", "", true);
-					unset($_COOKIE['infoSystem']);
+					if(file_exists($dirToSave) && !is_writable($dirToSave)) {
+						@chmod($dirToSave, 0777);
+					}
+					if(file_exists($dirToSave) && is_readable($dirToSave) && file_exists($pathToSave) && !is_writable($pathToSave)) {
+						@chmod($pathToSave, 0777);
+					}
+					@unlink($pathToSave);
 				}
 			}
 		}
