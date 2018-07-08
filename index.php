@@ -99,6 +99,8 @@ $manifest['mod_page'][HTTP::getip()]['page'] = $page;
 $is_file = Route::param('is_file');
 $file = Route::param('file');
 
+execEvent("ready_print_page_before", $class, $method, $page);
+
 $obj = "";
 $langPanel = modules::setLangPanel();
 if(isset($globalClass) && is_array($globalClass) && sizeof($globalClass)>0) {
@@ -129,6 +131,9 @@ if(!$is_file && empty($file)) {
 		templates::error("{L_error_page}", "{L_error_routification}");
 	}
 }
+
+execEvent("ready_print_page_after", $class, $method, $page);
+
 unset($page, $class, $method, $file, $is_file);
 $list = array("targets","session","manifest","config","target","phpEx","protocol","route","cache","lang","user","config_templates","server","pages","active","load","obj","templates","db");
 for($i=0;$i<sizeof($list);$i++) {

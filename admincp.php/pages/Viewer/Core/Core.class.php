@@ -66,15 +66,6 @@ class Core {
 		}
 	}
 	
-	private function vsort(&$array) {
-		$arrs = array();
-		foreach($array as $key => $val) {
-			asort($val);
-			$arrs[$key] = $val;
-		}
-		$array = $arrs;
-	}
-	
 	protected function unix($time) {
 		return timespan($time);
 	}
@@ -234,24 +225,10 @@ class Core {
 
 	private function loadMenu() {
 		$links = array();
-		$loadMenu = true;
-		execEventRef("admin_menu_ready", $links, $loadMenu);
-		if($loadMenu) {
-			if($dh = dir(ADMIN_MENU)) {
-				$i=1;
-				while(($file = $dh->read()) !== false) {
-					if($file != "index.".ROOT_EX && $file != "index.html" && $file != "." && $file != "..") {
-						include_once(ADMIN_MENU.$file);
-					}
-				}
-				$dh->close();
-			}
-		}
-		$this->vsort($links);
+		$now = "";
+		$l = new Headers();
+		$l->loadMenuAdmin($links, $now);
 		$all = 0;
-		$page_v = getenv("REQUEST_URI");
-		$now = str_replace(ADMINCP_DIRECTORY."/?", "", substr($page_v, 1, strlen($page_v)));
-		execEventRef("admin_menu_loaded", $links, $now);
 		foreach($links as $name => $datas) {
 			if(isset($datas['item']) && is_array($datas['item'])) {
 				$newArr = array();

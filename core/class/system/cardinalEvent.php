@@ -150,7 +150,7 @@ class cardinalEvent {
 		$args = func_get_args();
 		array_shift($args);
 		array_shift($args);
-		$return = (isset($args[0]) ? $args[0] : $data);
+		$return = $data;
 		if(!empty($action) && !isset(self::$events[$action])) {
 			if(sizeof(self::$loader)==0) {
 				$loader = debug_backtrace();
@@ -182,7 +182,7 @@ class cardinalEvent {
 	}
 	
 	public static function executeRef($action, &$ref1 = "", &$ref2 = "", &$ref3 = "", &$ref4 = "", &$ref5 = "", &$ref6 = "", &$ref7 = "", &$ref8 = "") {
-		$return = ($ref1!==null ? $ref1 : false);
+		$return = ($ref1!=="" ? $ref1 : false);
 		if(!empty($action) && !isset(self::$events[$action])) {
 			if(sizeof(self::$loader)==0) {
 				$loader = debug_backtrace();

@@ -115,6 +115,14 @@ $(document).ready(function() {
 				}
 			}
 		});
+		[if {ArcherPageNow}==Edit]$("input,textarea").each(function(i, elem) {
+			for(var i=0;i<langSupport.length;i++) {
+				name = $(elem).attr("id");
+				name1 = name.replace(new RegExp(selectedLang, "g"), "");
+				name1 = name1.replace(new RegExp(langSupport[i], "g"), "");
+				onInteractive[name1+langSupport[i]] = true;
+			}
+		});[/if {ArcherPageNow}==Edit]
 	}, 2000);
 });
 [ajax]var linkForSubmit = "./?pages=Archer&type={ArcherPath}&pageType=Take{ArcherPage}{addition}{ref}";[/ajax]

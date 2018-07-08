@@ -87,6 +87,7 @@ class Archer_Edit {
 			templates::assign_vars($v, "supportedLang");
 		}
 		$tpl = str_replace("{addition}", $addition, $tpl);
+		$tpl = str_replace("{ArcherPageNow}", $page, $tpl);
 		$tpl = str_replace("{ArcherPage}", $page.($page!="Add" ? "&viewId=".$isId : ""), $tpl);
 		$tpl = str_replace("{ArcherPath}", str_replace(PREFIX_DB, "", $table), $tpl);
 		$tpl = str_replace("{ArcherMind}", "{L_".$page."}&nbsp;{L_".str_replace(PREFIX_DB, "", $table)."}", $tpl);

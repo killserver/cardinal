@@ -21,7 +21,7 @@ class base extends modules {
 
 	function __construct() {
 		$this->manifest_log('load_modules', array('base', __FILE__));
-		$this->regCssJs(array("https://fonts.googleapis.com/css?family=Roboto:300,700", "https://killserver.github.io/Fonts/main.min.css"), "css");
+		$this->regCssJs(array("roboto-font" => "https://fonts.googleapis.com/css?family=Roboto:300,700", "base-css" => "https://killserver.github.io/Fonts/main.min.css"), "css");
 	}
 
 }

@@ -420,74 +420,79 @@ class modules {
 		}
 	}
 
-	final public static function regCssJs($link, $type, $short = true) {
+	final public static function regCssJs($js, $type, $mark = false, $name = "") {
 	global $manifest;
-		$typeLink = "full";
-		if(!$short && $type=="css") {
-			$typeLink = "css";
-		} else if(!$short && $type=="js") {
-			$typeLink = "js";
+		$jsCheck1 = false;
+		if(strpos($type, "-")!==false) {
+			$type = explode("-", $type);
+			$jsCheck1 = current($type);
+			$type = end($type);
 		}
-		if(!isset($manifest['create_js'])) {
-			$manifest['create_js'] = array();
-		}
-		if(!isset($manifest['create_js'][$typeLink])) {
-			$manifest['create_js'][$typeLink] = array();
-		}
-		if(!isset($manifest['create_css'])) {
-			$manifest['create_css'] = array();
-		}
-		if(!isset($manifest['create_css'][$typeLink])) {
-			$manifest['create_css'][$typeLink] = array();
-		}
-		if($type=="css") {
-			if(is_array($link) && !isset($link['url'])) {
-				foreach($link as $k => $linker) {
-					if(is_numeric($k)) {
-						if(is_string($linker)) {
-							$linker = array("url" => $linker);
-						}
-						$key = (isset($linker['url']) ? $linker['url'] : current($linker));
-						$manifest['create_css'][$typeLink][$key] = $linker;
-					} else if(is_string($k)) {
-						if(is_string($linker)) {
-							$linker = array("url" => $linker);
-						}
-						$manifest['create_css'][$typeLink][$k] = $linker;
-					}
-				}
-			} else {
-				if(is_string($link)) {
-					$link = array("url" => $link);
-				}
-				$key = (isset($link['url']) ? $link['url'] : current($link));
-				$manifest['create_css'][$typeLink][$key] = $link;
+		if(is_array($js) && !isset($js['url'])) {
+			foreach($js as $k => $v) {
+				self::regCssJs($v, $type, $mark, (is_numeric($k) ? $name : $k));
 			}
 		} else {
-			if(is_array($link) && !isset($link['url'])) {
-				foreach($link as $k => $linker) {
-					if(is_numeric($k)) {
-						if(is_string($linker)) {
-							$linker = array("url" => $linker);
-						}
-						$key = (isset($linker['url']) ? $linker['url'] : current($linker));
-						$manifest['create_js'][$typeLink][$key] = $linker;
-					} else if(is_string($k)) {
-						if(is_string($linker)) {
-							$linker = array("url" => $linker);
-						}
-						$manifest['create_js'][$typeLink][$k] = $linker;
-					}
+			if(!isset($manifest['jscss'][$type])) {
+				$manifest['jscss'][$type] = array();
+			}
+			if(!isset($manifest['jscss'][$type]['link'])) {
+				$manifest['jscss'][$type]['link'] = array();
+			}
+			if(!isset($manifest['jscss'][$type]['full'])) {
+				$manifest['jscss'][$type]['full'] = array();
+			}
+			$url = (is_array($js) && isset($js['url']) ? $js['url'] : $js);
+			$jsCheck = ($jsCheck1===false ? parse_url($url) : $jsCheck1);
+			if(!empty($name)) {
+				if($jsCheck1!==false) {
+					$manifest['jscss'][$type][$jsCheck1][$name] = array("url" => $url.($mark ? AmperOr($url).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
+				} else if(isset($jsCheck['path'])) {
+					$manifest['jscss'][$type]['link'][$name] = array("url" => $url.($mark ? AmperOr($url).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
+				} else {
+					$manifest['jscss'][$type]['full'][$name] = array("url" => $url.($mark ? AmperOr($url).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
 				}
 			} else {
-				if(is_string($link)) {
-					$link = array("url" => $link);
+				if($jsCheck1!==false) {
+					$manifest['jscss'][$type][$jsCheck1][] = array("url" => $url.($mark ? AmperOr($url).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
+				} else if(isset($jsCheck['path'])) {
+					$manifest['jscss'][$type]['link'][] = array("url" => $url.($mark ? AmperOr($url).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
+				} else {
+					$manifest['jscss'][$type]['full'][] = array("url" => $url.($mark ? AmperOr($url).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
 				}
-				$key = (isset($link['url']) ? $link['url'] : current($link));
-				$manifest['create_js'][$typeLink][$key] = $link;
 			}
 		}
-		return $manifest;
+	}
+
+	final public static function unRegCssJs($js, $type = "null", $reforce = false) {
+	global $manifest;
+		if($type=="null" || $reforce===1) {
+			self::unRegCssJs($js, "css", ($reforce===false ? 1 : 2));
+			return;
+		}
+		if(is_array($js) && !isset($js['url'])) {
+			foreach($js as $k => $v) {
+				self::unRegCssJs($v, $type, $reforce);
+			}
+		} else {
+			$url = (is_array($js) && isset($js['url']) ? $js['url'] : $js);
+			$jsCheck = parse_url($url);
+			if(isset($jsCheck['path']) && isset($manifest['jscss'][$type]['link']) && is_array($manifest['jscss'][$type]['link']) && sizeof($manifest['jscss'][$type]['link'])>0) {
+				$key = array_keys($manifest['jscss'][$type]['link']);
+				for($i=0;$i<sizeof($key);$i++) {
+					if(strpos($url, $key[$i])!==false || strpos($manifest['jscss'][$type]['link'][$key[$i]]['url'], $url)!==false) {
+						unset($manifest['jscss'][$type]['link'][$key[$i]]);
+					}
+				}
+			} else if(isset($manifest['jscss'][$type]['full']) && is_array($manifest['jscss'][$type]['full']) && sizeof($manifest['jscss'][$type]['full'])>0) {
+				$key = array_keys($manifest['jscss'][$type]['full']);
+				for($i=0;$i<sizeof($manifest['jscss'][$type]['full']);$i++) {
+					if(strpos($url, $key[$i])!==false || strpos($manifest['jscss'][$type]['full'][$key[$i]]['url'], $url)!==false) {
+						unset($manifest['jscss'][$type]['full'][$key[$i]]);
+					}
+				}
+			}
+		}
 	}
 
 	final public static function create_table($table_name, $fields, $force = false) {
