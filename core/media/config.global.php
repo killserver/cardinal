@@ -67,9 +67,6 @@ if(!defined("DEBUG_MEMORY")) {
 if(!defined("DEBUG_TIME")) {
 	define("DEBUG_TIME", 2);
 }
-if(!defined("DEBUG_FILES")) {
-	define("DEBUG_FILES", 3);
-}
 if(!defined("DEBUG_INCLUDE")) {
 	define("DEBUG_INCLUDE", 4);
 }

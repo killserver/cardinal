@@ -43,23 +43,6 @@ class Debug {
 		}
 		templates::assign_var("db_time", number_format($arr['db']['time'], 5, '.', ' '));
 		templates::assign_var("db_count", $arr['db']['num']);
-		/* Start File */
-		$size = $lines = 0;
-		templates::assign_var("count_file", sizeof($arr['use_files']));
-		for($i=0;$i<sizeof($arr['use_files']);$i++) {
-			templates::assign_vars(array(
-				"file" => $arr['use_files'][$i]['file'],
-				"size" => $arr['use_files'][$i]['size'],
-				"line" => $arr['use_files'][$i]['lines'],
-			), "files", "file".$i);
-			$lines += $arr['use_files'][$i]['lines'];
-			$size += $arr['use_files'][$i]['sizeNum'];
-		}
-		$size = sprintf("%u", $size);
-		$size = ($size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes');
-		templates::assign_var("total_fileline", $lines);
-		templates::assign_var("total_filesize", $size);
-		/* End File */
 		/* Start Include */
 		$size = $lines = 0;
 		templates::assign_var("count_include", sizeof($arr['included_files']));
@@ -133,6 +116,18 @@ class Debug {
 			$i++;
 		}
 		/* End Route */
+		$i = 0;
+		$events = cardinalEvent::getEventList();
+		templates::assign_var("count_events", sizeof($events));
+		foreach($events as $k => $v) {
+			templates::assign_vars(array(
+				"name" => $k,
+				"file" => str_replace(ROOT_PATH, DS, $v['file']),
+				"line" => $v['line'],
+				"args" => sizeof($v['args'])-1,
+			), "events", "events".$i);
+			$i++;
+		}
 		templates::dir_skins("skins");
 		templates::set_skins("");
 		$tpl = templates::completed_assign_vars("debug_panel", "core");
@@ -186,19 +181,6 @@ class Debug {
 			if($Times<0) {
 				$Times = 0;
 			}
-		} else if(self::switcher($type, DEBUG_FILES)) {
-			$tmp_files = debug_backtrace();
-			$num = 0;
-			for($i=0;$i<sizeof($tmp_files);$i++) {
-				if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
-					$files[$num]['file'] = str_replace(ROOT_PATH, DS, $tmp_files[$i]['file']);
-					$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
-					$files[$num]['size'] = filesize($tmp_files[$i]['file']);
-					$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
-					$num++;
-				}
-			}
-			unset($tmp_files, $filesizename, $i);
 		} else if(self::switcher($type, DEBUG_INCLUDE)) {
 			$num = 0;
 			$incl_files = get_included_files();
@@ -233,18 +215,6 @@ class Debug {
 				}
 			}
 			unset($size, $i);
-			$tmp_files = debug_backtrace();
-			$num = 0;
-			for($i=0;$i<sizeof($tmp_files);$i++) {
-				if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
-					$files[$num]['file'] = str_replace(ROOT_PATH, DS, $tmp_files[$i]['file']);
-					$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
-					$files[$num]['size'] = filesize($tmp_files[$i]['file']);
-					$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
-					$num++;
-				}
-			}
-			unset($tmp_files, $i);
 			$size = sprintf("%u", memory_get_peak_usage()-MEMORY_GET);
 			$memoryNum = $size;
 			$memory = $size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes';
@@ -263,18 +233,6 @@ class Debug {
 				}
 			}
 			unset($size, $i);
-			$tmp_files = debug_backtrace();
-			$num = 0;
-			for($i=0;$i<sizeof($tmp_files);$i++) {
-				if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
-					$files[$num]['file'] = str_replace(ROOT_PATH, DS, $tmp_files[$i]['file']);
-					$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
-					$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
-					$files[$num]['size'] = filesize($tmp_files[$i]['file']);
-					$num++;
-				}
-			}
-			unset($tmp_files, $filesizename, $i);
 		} else if(self::switcher($type, array(DEBUG_DB * DEBUG_TEMPLATE, DEBUG_DBTEMP))) {
 			$db_time = db::$time;
 			$db_num = db::$num;
@@ -298,19 +256,6 @@ class Debug {
 				}
 			}
 			unset($size, $isize);
-			$tmp_files = debug_backtrace();
-			$num = 0;
-			for($i=0;$i<sizeof($tmp_files);$i++) {
-				if(isset($tmp_files[$i]['file']) && file_exists($tmp_files[$i]['file'])) {
-					$files[$num]['file'] = str_replace(ROOT_PATH, DS, $tmp_files[$i]['file']);
-					$files[$num]['lines'] = self::FileLine($tmp_files[$i]['file']);
-					$files[$num]['sizeNum'] = filesize($tmp_files[$i]['file']);
-					$size = sprintf("%u", filesize($tmp_files[$i]['file']));
-					$files[$num]['size'] = ($size ? round($size / pow(1024, ($isize = floor(log($size, 1024)))), 2) . $filesizename[$isize] : '0 Bytes');
-					$num++;
-				}
-			}
-			unset($tmp_files, $isize);
 			$size = sprintf("%u", memory_get_peak_usage()-MEMORY_GET);
 			$memoryNum = $size;
 			$memory = $size ? round($size / pow(1024, ($isize = floor(log($size, 1024)))), 2) . $filesizename[$isize] : '0 Bytes';
@@ -323,7 +268,7 @@ class Debug {
 		if($Times<0) {
 			$Times = 0;
 		}
-		$arr = array("memory" => $memory, "memoryNum" => $memoryNum, "time_work" => $Times, "included_files" => $include, "use_files" => $files, "work_template" => $tmp, "db" => array("time" => $db_time, "num" => $db_num, "list" => $db_querys));
+		$arr = array("memory" => $memory, "memoryNum" => $memoryNum, "time_work" => $Times, "included_files" => $include, "work_template" => $tmp, "db" => array("time" => $db_time, "num" => $db_num, "list" => $db_querys));
 		unset($memory, $time, $incl_filesize, $incl_files, $include, $files, $tmp, $db_time, $db_num, $db_querys);
 		if(!$echo) {
 			return $arr;

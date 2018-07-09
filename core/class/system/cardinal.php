@@ -38,9 +38,13 @@ class cardinal {
 	}
 
 	final public static function cron() {
+		$hours = execEvent("hours_cron_time", 12);
+		if($hours<=0) {
+			$hours = 1;
+		}
 		if(!defined("WITHOUT_DB")) {
 			$otime = config::Select("cardinal_time");
-			if($otime >= time()-12*60*60) {
+			if($otime >= time()-$hours*60*60) {
 				include_dir(PATH_CRON_FILES, ".".ROOT_EX);
 				config::Update("cardinal_time", time());
 			}
@@ -53,7 +57,7 @@ class cardinal {
 			} else {
 				$otime = time();
 			}
-			if(($otime+12*60*60) <= time()) {
+			if(($otime+$hours*60*60) <= time()) {
 				include_dir(PATH_CRON_FILES, ".".ROOT_EX, true);
 				if(file_exists(PATH_CACHE."cron.txt")) {
 					unlink(PATH_CACHE."cron.txt");

@@ -242,10 +242,10 @@ class Headers {
 					}
 					$metaData[$this->configMetaData['meta'][$i]['name']] = $this->configMetaData['meta'][$i]['content'];
 				}
-				$getMeta['meta'] = array_merge($getMeta['meta'], $metaData);
+				$getMeta = array_merge($getMeta, $metaData);
 				unset($metaData);
 			}
-			cardinalEvent::addListener("templates::display", array($this, "configMetaData"));
+			cardinalEvent::addListener("templates::display", array($this, "configMetaDatas"));
 		}
 		if($getMeta) {
 			foreach($getMeta as $name => $val) {
@@ -378,7 +378,7 @@ class Headers {
 		return $ret;
 	}
 
-	function configMetaData($tmp) {
+	function configMetaDatas($tmp) {
 		if($this->configMetaData!==false) {
 			if(isset($this->configMetaData['head'])) {
 				$tmp = str_replace("</head>", $this->configMetaData['head']."</head>", $tmp);

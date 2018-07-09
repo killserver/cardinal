@@ -42,12 +42,12 @@ function DebugPanel_ShowHidePanel() {
 			<a href="javascript:DebugPanel_Toggle('i-vars-log')">vars <span class="small">(G: {count_get} / P: {count_post} / C: {count_cookie} / R: {count_router})</span></a>
 		</li>
 		<li>
-			<span class="icon files"></span>
-			<a href="javascript:DebugPanel_Toggle('i-files')">files <span class="small">({count_file})</span></a>
-		</li>
-		<li>
 			<span class="icon engine"></span>
 			<a href="javascript:DebugPanel_Toggle('i-engine')">engine <span class="small">({count_include})</span></a>
+		</li>
+		<li>
+			<span class="icon events"></span>
+			<a href="javascript:DebugPanel_Toggle('i-events')">events <span class="small">({count_events})</span></a>
 		</li>
 	</ul>
 
@@ -204,30 +204,29 @@ function DebugPanel_ShowHidePanel() {
 			</ul>
 		</div>
 
-		<div id="i-files" class="panel" style="display: none">
+		<div id="i-events" class="panel" style="display: none">
 			<table cellpadding="0" cellspacing="0">
 				<tr>
 					<th>#</th>
+					<th>event</th>
 					<th>file</th>
-					<th>size</th>
-					<th>lines</th>
+					<th>arguments</th>
 				</tr>
-				[foreach block=files]
+				[foreach block=events]
 					<tr>
-						<td class="num">{files.$id}</td>
-						<td><span>{files.file}</span></td>
-						<td>{files.size}</td>
-						<td>{files.line}</td>
+						<td class="num">{events.$id}</td>
+						<td>{events.name}</td>
+						<td><span>{events.file} [{events.line}]</span></td>
+						<td>{events.args}</td>
 					</tr>
 				[/foreach]
 				<tr class="total">
 					<td></td>
-					<td class="center"><span>Total</span> {count_file} <span>files</span></td>
-					<td>{total_filesize}</td>
-					<td>{total_fileline}</td>
+					<td class="center" colspan="3"><span>Total</span> {count_events} <span>events</span></td>
 				</tr>
 			</table>
 		</div>
+
 		<div id="i-engine" class="panel" style="display: none">
 			<table cellpadding="0" cellspacing="0">
 				<tr>
