@@ -53,7 +53,7 @@ class Main_Updater extends Main {
 		}
 		$get = false;
 		if(class_exists("config", false) && method_exists("config", "Select") && config::Select("speed_update")) {
-			$prs = new Parser('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/intversion.txt?'.date("d-m-Y-H"));
+			$prs = new Parser('https://raw.githubusercontent.com/killserver/cardinal/trunk/version/intversion.txt?'.date("d-m-Y-H:i"));
 			$vid = $prs->get();
 			$get = true;
 		} else {
