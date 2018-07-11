@@ -96,7 +96,7 @@ if(!defined("VERSION_ADMIN_STYLE")) {
 	define("VERSION_ADMIN_STYLE", "1.9");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "102015");
+	define("INTVERSION", "102020");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "6.5");
