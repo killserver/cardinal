@@ -66,4 +66,17 @@ function random_color() {
 	return str_pad(dechex(mt_rand(0, 100)), 2, '0', STR_PAD_LEFT);
 }
 
+if(!function_exists('imagepalettetotruecolor')) {
+	function imagepalettetotruecolor(&$src) {
+		if(imageistruecolor($src)) {
+			return true;
+		}
+		$dst = imagecreatetruecolor(imagesx($src), imagesy($src));
+		imagecopy($dst, $src, 0, 0, 0, 0, imagesx($src), imagesy($src));
+		imagedestroy($src);
+		$src = $dst;
+		return true;
+	}
+}
+
 ?>

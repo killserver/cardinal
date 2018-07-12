@@ -60,6 +60,7 @@ class Archer_Edit {
 			}
 			$attr = $models->getAttribute($k, "Attr");
 			$lang = "";
+			$placeholder = false;
 			if($attr==="supportLang") {
 				$lang = $models->getAttribute($k, "Lang");
 				$supportedLang[$lang] = array("lang" => $lang);
@@ -78,7 +79,7 @@ class Archer_Edit {
 				$default = (!empty($where) && !empty($whereData) && $where==$k && isset($v[$whereData]) ? $v[$whereData] : (empty($v) ? $default : $v));
 				$v = implode(",", $typeData);
 			}
-			$body .= KernelArcher::Viewing($l, $k, $v, $default, false, $isAjax, $lang);
+			$body .= KernelArcher::Viewing($l, $k, $v, $default, false, $isAjax, $lang, $models);
 		}
 		sortByKey($supportedLang);
 		execEvent("archer_data_ready", $fields, $supportedLang);

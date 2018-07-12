@@ -21,6 +21,7 @@ exit();
 class page {
 	
 	function view() {
+		execEvent("before_print_index");
 		$page = Route::param('pages');
 		if($page>1) {
 			$link = "{R_[main][pages=".$page."]}";

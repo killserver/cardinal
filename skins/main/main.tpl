@@ -1,3 +1,7 @@
+///***
+Name: Default Theme
+Image: https://pm1.narvii.com/6400/94d71caf77143700121d7da6e33469437144cd34_hq.jpg
+***///
 <!DOCTYPE html>
 <!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7"><![endif]-->
 <!--[if IE 7]><html class="no-js lt-ie9 lt-ie8"><![endif]-->

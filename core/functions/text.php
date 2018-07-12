@@ -23,7 +23,17 @@ function or_chr($ascii) {
 	if(function_exists("mb_chr") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload')!==false && MB_OVERLOAD_STRING) {
 		return mb_chr($ascii, config::Select('charset'));
 	}
-	return chr($ascii);
+	if(0x80 > $code %= 0x200000) {
+		$s = chr($code);
+	} elseif(0x800 > $code) {
+		$s = chr(0xc0 | $code >> 6) . chr(0x80 | $code & 0x3f);
+	} elseif(0x10000 > $code) {
+		$s = chr(0xe0 | $code >> 12) . chr(0x80 | $code >> 6 & 0x3f) . chr(0x80 | $code & 0x3f);
+	} else {
+		$s = chr(0xf0 | $code >> 18) . chr(0x80 | $code >> 12 & 0x3f) . chr(0x80 | $code >> 6 & 0x3f) . chr(0x80 | $code & 0x3f);
+	}
+	return $s;
+	//return chr($ascii);
 }
 
 function nord($string){return function_call('ord', array($string));}

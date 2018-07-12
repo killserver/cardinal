@@ -12,7 +12,7 @@
 				<th><label class="checkbox"><input type="checkbox" class="cbr deleteAll"></label></th>
 				{ArcherMind}
 			</tr>
-			<tr><td colspan="{ArcherAll}"><div class="row"><div class="col-sm-offset-9"><div class="col-sm-7"><select name="action" class="form-control" style="width:100%;"><option value="">{L_"Выберите действие"}</option><option value="delete">{L_delete}</option></select></div><div class="col-sm-5"><input type="submit" class="btn btn-purple" value="{L_"Выполнить"}"></div></div></div></td></tr>
+			<tr><td colspan="{ArcherAll}"><div class="row"><div class="col-sm-offset-9"><div class="col-sm-7"><select name="action" class="form-control" style="width:100%;"><option value="">{L_"Выберите действие"}</option><option value="delete">{L_"Удалить"}</option></select></div><div class="col-sm-5"><input type="submit" class="btn btn-purple" value="{L_"Выполнить"}"></div></div></div></td></tr>
 		</tfoot>
 		<tbody>
 		[foreach block={ArcherPage}]<tr>
@@ -20,8 +20,8 @@
 			{ArcherData}
 			<td>
 				[if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Copy&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-turquoise btn-block">{L_"Клонировать"}</a>[/if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]
-				[if {{ArcherPage}.DisableEdit}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Edit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-edit btn-block">{L_edit}</a>[/if {{ArcherPage}.DisableEdit}!="yes"]
-				[if {{ArcherPage}.DisableRemove}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Delete&viewId={{ArcherPage}.{ArcherFirst}}{addition}" onclick="return confirmDelete();" class="btn btn-red btn-block">{L_delete}</a>[/if {{ArcherPage}.DisableRemove}!="yes"]
+				[if {{ArcherPage}.DisableEdit}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Edit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-edit btn-block">{L_"Редактировать"}</a>[/if {{ArcherPage}.DisableEdit}!="yes"]
+				[if {{ArcherPage}.DisableRemove}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Delete&viewId={{ArcherPage}.{ArcherFirst}}{addition}" onclick="return confirmDelete();" class="btn btn-red btn-block">{L_"Удалить"}</a>[/if {{ArcherPage}.DisableRemove}!="yes"]
 			</td>
 		</tr>[/foreach]
 		</tbody>

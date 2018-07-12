@@ -735,12 +735,24 @@ class KernelArcher {
 		call_user_func_array("templates::assign_var", array($arr['name'], $arr['value']));
 	}
 	
-	public static function Viewing($type, $name, $val, $default = "", $block = false, $isAjax = false, $lang = "", $hide = false) {
+	public static function Viewing($type, $name, $val, $default = "", $block = false, $isAjax = false, $lang = "", $models = "", $hide = false) {
+		$grouper = "";
+		$grouperLang = "";
+		if($lang!=="") {
+			$grouper = str_replace($lang, "", $name);
+			$grouperLang = str_replace($grouper, "", $name);
+		}
 		$open = defined("ADMINCP_DIRECTORY");
 		$retType = "";
-		$type = execEvent("KernelArcher::ViewingType", $type);
-		$val = execEvent("KernelArcher::ViewingValue", $val);
+		$placeholder = $models->getAttribute($name, "placeholder");
+		execEventRef("KernelArcher::Viewing", $val, $type);
 		switch($type) {
+			case "linkToAdmin":
+				$hide = true;
+				$linkLink = $models->getAttribute($name, "linkLink");
+				$titleLink = $models->getAttribute($name, "titleLink");
+				$retType = "<div class=\"text-center ".(!$block ? "form-group" : "row")." block-".$name."\"".($lang!=="" ? " data-group=\"".$grouper."\" data-lang=\"".$grouperLang."\"" : "")."><div class=\"col-xs-12\"><a href=\"".$linkLink."\" class=\"btn btn-block btn-info col-xs-12\">".$titleLink."</a></div></div>";
+			break;
 			case "tinyint":
 			case "smallint":
 			case "mediumint":
@@ -914,13 +926,7 @@ class KernelArcher {
 			}
 			$retType = $this->view($type, $name, $val, $default, $block);
 		}
-		$grouper = "";
-		$grouperLang = "";
-		if($lang!=="") {
-			$grouper = str_replace($lang, "", $name);
-			$grouperLang = str_replace($grouper, "", $name);
-		}
-		$ret = (!$hide ? "<div class=\"".(!$block ? "form-group" : "row")." block-".$name."\"".($lang!=="" ? " data-group=\"".$grouper."\" data-lang=\"".$grouperLang."\"" : "")."><label class=\"col-sm-".($isAjax ? "2" : "3")." control-label\" for=\"".$name."\">{L_".$name."}</label><div class=\"col-sm-".($isAjax ? "10" : "9")."\">" : "").$retType.(!$hide ? "</div></div>\n" : "");
+		$ret = (!$hide ? "<div class=\"".(!$block ? "form-group" : "row")." block-".$name."\"".($lang!=="" ? " data-group=\"".$grouper."\" data-lang=\"".$grouperLang."\"" : "")."><label class=\"col-sm-".($isAjax ? "2" : "3")." control-label\" for=\"".$name."\">{L_".$name."}</label><div class=\"col-sm-".($isAjax ? "10" : "9")."\">" : "").$retType.(!$hide ? "</div></div>\n" : "").(!$hide && $placeholder!=="" ? "<small class=\"".(!$block ? "form-group" : "row")." block-".$name."\"".($lang!=="" ? " data-group=\"".$grouper."\" data-lang=\"".$grouperLang."\"" : "").">".$placeholder."</small>" : "");
 		return $ret;
 	}
 	

@@ -49,10 +49,14 @@ class Languages extends Core {
 	}
 	
 	function __construct() {
+		global $mainLangSite;
 		config::SetDefault("");
 		templates::accessNull();
 		$orLang = (modules::manifest_get("mainLang") ? modules::manifest_get("mainLang") : "ru");
 		$langs = $orLang;
+		if(!isset($mainLangSite)) {
+			$mainLangSite = "ru";
+		}
 		if(Arr::get($_GET, "saveAPI", false)) {
 			callAjax();
 			config::Update("apiKeyTranslate", Arr::get($_POST, "key", false));
@@ -69,7 +73,7 @@ class Languages extends Core {
 					templates::assign_vars(array(
 						"clearLang" => $support[$i],
 						"lang" => (isset($supports[$support[$i]]) ? $supports[$support[$i]] : $langer),
-						"mainLang" => (isset($mainLangSite) && $mainLangSite==$clearLang ? "yes" : "no"),
+						"mainLang" => ($mainLangSite==$support[$i] ? "yes" : "no"),
 					), "supportLang", "lang".($i+1));
 				}
 				foreach($supports as $k => $v) {

@@ -1948,6 +1948,7 @@ class templates {
      */
 	public static function comp_datas($tpl, $file = "null", $type = "all") {
 		$tpl = preg_replace("/\/\/\/\*\*\*(.+?)\*\*\*\/\/\//is", "", $tpl);
+		$tpl = execEvent("compileTPL", $tpl, $file, $type);
 		if($type=="all" || $type=="ecomp") {
 			if(modules::manifest_get(array("temp", "block"))!==false) {
 				self::$blocks = array_merge(self::$blocks, modules::manifest_get(array("temp", "block")));

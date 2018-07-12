@@ -516,7 +516,7 @@ class modules {
 		$db = self::init_db();
 		$exists = $db->getTable($table_name);
 		foreach($fields as $k => $v) {
-			if($exists && !in_array($k, $db->getTable($table_name))) {
+			if($exists && !in_array($k, $exists)) {
 				$comment = "";
 				if(is_array($v) && isset($v['comment'])) {
 					$comment = $v['comment'];
@@ -533,7 +533,7 @@ class modules {
 		$db = self::init_db();
 		$exists = $db->getTable($table_name);
 		foreach($fields as $k => $v) {
-			if($exists && in_array($v, $db->getTable($table_name))) {
+			if($exists && in_array($v, $exists)) {
 				$db->query("ALTER TABLE {{".$table_name."}} DROP COLUMN `".$v."`");
 			}
 		}

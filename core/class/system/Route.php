@@ -50,6 +50,10 @@ class Route {
 		self::$_newMethod = true;
 	}
 
+	final public static function getRoutes() {
+		return $GLOBALS[self::$_secret];
+	}
+
 	final public static function setSecret($name) {
 		self::$_secret = $name;
 	}

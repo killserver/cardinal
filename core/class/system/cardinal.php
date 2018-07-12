@@ -32,8 +32,72 @@ class cardinal {
 		self::cron();
 		if(class_exists("cardinalAdded")) {
 			new cardinalAdded();
+			self::robots();
 		} else {
 			die();
+		}
+	}
+
+	final private static function robots() {
+		if(!defined("DEVELOPER_MODE") && defined("PATH_CACHE_SYSTEM") && file_exists(PATH_CACHE_SYSTEM."seoBlockDev.lock")) {
+			unlink(PATH_CACHE_SYSTEM."seoBlockDev.lock");
+		} elseif(!defined("DEVELOPER_MODE") && file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."seoBlockDev.lock")) {
+			unlink(ROOT_PATH."core".DS."cache".DS."system".DS."seoBlockDev.lock");
+		}
+		$host = (class_exists("HTTP") && method_exists("HTTP", "getServer") ? HTTP::getServer('SERVER_NAME') : $_SERVER['SERVER_NAME']);
+		$path = (class_exists("HTTP") && method_exists("HTTP", "getServer") ? HTTP::getServer('PHP_SELF') : $_SERVER['PHP_SELF']);
+		if(strpos($path, "index.".ROOT_EX."/")!==false) {
+			$path = explode("index.".ROOT_EX."/", $path);
+			$path = current($path);
+		}
+		$path = str_replace(array("uploads".DS."robots.txt", "uploads".(defined("DS_DB") ? DS_DB : "/")."robots.txt", "index.".ROOT_EX), "", $path);
+		if(substr($path, 0, 1)=="/") {
+			$path = substr($path, 1);
+		}
+		if(!defined("DEVELOPER_MODE") && !file_exists(PATH_UPLOADS."robots.txt") && is_writable(PATH_UPLOADS)) {
+			$robots = "User-agent: *\n".
+					"Disallow: /".$path.(!defined("ADMINCP_DIRECTORY") ? "admincp.php" : ADMINCP_DIRECTORY)."/\n".
+					"Disallow: /".$path."cdn-cgi/\n".
+					"Disallow: /".$path."cgi-bin/\n".
+					"Disallow: /".$path."core/\n".
+					"Disallow: /".$path."changelog/\n".
+					"Disallow: /".$path."examples/\n".
+					"Disallow: /".$path."js/\n".
+					"Disallow: /".$path."skins/\n".
+					"Disallow: /".$path."version/\n".
+					"Disallow: /".$path."uploads/\n".
+					"Disallow: /".$path."*utm_medium=rooms*\n".
+					"Disallow: /".$path."*tab=*\n".
+					"Disallow: /".$path."*gclid=*\n".
+					"Disallow: /".$path."*yclid=*\n".
+					"Disallow: /".$path."*utm_trafmaguid=*\n".
+					"Disallow: /".$path."*kits_costs*\n".
+					"\n".
+					"User-agent: Yahoo\n".
+					"Disallow: /".$path."\n".
+					"\n".
+					"User-agent: MJ12bot\n".
+					"Disallow: /".$path."\n".
+					"\n".
+					"User-agent: Mediapartners-Google\n".
+					"Disallow: /".$path."\n".
+					"\n".
+					"User-agent: AhrefsBot\n".
+					"Disallow: /".$path."\n".
+					"\n".
+					"\n".
+					"Host: ".$host."\n".
+					"Sitemap: http://".$host."/".$path."sitemap.xml";
+			file_put_contents(PATH_UPLOADS."robots.txt", $robots);
+		} elseif(!file_exists(PATH_UPLOADS."robots.txt") && is_writable(PATH_UPLOADS)) {
+			$robots = "User-agent: *\n".
+					"Disallow: /".$path;
+			file_put_contents(PATH_UPLOADS."robots.txt", $robots);
+			if(!defined("DEVELOPER_MODE") && defined("PATH_CACHE_SYSTEM") && file_exists(PATH_CACHE_SYSTEM."seoBlockDev.lock")) {
+				file_put_contents(PATH_CACHE_SYSTEM."seoBlockDev.lock", "");
+			} elseif(!defined("DEVELOPER_MODE") && file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."seoBlockDev.lock")) {
+				file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."seoBlockDev.lock", "");
+			}
 		}
 	}
 

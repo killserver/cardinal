@@ -78,11 +78,4 @@ $links['System']["item"][] = array(
 'access' => userlevel::get("yui_admin"),
 'icon' => 'fa-book',
 );
-$links['System']["item"][] = array(
-'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=ATextAdmin",
-'title' => "{L_\"Редактирование текста на страницах\"}",
-'type' => "item",
-'access' => (!defined("WITHOUT_DB") || db::connected()) && userlevel::get("atextadmin"),
-'icon' => 'fa-folder-o',
-);
 ?>

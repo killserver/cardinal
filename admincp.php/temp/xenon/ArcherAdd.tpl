@@ -125,6 +125,12 @@ $(document).ready(function() {
 		});[/if {ArcherPageNow}==Edit]
 	}, 2000);
 });
+jQuery(window).load(function() {
+	console.log("test");
+	setTimeout(function() {
+		for(var i=0;i<tinyMCE.editors.length;i++){tinyMCE.editors[i].notificationManager.close();}
+	}, 200);
+});
 [ajax]var linkForSubmit = "./?pages=Archer&type={ArcherPath}&pageType=Take{ArcherPage}{addition}{ref}";[/ajax]
 var i = 1;
 function removeInputFile(th, name, val) {
