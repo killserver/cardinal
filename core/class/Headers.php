@@ -8,7 +8,7 @@ class Headers {
 
 	private $configMetaData = false;
 
-	private function create_js($clear = false) {
+	public function create_js($clear = false) {
 		global $manifest;
 		$sRet = "";
 
@@ -128,12 +128,12 @@ class Headers {
 		$robots = cardinalEvent::execute("before_show_robots", $robots);
 		$header .= "<meta name=\"robots\" content=\"".$robots."\" />\n";
 
-		$header .= $this->getFavicon("favicon", array(
+		$header .= $this->getFavicon(DS."favicon", array(
 			"32x32",
 			"64x64",
 			"128x128",
 		));
-		$header .= $this->getFavicon("uploads".DS."icon".DS."favicon-", array(
+		$header .= $this->getFavicon(DS."uploads".DS."icon".DS."favicon-", array(
 			"32x32",
 			"64x64",
 			"128x128",

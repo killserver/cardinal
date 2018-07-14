@@ -110,7 +110,7 @@ class db {
      */
     final public static function escape($str) {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
-			return str_replace(array('\x00', '\n', '\r', '\\', "'", '"', '\x1a'), array('\\x00', '\\n', '\\r', '\\\\', "\'", '\"', '\\x1a'), $val);
+			return str_replace(array('\x00', '\n', '\r', '\\', "'", '"', '\x1a'), array('\\x00', '\\n', '\\r', '\\\\', "\'", '\"', '\\x1a'), $str);
 		} else {
 			return self::$driver->escape($str);
 		}
@@ -230,16 +230,47 @@ class db {
      * db constructor.
      */
     function __construct($withoutInit = false, $forceStart = false) {
-		if($forceStart || (!$withoutInit && (!defined("INSTALLER") || (((defined("ROOT_PATH") && file_exists(PATH_MEDIA."db.".ROOT_EX)) || (!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX))) && defined("WITHOUT_DB"))))) {
+		$host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua");
+		if($forceStart
+			||
+			(
+				!$withoutInit
+				&&
+				(!defined("INSTALLER")
+					||
+					(
+						(
+							(defined("ROOT_PATH") && file_exists(PATH_MEDIA."db.".ROOT_EX))
+							||
+							(!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX))
+							||
+							(defined("ROOT_PATH") && file_exists(PATH_MEDIA."db.".str_replace("www.", "", $host).".".ROOT_EX))
+							||
+							(!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".str_replace("www.", "", $host).".".ROOT_EX))
+						)
+						&&
+						defined("WITHOUT_DB")
+					)
+				)
+			)
+		) {
 			self::init();
 		}
 	}
 	
 	final public static function config($config = array()) {
-		if(sizeof($config)==0 && ((defined("ROOT_PATH") && !file_exists(PATH_MEDIA."db.".ROOT_EX)) || (!defined("ROOT_PATH") && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX)))) {
+		$host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua");
+		if(sizeof($config)==0 && ((defined("ROOT_PATH") && !file_exists(PATH_MEDIA."db.".$host.".".ROOT_EX)) || (defined("ROOT_PATH") && !file_exists(PATH_MEDIA."db.".ROOT_EX)) || (!defined("ROOT_PATH") && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX)))) {
 			errorHeader();
 			throw new Exception("Config file for db or data in config is not correct");
 			die();
+		} else if(defined("ROOT_PATH") && file_exists(PATH_MEDIA."db.".$host.".".ROOT_EX)) {
+			include_once(PATH_MEDIA."db.".$host.".".ROOT_EX);
+			if(isset($config['db'])) {
+				$config = $config['db'];
+			}
+		} else if(!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".$host.".".ROOT_EX)) {
+			include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".$host.".".ROOT_EX);
 		} else if(defined("ROOT_PATH") && file_exists(PATH_MEDIA."db.".ROOT_EX)) {
 			include_once(PATH_MEDIA."db.".ROOT_EX);
 			if(isset($config['db'])) {

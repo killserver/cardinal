@@ -44,11 +44,6 @@ class DBObject implements ArrayAccess {
 	final public function getInstance($notClearTable = true) {
 		$th = clone $this;
 		$rt = get_object_vars($th);
-		foreach($rt as $k => $v) {
-			if(!in_array($k, $this->rus)) {
-				$th->{$k} = "";
-			}
-		}
 		if($notClearTable===false) {
 			$th->loadedTable = "";
 		} else {
@@ -670,8 +665,9 @@ class DBObject implements ArrayAccess {
 		if($this->allowedRus===false) {
 			return $arr;
 		}
+		$object = is_object($arr);
 		foreach($arr as $field => $v) {
-			if(is_Array($v) || is_object($v)) {
+			if(is_array($v) || is_object($v)) {
 				$v = $this->getRus($v);
 				$arr[$field] = $v;
 				continue;
@@ -679,9 +675,17 @@ class DBObject implements ArrayAccess {
 			$r = $this->getAttribute($field, "comment");
 			if($r==="") {
 				$r = $field;
-				$arr->{$r} = $v;
+				if($object) {
+					$arr->{$r} = $v;
+				} else {
+					$arr[$r] = $v;
+				}
 			} else {
-				$arr->addPseudoField($r, $v);
+				if($object) {
+					$arr->addPseudoField($r, $v);
+				} else {
+					$arr[$r] = $v;
+				}
 			}
 		}
 		return $arr;

@@ -179,7 +179,7 @@ function regCssJs($js, $type, $mark = false, $name = "") {
 	call_user_func_array("modules::regCssJs", func_get_args());
 }
 
-function unRegCssJs($js, $type, $mark = false, $name = "") {
+function unRegCssJs($js, $type = "", $mark = false, $name = "") {
 	call_user_func_array("modules::unRegCssJs", func_get_args());
 }
 

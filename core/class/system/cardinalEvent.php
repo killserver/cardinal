@@ -164,16 +164,12 @@ class cardinalEvent {
 			foreach(self::$collection['standart'][$action] as $v) {
 				$data = array();
 				if($v['data']!=="") {
-					$data[0] = $v['data'];
+					$data[] = $v['data'];
 				}
-				if($return!=="") {
-					$data[1] = $return;
-				}
+				$data[] = $return;
 				$data = array_merge($data, $args);
 				$ret = call_user_func_array($v['fn'], $data);
-				if(!empty($ret)) {
-					$return = $ret;
-				}
+				$return = $ret;
 			}
 			return $return;
 		} else {
@@ -195,18 +191,14 @@ class cardinalEvent {
 			ksort(self::$collection['ref'][$action]);
 			$return = "";
 			foreach(self::$collection['ref'][$action] as $v) {
-				if($return!=="") {
-					$v['data'] = $return;
-				}
+				$v['data'] = $return;
 				if($v['data']!=="") {
 					$data = array($v['data'], &$ref1, &$ref2, &$ref3, &$ref4, &$ref5, &$ref6, &$ref7, &$ref8);
 				} else {
 					$data = array(&$ref1, &$ref2, &$ref3, &$ref4, &$ref5, &$ref6, &$ref7, &$ref8);
 				}
 				$ret = call_user_func_array($v['fn'], $data);
-				if(!empty($ret)) {
-					$return = $ret;
-				}
+				$return = $ret;
 			}
 			return $return;
 		} else {

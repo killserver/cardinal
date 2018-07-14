@@ -2285,7 +2285,8 @@ class templates {
 		}
 		if(strpos($h, "{create_js}")!==false) {
 			$head .= headers(self::$header, false, true);
-			$h = str_replace("{create_js}", create_js(), $h);
+			$header = new Headers();
+			$h = str_replace("{create_js}", $header->create_js(), $h);
 		} else {
 			$head .= headers(self::$header);
 		}
