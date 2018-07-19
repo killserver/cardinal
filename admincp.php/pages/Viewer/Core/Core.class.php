@@ -370,16 +370,23 @@ class Core {
 	
 	protected function Prints($echo, $print = false, $force = false) {
 	global $lang;
+		if(!userlevel::get("admin") || !isset($_COOKIE[COOK_ADMIN_USER]) || !isset($_COOKIE[COOK_ADMIN_PASS])) {
+			$ref = urlencode(str_replace(ROOT_PATH, "", cut(getenv("REQUEST_URI"), "/".ADMINCP_DIRECTORY."/")));
+			location("{C_default_http_host}".ADMINCP_DIRECTORY."/?pages=Login".(!empty($ref) ? "&ref=".$ref : ""));
+			return;
+		}
 		$users = array();
 		$userNow = "";
-		if(class_exists("User") && method_exists("User", "All")) {
-			$users = User::All();
-			$users = array_keys($users);
+		if(class_exists("User") && method_exists("User", "get")) {
 			$userNow = User::get("username");
 		}
 		$dirToSave = PATH_CACHE_USERDATA;
 		$pathToSave = $dirToSave."infoSystem-".$userNow.".txt";
 		if(isset($_GET['removeCode'])) {
+			if(class_exists("User") && method_exists("User", "All")) {
+				$users = User::All();
+				$users = array_keys($users);
+			}
 			if(sizeof($users)==0 || !in_array($userNow, $users)) {
 				return false;
 			}
@@ -428,14 +435,6 @@ class Core {
 			}
 			HTTP::echos("done");
 			return false;
-		}
-		/*$this->addInfo("test");
-		$arr = $this->addInfo("test2", "warning");
-		$arr = $this->addInfo("test3", "success", true);*/
-		if(!userlevel::get("admin") || !isset($_COOKIE[COOK_ADMIN_USER]) || !isset($_COOKIE[COOK_ADMIN_PASS])) {
-			$ref = urlencode(str_replace(ROOT_PATH, "", cut(getenv("REQUEST_URI"), "/".ADMINCP_DIRECTORY."/")));
-			location("{C_default_http_host}".ADMINCP_DIRECTORY."/?pages=Login".(!empty($ref) ? "&ref=".$ref : ""));
-			return;
 		}
 		if(Route::param("lang")!="") {
 			$langs = Route::param("lang");
@@ -528,7 +527,7 @@ class Core {
 		$echos = str_replace("{css_list}", $css_echo, $echos);
 		$ret = "";
 		$info = array();
-		if(sizeof($users)>0 && in_array($userNow, $users) && file_exists($dirToSave) && is_readable($dirToSave) && file_exists($pathToSave) && is_readable($pathToSave)) {
+		if(file_exists($dirToSave) && is_readable($dirToSave) && file_exists($pathToSave) && is_readable($pathToSave)) {
 			$file = file_get_contents($pathToSave);
 			$info = json_decode($file, true);
 		}

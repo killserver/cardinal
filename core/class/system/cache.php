@@ -52,11 +52,11 @@ class cache implements ArrayAccess {
 		} elseif(class_exists('Redis') && self::$type == CACHE_REDIS) {
 			self::$connect = new Redis();
 			self::$connect->connect($config['cache']['server'], $config['cache']['port'], 0 or 1) or die ("Could not connect");
-		} elseif(self::$type == CACHE_APC && (function_exists('apc_fetch') || function_exists('apcu_fetch'))) {
+		} else if(self::$type == CACHE_APC && (function_exists('apc_fetch') || function_exists('apcu_fetch'))) {
 			if(function_exists('apcu_fetch')) {
 				self::$apcu = true;
 			}
-		} else {
+		} elseif(self::$type != CACHE_FILE) {
 			self::$type = CACHE_NONE;
 		}
 	}
@@ -131,6 +131,10 @@ class cache implements ArrayAccess {
 
 	final public static function Get_timelive() {
 		return self::$live_time;
+	}
+
+	final public static function getType() {
+		return self::$type;
 	}
 
 	final public static function Exists($data, $autoclean = false) {

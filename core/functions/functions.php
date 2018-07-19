@@ -384,7 +384,7 @@ function read_dir($dir, $type = "all", $addDir = false, $recursive = false, $exc
 	if(is_dir($dir)) {
 		if($dh = dir($dir)) {
 			while(($file = $dh->read()) !== false) {
-				if(in_array_strpos($file, $exclusions, true)) {
+				if(in_array_strpos($file, $exclusions, true) || in_array_strpos($dir.$file, $exclusions, true)) {
 					continue;
 				}
 				if($recursive && is_dir($dir.$file)) {
@@ -510,14 +510,45 @@ if(!function_exists("hex2bin")) {
 	}
 }
 
+function nocache_headers() {
+	$headers = array(
+		'Expires' => 'Wed, 11 Jan 1984 05:00:00 GMT',
+		'Cache-Control' => 'no-cache, must-revalidate, max-age=0',
+	);
+	$headers = execEvent("nocache_headers", $headers);
+	if(function_exists('header_remove')) {
+		@header_remove('Last-Modified');
+	} else {
+		$list = headers_list();
+		$list = array_values($list);
+		for($i=0;$i<sizeof($list);$i++) {
+			if(stripos($list[$i], 'Last-Modified')!==false) {
+				$headers['Last-Modified'] = '';
+				break;
+			}
+		}
+	}
+	foreach($headers as $name => $field_value) {
+		@header($name.": ".$field_value);
+	}
+}
+
 function vdump() {
+	global $printedVdump;
 	$list = func_get_args();
 	$backtrace = debug_backtrace();
-	echo '<pre style="text-align:left;margin:0.5rem 0rem;background:#222;color:#fff;padding:0.5rem;"><div style="background:#fff;padding:0.5rem;">'. (isset($backtrace[0]) ? "<b style=\"color:#00f;text-decoration:underline;font-weight:bold;font-size:1rem;\">Called:</b><span style=\"color:#00f;text-decoration:underline;\"> ".$backtrace[0]['file']." [".$backtrace[0]['line']."]&nbsp;<i>".date("d-m-Y H:i:s", fileatime($backtrace[0]['file']))."</i>" : "")."</span></div>".(isset($backtrace[0]) ? "\n" : "");
+	if($printedVdump===false) {
+		nocache_headers();
+		echo '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><meta name="viewport" content="width=device-width"><title>Cardinal &rsaquo; Debug</title><meta name="robots" content="noindex,follow"></head><style>html { background: #f1f1f1; } body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; } div.container { background: #fff; color: #444; margin: 2em auto; padding: 0em 2em 1em; max-width: 700px; -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.13); box-shadow: 0 1px 3px rgba(0,0,0,0.13); } div.info { border-bottom: 1px solid #dadada; clear: both; color: #666; background: #fff; word-break: break-all; max-width: 100%; font-size: 19px; padding: 1em 0px 7px; font-family: \'Roboto\'; margin-bottom: 1.5rem; } pre { text-align: left; margin: 0px 0px 1em; font-family: Consolas, Monaco, monospace; font-size: 12px; }</style><body>';
+		addEvent("shutdownCardinal", function() { echo "</body></html>"; }, "", 999999999);
+	}
+	echo '<div class="container"><div class="info">'. (isset($backtrace[0]) ? "<b>Called:</b><span> ".$backtrace[0]['file']." [".$backtrace[0]['line']."]&nbsp;<i>".date("d-m-Y H:i:s", fileatime($backtrace[0]['file']))."</i>" : "")."</span>".(isset($backtrace[0]) ? "<br>" : "")."</div>";
+	echo '<pre>';
 	if(sizeof($list)>0) {
 		call_user_func_array("var_dump", $list);
 	}
-	echo '</pre>';
+	echo '</pre></div>'.PHP_EOL;
+	$printedVdump = true;
 }
 
 function vdebug() {

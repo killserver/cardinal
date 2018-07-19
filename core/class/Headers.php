@@ -138,6 +138,34 @@ class Headers {
 			"64x64",
 			"128x128",
 		));
+
+
+		$imageCheck = file_exists(ROOT_PATH."logo.gif") || file_exists(ROOT_PATH."logo.jpg") || file_exists(ROOT_PATH."logo.jpeg") || file_exists(ROOT_PATH."logo.png") || file_exists(ROOT_PATH."uploads".DS."logo-for-site.gif") || file_exists(ROOT_PATH."uploads".DS."logo-for-site.jpg") || file_exists(ROOT_PATH."uploads".DS."logo-for-site.jpeg") || file_exists(ROOT_PATH."uploads".DS."logo-for-site.png");
+		if($imageCheck) {
+			if(file_exists(ROOT_PATH."logo.gif")) {
+				$imageLink = "{C_default_http_host}logo.gif";
+			} else if(file_exists(ROOT_PATH."logo.jpg")) {
+				$imageLink = "{C_default_http_host}logo.jpg";
+			} else if(file_exists(ROOT_PATH."logo.png")) {
+				$imageLink = "{C_default_http_host}logo.png";
+			} else if(file_exists(ROOT_PATH."uploads".DS."logo-for-site.gif")) {
+				$imageLink = "{C_default_http_host}uploads/logo-for-site.gif";
+			} else if(file_exists(ROOT_PATH."uploads".DS."logo-for-site.jpg")) {
+				$imageLink = "{C_default_http_host}uploads/logo-for-site.jpg";
+			} else if(file_exists(ROOT_PATH."uploads".DS."logo-for-site.jpeg")) {
+				$imageLink = "{C_default_http_host}uploads/logo-for-site.jpeg";
+			} else if(file_exists(ROOT_PATH."uploads".DS."logo-for-site.png")) {
+				$imageLink = "{C_default_http_host}uploads/logo-for-site.png";
+			} else {
+				$imageCheck = false;
+			}
+		}
+		if($imageCheck && !empty($imageLink)) {
+			$header .= "<meta property=\"og:image\" content=\"".$imageLink."?".time()."\" />\n";
+			$header .= "<meta itemprop=\"image\" content=\"".$imageLink."?".time()."\" />\n";
+		}
+		
+
 		if(!$clear) {
 			$viewport = cardinalEvent::execute("before_show_viewport", config::Select("viewport"));
 			$header .= '<meta name="viewport" content="'.$viewport.'" />'."\n";

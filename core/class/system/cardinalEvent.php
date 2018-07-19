@@ -164,7 +164,10 @@ class cardinalEvent {
 			foreach(self::$collection['standart'][$action] as $v) {
 				$data = array();
 				if($v['data']!=="") {
-					$data[] = $v['data'];
+					if(!is_array($v['data'])) {
+						$v['data'] = array($v['data']);
+					}
+					$data = array_merge($v['data'], $data);
 				}
 				$data[] = $return;
 				$data = array_merge($data, $args);

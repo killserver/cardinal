@@ -7493,3 +7493,34 @@ span#doc_time .delimer {
   position: absolute;
   left: 10px;
 }
+
+
+
+
+/* experemental start */
+.sidebar-menu {
+    width: 217px;
+}
+
+.sidebar-menu .logo-env {
+    padding: 30px 15px;
+}
+
+.sidebar-menu .main-menu {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.page-container .main-content .page-title {
+    padding: 15px 0;
+}
+
+.page-container .main-content .page-title .title-env .title {
+    font-size: 22px;
+}
+
+.sidebar-menu .main-menu a > i {
+    width: 18px;
+    text-align: center;
+}
+/* experemental end */

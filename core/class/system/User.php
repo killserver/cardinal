@@ -147,7 +147,7 @@ class User {
 	}
 
 	final public static function loadUsers() {
-		$user = $users = array();
+		$users = array();
 		$userLoad = false;
 		if(isset($_SERVER['HTTP_HOST']) && file_exists(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX)) {
 			include(PATH_MEDIA."users.".ROOT_EX);
@@ -179,16 +179,15 @@ class User {
 				$id++;
 			}
 		}
-		return array($user, $users, $userLoad);
+		return array($users, $userLoad);
 	}
 	
 	final public static function load() {
 	global $user, $users, $db;
-		$user = $users = array();
+		$users = array();
 		$load = self::loadUsers();
-		$user = $load[0];
-		$users = $load[1];
-		$userLoad = $load[2];
+		$users = $load[0];
+		$userLoad = $load[1];
 		if((defined("COOK_USER") || defined("COOK_ADMIN_USER") || defined("COOK_PASS") || defined("COOK_ADMIN_PASS")) && (Arr::get($_COOKIE, COOK_USER, false) || Arr::get($_COOKIE, COOK_ADMIN_USER, false)) && (Arr::get($_COOKIE, COOK_PASS, false) || Arr::get($_COOKIE, COOK_ADMIN_PASS, false))) {
 			if(Arr::get($_COOKIE, COOK_ADMIN_USER, false) && defined("IS_ADMIN")) {
 				$username = Saves::SaveOld(Arr::get($_COOKIE, COOK_ADMIN_USER));
@@ -202,9 +201,9 @@ class User {
 				$where = "pass";
 				$password = Saves::SaveOld(Arr::get($_COOKIE, COOK_PASS));
 			}
+			$authorize = false;
+			$passCheck = ($password);
 			if(!cache::Exists("user_".$username)) {
-				$authorize = false;
-				$passCheck = ($password);
 				if($userLoad) {
 					if(isset($users[$username]) && isset($users[$username]['username']) && isset($users[$username][$where]) && $users[$username][$where] == $passCheck) {
 						$user = $users[$username];
@@ -242,17 +241,8 @@ class User {
 					}
 				}
 			} else if(cache::Exists("user_".$username)) {
-				$password = $admin_password = "";
-				if(Arr::get($_COOKIE, COOK_PASS, false)) {
-					$password = Saves::SaveOld(Arr::get($_COOKIE, COOK_PASS));
-				}
-				if(Arr::get($_COOKIE, COOK_ADMIN_PASS, false)) {
-					$admin_password = Saves::SaveOld(Arr::get($_COOKIE, COOK_ADMIN_PASS));
-				}
 				$user = cache::Get("user_".$username);
-				$pass = ($user['pass'] == create_pass($password) || $user['pass'] == create_pass($password));
-				$adminPass = ($user['pass'] == cardinal::create_pass($admin_password) || $user['pass'] == cardinal::create_pass($admin_password));
-				if(isset($user['isApi']) || ($pass || $adminPass)) {
+				if(isset($user['isApi']) || isset($user['username']) && isset($user[$where]) && $user[$where] == $passCheck) {
 					$authorize = true;
 				}
 			}

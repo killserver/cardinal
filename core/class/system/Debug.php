@@ -30,7 +30,7 @@ class Debug {
 			ini_set('xdebug.collect_params', 3);
 		}
 		if($mode!==DEBUG_MODE_ONLY_DEBUG) {
-			register_shutdown_function("Debug::DebugAll", $mode, $echo);
+			addEvent("shutdownCardinal", "Debug::DebugAll", array($mode, $echo));
 		}
 	}
 	
@@ -163,7 +163,7 @@ class Debug {
 	
 	final public static function DebugAll($type = "", $echo = false) {
 		if(empty($type)) {
-			$type = DEBUG_MEMORY * DEBUG_TIME * DEBUG_FILES * DEBUG_INCLUDE * DEBUG_DB * DEBUG_TEMPLATE;
+			$type = DEBUG_MEMORY * DEBUG_TIME * DEBUG_INCLUDE * DEBUG_DB * DEBUG_TEMPLATE;
 		}
 		$incl_files = $files = $db_querys = $include = array();
 		$memory = $memoryNum = $time = $incl_filesize = $filesize = $db_time = $db_num = $tmp = 0;
@@ -201,7 +201,7 @@ class Debug {
 			$db_querys = db::$querys;
 		} else if(self::switcher($type, DEBUG_TEMPLATE)) {
 			$tmp = templates::$time;
-		} else if(self::switcher($type, array(DEBUG_MEMORY * DEBUG_TIME * DEBUG_FILES * DEBUG_INCLUDE, DEBUG_CORE))) {
+		} else if(self::switcher($type, array(DEBUG_MEMORY * DEBUG_TIME * DEBUG_INCLUDE, DEBUG_CORE))) {
 			$num = 0;
 			$incl_files = get_included_files();
 			foreach($incl_files as $f) {
@@ -219,7 +219,7 @@ class Debug {
 			$memoryNum = $size;
 			$memory = $size ? round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . $filesizename[$i] : '0 Bytes';
 			unset($size, $filesizename, $i);
-		} else if(self::switcher($type, array(DEBUG_FILES * DEBUG_INCLUDE, DEBUG_FILE))) {
+		} else if(self::switcher($type, array(DEBUG_INCLUDE, DEBUG_FILE))) {
 			$num = 0;
 			$incl_files = get_included_files();
 			foreach($incl_files as $f) {

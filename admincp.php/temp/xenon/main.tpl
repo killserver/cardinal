@@ -243,6 +243,10 @@
 							<i class="fa-bell-o"></i>
 							<span class="badge badge-success">7</span>
 						</a-->
+
+						<a href="{C_default_http_local}" class="visible-xs-inline-block visible-sm-inline-block" title="{L_"Перейти на сайт"}" alt="{L_"Перейти на сайт"}">
+							<i class="fa fa-paper-plane"></i>
+						</a>
 						
 						<a href="#" data-toggle="mobile-menu">
 							<i class="fa-bars"></i>

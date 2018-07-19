@@ -453,9 +453,13 @@ if(function_exists("header_remove")) {
 	header('X-Powered-By:');
 }
 execEvent("set_headers");
+function shutdownCardinal() {
+	execEvent("shutdownCardinal");
+}
 if(defined("DEBUG_ACTIVATED")) {
 	Debug::activation(720, true);
 }
-register_shutdown_function("GzipOut");
+addEvent("shutdownCardinal", "GzipOut", "", 999999999);
+register_shutdown_function("shutdownCardinal");
 execEvent("core_ready");
 ?>
