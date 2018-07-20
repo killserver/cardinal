@@ -5,6 +5,16 @@ class ImportExport extends Core {
 	private $tree = array();
 	private $all = false;
 
+	function mkNotDir($file) {
+		$dir = pathinfo($file);
+		if(isset($dir['dirname'])) {
+			if(!file_exists($dir['dirname'])) {
+				mkdir($dir['dirname'], 0777, true);
+			}
+		}
+		return $file;
+	}
+
 	function zip_flatten($zipfile, $dest = '.', $tmp = false) {
 		if($tmp==false) {
 			$tmp = dirname(__FILE__).DS."tmp".DS;
@@ -15,42 +25,53 @@ class ImportExport extends Core {
 				chmod($tmp, 0777);
 			}
 		}
+		$oldPath = array(
+			ROOT_PATH."core".DS."class".DS."system".DS => PATH_SYSTEM,
+			ROOT_PATH."core".DS."class".DS."system".DS."DBDrivers".DS => PATH_DB_DRIVERS,
+			ROOT_PATH."core".DS."class".DS => PATH_CLASS,
+			ROOT_PATH."core".DS."cache".DS."page".DS => PATH_CACHE_PAGE,
+			ROOT_PATH.'core'.DS.'cache'.DS.'system'.DS => PATH_CACHE_SYSTEM,
+			ROOT_PATH.'core'.DS.'cache'.DS.'system'.DS => PATH_LOGS,
+			ROOT_PATH."core".DS."cache".DS."tmp".DS => PATH_CACHE_TEMP,
+			ROOT_PATH.'core'.DS.'cache'.DS.'lang'.DS => PATH_CACHE_LANGS,
+			ROOT_PATH."core".DS."cache".DS."session".DS => PATH_CACHE_SESSION,
+			ROOT_PATH."core".DS."functions".DS => PATH_FUNCTIONS,
+			ROOT_PATH."core".DS."media".DS => PATH_MEDIA,
+			ROOT_PATH."core".DS."lang".DS => PATH_LANGS,
+			ROOT_PATH."core".DS."cache".DS => PATH_CACHE,
+			ROOT_PATH."core".DS."pages".DS => PATH_PAGES,
+			ROOT_PATH."application".DS."cache".DS => PATH_CACHE_USERDATA,
+			ROOT_PATH."application".DS."modules".DS => PATH_MODULES,
+			ROOT_PATH."application".DS."global".DS => PATH_GLOBAL,
+			ROOT_PATH."application".DS."autoload".DS => PATH_AUTOLOADS,
+			ROOT_PATH."application".DS."library".DS => PATH_LOAD_LIBRARY,
+			ROOT_PATH."application".DS."models".DS => PATH_MODELS,
+			ROOT_PATH."application".DS."cron".DS => PATH_CRON_FILES,
+			ROOT_PATH."application".DS => PATH_LOADED_CONTENT,
+			ROOT_PATH."skins".DS => PATH_SKINS,
+			ROOT_PATH."uploads".DS."manifest".DS => PATH_MANIFEST,
+			ROOT_PATH."uploads".DS => PATH_UPLOADS,
+			ROOT_PATH."admincp.php" => ADMINCP_DIRECTORY,
+		);
 		$zip = new ZipArchive();
 		$files = $fileinfo = array();
 		if($zip->open($zipfile)) {
 			for($i=0;$i<$zip->numFiles;$i++) {
-				$entry = $zip->getNameIndex($i);
-				if(nsubstr($entry, -1) == '/') {
+				$fileName = $zip->getNameIndex($i);
+				if(nsubstr($fileName, -1) == '/') {
 					continue; // skip directories
 				}
-				$file = str_replace(array("\\", "/"), DS, $dest.$entry);
-				$file = iconv("cp866", "windows-1251//IGNORE", $file);
-				$files[] = array("name" => $file, "id" => $i);
-				$fp = $zip->getStream($entry);
-				if(!$fp) {
-					throw new Exception('Unable to extract the file.');
-				}
-				$ofp = fopen($tmp."un_tmp".$i, 'w+');
-				if(!$ofp) {
-					throw new Exception('Unable to extract the file.');
-				}
-				while(!feof($fp)) {
-					fwrite($ofp, fread($fp, 8192));
-				}
-				fclose($fp);
-				fclose($ofp);
-			}
-			$zip->close();
-			for($i=0;$i<sizeof($files);$i++) {
-				$id = $files[$i]['id'];
-				$name = $files[$i]['name'];
-				$file = file_get_contents($tmp."un_tmp".$i);
+				$fileName = str_replace(array("\\", "/"), DS, $dest.$fileName);
+				$fileName = iconv("cp866", "windows-1251//IGNORE", $fileName);
+				$fileName = str_replace(array_keys($oldPath), array_values($oldPath), $fileName);
+				$fileName = $this->mkNotDir($fileName);
+				
+				$file = $zip->getFromIndex($i);
 				$file = gzinflate($file);
 				$file = gzinflate($file);
 				$file = gzinflate($file);
 				$file = gzinflate($file);
-				file_put_contents($name, $file);
-				unlink($tmp."un_tmp".$i);
+				file_put_contents($fileName, $file);
 			}
 			return true;
 		} else {
@@ -222,7 +243,7 @@ class ImportExport extends Core {
 				$get = gzdeflate($get, 9);
 				$get = gzdeflate($get, 9);
 				file_put_contents($relpathNow."tmp".DS."tmp".$i,$get);
-				$d[$i] = iconv("windows-1251", "cp866", $d[$i]);
+				$d[$i] = iconv("windows-1251", "cp866//IGNORE", $d[$i]);
 			}
 			$name = generate_uuid4();
 			$zip = new ZipArchive();
@@ -246,8 +267,10 @@ class ImportExport extends Core {
 			return false;
 		}
 		if(($names = Arr::get($_GET, "unpack", false))!==false) {
-			copy($relpathNow."uploads".DS.$names, $relpathNow."zip".DS.$names);
-			unlink($relpathNow."uploads".DS.$names);
+			if(file_exists($relpathNow."uploads".DS.$names)) {
+				copy($relpathNow."uploads".DS.$names, $relpathNow."zip".DS.$names);
+				unlink($relpathNow."uploads".DS.$names);
+			}
 			try {
 				$this->zip_flatten($relpathNow."zip".DS.$names, ROOT_PATH);
 				ajax(array("done" => "1"));

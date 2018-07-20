@@ -136,7 +136,7 @@ class db_mysql extends DriverParam implements drivers {
 		return mysql_insert_id($this->mc);
 	}
 	public function escape($str) {
-		$save = strpos($str, "(")!==false && strpos($str, ")")!==false && (preg_match("/^[a-zA-Z]/", $str) && !preg_match("/\;/", $str) && !preg_match("/\</", $str));
+		$save = preg_match("/(SELECT(.+?)FROM|UNIX_TIMESTAMP)/", $str);
 		return ($save ? "'" : "").mysql_real_escape_string($str).($save ? "'" : "");
 	}
 	public function num_fields() {

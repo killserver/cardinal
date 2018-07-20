@@ -398,7 +398,7 @@ function or_charcode($text, $code = "", $rev = false) {
 	}
 }
 
-function ToTranslit($var, $rep = false, $norm = false) {
+function ToTranslit($var, $rep = false, $norm = false, $php = false) {
 	if(empty($var)) {
 		return "";
 	}
@@ -423,6 +423,15 @@ function ToTranslit($var, $rep = false, $norm = false) {
 		$translate = array_merge($lang, array("\\" => "", "/" => "", "$" => "", "#" => "", "@" => "", "!" => "", "%" => "", "^" => "", "&quot;" => "", "&" => "", "*" => "", "(" => "", ")" => "", "?" => "", ":" => "", "=" => "", "+" => "", "\"" => "'", "№" => ""));
 	} else {
 		$translate = array_merge($translate, array(" " => "_", "\\" => "", "/" => "", "'" => "", "$" => "", "#" => "", "@" => "", "!" => "", "%" => "", "^" => "", "&quot;" => "", "&" => "", "*" => "", "(" => "", ")" => "", "," => "", "." => "", "?" => "", ":" => "", "=" => "", "+" => "", "\"" => "'", "№" => ""));
+	}
+	if($php) {
+		$number = substr($var, 0, 1);
+		if(is_numeric($number)) {
+			$t = array("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","r","s","q","u","w","y","x","z");
+			$t1 = array_rand($t);
+			$var = $t[$t1].$var;
+		}
+		$var = str_Replace(array("-"), "", $var);
 	}
 	$var = strtr($var, $translate);
 	if(strlen($var)>200) {

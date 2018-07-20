@@ -403,7 +403,7 @@ class KernelArcher {
 			} else if($models->getAttribute($k, "type")=="datetime") {
                 $post[0] = str_replace("/", "-", $post[0]);
 				$type = strtotime((isset($post[0]) && !empty($post[0]) ? $post[0] : date("d/m/Y"))." ".(isset($post[1]) && !empty($post[1]) ? $post[1] : date("H:i:s")));
-			} else if(!is_bool($post) && $post != $v) {
+			} else if(!is_bool($post)) {
 				$type = $post;
 			} else {
 				$type = $v;

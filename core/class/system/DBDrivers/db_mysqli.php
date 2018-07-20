@@ -153,7 +153,7 @@ class db_mysqli extends DriverParam implements drivers {
 		return $this->mc->insert_id;
 	}
 	public function escape($str) {
-		$save = strpos($str, "(")!==false && strpos($str, ")")!==false && (preg_match("/^[a-zA-Z]/", $str) && !preg_match("/\;/", $str));
+		$save = preg_match("/(SELECT(.+?)FROM|UNIX_TIMESTAMP)/", $str);
 		return ($save ? "": "'").$this->mc->real_escape_string($str).($save ? "": "'");
 	}
 	public function num_fields() {
