@@ -264,6 +264,35 @@ class templates {
 		);
 	}
 
+	private static $assignVarI = 0;
+	/**
+	 * Set data for template
+	 * @access public
+	 * @param string $name Name data for template
+	 * @param string $value Value data for template
+	 * @param string $block Block data for create array
+     */
+	final public static function assign_var($name, $value, $block = "", $id = "") {
+		if($block!=="" && $id==="") {
+			$id = self::gen_uuid();
+		}
+		if(is_bool($value)) {
+			if($value===true) {
+				$value = "true";
+			} else if($value===false) {
+				$value = "false";
+			}
+		}
+		if(empty($block)) {
+			self::$blocks[$name] = $value;
+		} else if(!empty($id)) {
+			self::$blocks[$block][$id][$name] = $value;
+		} else {
+			self::$blocks[$block][self::$assignVarI][$name] = $value;
+			self::$assignVarI++;
+		}
+	}
+
 	/**
 	 * Set array datas for template
 	 * @access public
@@ -272,10 +301,10 @@ class templates {
 	 * @param string $view Unique id for block data
      */
 	final public static function assign_vars($array, $block = "", $view = "") {
-		if($view==="") {
+		if($block!=="" && $view==="") {
 			$view = self::gen_uuid();
 		}
-		if(empty($block)) {
+		if($block==="") {
 			foreach($array as $name => $value) {
 				if(is_bool($value)) {
 					if($value===true) {
@@ -286,7 +315,7 @@ class templates {
 				}
 				self::$blocks[$name] = $value;
 			}
-		} elseif(!empty($view)) {
+		} elseif($view!=="") {
 			foreach($array as $name => $value) {
 				if(is_bool($value)) {
 					if($value===true) {
@@ -294,6 +323,15 @@ class templates {
 					} else if($value===false) {
 						$value = "false";
 					}
+				}
+				if(!isset(self::$blocks[$block]) || !is_array(self::$blocks[$block])) {
+					self::$blocks[$block] = array();
+				}
+				if(!isset(self::$blocks[$block][$view]) || !is_array(self::$blocks[$block][$view])) {
+					self::$blocks[$block][$view] = array();
+				}
+				if(!isset(self::$blocks[$block][$view][$name]) || !is_array(self::$blocks[$block][$view][$name])) {
+					self::$blocks[$block][$view][$name] = array();
 				}
 				self::$blocks[$block][$view][$name] = $value;
 			}
@@ -309,6 +347,74 @@ class templates {
 				self::$blocks[$block][$name] = $value;
 			}
 		}
+	}
+
+	final public static function loadObject($obj, $name = "", &$i = 0) {
+		if(!is_object($obj) && !is_array($obj)) {
+			self::ErrorTemplate("First parameter is not object and not array");
+			die();
+		}
+		if(is_object($obj) && !($obj instanceof DBObject)) {
+			$arr = get_object_vars($obj);
+		} else {
+			$arr = $obj;
+		}
+		if(empty($name)) {
+			if(is_array($obj) && isset($obj[0]) && is_object($obj[0])) {
+				$name = get_class($obj[0]);
+			} else if(is_object($obj)) {
+				$name = get_class($obj);
+			}
+		}
+		if(empty($name)) {
+			self::ErrorTemplate("Name is not set");
+			die();
+		}
+		foreach($arr as $k => $v) {
+			if(is_array($arr) && is_object($v) && $v instanceof DBObject && !empty($name)) {
+				$v = $v->getArray();
+				$vs = cardinalEvent::execute("templates::loadObject", $v);
+				if(!empty($vs)) {
+					$v = $vs;
+				}
+				self::assign_vars($v, $name, $name.$k.$i);
+			} else if(is_object($arr) && $arr instanceof DBObject) {
+				$v = $arr->getArray();
+				var_dump($v);
+				$vs = cardinalEvent::execute("templates::loadObject", $v);
+				if(!empty($vs)) {
+					$v = $vs;
+				}
+				self::loadObject($v, $name, $i);
+			} else if(is_object($v) && $v instanceof DBObject) {
+				$v = $v->getArray();
+				$vs = cardinalEvent::execute("templates::loadObject", $v);
+				if(!empty($vs)) {
+					$v = $vs;
+				}
+				self::loadObject($v, $name, $i);
+			} else if(is_object($v)) {
+				$vs = cardinalEvent::execute("templates::loadObject", $v);
+				if(!empty($vs)) {
+					$v = $vs;
+				}
+				self::loadObject($v, $name, $i);
+			} else if(is_array($arr)) {
+				$vs = cardinalEvent::execute("templates::loadObject", $v);
+				if(!empty($vs)) {
+					$v = $vs;
+				}
+				self::assign_var($k, $v, $name, $name.$k.$i);
+			} else {
+				$vs = cardinalEvent::execute("templates::loadObject", $v);
+				if(!empty($vs)) {
+					$v = $vs;
+				}
+				self::assign_var($k, $v);
+			}
+		}
+		$i++;
+		return true;
 	}
 	
 	final public static function resetVars($array, $view = "") {
@@ -374,35 +480,6 @@ class templates {
 				return "array";
 			}
 			return "array";
-		}
-	}
-
-	private static $assignVarI = 0;
-	/**
-	 * Set data for template
-	 * @access public
-	 * @param string $name Name data for template
-	 * @param string $value Value data for template
-	 * @param string $block Block data for create array
-     */
-	final public static function assign_var($name, $value, $block = "", $id = "") {
-		if($id==="") {
-			$id = uniqid();
-		}
-		if(is_bool($value)) {
-			if($value===true) {
-				$value = "true";
-			} else if($value===false) {
-				$value = "false";
-			}
-		}
-		if(empty($block)) {
-			self::$blocks[$name] = $value;
-		} else if(!empty($id)) {
-			self::$blocks[$block][$id][$name] = $value;
-		} else {
-			self::$blocks[$block][self::$assignVarI][$name] = $value;
-			self::$assignVarI++;
 		}
 	}
 
@@ -1694,73 +1771,6 @@ class templates {
 		return $sub;
 	}
 
-	final public static function loadObject($obj, $name = "", &$i = 0) {
-		if(!is_object($obj) && !is_array($obj)) {
-			self::ErrorTemplate("First parameter is not object and not array");
-			die();
-		}
-		if(is_object($obj) && !($obj instanceof DBObject)) {
-			$arr = get_object_vars($obj);
-		} else {
-			$arr = $obj;
-		}
-		if(empty($name)) {
-			if(is_array($obj) && isset($obj[0]) && is_object($obj[0])) {
-				$name = get_class($obj[0]);
-			} else if(is_object($obj)) {
-				$name = get_class($obj);
-			}
-		}
-		if(empty($name)) {
-			self::ErrorTemplate("Name is not set");
-			die();
-		}
-		foreach($arr as $k => $v) {
-			if(is_array($arr) && is_object($v) && $v instanceof DBObject && !empty($name)) {
-				$v = $v->getArray();
-				$vs = cardinalEvent::execute("templates::loadObject", $v);
-				if(!empty($vs)) {
-					$v = $vs;
-				}
-				self::assign_vars($v, $name, $k.$i);
-			} else if(is_object($arr) && $arr instanceof DBObject) {
-				$v = $arr->getArray();
-				$vs = cardinalEvent::execute("templates::loadObject", $v);
-				if(!empty($vs)) {
-					$v = $vs;
-				}
-				self::loadObject($v, $name, $i);
-			} else if(is_object($v) && $v instanceof DBObject) {
-				$v = $v->getArray();
-				$vs = cardinalEvent::execute("templates::loadObject", $v);
-				if(!empty($vs)) {
-					$v = $vs;
-				}
-				self::loadObject($v, $name, $i);
-			} else if(is_object($v)) {
-				$vs = cardinalEvent::execute("templates::loadObject", $v);
-				if(!empty($vs)) {
-					$v = $vs;
-				}
-				self::loadObject($v, $name, $i);
-			} else if(is_array($arr)) {
-				$vs = cardinalEvent::execute("templates::loadObject", $v);
-				if(!empty($vs)) {
-					$v = $vs;
-				}
-				self::assign_var($v, $k, $name, $name.$i);
-			} else {
-				$vs = cardinalEvent::execute("templates::loadObject", $v);
-				if(!empty($vs)) {
-					$v = $vs;
-				}
-				self::assign_var($k, $v);
-			}
-		}
-		$i++;
-		return true;
-	}
-
 	/**
 	 * Rebuild standard template for completed
 	 * @access public
@@ -1866,35 +1876,48 @@ class templates {
 	 * @param string $tmp Completed template
 	 * @param array|string $header List headers or title
      */
-	final public static function completed($tmp, $header = "") {
+	final public static function completed($tmp, $headerSet = "") {
 	global $manifest;
 		$time = self::time();
-		if(!is_array($header)) {
-			$header = array(
-				"title" => htmlspecialchars($header),
+		if(!is_array($headerSet)) {
+			$arr = array(
 				"meta" => array(
 					"og" => array(
-						"title" => htmlspecialchars($header),
 						"description" => htmlspecialchars(lang::get_lang("s_description")),
 					),
 					"ogpr" => array(
-						"og:title" => htmlspecialchars($header),
 						"og:description" => htmlspecialchars(lang::get_lang("s_description")),
 					),
 					"description" => htmlspecialchars(lang::get_lang("s_description")),
 				),
 			);
+
+			if(!empty($headerSet)) {
+				$arr['title'] = $headerSet;
+				$arr['meta']['og']['title'] = $headerSet;
+				$arr['meta']['ogpr']['title'] = $headerSet;
+			} else {
+				$arr['title'] = htmlspecialchars(lang::get_lang("sitename"));
+				$arr['meta']['og']['title'] = htmlspecialchars(lang::get_lang("sitename"));
+				$arr['meta']['ogpr']['title'] = htmlspecialchars(lang::get_lang("sitename"));
+			}
+
+			$header = $arr;
+		} else {
+			$header = $headerSet;
 		}
 		if(!is_array(self::$header)) {
 			self::$header = array();
 		}
 		if(!self::$isChangeHead) {
-			self::$header = array_merge(self::$header, releaseSeo(array(), true), $header);
+			self::$header = array_replace_recursive(self::$header, releaseSeo(array(), true), $header);
 		} else {
-			self::$header = array_merge($header, releaseSeo(array(), true), self::$header);
+			self::$header = array_replace_recursive($header, releaseSeo(array(), true), self::$header);
 		}
-		$manifest['mod_page'][HTTP::getip()]['title'] = self::$header['title'];
-		modules::manifest_set(array('mod_page', HTTP::getip(), 'title'), self::$header['title']);
+		if(!empty($headerSet)) {
+			$manifest['mod_page'][HTTP::getip()]['title'] = self::$header['title'];
+			modules::manifest_set(array('mod_page', HTTP::getip(), 'title'), self::$header['title']);
+		}
 		$tmp = self::comp_datas($tmp);
 		self::$tmp = $tmp;
 		self::$time += self::time()-$time;
@@ -1938,6 +1961,24 @@ class templates {
 		return $tmp;
 	}
 
+	final private static function langdate($arr) {
+		if(isset($arr[3]) && !empty($arr[3])) {
+			$temp = $arr[3];
+		} else {
+			$temp = ", H:i";
+		}
+		if(isset($arr[4]) && !empty($arr[4])) {
+			$only_date = true;
+		}
+		if(isset($arr[1])) {
+			$date = $arr[1];
+		}
+		if(!is_numeric($date)) {
+			return $arr[0];
+		}
+		return langdate($date, $temp, $only_date);
+	}
+
 	/**
 	 * Final completed template
 	 * @access public
@@ -1949,6 +1990,7 @@ class templates {
 	public static function comp_datas($tpl, $file = "null", $type = "all") {
 		$tpl = preg_replace("/\/\/\/\*\*\*(.+?)\*\*\*\/\/\//is", "", $tpl);
 		$tpl = execEvent("compileTPL", $tpl, $file, $type);
+
 		if($type=="all" || $type=="ecomp") {
 			if(modules::manifest_get(array("temp", "block"))!==false) {
 				self::$blocks = array_merge(self::$blocks, modules::manifest_get(array("temp", "block")));
@@ -1975,8 +2017,8 @@ class templates {
 			$tpl = self::callback_array("#\{RP\[([a-zA-Z0-9\-_]+)\]\}#", ("templates::routeparam"), $tpl);
 			$tpl = self::callback_array("#\{R_\[(.+?)\]\[(.+?)\]\}#", ("templates::route"), $tpl);
 			$tpl = self::callback_array("#\{R_\[(.+?)\]\}#", ("templates::route"), $tpl);
-			if(preg_match("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true)\}#", $tpl)) {
-				$tpl = self::callback_array("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,(true|false))\}#", "langdate", $tpl);
+			if(preg_match("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true|false)\}#i", $tpl)) {
+				$tpl = self::callback_array("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,(true|false))\}#i", "templates::langdate", $tpl);
 			}
 			$tpl = self::callback_array("#\{F_['\"](.+?)['\"],['\"](.+?)['\"],['\"](.+?)['\"]\}#", "templates::declension", $tpl);
 		}
@@ -2058,6 +2100,7 @@ class templates {
 				$tpl = str_replace("[clear]", "", $tpl);
 			}
 		}
+
 		return $tpl;
 	}
 

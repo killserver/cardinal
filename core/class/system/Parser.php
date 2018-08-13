@@ -102,6 +102,8 @@ class Parser {
      */
 	private $headerList = array();
 
+	private $parseCookie = false;
+
 	/**
 	 * Parser constructor.
 	 * @param string $url Url for parser
@@ -122,6 +124,8 @@ class Parser {
 	final public function post($post = array()) {
 		if(is_array($post) && sizeof($post)>0) {
 			$this->post = array_merge($this->post, $post);
+		} else if(is_string($post) && !empty($post) && strlen($post)>0) {
+			$this->post = $post;
 		}
 		return $this;
 	}
@@ -303,6 +307,10 @@ class Parser {
 		return (int) substr($header, 9, 3);
 	}
 
+	final public function parseCookie($parse = true) {
+		$this->parseCookie = $parse;
+	}
+
 	/**
 	 * Initialization parsing
 	 * @param string $url Need link and start, or initialization parsing
@@ -365,6 +373,9 @@ class Parser {
 			}
 			curl_setopt($ch, CURLOPT_POST, 1);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, implode("&", $post));
+		} else if(is_string($this->post) && !empty($this->post) && strlen($this->post)>0) {
+			curl_setopt($ch, CURLOPT_POST, 1);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $this->post);
 		}
 		if(strtolower(substr($url,0,5))=='https') {
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
@@ -399,35 +410,67 @@ class Parser {
 		if(!$this->error && ($this->html = curl_exec($ch)) === false) {
 			$this->html = curl_error($ch);
 		}
-		if($this->header && $this->header_array && strpos($this->html, "\r\n\r\n")!==false) {
+		if($this->header && strpos($this->html, "\r\n\r\n")!==false) {
 			$header = substr($this->html, 0, strpos($this->html, "\r\n\r\n"));
 			$this->html = str_replace($header."\r\n\r\n", "", $this->html);
-			$exp = explode("\n", $header);
-			for($i=0;$i<sizeof($exp);$i++) {
-				if($this->header_clear) {
+			if($this->header_array) {
+				$exp = explode("\n", $header);
+				for($i=0;$i<sizeof($exp);$i++) {
+					if($this->header_clear) {
+						if(strpos($exp[$i], "HTTP/")!==false) {
+							continue;
+						}
+						if(strpos($exp[$i], "Server")!==false) {
+							continue;
+						}
+					}
 					if(strpos($exp[$i], "HTTP/")!==false) {
-						continue;
+						if(strpos($exp[$i], "1.0")!==false) {
+							$this->headers['HTTPVersion'] = "1.0";
+						}
+						if(strpos($exp[$i], "1.1")!==false) {
+							$this->headers['HTTPVersion'] = "1.1";
+						}
+						if(strpos($exp[$i], "2.0")!==false) {
+							$this->headers['HTTPVersion'] = "2.0";
+						}
+						$this->headers['code'] = $this->getResponseCode($exp[$i]);
+						$ex = array("HTTP", str_replace(array("HTTP", "/", "1.0", "1.1", "2.0"), "", $exp[$i]));
+					} else {
+						$ex = explode(":", $exp[$i]);
 					}
-					if(strpos($exp[$i], "Server")!==false) {
-						continue;
+					if(isset($this->headers[$ex[0]])) {
+						if(!is_array($this->headers[$ex[0]])) {
+							$t = $this->headers[$ex[0]];
+							$this->headers[$ex[0]] = array();
+							$this->headers[$ex[0]][] = $t;
+						}
+						$this->headers[$ex[0]][] = trim($ex[1]);
+					} else {
+						$this->headers[$ex[0]] = trim($ex[1]);
 					}
 				}
-				if(strpos($exp[$i], "HTTP/")!==false) {
-					if(strpos($exp[$i], "1.0")!==false) {
-						$this->headers['HTTPVersion'] = "1.0";
+				if($this->parseCookie && isset($this->headers["Set-Cookie"])) {
+					$this->headers["Set-Cookie"] = implode("; ", $this->headers["Set-Cookie"]);
+					$this->headers["Set-Cookie"] = explode(";", $this->headers["Set-Cookie"]);
+					$this->headers["Set-Cookie"] = array_map("trim", $this->headers["Set-Cookie"]);
+					$c = array();
+					for($i=0;$i<sizeof($this->headers["Set-Cookie"]);$i++) {
+						$exp = explode("=", $this->headers["Set-Cookie"][$i]);
+						if(isset($c[$exp[0]])) {
+							if(!is_array($c[$exp[0]])) {
+								$t = $c[$exp[0]];
+								$c[$exp[0]] = array();
+							}
+							$c[$exp[0]][] = $t;
+						} else {
+							$c[$exp[0]] = $exp[1];
+						}
 					}
-					if(strpos($exp[$i], "1.1")!==false) {
-						$this->headers['HTTPVersion'] = "1.1";
-					}
-					if(strpos($exp[$i], "2.0")!==false) {
-						$this->headers['HTTPVersion'] = "2.0";
-					}
-					$this->headers['code'] = $this->getResponseCode($exp[$i]);
-					$ex = array("HTTP", str_replace(array("HTTP", "/", "1.0", "1.1", "2.0"), "", $exp[$i]));
-				} else {
-					$ex = explode(":", $exp[$i]);
+					$this->headers["Set-Cookie"] = $c;
 				}
-				$this->headers[$ex[0]] = trim($ex[1]);
+			} else {
+				$this->headers = $header;
 			}
 		}
 		$this->errors = curl_error($ch);

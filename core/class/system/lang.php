@@ -181,18 +181,19 @@ class lang implements ArrayAccess {
      * @param bool $lang Set needed language
      */
     public function __construct($lang = false) {
-	global $user;
+		global $user;
 		if(is_bool($lang) && $lang === false) {
 			if(class_exists("config") && method_exists("config", "Select")) {
 				$clang = config::Select('lang');
 				$ulang = (isset($user['lang']) && !empty($user['lang']) ? $user['lang'] : "");
 				if(!empty($ulang)) {
-					self::$defaultLang = self::$lang = $ulang;
+					self::$lang = $ulang;
 				} elseif(!empty($clang)) {
-					self::$defaultLang = self::$lang = $clang;
+					self::$lang = $clang;
 				}
-			} else {
-				self::$defaultLang = "ru";
+				if(($t = config::Select('default_lang'))!==false) {
+					self::$defaultLang = $t;
+				}
 			}
 		} else {
 			self::$lang = $lang;
@@ -204,8 +205,6 @@ class lang implements ArrayAccess {
 				} elseif(!empty($clang)) {
 					self::$defaultLang = $clang;
 				}
-			} else {
-				self::$defaultLang = "ru";
 			}
 		}
 	}
@@ -250,47 +249,48 @@ class lang implements ArrayAccess {
 		return $sbin;
 	}
 	
-	final private static function merge($lang, $orig = "", $tr = "", $type = "get") {
+	final private static function merge($langSelect, $orig = "", $tr = "", $type = "get") {
+		global $lang;
 		$dirLangs = defined("PATH_CACHE_LANGS") ? PATH_CACHE_LANGS : dirname(__FILE__).DIRECTORY_SEPARATOR;
 		if($type=="edit") {
 			$fileLang = array();
-			if(file_exists($dirLangs."lang".$lang.".db") && is_readable($dirLangs."lang".$lang.".db")) {
-				$file = file_get_contents($dirLangs."lang".$lang.".db");
+			if(file_exists($dirLangs."lang".$langSelect.".db") && is_readable($dirLangs."lang".$langSelect.".db")) {
+				$file = file_get_contents($dirLangs."lang".$langSelect.".db");
 				$fileLang = unserialize(self::hex2bin($file));
 			}
 			$fileLang = array_merge($fileLang, array($orig => $tr));
 			if(is_writable($dirLangs)) {
-				file_put_contents($dirLangs."lang".$lang.".db", bin2hex(serialize($fileLang)));
+				file_put_contents($dirLangs."lang".$langSelect.".db", bin2hex(serialize($fileLang)));
 				return true;
 			} else {
 				return false;
 			}
 		} else if($type=="get") {
 			$fileLang = array();
-			if(file_exists($dirLangs."lang".$lang.".db") && is_readable($dirLangs."lang".$lang.".db")) {
-				$file = file_get_contents($dirLangs."lang".$lang.".db");
+			if(file_exists($dirLangs."lang".$langSelect.".db") && is_readable($dirLangs."lang".$langSelect.".db")) {
+				$file = file_get_contents($dirLangs."lang".$langSelect.".db");
 				$fileLang = unserialize(self::hex2bin($file));
 			}
-			return $fileLang;
+			return array_replace_recursive($fileLang, $lang);
 		} else if($type=="check") {
-			return file_exists($dirLangs."lang".$lang.".db") && is_readable($dirLangs."lang".$lang.".db");
+			return file_exists($dirLangs."lang".$langSelect.".db") && is_readable($dirLangs."lang".$langSelect.".db");
 		} else if($type=="merge") {
 			$fileLang = array();
-			if(file_exists($dirLangs."lang".$lang.".db") && is_readable($dirLangs."lang".$lang.".db")) {
-				$file = file_get_contents($dirLangs."lang".$lang.".db");
+			if(file_exists($dirLangs."lang".$langSelect.".db") && is_readable($dirLangs."lang".$langSelect.".db")) {
+				$file = file_get_contents($dirLangs."lang".$langSelect.".db");
 				$fileLang = unserialize(self::hex2bin($file));
 			}
-			return array_merge($orig, $fileLang);
+			return array_replace_recursive($fileLang, $orig);
 		} else if($type=="del") {
 			$fileLang = array();
-			if(file_exists($dirLangs."lang".$lang.".db") && is_readable($dirLangs."lang".$lang.".db")) {
-				$file = file_get_contents($dirLangs."lang".$lang.".db");
+			if(file_exists($dirLangs."lang".$langSelect.".db") && is_readable($dirLangs."lang".$langSelect.".db")) {
+				$file = file_get_contents($dirLangs."lang".$langSelect.".db");
 				$fileLang = unserialize(self::hex2bin($file));
 			}
 			if(isset($fileLang[$orig])) {
 				unset($fileLang[$orig]);
 				if(is_writable($dirLangs)) {
-					file_put_contents($dirLangs."lang".$lang.".db", bin2hex(serialize($fileLang)));
+					file_put_contents($dirLangs."lang".$langSelect.".db", bin2hex(serialize($fileLang)));
 					return true;
 				} else {
 					return false;
@@ -300,8 +300,8 @@ class lang implements ArrayAccess {
 			}
 		} else if($type=="remove") {
 			$fileLang = array();
-			if(file_exists($dirLangs."lang".$lang.".db") && is_readable($dirLangs."lang".$lang.".db")) {
-				unlink($dirLangs."lang".$lang.".db");
+			if(file_exists($dirLangs."lang".$langSelect.".db") && is_readable($dirLangs."lang".$langSelect.".db")) {
+				unlink($dirLangs."lang".$langSelect.".db");
 				return true;
 			}
 			return false;
@@ -322,32 +322,52 @@ class lang implements ArrayAccess {
      * @return array|string Try get all data in selected language
      */
     final public static function init_lang($db = true) {
-	global $lang, $manifest;
+		global $lang, $manifest;
 		if(!is_array($lang) || sizeof($lang)==0) {
 			$lang = array();
 		}
+		$saveLang = $lang;
 		if(isset($manifest['lang']) && isset($manifest['lang']['main']) && defined("PATH_LANGS") && file_Exists(PATH_LANGS.self::$lang.DS.$manifest['lang']['main'].".".ROOT_EX)) {
 			include(PATH_LANGS.self::$lang.DS.$manifest['lang']['main'].".".ROOT_EX);
 			if($db) {
-				$lang = array_merge($lang, self::lang_db());
+				$lang = array_merge($saveLang, self::lang_db());
 			} else {
-				$lang = self::merge(self::$lang, $lang, "", "merge");
+				$lang = self::merge(self::$lang, $saveLang, "", "merge");
 			}
 			return $lang;
 		}
-		if(defined("PATH_LANGS") && file_exists(PATH_LANGS.self::$lang.DS."main.".ROOT_EX)) {
-			include(PATH_LANGS.self::$lang.DS."main.".ROOT_EX);
+		if(defined("PATH_LANGS") && self::merge(self::$lang, "", "", "check")) {
+			if(file_exists(PATH_LANGS.self::$defaultLang.DS."main.".ROOT_EX)) {
+				include(PATH_LANGS.self::$defaultLang.DS."main.".ROOT_EX);
+			}
 			$db_lang = array();
 			if($db) {
 				$db_lang = self::lang_db();
-			}
-			if(file_exists(PATH_MEDIA."config.lang.".ROOT_EX)) {
-				include(PATH_MEDIA."config.lang.".ROOT_EX);
 			}
 			if(is_array($db_lang) && sizeof($db_lang)>0) {
 				$lang = array_merge($lang, $db_lang);
 			} else {
 				$lang = self::merge(self::$lang, $lang, "", "merge");
+			}
+			$lang = array_replace_recursive($lang, $saveLang);
+			if(file_exists(PATH_MEDIA."config.lang.".ROOT_EX)) {
+				include(PATH_MEDIA."config.lang.".ROOT_EX);
+			}
+			return $lang;
+		} else if(defined("PATH_LANGS") && file_exists(PATH_LANGS.self::$lang.DS."main.".ROOT_EX)) {
+			include(PATH_LANGS.self::$lang.DS."main.".ROOT_EX);
+			$db_lang = array();
+			if($db) {
+				$db_lang = self::lang_db();
+			}
+			if(is_array($db_lang) && sizeof($db_lang)>0) {
+				$lang = array_merge($lang, $db_lang);
+			} else {
+				$lang = self::merge(self::$lang, $saveLang, "", "merge");
+			}
+			$lang = array_replace_recursive($lang, $saveLang);
+			if(file_exists(PATH_MEDIA."config.lang.".ROOT_EX)) {
+				include(PATH_MEDIA."config.lang.".ROOT_EX);
 			}
 			return $lang;
 		} elseif(!defined("PATH_LANGS") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."lang".DIRECTORY_SEPARATOR.self::$lang.DIRECTORY_SEPARATOR."main.".ROOT_EX)) {
@@ -361,9 +381,11 @@ class lang implements ArrayAccess {
 			} else {
 				$lang = self::merge(self::$lang, $lang, "", "merge");
 			}
+			$lang = array_replace_recursive($lang, $saveLang);
 			return $lang;
 		} elseif(self::merge(self::$lang, "", "", "check")) {
 			$lang = self::merge(self::$lang, "", "", "get");
+			$lang = array_replace_recursive($lang, $saveLang);
 			return $lang;
 		} elseif(defined("PATH_LANGS") && file_exists(PATH_LANGS.self::$defaultLang.DS."main.".ROOT_EX)) {
 			include(PATH_LANGS.self::$defaultLang.DS."main.".ROOT_EX);
@@ -372,13 +394,14 @@ class lang implements ArrayAccess {
 			} else {
 				$db_lang = array();
 			}
-			if(file_exists(PATH_MEDIA."config.lang.".ROOT_EX)) {
-				include(PATH_MEDIA."config.lang.".ROOT_EX);
-			}
 			if(is_array($db_lang) && sizeof($db_lang)>0) {
 				$lang = array_merge($lang, $db_lang);
 			} else {
 				$lang = self::merge(self::$defaultLang, $lang, "", "merge");
+			}
+			$lang = array_replace_recursive($lang, $saveLang);
+			if(file_exists(PATH_MEDIA."config.lang.".ROOT_EX)) {
+				include(PATH_MEDIA."config.lang.".ROOT_EX);
 			}
 			return $lang;
 		} elseif(!defined("PATH_LANGS") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."lang".DIRECTORY_SEPARATOR.self::$defaultLang.DIRECTORY_SEPARATOR."main.".ROOT_EX)) {
@@ -393,6 +416,7 @@ class lang implements ArrayAccess {
 			} else {
 				$lang = self::merge(self::$defaultLang, $lang, "", "merge");
 			}
+			$lang = array_replace_recursive($lang, $saveLang);
 			return $lang;
 		} else {
 			return "false";
@@ -406,7 +430,7 @@ class lang implements ArrayAccess {
      * @return string Result returned language
      */
     final public static function get_lang($name, $sub = "") {
-	global $lang;
+		global $lang;
 		if(is_string($name) && is_string($sub) && !empty($sub) && isset($lang[$name][$sub])) {
 			return $lang[$name][$sub];
 		} else if(is_string($name) && isset($lang[$name])) {
@@ -424,7 +448,10 @@ class lang implements ArrayAccess {
      * @return bool Result setting language
      */
     final public static function setLang($name, $val, $sub = "") {
-	global $lang;
+		global $lang;
+		if(!isset($lang) || !is_Array($lang)) {
+			$lang = array();
+		}
 		if(!empty($sub)) {
 			if(!isset($lang[$name])) {
 				$lang[$name] = array();

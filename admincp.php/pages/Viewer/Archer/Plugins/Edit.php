@@ -91,9 +91,9 @@ class Archer_Edit {
 		$tpl = str_replace("{ArcherPageNow}", $page, $tpl);
 		$tpl = str_replace("{ArcherPage}", $page.($page!="Add" ? "&viewId=".$isId : ""), $tpl);
 		$tpl = str_replace("{ArcherPath}", str_replace(PREFIX_DB, "", $table), $tpl);
-		$tpl = str_replace("{ArcherMind}", "{L_".$page."}&nbsp;{L_".str_replace(PREFIX_DB, "", $table)."}", $tpl);
+		$tpl = str_replace("{ArcherMind}", execEvent("archer_print_head", "{L_".$page."}&nbsp;{L_".str_replace(PREFIX_DB, "", $table)."}", $page, $table), $tpl);
 		$tpl = str_replace("{ArcherData}", "\n".$body, $tpl);
-		$ref = Arr::get($_GET, "ref", false);
+		$ref = execEvent("archer_get_ref", Arr::get($_GET, "ref", false), $page, $table);
 		$tpl = str_replace("{ref}", ($ref!==false ? "&ref=".urlencode(htmlspecialchars(urldecode($ref))) : ""), $tpl);
 		//var_dump($tpl);die();
 		return $tpl;

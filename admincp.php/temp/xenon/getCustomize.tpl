@@ -64,8 +64,15 @@
 	left: 50%;
 }
 .sidebar-menu-inner .devices {
-	margin: 3px 0;
+	margin: 0px 0px 0px auto;
+	position: fixed;
+	bottom: 0px;
+	left: 0px;
+	width: 217px;
 	padding: 4px 8px;
+	background: #2c2e2f;
+	border-top: 2px solid #aaa;
+	z-index: 5;
 }
 .sidebar-menu-inner .devices .resize-desktop {
 	font-size: 20px;
@@ -111,19 +118,8 @@
 	display: block;
 	margin: 3px 0;
 	padding: 11px;
-	float: left;
+	text-align: center;
 	cursor: pointer;
-}
-.sidebar-menu-inner .devices {
-	margin: 0px 0px 0px auto;
-	position: fixed;
-	bottom: 0px;
-	left: 0px;
-	width: 340px;
-	padding-left: 4.05%;
-	background: #2c2e2f;
-	border-top: 2px solid #aaa;
-	z-index: 5;
 }
 .sidebar-menu.collapsed .devices {
 	width: 80px;

@@ -38,9 +38,14 @@ if(is_array($config) && sizeof($config)>0 && isset($config["default_http_local"]
 if(isset($_GET['noShowAdmin'])) {
 	define("IS_NOSHOWADMIN", true);
 	unset($_GET['noShowAdmin']);
+	$adminRemove = "#(.*?)(\?|)noShowAdmin.*?(\&|)(.*?)$#i";
 	if(isset($_SERVER['QUERY_STRING']) && strpos($_SERVER['QUERY_STRING'], "noShowAdmin")!==false) {
 		$_SERVER['QUERY_STRING'] = htmlspecialchars_decode($_SERVER['QUERY_STRING']);
-		$_SERVER['QUERY_STRING'] = preg_replace("#noShowAdmin(.*?)(\&|)#", "", $_SERVER['QUERY_STRING']);
+		$_SERVER['QUERY_STRING'] = preg_replace($adminRemove, "$1$4", $_SERVER['QUERY_STRING']);
+	}
+	if(isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], "noShowAdmin")!==false) {
+		$_SERVER['REQUEST_URI'] = htmlspecialchars_decode($_SERVER['REQUEST_URI']);
+		$_SERVER['REQUEST_URI'] = preg_replace($adminRemove, "$1$4", $_SERVER['REQUEST_URI']);
 	}
 }
 

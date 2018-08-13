@@ -303,6 +303,10 @@ class KernelArcher {
 		} else {
 			$typeFile = "";
 		}
+		if(strpos($typeFile, "+")!==false) {
+			$typeFile = explode("+", $typeFile);
+			$typeFile = current($typeFile);
+		}
 		$fileName = uniqid().$fileName;
 		$path = ROOT_PATH.$path;
 		Files::$switchException = true;
@@ -342,6 +346,17 @@ class KernelArcher {
 			unset($model->pathForUpload);
 		} else {
 			$uploads = "uploads".DS;
+		}
+		$emptyFiles = $request->post->get("removeImg", "");
+		if(strlen($emptyFiles)>0) {
+			$emptyFiles = explode(",", $emptyFiles);
+			$arr = array();
+			for($i=0;$i<sizeof($emptyFiles);$i++) {
+				$arr[$emptyFiles[$i]] = true;
+			}
+			$emptyFiles = $arr;
+		} else {
+			$emptyFiles = array();
 		}
 		$delArray = $request->post->get("deleteArray", array());
 		$delArray = array_map(function($v) { return explode(",", $v); }, ($delArray));
@@ -385,7 +400,7 @@ class KernelArcher {
 					$type = $types;
 				} else {
 					$upload = $this->UploadFile($models, $k, $selectId, $type, $uploads, $models->getAttribute($k, "allowUpload"));
-					$type = (!$upload ? $v : $upload."?".time());
+					$type = (isset($emptyFiles[$k]) ? "" : (!$upload ? $v : $upload."?".time()));
 					$type = str_replace(DS, "/", $type);
 				}
 			} else if($model->getAttribute($k, "type")=="imageAccess" || $model->getAttribute($k, "type")=="fileAccess" || $model->getAttribute($k, "type")=="file" || $model->getAttribute($k, "type")=="fileArray" || $model->getAttribute($k, "type")=="image" || $model->getAttribute($k, "type")=="imageArray" || $model->getAttribute($k, "type")=="fileArrayAccess" || $model->getAttribute($k, "type")=="imageArrayAccess") {
@@ -442,6 +457,8 @@ class KernelArcher {
 		$ref = Arr::get($_GET, "ref", false);
 		if($ref===false) {
 			$ref = "{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition;
+		} else {
+			$ref = htmlspecialchars_decode($ref);
 		}
 		if(!empty($objTemplate)) {
 			if(isset($_GET['type'])) {
@@ -743,10 +760,21 @@ class KernelArcher {
 			$grouperLang = str_replace($grouper, "", $name);
 		}
 		$open = defined("ADMINCP_DIRECTORY");
-		$retType = "";
+		$retType = '';
+		$empted = false;
 		$placeholder = $models->getAttribute($name, "placeholder");
-		execEventRef("KernelArcher::Viewing", $val, $type);
+		execEventRef("KernelArcher::Viewing", $retType, $hide, $name, $val, $type, $default, $empted);
 		switch($type) {
+			case "delimer":
+				$hide = true;
+				$retType = '<div class="form-group-separator"></div>';
+			break;
+			case "subpanel":
+				$hide = true;
+				$title = $models->getAttribute($name, "title_subpanel");
+				$hidded = $models->getAttribute($name, "hidded");
+				$retType = '</div></div><div class="panel panel-default panel-'.$name.'">'.($title ? '<div class="panel-heading"><h3 class="panel-title">'.$title.'</h3>'.($hidded ? '<div class="panel-options"><a href="#" data-toggle="panel"><span class="collapse-icon">–</span><span class="expand-icon">+</span></a></div>' : "").'</div>' : '').'<div class="panel-body">';
+			break;
 			case "linkToAdmin":
 				$hide = true;
 				$linkLink = $models->getAttribute($name, "linkLink");
@@ -770,7 +798,7 @@ class KernelArcher {
 				$radio = explode(",", $val);
 				$radio = array_map("trim", $radio);
 				for($i=0;$i<sizeof($radio);$i++) {
-					$retType .= "<label for=\"".$name."\"><input type=\"radio\" id=\"".$name."\" name=\"".$name."\" class=\"cbr cbr-blue\"".($block ? " disabled=\"disabled\"" : "")."".(!empty($default) && $default==$radio[$i] ? " checked=\"checked\"" : "")." value=\"".htmlspecialchars($radio[$i])."\">".($open ? "{L_'" : "").htmlspecialchars($radio[$i]).($open ? "'}" : "")."</label>";
+					$retType .= "<label for=\"".$name."-".$i."\"><input type=\"radio\" id=\"".$name."-".$i."\" name=\"".$name."\" class=\"cbr cbr-blue\"".($block ? " disabled=\"disabled\"" : "")."".(!empty($default) && $default==$radio[$i] ? " checked=\"checked\"" : "")." value=\"".htmlspecialchars($radio[$i])."\">".($open ? "{L_'" : "").htmlspecialchars($radio[$i]).($open ? "'}" : "")."</label>";
 				}
 			break;
 			case "enum":
@@ -819,6 +847,7 @@ class KernelArcher {
 				} else {
 					$vals = $val;
 				}
+				$empted = true;
 				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"file\" name=\"".$name."\" placeholder=\"".($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "")."\"".($block ? " disabled=\"disabled\"" : "").($type=="image" ? " accept=\"image/*\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"".$vals."\"".($type=="image" ? " class=\"showPreview\"" : "")." target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "")."<br>";
 			break;
 			case "imageAccess":
@@ -926,7 +955,7 @@ class KernelArcher {
 			}
 			$retType = $this->view($type, $name, $val, $default, $block);
 		}
-		$ret = (!$hide ? "<div class=\"".(!$block ? "form-group" : "row")." block-".$name."\"".($lang!=="" ? " data-group=\"".$grouper."\" data-lang=\"".$grouperLang."\"" : "")."><label class=\"col-sm-".($isAjax ? "2" : "3")." control-label\" for=\"".$name."\">{L_".$name."}</label><div class=\"col-sm-".($isAjax ? "10" : "9")."\">" : "").$retType.(!$hide ? "</div></div>\n" : "").(!$hide && $placeholder!=="" ? "<small class=\"".(!$block ? "form-group" : "row")." block-".$name."\"".($lang!=="" ? " data-group=\"".$grouper."\" data-lang=\"".$grouperLang."\"" : "").">".$placeholder."</small>" : "");
+		$ret = (!$hide ? "<div class=\"".(!$block ? "form-group" : "row")." block-".$name."\"".($lang!=="" ? " data-group=\"".$grouper."\" data-lang=\"".$grouperLang."\"" : "")."><label class=\"col-sm-".($isAjax ? "2" : "3")." control-label\" for=\"".$name."\">{L_".$name."}</label><div class=\"col-sm-".($isAjax ? ($empted!==true ? "10" : "9") : ($empted!==true ? "9" : "8"))."\">" : "").$retType.(!$hide ? "</div>".($empted===true ? '<div class="col-sm-1"><a href="#" class="btn btn-red btn-icon btn-block btn-single removeImg" id="remove_'.$name.'"><i class="fa fa-remove"></i></a></div>' : "").(!$hide && $placeholder!=="" ? "<small class=\"".(!$block ? "form-group" : "row")." block-".$name."\"".($lang!=="" ? " data-group=\"".$grouper."\" data-lang=\"".$grouperLang."\"" : "").">".$placeholder."</small>" : "")."</div>\n" : "");
 		return $ret;
 	}
 	

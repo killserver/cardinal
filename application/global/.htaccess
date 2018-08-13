@@ -1,0 +1,12 @@
+AddDefaultCharset UTF-8
+Options -Indexes
+ServerSignature Off
+FileETag None
+
+<IfModule mod_mime.c>
+	AddType application/x-httpd-php .dbFile
+</IfModule>
+<FilesMatch ".*\.(txt|json|safe|lock)$">
+	Order Allow,Deny
+	Deny from all
+</FilesMatch>

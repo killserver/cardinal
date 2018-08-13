@@ -22,20 +22,8 @@ function or_get_date($date, $array) {
 	}
 }
 
-function langdate($date){return function_call('langdate', array($date));}
-function or_langdate($date) {
-	$only_date = false;
-	if(is_array($date) && isset($date[3]) && !empty($date[3])) {
-		$temp = $date[3];
-	} else {
-		$temp = ", H:i";
-	}
-	if(is_array($date) && isset($date[4]) && !empty($date[4])) {
-		$only_date = true;
-	}
-	if(is_array($date) && isset($date[1])) {
-		$date = $date[1];
-	}
+function langdate($date, $temp, $only_date){return function_call('langdate', array($date, $temp, $only_date));}
+function or_langdate($date, $temp = "d F Y H:i:s", $only_date = false) {
 	$lang = lang::get_lang("langdate");
 	$temp = str_replace(array("<br>", "<br/>", "<br />"), "\n", $temp);
 	if(!is_array($lang)) {

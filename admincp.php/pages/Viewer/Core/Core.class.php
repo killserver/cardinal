@@ -24,6 +24,7 @@ class Core {
 	private $count_unmoder = 0;
 	private $load_adminmodules = false;
 	private $title = "{L_adminpanel}";
+	private $headTitle = "";
 	private static $modules = array();
 	private static $js = array();
 	private static $css = array();
@@ -78,11 +79,22 @@ class Core {
 		}
 	}
 	
-	protected function title($titles = "") {
+	protected function title($titles = "", $andHead = false) {
 		if(!empty($titles)) {
+			if($andHead) {
+				$this->headTitle = $titles;
+			}
 			$this->title = $titles;
 		} else {
 			return $this->title;
+		}
+	}
+	
+	protected function headTitle($titles = "") {
+		if(!empty($titles)) {
+			$this->headTitle = $titles;
+		} else {
+			return $this->headTitle.(!empty($this->headTitle) ? " &rsaquo; " : "")."Admin Panel for {L_sitename}";
 		}
 	}
 	
@@ -485,15 +497,15 @@ class Core {
 			}
 		}
 		templates::assign_var("count_unmoder", $this->unmoder());
+		templates::assign_var("head_title", $this->headTitle());
 		templates::assign_var("title_admin", $this->title());
 		$this->loadMenu();
 		templates::assign_var("nowLangText", "{L_Languages}&nbsp;".nucfirst(lang::get_lg()));
 		templates::assign_var("nowLangImg", ADMIN_FLAGS_UI.lang::get_lg().".png");
-		$support = lang::support();
+		$support = lang::support(true);
 		for($i=0;$i<sizeof($support);$i++) {
-			$cutLang = nsubstr($support[$i], 4, -3);
-			$lang = nucfirst($cutLang);
-			templates::assign_vars(array("img" => ADMIN_FLAGS_UI.$cutLang.".png", "langMenu" => $cutLang, "lang" => "{L_Languages}&nbsp;".$lang), "langListSupport", "lang".($i+1));
+			$lang = nucfirst($support[$i]);
+			templates::assign_vars(array("img" => ADMIN_FLAGS_UI.$support[$i].".png", "langMenu" => $support[$i], "lang" => "{L_Languages}&nbsp;".$lang), "langListSupport", "lang".($i+1));
 		}
 		$this->ReadPlugins();
 		if(sizeof(self::$modules)>0 && isset(self::$modules['before'])) {
@@ -511,20 +523,18 @@ class Core {
 		if(sizeof(self::$js)>0) {
 			$js = array_values(self::$js);
 			for($o=0;$o<sizeof($js);$o++) {
-				//$html = new html();
-				$js_echo .= '<script src="'.$js[$o].'" type="text/javascript"></script>';//$html->open("script")->type("text/javascript")->src($js[$o])->cont("")->close()->get_html();
+				$js_echo .= '<script src="'.$js[$o].'" type="text/javascript"></script>';
 			}
 		}
-		$echos = str_replace("{js_list}", $js_echo, $echos);
+		$echos = str_replace("{js_list}", execEvent("admin_print_script", $js_echo), $echos);
 		$css_echo = "";
 		if(sizeof(self::$css)>0) {
 			$css = array_values(self::$css);
 			for($o=0;$o<sizeof($css);$o++) {
-				//$html = new html();
-				$css_echo .= '<link rel="stylesheet" type="text/css" href="'.$css[$o].'">';//$html->open("link", 2)->type("text/css")->href($css[$o])->rel("stylesheet")->cont("")->close()->get_html();
+				$css_echo .= '<link rel="stylesheet" type="text/css" href="'.$css[$o].'">';
 			}
 		}
-		$echos = str_replace("{css_list}", $css_echo, $echos);
+		$echos = str_replace("{css_list}", execEvent("admin_print_style", $css_echo), $echos);
 		$ret = "";
 		$info = array();
 		if(file_exists($dirToSave) && is_readable($dirToSave) && file_exists($pathToSave) && is_readable($pathToSave)) {
@@ -626,6 +636,8 @@ class Core {
 		$lang = array_map("nucfirst", $lang);
 		$echos = str_replace("{langSupport}", json_encode($lang), $echos);
 		$echos = str_replace("{configTinymce}", $configTinymce, $echos);
+		$echoView = execEvent("print_before_admin").execEvent("print_admin", $echoView);
+		$echoView .= execEvent("print_after_admin");
 		echo str_replace("{main_admin}", $echoView, $echos);
 	}
 	

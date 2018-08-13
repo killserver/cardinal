@@ -18,13 +18,14 @@
 class userlevel {
 
 	private static $cacheAll = array();
+	private static $setData = array();
 	/**
 	 * Get all exists user levels in DB
 	 * @return array All user levels in DB
      */
 	final public static function all() {
 		if(is_array(self::$cacheAll) && sizeof(self::$cacheAll)>0) {
-			return self::$cacheAll;
+			return execEvent("loadUserLevels", self::$cacheAll);
 		}
 		if(defined("WITHOUT_DB")) {
 			$userlevels = array();
@@ -42,8 +43,12 @@ class userlevel {
 					$userlevels = array_merge($userlevels, $levels);
 				}
 			}
+			foreach(self::$setData as $level => $data) {
+				$userlevels[$level] = array_merge($userlevels[$level], $data);
+			}
+			ksort($userlevels);
 			self::$cacheAll = $userlevels;
-			return $userlevels;
+			return execEvent("loadUserLevels", self::$cacheAll);
 		}
 		if(!cache::Exists("userlevels")) {
 			$row = db::select_query("SELECT * FROM {{userlevels}} ORDER BY `id` ASC");
@@ -51,8 +56,11 @@ class userlevel {
 		} else {
 			$row = cache::Get("userlevels");
 		}
+		foreach(self::$setData as $level => $data) {
+			$row[$level] = array_merge($row[$level], $data);
+		}
 		self::$cacheAll = $row;
-	return $row;
+		return execEvent("loadUserLevels", self::$cacheAll);
 	}
 
 	/**
@@ -176,6 +184,22 @@ class userlevel {
 		db::doquery("UPDATE {{userlevels}} SET `".$set."` = \"".$data."\" WHERE `id` = ".$id);
 		cache::Delete("userlevels");
 		return true;
+	}
+
+	final public static function setAll($set, $data) {
+		$defs = get_defined_constants(true);
+		$defs = $defs['user'];
+		$levels = array();
+		foreach($defs as $k => $v) {
+			if(strpos($k, "LEVEL_")!==false) {
+				if(!isset(self::$setData[$v]) || !is_array(self::$setData[$v])) {
+					self::$setData[$v] = array();
+				}
+				$set = (strpos($set, "access_")===false ? "access_".$set : $set);
+				self::$setData[$v][$set] = $data;
+			}
+		}
+		return $levels;
 	}
 
 	final public static function is() {

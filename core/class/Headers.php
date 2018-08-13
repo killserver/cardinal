@@ -93,7 +93,7 @@ class Headers {
 		$sitename = htmlspecialchars(lang::get_lang("sitename"));
 		$sitename = cardinalEvent::execute("before_show_sitename", $sitename);
 		$activeAdmin = false;
-		if(isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && userlevel::get("admin") && Arr::get($_GET, "noShowAdmin", false)===false && !defined("IS_NOSHOWADMIN")) {
+		if(config::Select("deactive_site_adminbar")===false && isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && userlevel::get("admin") && Arr::get($_GET, "noShowAdmin", false)===false && !defined("IS_NOSHOWADMIN")) {
 			modules::regCssJs("{C_default_http_local}".get_site_path(PATH_SKINS)."core/admin.min.js", "js", true, "admin-bar-js");
 			modules::regCssJs(array(
 				"fontawesome-font" => "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css",
@@ -101,11 +101,11 @@ class Headers {
 			), "css", true);
 			$activeAdmin = true;
 		}
-		if(!Arr::get($array, 'title', false)) {
+		if(!Arr::get($array, 'title', false) && empty($array['title'])) {
 			$array['title'] = $sitename;
 		}
 		$array['title'] = cardinalEvent::execute("before_show_title", $array['title']);
-		$header .= "\t<title>".$sitename."</title>\n";
+		$header .= "\t<title>".$array['title']."</title>\n";
 		
 		$header .= "<meta name=\"generator\" content=\"Cardinal ".VERSION."\" />\n";
 		
@@ -169,6 +169,7 @@ class Headers {
 		if(!$clear) {
 			$viewport = cardinalEvent::execute("before_show_viewport", config::Select("viewport"));
 			$header .= '<meta name="viewport" content="'.$viewport.'" />'."\n";
+			$header .= '<base href="{C_default_http_host}" />'."\n";
 			$header .= '<meta http-equiv="imagetoolbar" content="no" />'."\n";
 			$header .= '<meta http-equiv="url" content="{C_default_http_host}">'."\n";
 			$header .= '<meta http-equiv="cleartype" content="on">'."\n";
@@ -331,7 +332,7 @@ class Headers {
 				$i=1;
 				while(($file = $dh->read()) !== false) {
 					if($file != "index.".ROOT_EX && $file != "index.html" && $file != "." && $file != "..") {
-						include_once(ADMIN_MENU.$file);
+						include(ADMIN_MENU.$file);
 					}
 				}
 				$dh->close();

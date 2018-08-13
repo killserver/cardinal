@@ -1,27 +1,28 @@
-[!ajax]<div class="row">
-	<div class="col-sm-12">
-		<div class="panel panel-default">
-			<div class="panel-heading">
-				<h3 class="panel-title">{ArcherMind}</h3>
-			</div>
-			<div class="panel-body">
-				<form method="post" role="form" action="./?pages=Archer&type={ArcherPath}&pageType=Take{ArcherPage}{addition}{ref}" class="form-horizontal" enctype="multipart/form-data">[/!ajax]
-					[if {count[supportedLang]}>=1]<ul class="nav nav-tabs nav-tabs-justified" data-support="lang">
-						[foreach block=supportedLang]<li>
-							<a href="#home-3" data-toggle="tab" data-lang="{supportedLang.lang}">{supportedLang.lang}</a>
-						</li>[/foreach]
-					</ul>[/if {count[supportedLang]}>=1]
-					<br><br>
-					{ArcherData}
-					[!ajax]<button class="btn btn-savePage btn-icon btn-icon-standalone btn-icon-standalone-right btn-sm">
-						<i class="fa-save"></i>
-						<span>{L_save}</span>
-					</button>
-				</form>
+[!ajax]<form method="post" role="form" action="./?pages=Archer&type={ArcherPath}&pageType=Take{ArcherPage}{addition}{ref}" class="form-horizontal" enctype="multipart/form-data">
+	<div class="row">
+		<div class="col-sm-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">{ArcherMind}</h3>
+				</div>
+				<div class="panel-body">[/!ajax]
+						[if {count[supportedLang]}>=1]<ul class="nav nav-tabs nav-tabs-justified" data-support="lang">
+							[foreach block=supportedLang]<li>
+								<a href="#home-3" data-toggle="tab" data-lang="{supportedLang.lang}">{supportedLang.lang}</a>
+							</li>[/foreach]
+						</ul>[/if {count[supportedLang]}>=1]
+						<br><br>
+						<input type="hidden" name="removeImg" class="removeImages" value="">
+						{ArcherData}
+						[!ajax]<button class="btn btn-savePage btn-icon btn-icon-standalone btn-icon-standalone-right btn-sm">
+							<i class="fa-save"></i>
+							<span>{L_save}</span>
+						</button>
+				</div>
 			</div>
 		</div>
 	</div>
-</div>[/!ajax]
+</form>[/!ajax]
 <style>
 #inputForFile .array {
 	padding-bottom: 2.5em;
@@ -44,7 +45,21 @@ function ucfirst(text) {
 	textNew += text.substr(1);
 	return textNew;
 }
-
+var removeImg = {};
+$("body").off("click").on("click", ".removeImg", function() {
+	var id = $(this).attr("id");
+	id = id.replace("remove_", "");
+	$("input[id='"+id+"']").parent().find(".tmpImage,img").remove();
+	removeImg[id] = true;
+	var get = $("#"+id+"").parent().html();
+	$("#"+id+"").parent().html(get);
+	$(".removeImages").val(Object.keys(removeImg).join(","));
+	$("input[id='"+id+"']").change(function() {
+		delete removeImg[id];
+		$(".removeImages").val(Object.keys(removeImg).join(","));
+	});
+	return false;
+});
 var selectLangForm = ucfirst(selectLang);
 $(".form-horizontal ul li a[data-lang='"+selectLangForm+"']").parent().addClass("active");
 $(".form-horizontal .form-group[data-group][data-lang]").each(function(i, elem) {
@@ -140,7 +155,7 @@ function removeInputFile(th, name, val) {
 }
 jQuery(document).ready(function() {
 	jQuery(".showPreview").each(function(i, elem) {
-		jQuery(elem).after("<br><img src='"+jQuery(elem).attr("href")+"' width='200' style='background:#333;padding:2rem'>");
+		jQuery(elem).after("<br><img src='"+jQuery(elem).attr("href")+"' width='200' style='background:#333; display: table;'>");
 	});
 	jQuery("body").on("click", ".accessRemove", function() {
 		var count = jQuery(".containerFiles[data-parent='"+jQuery(this).attr("data-parent")+"'] input").length;
@@ -173,7 +188,7 @@ function readURL(input) {
 		reader.readAsDataURL(input.files[input.files.length-1]);
 	}
 }
-jQuery("input[type='file'][accept*='image']").change(function() {
+jQuery("body").on("change", "input[type='file'][accept*='image']", function() {
 	readURL(this);
 });
 </script>

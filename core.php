@@ -330,7 +330,9 @@ execEvent("init_core");
 HTTP::setSaveMime(PATH_CACHE_SYSTEM."mimeList.json");
 Validate::$host = config::Select("default_http_host");
 
-$lang = array();
+if(!isset($lang) || !is_Array($lang)) {
+	$lang = array();
+}
 $host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua");
 if(file_exists(PATH_MEDIA."db.".ROOT_EX) || file_exists(PATH_MEDIA."db.".$host.".".ROOT_EX)) {
 	$db = new db();

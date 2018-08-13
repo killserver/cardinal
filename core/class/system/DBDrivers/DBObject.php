@@ -34,6 +34,7 @@ class DBObject implements ArrayAccess {
 	private static $usedCache = false;
 	private $allowedRus = false;
 	private $listAdd = array();
+	private $pseudoPosition = array();
 
 	final public function __construct($table = "") {
 		if($table!=="") {
@@ -139,6 +140,9 @@ class DBObject implements ArrayAccess {
 		if(isset($ret['allowedRus'])) {
 			unset($ret['allowedRus']);
 		}
+		if(isset($ret['pseudoPosition'])) {
+			unset($ret['pseudoPosition']);
+		}
 	}
 	
 	final private function addPrefixTable($query, $addSave = "`", $force = false) {
@@ -183,13 +187,29 @@ class DBObject implements ArrayAccess {
 		$ret = get_object_vars($this);
 		$this->UnSetAll($ret);
 		$arr = array_keys($ret);
+
+		$newArr = array();
 		for($i=0;$i<sizeof($arr);$i++) {
-			$ret[$arr[$i]] = $this->ToType($ret[$arr[$i]]);
+			if(isset($this->pseudoPosition[$arr[$i]]) && isset($this->pseudoPosition[$arr[$i]]['before'])) {
+				for($z=0;$z<sizeof($this->pseudoPosition[$arr[$i]]['before']);$z++) {
+					$name = $this->pseudoPosition[$arr[$i]]['before'][$z]['name'];
+					$val = $this->pseudoPosition[$arr[$i]]['before'][$z]['val'];
+					$newArr[$name] = $val;
+				}
+			}
+			$newArr[$arr[$i]] = $this->ToType($ret[$arr[$i]]);
+			if(isset($this->pseudoPosition[$arr[$i]]) && isset($this->pseudoPosition[$arr[$i]]['after'])) {
+				for($z=0;$z<sizeof($this->pseudoPosition[$arr[$i]]['after']);$z++) {
+					$name = $this->pseudoPosition[$arr[$i]]['after'][$z]['name'];
+					$val = $this->pseudoPosition[$arr[$i]]['after'][$z]['val'];
+					$newArr[$name] = $val;
+				}
+			}
 		}
 		foreach($this->pseudoFields as $k => $v) {
-			$ret[$k] = $v;
+			$newArr[$k] = $v;
 		}
-		return $ret;
+		return $newArr;
 	}
 	
 	final public function getClean($th = "") {
@@ -247,6 +267,9 @@ class DBObject implements ArrayAccess {
 			}
 			if(isset($th->allowedRus)) {
 				unset($th->allowedRus);
+			}
+			if(isset($th->pseudoPosition)) {
+				unset($th->pseudoPosition);
 			}
 		} else {
 			for($i=0;$i<sizeof($th);$i++) {
@@ -665,6 +688,8 @@ class DBObject implements ArrayAccess {
 		if($this->allowedRus===false) {
 			return $arr;
 		}
+		$lang = lang::support(true);
+		$lang = array_map("nucfirst", $lang);
 		$object = is_object($arr);
 		foreach($arr as $field => $v) {
 			if(is_array($v) || is_object($v)) {
@@ -674,11 +699,22 @@ class DBObject implements ArrayAccess {
 			}
 			$r = $this->getAttribute($field, "comment");
 			if($r==="") {
-				$r = $field;
+				$empty = str_replace($lang, "", $field);
+				for($i=0;$i<sizeof($lang);$i++) {
+					$test = $this->getAttribute($empty.$lang[$i], "comment");
+					if($test!=="") {
+						if($object) {
+							$arr->addPseudoField($test."Ru", $v);
+						} else {
+							$arr[$test."Ru"] = $v;
+						}
+						break;
+					}
+				}
 				if($object) {
-					$arr->{$r} = $v;
+					$arr->{$field} = $v;
 				} else {
-					$arr[$r] = $v;
+					$arr[$field] = $v;
 				}
 			} else {
 				if($object) {
@@ -942,6 +978,28 @@ class DBObject implements ArrayAccess {
 	
 	final public function removePseudoField($name) {
 		unset($this->pseudoFields[$name]);
+		return true;
+	}
+	
+	final public function addPseudoPosition($name, $type, $elem, $val = "") {
+		if(!isset($this->pseudoPosition[$elem])) {
+			$this->pseudoPosition[$elem] = array();
+		}
+		if(!isset($this->pseudoPosition[$elem][$type])) {
+			$this->pseudoPosition[$elem][$type] = array();
+		}
+		$this->pseudoPosition[$elem][$type][] = array("name" => $name, "val" => $val);
+		return true;
+	}
+	
+	final public function removePseudoPosition($name, $type, $elem) {
+		if(isset($this->pseudoPosition[$elem]) && isset($this->pseudoPosition[$elem][$type]) && is_array($this->pseudoPosition[$elem][$type])) {
+			for($i=0;$i<sizeof($this->pseudoPosition[$elem][$type]);$i++) {
+				if(isset($this->pseudoPosition[$elem][$type][$i]['name']) && $this->pseudoPosition[$elem][$type][$i]['name']==$name) {
+					unset($this->pseudoPosition[$elem][$type][$i]);
+				}
+			}
+		}
 		return true;
 	}
 	

@@ -81,6 +81,21 @@ function or_cut($text, $start, $end = "", $add = "") {
 }
 
 
+function cut_word($string, $wordsreturned, $add = "") {
+	$retval = $string;
+	$string = preg_replace('/(?<=\S,)(?=\S)/', ' ', $string);
+	$string = str_replace("\n", " ", $string);
+	$array = explode(" ", $string);
+	if(sizeof($array)<=$wordsreturned) {
+		$retval = $string;
+	} else {
+		array_splice($array, $wordsreturned);
+		$retval = implode(" ", $array).$add;
+	}
+	return $retval;
+}
+
+
 /**
  * Replacement detect charset
  * @param string $string Text for detected
@@ -402,6 +417,7 @@ function ToTranslit($var, $rep = false, $norm = false, $php = false) {
 	if(empty($var)) {
 		return "";
 	}
+	$var = execEvent("totranslit", $var);
 	$translate = lang::get_lang("translate");
 	if(!is_array($translate)) {
 		$translate = array();
@@ -434,12 +450,14 @@ function ToTranslit($var, $rep = false, $norm = false, $php = false) {
 		$var = str_Replace(array("-"), "", $var);
 	}
 	$var = strtr($var, $translate);
+	$var = preg_replace('/[^A-Za-z0-9\-_]/', '', $var);
 	if(strlen($var)>200) {
 		$var = substr($var, 0, 200);
 		if(($temp_max = strrpos($var, '-'))!==false) {
 			$var = substr($var, 0, $temp_max);
 		}
 	}
+	$var = execEvent("totranslit_after", $var);
 	return $var;
 }
 

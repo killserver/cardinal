@@ -22748,3 +22748,7 @@ span#doc_time .delimer {
 .theme-browser .theme .theme-screenshot.blank, .theme-overlay .screenshot.blank {
     background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAALElEQVQYGWO8d+/efwYkoKioiMRjYGBC4WHhUK6A8T8QIJt8//59ZC493AAAQssKpBK4F5AAAAAASUVORK5CYII=);
 }
+
+span > img[src='/'] {
+    display: none;
+}

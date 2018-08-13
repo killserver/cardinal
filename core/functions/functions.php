@@ -545,7 +545,10 @@ function vdump() {
 	echo '<div class="container"><div class="info">'. (isset($backtrace[0]) ? "<b>Called:</b><span> ".$backtrace[0]['file']." [".$backtrace[0]['line']."]&nbsp;<i>".date("d-m-Y H:i:s", fileatime($backtrace[0]['file']))."</i>" : "")."</span>".(isset($backtrace[0]) ? "<br>" : "")."</div>";
 	echo '<pre>';
 	if(sizeof($list)>0) {
+		ob_start();
 		call_user_func_array("var_dump", $list);
+		$t = ob_get_clean();
+		echo htmlspecialchars($t);
 	}
 	echo '</pre></div>'.PHP_EOL;
 	$printedVdump = true;

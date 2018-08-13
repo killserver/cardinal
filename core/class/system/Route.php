@@ -299,6 +299,9 @@ class Route {
 		if(($pos = strpos($v, "index.php"))!==false) {
 			$v = substr($v, 0, $pos);
 		}
+		if(strlen($v)>1) {
+			$v = substr($v, 1);
+		}
 		$len = strlen("index.php");
 		if(substr($uri, 0, $len)==="/index.php") {
 			$uri = substr($uri, $len)-1;
@@ -318,7 +321,7 @@ class Route {
 		if($v!=="/") {
 			$uri = str_replace($v, "", $uri);
 		}
-		if($uri===$v) {
+		if($uri==="") {
 			return array('params' => array("pages" => "main"), 'route' => "");
 		}
 		if(!isset($GLOBALS[self::$_secret])) {

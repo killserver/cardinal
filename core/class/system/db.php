@@ -260,7 +260,17 @@ class db {
 	
 	final public static function config($config = array()) {
 		$host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua");
-		if(sizeof($config)==0 && ((defined("ROOT_PATH") && !file_exists(PATH_MEDIA."db.".$host.".".ROOT_EX)) || (defined("ROOT_PATH") && !file_exists(PATH_MEDIA."db.".ROOT_EX)) || (!defined("ROOT_PATH") && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX)))) {
+		if(sizeof($config)==0 &&
+				(
+					(defined("ROOT_PATH") && !file_exists(PATH_MEDIA."db.".$host.".".ROOT_EX))
+					||
+					(defined("ROOT_PATH") && !file_exists(PATH_MEDIA."db.".ROOT_EX))
+					||
+					(!defined("ROOT_PATH") && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".$host.".".ROOT_EX))
+					||
+					(!defined("ROOT_PATH") && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX))
+				)
+		) {
 			errorHeader();
 			throw new Exception("Config file for db or data in config is not correct");
 			die();

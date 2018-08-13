@@ -80,7 +80,7 @@ class Archer_Shield {
 		$counts = 0;
 		for($i=0;$i<sizeof($h);$i++) {
 			$altName = str_replace(array("{L_\"", "\"}"), "", $h[$i]);
-			if($this->in_array_strpos($altName, $getExclude)) {
+			if($this->in_array_strpos($altName, $getExclude, true)) {
 				continue;
 			}
 			if($myOrder && ($res = $this->ordering($myOrderName, $h[$i]))!==false) {
@@ -99,7 +99,7 @@ class Archer_Shield {
 		$d = array_keys($d);
 		$data = "";
 		for($i=0;$i<sizeof($d);$i++) {
-			if($this->in_array_strpos($d[$i], $getExclude)) {
+			if($this->in_array_strpos($d[$i], $getExclude, true)) {
 				continue;
 			}
 			$type = $model->getAttribute($d[$i], "type", $table, true);
@@ -118,7 +118,7 @@ class Archer_Shield {
 			} else if($type=="time") {
 				$val = "{S_langdata=\"{".$modelName.".".$d[$i]."}\",\"H:i:s\"}";
 			} else if($type=="datetime") {
-				$val = "{S_langdata=\"{".$modelName.".".$d[$i]."}\",\"d F Y H:i:s\"}";
+				$val = "{S_langdata=\"{".$modelName.".".$d[$i]."}\",\"d F Y H:i:s\"}{".$modelName.".".$d[$i]."}";
 			}
 			if($i!=0 && $activeQuickEditor) {
 				$quickEditor = " data-pk=\"{".$modelName.".".$first."}\" data-name=\"".$d[$i]."\"";

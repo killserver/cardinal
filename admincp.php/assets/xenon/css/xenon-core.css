@@ -7524,3 +7524,7 @@ span#doc_time .delimer {
     text-align: center;
 }
 /* experemental end */
+
+span > img[src='/'] {
+    display: none;
+}

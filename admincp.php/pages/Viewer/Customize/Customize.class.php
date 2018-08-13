@@ -299,9 +299,9 @@ class Customize extends Core {
 		$size++;
 		templates::assign_vars(array( "value" => "{L_'Просмотр темы'}<br><b>{C_skins[skins]}</b>", "link" => "", "is_now" => "0", "type_st" => "", "type_end" => "", "icon" => " ", ), "menu", $size);
 		$size++;
-			templates::assign_vars(array( "value" => '<div class="form-group favicon"> <div class="col-sm-12"> {L_"Выберите картинку для фавиконки"} </div> <div class="col-sm-12"> <input class="btn btn-sm btn-block" type="file" name="favicon" accept="image/*"> </div> <div class="col-sm-12"> <input class="btn btn-success btn-sm btn-block uploadFavicon" type="button" value="{L_submit}"> </div> </div>', "link" => "#", "is_now" => "0", "type_st" => "", "type_end" => "", "icon" => " ", ), "menu", $size);
+			templates::assign_vars(array( "value" => '<div class="form-group favicon row"> <div class="col-sm-12"> {L_"Выберите картинку для фавиконки"} </div> <div class="col-sm-12"> <input class="btn btn-sm btn-block" type="file" name="favicon" accept="image/*"> </div> <div class="col-sm-12"> <input class="btn btn-success btn-sm btn-block uploadFavicon" type="button" value="{L_submit}"> </div> </div>', "link" => "#", "is_now" => "0", "type_st" => "", "type_end" => "", "icon" => "", ), "menu", $size);
 		$size++;
-			templates::assign_vars(array( "value" => '<div class="form-group logoSite"> <div class="col-sm-12"> {L_"Выберите картинку для лого сайта"} </div> <div class="col-sm-12"> <input class="btn btn-sm btn-block" type="file" name="logoSite" accept="image/*"> </div> <div class="col-sm-12"> <input class="btn btn-purple btn-sm btn-block uploadLogoSite" type="button" value="{L_submit}"> </div> </div>', "link" => "#", "is_now" => "0", "type_st" => "", "type_end" => "", "icon" => " ", ), "menu", $size);
+			templates::assign_vars(array( "value" => '<div class="form-group logoSite row"> <div class="col-sm-12"> {L_"Выберите картинку для лого сайта"} </div> <div class="col-sm-12"> <input class="btn btn-sm btn-block" type="file" name="logoSite" accept="image/*"> </div> <div class="col-sm-12"> <input class="btn btn-purple btn-sm btn-block uploadLogoSite" type="button" value="{L_submit}"> </div> </div>', "link" => "#", "is_now" => "0", "type_st" => "", "type_end" => "", "icon" => "", ), "menu", $size);
 		global $colors;
 		if(isset($colors) && is_array($colors) && sizeof($colors)>0) {
 			$size++;

@@ -71,17 +71,17 @@ class cardinalEvent {
 		self::$loader = array();
 	}
 	
-	public static function addListenerRef($action, $callback, $params = "", $priority = false) {
+	public static function addListenerRef($action, $callback, $priority = false) {
 		if(sizeof(self::$loader)==0) {
 			$loader = debug_backtrace();
 			self::$loader = $loader[0];
 		}
 		if(is_array($action)) {
 			for($i=0;$i<sizeof($action);$i++) {
-				self::add($action[$i], $callback, true, $params, $priority, self::$loader);
+				self::add($action[$i], $callback, true, "", $priority, self::$loader);
 			}
 		} else {
-			self::add($action, $callback, true, $params, $priority, self::$loader);
+			self::add($action, $callback, true, "", $priority, self::$loader);
 		}
 		self::$loader = array();
 	}
@@ -181,7 +181,6 @@ class cardinalEvent {
 	}
 	
 	public static function executeRef($action, &$ref1 = "", &$ref2 = "", &$ref3 = "", &$ref4 = "", &$ref5 = "", &$ref6 = "", &$ref7 = "", &$ref8 = "") {
-		$return = ($ref1!=="" ? $ref1 : false);
 		if(!empty($action) && !isset(self::$events[$action])) {
 			if(sizeof(self::$loader)==0) {
 				$loader = debug_backtrace();
@@ -192,20 +191,13 @@ class cardinalEvent {
 		}
 		if(!empty($action) && isset(self::$collection['ref']) && isset(self::$collection['ref'][$action])) {
 			ksort(self::$collection['ref'][$action]);
-			$return = "";
 			foreach(self::$collection['ref'][$action] as $v) {
-				$v['data'] = $return;
-				if($v['data']!=="") {
-					$data = array($v['data'], &$ref1, &$ref2, &$ref3, &$ref4, &$ref5, &$ref6, &$ref7, &$ref8);
-				} else {
-					$data = array(&$ref1, &$ref2, &$ref3, &$ref4, &$ref5, &$ref6, &$ref7, &$ref8);
-				}
-				$ret = call_user_func_array($v['fn'], $data);
-				$return = $ret;
+				$data = array(&$ref1, &$ref2, &$ref3, &$ref4, &$ref5, &$ref6, &$ref7, &$ref8);
+				call_user_func_array($v['fn'], $data);
 			}
-			return $return;
+			return true;
 		} else {
-			return $return;
+			return false;
 		}
 	}
 	
