@@ -390,7 +390,7 @@ function read_dir($dir, $type = "all", $addDir = false, $recursive = false, $exc
 				if($recursive && is_dir($dir.$file)) {
 					$fileZ = read_dir($dir.$file.DS, $type, $addDir, $recursive, $exclusions, $returnArray);
 					$files = array_merge($files, $fileZ);
-				} else if(($type=="dir" || is_file($dir.$file)) && (($type=="dir" || $type=="all") || (is_array($type) ? in_array_strpos($file, $type) : strpos($file, $type)!==false)) && $file!="." && $file!="..") {
+				} else if(($type=="dir" || is_file($dir.$file)) && (($type=="dir" || $type=="all") || (is_array($type) ? in_array_strpos($file, $type) : strpos($file, $type)!==false)) && $file!="." && $file!=".." && $file!="index.".ROOT_EX && $file!="index.html" && $file!=".htaccess") {
 					if($returnArray) {
 						$dirN = rtrim($dir, DS);
 						$dirN = str_replace(ROOT_PATH, "", $dirN);

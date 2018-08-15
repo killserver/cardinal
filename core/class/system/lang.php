@@ -93,7 +93,7 @@ class lang implements ArrayAccess {
 					if(self::in_array_strpos($file, $exclusions, true)) {
 						continue;
 					}
-					if(($type=="dir" || is_file($dir.$file)) && (($type=="dir" || $type=="all") || (is_array($type) ? self::in_array_strpos($file, $type) : strpos($file, $type)!==false)) && $file!="." && $file!="..") {
+					if(($type=="dir" || is_file($dir.$file)) && (($type=="dir" || $type=="all") || (is_array($type) ? self::in_array_strpos($file, $type) : strpos($file, $type)!==false)) && $file!="." && $file!=".." && $file!="index.".ROOT_EX && $file!="index.html" && $file!=".htaccess") {
 						$files[] = $file;
 					}
 				}

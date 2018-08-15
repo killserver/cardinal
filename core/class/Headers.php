@@ -331,7 +331,7 @@ class Headers {
 			if($dh = dir(ADMIN_MENU)) {
 				$i=1;
 				while(($file = $dh->read()) !== false) {
-					if($file != "index.".ROOT_EX && $file != "index.html" && $file != "." && $file != "..") {
+					if($file != "index.".ROOT_EX && $file != "index.html" && $file != ".htaccess" && $file != "." && $file != "..") {
 						include(ADMIN_MENU.$file);
 					}
 				}

@@ -638,7 +638,7 @@ class Core {
 		$echos = str_replace("{configTinymce}", $configTinymce, $echos);
 		$echoView = execEvent("print_before_admin").execEvent("print_admin", $echoView);
 		$echoView .= execEvent("print_after_admin");
-		echo str_replace("{main_admin}", $echoView, $echos);
+		echo execEvent("printed_admin", str_replace("{main_admin}", $echoView, $echos));
 	}
 	
 }

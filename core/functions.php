@@ -47,7 +47,7 @@ global $globalClass;
 		if($dh = dir($dir)) {
 			while(($file = $dh->read()) !== false) {
 				$strip_path = str_replace(ROOT_PATH, "", PATH_MODULES);
-				if($file != "index.html" && $file != "index.".ROOT_EX && $file != "." && $file != "..") {
+				if($file != ".htaccess" && $file != "index.html" && $file != "index.".ROOT_EX && $file != "." && $file != "..") {
 					if($inc && is_file($dir.DS.$file) && strpos($file, $modules) === false) {
 						continue;
 					}
