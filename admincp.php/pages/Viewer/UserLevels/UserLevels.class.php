@@ -6,27 +6,26 @@ class UserLevels extends Core {
 		$userlevelName = array(
 			"admin" => "админ-панели",
 			"antivirus" => "антивирусу",
-			"atextadmin" => "модулю AText",
 			"clearcache_all" => "очистке всего кеша",
 			"clearcache_data" => "очистке кеша данных",
-			"clearcache_tmp" => "очистке кеша шаблонов",
+			"clearcache_pages" => "очистке кеша страниц",
 			"customize" => "кастомизации шаблона",
 			"debugpanel" => "дебаг-панели, которая будет активироваться в админ-панели и постоянно находиться на сайте в любых разделах",
 			"developer" => "разрабатываемым разделам(ТОЛЬКО ДЛЯ РАЗРАБОТЧИКОВ!!!)",
 			"editor" => "редактору кода",
 			"edittemplate" => "редактору частей шаблонов",
+			"importexport" => "импорту/экспорту движка",
 			"languages" => "языковой панели",
 			"loginadmin" => "списку действий в админ-панели",
 			"logs" => "отчётам ошибок на сайте",
 			"phpinfo" => "системной информации о сервере",
 			"recyclebin" => "корзине данных, куда помещаются данные на 30 дней после удаления их из таблиц при помощи Арчера",
 			"seo" => "СЕО-мета",
-			"seoBlock" => "СЕО-блоку",
-			"settinguser" => "примитивным настройкам для заказчика",
-			"settings" => "расширенным настройкам для системного администратора",
-			"showloads" => "просмотру загрузки сервера",
+			"settings" => "примитивным настройкам для заказчика",
+			"settinguser" => "расширенным настройкам для системного администратора",
+			"skins" => "смене внешнего вида сайта",
 			"updates" => "возможности обновлять движок из админ-панели",
-			"userlevels" => "уровням доступа",
+			"userlevels" => "редактору уровней доступа сайта",
 			"users" => "списку пользователей",
 			"yui_admin" => "настройке системы YUI",
 			"site" => "сайту",
@@ -113,7 +112,6 @@ class UserLevels extends Core {
 			return false;
 		}
 		$arrK = array_keys($userlevels);
-		$arrK = array_reverse($arrK);
 		$arrV = array_values($userlevels);
 		$arrV = array_reverse($arrV);
 		$defs = get_defined_constants(true);
@@ -125,7 +123,9 @@ class UserLevels extends Core {
 			}
 		}
 		$levels = array_flip($levels);
+		$is = sizeof($arrV);
 		for($i=0;$i<sizeof($arrV);$i++) {
+			$is--;
 			if($arrK[$i]>=$myLevel) {
 				continue;
 			}
@@ -133,7 +133,7 @@ class UserLevels extends Core {
 				"id" => $arrK[$i],
 				"name" => $levels[$i],
 				"orName" => $levels[$i],
-				"counts" => sizeof($arrV[$i]),
+				"counts" => sizeof($arrV[$is]),
 			), "userlevelsList", "level".$i);
 		}
 		$this->Prints("UserLevelsMain");

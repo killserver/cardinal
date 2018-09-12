@@ -149,7 +149,13 @@ class Archer_Shield {
 					$quickEditor = " class=\"quickEdit\"".$quickEditor;
 				}
 			}
+			execEventRef("KernelArcher::Shield::Element-before", $modelName, $first, $d[$i], $infoField);
+			$data .= execEvent("KernelArcher::Shield::Element-before", "", $modelName, $first, $d[$i], $infoField);
+			$data .= execEvent("KernelArcher::Shield::Element-".$i."-before", "", $modelName, $first, $d[$i], $infoField);
 			$data .= "<td data-id=\"{".$modelName.".".$first."}\" data-table=\"".$modelName."\" data-name=\"".$d[$i]."\" class=\"".$infoField."\"><span".$quickEditor.">".$val."</span></td>";
+			$data .= execEvent("KernelArcher::Shield::Element-".$i."-after", "", $modelName, $first, $d[$i], $infoField);
+			$data .= execEvent("KernelArcher::Shield::Element-after", "", $modelName, $first, $d[$i], $infoField);
+			execEventRef("KernelArcher::Shield::Element-after", $modelName, $first, $d[$i], $infoField);
 		}
 		$addition = "";
 		if(Arr::get($_GET, "Where", false)) {

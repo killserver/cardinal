@@ -90,13 +90,13 @@ if(!defined("DEBUG_ALL")) {
 }
 
 if(!defined("VERSION")) {
-	define("VERSION", "10.5");
+	define("VERSION", "10.6");
 }
 if(!defined("VERSION_ADMIN_STYLE")) {
 	define("VERSION_ADMIN_STYLE", "1.9");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "105001");
+	define("INTVERSION", "106001");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "6.5");
@@ -179,8 +179,8 @@ $config = array_merge($config, array(
 	"default_http_mobyhost" => "",
 	"new_method_uri" => true,
 	"uses" => array(
-		"Mobile Detect" => "2.8.28",
-		"PHPMailer" => "6.0.2",
+		"Mobile Detect" => "2.8.32",
+		"PHPMailer" => "6.0.5",
 		"PEAR" => "1.10.5",
 		"Archive Tar" => "1.1",
 	),

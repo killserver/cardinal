@@ -135,8 +135,12 @@ class db_pdo extends DriverParam implements drivers {
 	public function insert_id() {
 		return $this->mc->lastInsertId();
 	}
-	public function escape($str) {
-		return $this->mc->quote($str);
+	public function escape($str, $saved = true) {
+		$str = $this->mc->quote($str);
+		if(!$saved && substr($str, 0, 1)=="'" && substr($str, -1, 1)=="'") {
+			$str = substr($str, 1, -1);
+		}
+		return $str;
 	}
 	public function num_fields() {
 		return $this->query->columnCount();

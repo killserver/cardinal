@@ -152,9 +152,9 @@ class db_mysqli extends DriverParam implements drivers {
 	public function insert_id() {
 		return $this->mc->insert_id;
 	}
-	public function escape($str) {
+	public function escape($str, $saved = true) {
 		$save = preg_match("/(SELECT(.+?)FROM|UNIX_TIMESTAMP|WHERE(.+?)IN)/", $str);
-		return ($save ? "": "'").$this->mc->real_escape_string($str).($save ? "": "'");
+		return (!$saved || $save ? "": "'").$this->mc->real_escape_string($str).(!$saved || $save ? "": "'");
 	}
 	public function num_fields() {
 		return $this->mc->field_count;

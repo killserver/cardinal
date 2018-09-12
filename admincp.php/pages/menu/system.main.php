@@ -10,7 +10,7 @@ $links['System']["cat"][] = array(
 'link' => "#",
 'title' => "{L_\"Системное\"}",
 'type' => "cat",
-'access' => (userlevel::get("antivirus") && is_writable(PATH_CACHE_SYSTEM.DS)) || ($active && userlevel::get("editor")) || userlevel::get("loginadmin") || userlevel::get("logs") || userlevel::get("phpinfo") || (userlevel::get("recyclebin") && file_exists(PATH_CACHE_USERDATA."trashBin.lock")) || (userlevel::get("users") && !defined("WITHOUT_DB")) || userlevel::get("userlevels") || userlevel::get("yui_admin") || ((!defined("WITHOUT_DB") || db::connected()) && userlevel::get("atextadmin")),
+'access' => (userlevel::get("antivirus") && is_writable(PATH_CACHE_SYSTEM.DS)) || ($active && userlevel::get("editor")) || userlevel::get("loginadmin") || userlevel::get("logs") || userlevel::get("phpinfo") || (userlevel::get("recyclebin") && file_exists(PATH_CACHE_USERDATA."trashBin.lock")) || (userlevel::get("users") && !defined("WITHOUT_DB")) || userlevel::get("userlevels") || userlevel::get("yui_admin") || userlevel::get("importexport") || userlevel::get("skins") || ((!defined("WITHOUT_DB") || db::connected()) && userlevel::get("atextadmin")),
 'icon' => 'fa-dashboard',
 );
 $links['System']["item"][] = array(
@@ -51,7 +51,14 @@ $links['System']["item"][] = array(
 'icon' => 'fa-fighter-jet',
 );
 $links['System']["item"][] = array(
-'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Recyclebin",
+'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=ImportExport",
+'title' => "{L_\"Импорт/Экспорт\"}",
+'type' => "item",
+'access' => userlevel::get("importexport"),
+'icon' => 'fa-database',
+);
+$links['System']["item"][] = array(
+'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=RecycleBin",
 'title' => "{L_\"Корзина данных\"}",
 'type' => "item",
 'access' => userlevel::get("recyclebin") && file_exists(PATH_CACHE_USERDATA."trashBin.lock"),
@@ -77,5 +84,12 @@ $links['System']["item"][] = array(
 'type' => "item",
 'access' => userlevel::get("yui_admin"),
 'icon' => 'fa-book',
+);
+$links['System']["item"][] = array(
+'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Skins",
+'title' => "{L_\"Переключение шаблонов\"}",
+'type' => "item",
+'access' => userlevel::get("skins"),
+'icon' => 'fa-eye',
 );
 ?>

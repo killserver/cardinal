@@ -84,6 +84,8 @@ if(version_compare(PHP_VERSION, '5.3', '<')) {
 @ini_set('max_file_uploads', '80');
 @ini_set('scream.enabled', false);
 @ini_set('gd.jpeg_ignore_warning', 1);
+@ini_set("pcre.backtrack_limit", 120000000);
+@ini_set("pcre.recursion_limit", 120000000);
 
 $manifest = array(
 	"before_ini_class" => array(), //configuration pages and modules before load
@@ -447,8 +449,6 @@ header("X-Frame-Options: SAMEORIGIN");
 header("X-XSS-Protection: 1; mode=block");
 header('Cache-Control: max-age');
 header("Cardinal: ".cardinal::SaveCardinal(VERSION));
-@ini_set("pcre.backtrack_limit", 120000000);
-@ini_set("pcre.recursion_limit", 120000000);
 if(function_exists("header_remove")) {
 	header_remove('x-powered-by');
 } else {
@@ -464,4 +464,11 @@ if(defined("DEBUG_ACTIVATED")) {
 addEvent("shutdownCardinal", "GzipOut", "", 999999999);
 register_shutdown_function("shutdownCardinal");
 execEvent("core_ready");
+if(cardinal::is_cli()) {
+	ob_end_clean();
+	if(!defined("IS_CLI")) {
+		define("IS_CLI", true);
+	}
+	execEvent("cli_ready");
+}
 ?>

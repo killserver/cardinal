@@ -150,7 +150,7 @@ function nmail() { return function_call('nmail', func_get_args()); }
 function or_nmail() {
 	$server = (class_exists("HTTP", false) && method_exists("HTTP", "getServer") ? HTTP::getServer("HTTP_HOST") : (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : ""));
 	$get = func_get_args();
-	$mail = new PHPMailer(true);
+	$mail = new phpmailer(true);
 	if(sizeof($get)==0) {
 		return $mail;
 	} else if(sizeof($get)==1) {
@@ -533,24 +533,53 @@ function nocache_headers() {
 	}
 }
 
+$printedCli = false;
+function showCli() {
+	global $printedCli;
+	if(defined("IS_CLI")) {
+		$list = func_get_args();
+		if($printedCli===false) {
+			$backtrace = debug_backtrace();
+			echo (isset($backtrace[0]) ? "Called: ".str_replace(ROOT_PATH, DS, $backtrace[0]['file'])." [".$backtrace[0]['line']."] ".date("d-m-Y H:i:s", fileatime($backtrace[0]['file'])) : "")." ".(isset($backtrace[0]) ? PHP_EOL.PHP_EOL : "");
+		}
+		if(sizeof($list)>0) {
+			call_user_func_array("var_dump", $list);
+		}
+		if($printedCli===false) {
+			echo PHP_EOL.PHP_EOL;
+			$printedCli = true;
+		} else {
+			echo PHP_EOL;
+		}
+	}
+}
+
 function vdump() {
 	global $printedVdump;
 	$list = func_get_args();
 	$backtrace = debug_backtrace();
-	if($printedVdump===false) {
+	if(!defined("IS_CLI") && $printedVdump===false) {
 		nocache_headers();
 		echo '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><meta name="viewport" content="width=device-width"><title>Cardinal &rsaquo; Debug</title><meta name="robots" content="noindex,follow"></head><style>html { background: #f1f1f1; } body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; } div.container { background: #fff; color: #444; margin: 2em auto; padding: 0em 2em 1em; max-width: 700px; -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.13); box-shadow: 0 1px 3px rgba(0,0,0,0.13); } div.info { border-bottom: 1px solid #dadada; clear: both; color: #666; background: #fff; word-break: break-all; max-width: 100%; font-size: 19px; padding: 1em 0px 7px; font-family: \'Roboto\'; margin-bottom: 1.5rem; } pre { text-align: left; margin: 0px 0px 1em; font-family: Consolas, Monaco, monospace; font-size: 12px; word-break: break-word; max-width: 100%; white-space: pre-wrap; line-height: 20px; }</style><body>';
 		addEvent("shutdownCardinal", function() { echo "</body></html>"; }, "", 999999999);
 	}
-	echo '<div class="container"><div class="info">'. (isset($backtrace[0]) ? "<b>Called:</b><span> ".$backtrace[0]['file']." [".$backtrace[0]['line']."]&nbsp;<i>".date("d-m-Y H:i:s", fileatime($backtrace[0]['file']))."</i>" : "")."</span>".(isset($backtrace[0]) ? "<br>" : "")."</div>";
-	echo '<pre>';
+	if(!defined("IS_CLI")) {
+		echo '<div class="container"><div class="info">'. (isset($backtrace[0]) ? "<b>Called:</b><span> ".str_replace(ROOT_PATH, DS, $backtrace[0]['file'])." [".$backtrace[0]['line']."]&nbsp;<i>".date("d-m-Y H:i:s", fileatime($backtrace[0]['file']))."</i>" : "")."</span>".(isset($backtrace[0]) ? "<br>" : "")."</div>";
+		echo '<pre>';
+	} else {
+		echo (isset($backtrace[0]) ? "Called: ".$backtrace[0]['file']." [".$backtrace[0]['line']."] ".date("d-m-Y H:i:s", fileatime($backtrace[0]['file'])) : "")." ".(isset($backtrace[0]) ? PHP_EOL.PHP_EOL : "");
+	}
 	if(sizeof($list)>0) {
 		ob_start();
 		call_user_func_array("var_dump", $list);
 		$t = ob_get_clean();
 		echo htmlspecialchars($t);
 	}
-	echo '</pre></div>'.PHP_EOL;
+	if(!defined("IS_CLI")) {
+		echo '</pre></div>'.PHP_EOL;
+	} else {
+		echo PHP_EOL.PHP_EOL;
+	}
 	$printedVdump = true;
 }
 
@@ -559,7 +588,7 @@ function vdebug() {
 	Debug::echoDebugMode(true);
 	Debug::limitOnView(0);
 	$backtrace = debug_backtrace();
-	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "<b style=\"color:#70f;\">Called:</b> ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "")."</pre>";
+	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "<b style=\"color:#70f;\">Called:</b> ".str_replace(ROOT_PATH, DS, $backtrace[0]['file'])." [".$backtrace[0]['line']."]\n\n" : "")."</pre>";
 	if(func_num_args()>0) {
 		echo call_user_func_array(array("Debug", "vars"), func_get_args());
 	}
@@ -568,7 +597,7 @@ function vdebug() {
 function var_debug() {
 	$list = func_get_args();
 	$backtrace = debug_backtrace();
-	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "<b style=\"color:#80f;\">Called:</b> ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "");
+	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "<b style=\"color:#80f;\">Called:</b> ".str_replace(ROOT_PATH, DS, $backtrace[0]['file'])." [".$backtrace[0]['line']."]\n\n" : "");
 	echo "<code>";
 	if(sizeof($list)>0) {
 		foreach($list as $v) {
@@ -584,7 +613,7 @@ function var_debug() {
 function cdie() {
 	$list = func_get_args();
 	$backtrace = debug_backtrace();
-	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "<b style=\"color:#80f;\">Called:</b> ".$backtrace[0]['file']." [".$backtrace[0]['line']."]\n\n" : "");
+	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "<b style=\"color:#80f;\">Called:</b> ".str_replace(ROOT_PATH, DS, $backtrace[0]['file'])." [".$backtrace[0]['line']."]\n\n" : "");
 	echo "<code>";
 	if(sizeof($list)>0) {
 		foreach($list as $v) {

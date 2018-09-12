@@ -221,7 +221,7 @@ class Headers {
 		}
 		$link_rss = "";
 		if(!file_exists(ROOT_PATH."rss.xml")) {
-			$rss = Route::Name("rss");
+			$rss = Route::Search("rss");
 			if($rss) {
 				$link = Route::get("rss");
 				$link_rss = $link->uri(array());
@@ -317,7 +317,7 @@ class Headers {
 			if($editor!==false && Arr::get($editor, "class", false)) {
 				$editPage = "{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=".$editor['class'].(isset($editor['page']) ? "&".$editor['page'] : "").(defined("ROUTE_GET_URL") ? "&ref=".urlencode(HTTP::getServer(ROUTE_GET_URL)) : "");
 			}
-			$menu = "<div class=\"adminCoreCardinal\"><a href=\"{C_default_http_local}\" class=\"logo\"></a><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/\" class=\"linkToAdmin\">{L_'adminpanel'}</a>".(!empty($editPage) ? "<div class=\"items\"><a href=\"".$editPage."\"><i class=\"fa-edit\"></i><span>{L_'Редактировать'}</span></a></div>":"").$this->menuAdminHeader($newMenu)."<div class=\"user\"><span>{U_username}</span><div class=\"dropped\"><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Login&out\"><i class=\"fa-user-times\"></i>{L_'logout'}</a></div></div></div>";
+			$menu = "<div class=\"adminCoreCardinal\"><a href=\"{C_default_http_local}\" class=\"logo\"></a>".(config::Select("deactiveMainMenu")!="1" ? "<a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/{C_mainPageAdmin}\" class=\"linkToAdmin\">{L_'adminpanel'}</a>" : "").(!empty($editPage) ? "<div class=\"items\"><a href=\"".$editPage."\"><i class=\"fa-edit\"></i><span>{L_'Редактировать'}</span></a></div>":"").$this->menuAdminHeader($newMenu)."<div class=\"user\"><span>{U_username}</span><div class=\"dropped\"><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Login&out\"><i class=\"fa-user-times\"></i>{L_'logout'}</a></div></div></div>";
 			cardinalEvent::addListener("templates::display", array($this, "addAdminPanelToPage"), $menu);
 		}
 		unset($array);
@@ -340,8 +340,11 @@ class Headers {
 		}
 		$this->adminPanelVsort($links);
 		$all = 0;
-		$page_v = getenv("REQUEST_URI");
-		$now = str_replace(ADMINCP_DIRECTORY."/?", "", substr($page_v, 1, strlen($page_v)));
+		$page_v = HTTP::getServer("REQUEST_URI");
+		$now = str_replace(array(ADMINCP_DIRECTORY."/?", ADMINCP_DIRECTORY."/"), "", substr($page_v, 1, strlen($page_v)));
+		if($now==="") {
+			$now = "pages=main";
+		}
 		execEventRef("admin_menu_loaded", $links, $now);
 	}
 

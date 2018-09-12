@@ -272,7 +272,7 @@ class Core {
 					} else {
 						$count = sizeof($datas[$i])-1;
 					}
-					$is_now = str_replace(array("{C_default_http_host}", ADMINCP_DIRECTORY."/?"), "", $datas[$i][$is]['link']);
+					$is_now = str_replace(array("{C_default_http_host}", ADMINCP_DIRECTORY."/?", "{D_ADMINCP_DIRECTORY}/?", ADMINCP_DIRECTORY."/", "{D_ADMINCP_DIRECTORY}/"), "", $datas[$i][$is]['link']);
 					templates::assign_vars(array(
 						"existSub" => ($type=="cat"&&sizeof($datas)>1 ? "true" : "false"),
 						"value" => $datas[$i][$is]['title'],
@@ -341,42 +341,55 @@ class Core {
 		}
 	}
 
-	public static function addInfo($echo, $type = "info", $closed = false, $time = -1) {
-		$users = $arr = array();
-		$userNow = "";
-		if(class_exists("User") && method_exists("User", "All")) {
-			$users = User::All();
-			$users = array_keys($users);
-			$userNow = User::get("username");
+	public static function addInfo($echo, $type = "info", $closed = false, $time = -1, $block = false) {
+		$defaults = array(
+			"echo" => "",
+			"type" => "info",
+			"closed" => false,
+			"time" => 10,
+			"block" => false,
+		);
+		if(is_array($echo)) {
+			$echos = "";
+			$echo = array_merge($defaults, $echo);
+			if(isset($echo['type'])) { $type = $echo['type']; }
+			if(isset($echo['closed'])) { $closed = $echo['closed']; }
+			if(isset($echo['time'])) { $time = $echo['time']; }
+			if(isset($echo['block'])) { $block = $echo['block']; }
+			if(isset($echo['echo'])) { $echos = $echo['echo']; }
+			unset($echo);
+			$echo = $echos;
 		}
-		for($i=0;$i<sizeof($users);$i++) {
-			$dirToSave = PATH_CACHE_USERDATA;
-			$pathToSave = $dirToSave."infoSystem-".$users[$i].".txt";
-			if(file_exists($dirToSave) && is_readable($dirToSave) && file_exists($pathToSave) && is_readable($pathToSave)) {
-				$file = file_get_contents($pathToSave);
-				$file = json_decode($file, true);
-				$arr = array_merge($arr, $file);
-			}
-			if($type!="success" && $type!="warning" && $type!="error" && $type!="info") {
-				trigger_error("Error type for info");die();
-			}
-			if(isset($arr[$echo])) {
-				$arr[$echo]['echo'] = $echo;
-				$arr[$echo]['type'] = $type;
-				$arr[$echo]['time'] = ($time>-1 ? ($time<time() ? time()+$time : $time) : time()+90);
-				$arr[$echo]['closed'] = $closed;
-			} else {
-				$arr = array_merge($arr, array($echo => array("echo" => $echo, "type" => $type, "time" => ($time>-1 ? ($time<time() ? time()+$time : $time) : time()+90), "closed" => $closed, "code" => generate_uuid4())));
-			}
-			$arrs = json_encode($arr);
-			if(file_exists($dirToSave) && !is_writable($dirToSave)) {
-				@chmod($dirToSave, 0777);
-			}
-			if(file_exists($dirToSave) && is_readable($dirToSave) && file_exists($pathToSave) && !is_writable($pathToSave)) {
-				@chmod($pathToSave, 0777);
-			}
-			file_put_contents($pathToSave, $arrs);
+		if($echo==="") {
+			trigger_error("First param is not set");die();
 		}
+		if($type!="success" && $type!="warning" && $type!="error" && $type!="info") {
+			trigger_error("Error type for info");die();
+		}
+		$r = new Request();
+		$arr = $r->session->get("infoForAdmin", array());
+		if(!is_array($arr)) {
+			$arr = array();
+		}
+		$code = md5($echo);
+		if(!isset($arr[$code])) {
+			$arr = array_merge($arr, array(
+				$code => array(
+					"echo" => $echo,
+					"type" => $type,
+					"time" => ($time>-1 ? ($time<time() ? time()+$time : $time) : time()+10),
+					"closed" => $closed,
+					"code" => $code,
+					"block" => false,
+				)
+			));
+		} else {
+			$arr[$code]['time'] = ($time>-1 ? ($time<time() ? time()+$time : $time) : time()+10);
+			$arr[$code]['closed'] = $closed;
+			$arr[$code]['type'] = $type;
+			$arr[$code]['block'] = $block;
+		}
+		$r->session->add("infoForAdmin", $arr);
 		return $arr;
 	}
 	
@@ -387,33 +400,12 @@ class Core {
 			location("{C_default_http_host}".ADMINCP_DIRECTORY."/?pages=Login".(!empty($ref) ? "&ref=".$ref : ""));
 			return;
 		}
-		$users = array();
-		$userNow = "";
-		if(class_exists("User") && method_exists("User", "get")) {
-			$userNow = User::get("username");
-		}
-		$dirToSave = PATH_CACHE_USERDATA;
-		$pathToSave = $dirToSave."infoSystem-".$userNow.".txt";
 		if(isset($_GET['removeCode'])) {
-			if(class_exists("User") && method_exists("User", "All")) {
-				$users = User::All();
-				$users = array_keys($users);
+			$r = new Request();
+			$arrs = $r->session->get("infoForAdmin", array());
+			if(!is_array($arrs)) {
+				$arrs = array();
 			}
-			if(sizeof($users)==0 || !in_array($userNow, $users)) {
-				return false;
-			}
-			if(file_exists($dirToSave) && !is_readable($dirToSave)) {
-				@chmod($dirToSave, 0777);
-			}
-			if(!file_exists($pathToSave)) {
-				return false;
-			}
-			if(!is_readable($pathToSave)) {
-				@chmod($pathToSave, 0777);
-			}
-			$file = file_get_contents($pathToSave);
-			$isUnset = false;
-			$arrs = json_decode($file, true);
 			foreach($arrs as $k => $arr) {
 				if($arr['time'] < time()) {
 					$isUnset = true;
@@ -427,22 +419,9 @@ class Core {
 			}
 			if($isUnset) {
 				if(sizeof($arrs)>0) {
-					$arrs = json_encode($arrs);
-					if(file_exists($dirToSave) && !is_writable($dirToSave)) {
-						@chmod($dirToSave, 0777);
-					}
-					if(file_exists($dirToSave) && is_readable($dirToSave) && file_exists($pathToSave) && !is_writable($pathToSave)) {
-						@chmod($pathToSave, 0777);
-					}
-					file_put_contents($pathToSave, $arrs);
+					$r->session->add("infoForAdmin", $arrs);
 				} else {
-					if(file_exists($dirToSave) && !is_writable($dirToSave)) {
-						@chmod($dirToSave, 0777);
-					}
-					if(file_exists($dirToSave) && is_readable($dirToSave) && file_exists($pathToSave) && !is_writable($pathToSave)) {
-						@chmod($pathToSave, 0777);
-					}
-					@unlink($pathToSave);
+					$r->session->delete("infoForAdmin", $arrs);
 				}
 			}
 			HTTP::echos("done");
@@ -504,8 +483,8 @@ class Core {
 		templates::assign_var("nowLangImg", ADMIN_FLAGS_UI.lang::get_lg().".png");
 		$support = lang::support(true);
 		for($i=0;$i<sizeof($support);$i++) {
-			$lang = nucfirst($support[$i]);
-			templates::assign_vars(array("img" => ADMIN_FLAGS_UI.$support[$i].".png", "langMenu" => $support[$i], "lang" => "{L_Languages}&nbsp;".$lang), "langListSupport", "lang".($i+1));
+			$langs = nucfirst($support[$i]);
+			templates::assign_vars(array("img" => ADMIN_FLAGS_UI.$support[$i].".png", "langMenu" => $support[$i], "lang" => "{L_Languages}&nbsp;".$langs), "langListSupport", "lang".($i+1));
 		}
 		$this->ReadPlugins();
 		if(sizeof(self::$modules)>0 && isset(self::$modules['before'])) {
@@ -536,10 +515,10 @@ class Core {
 		}
 		$echos = str_replace("{css_list}", execEvent("admin_print_style", $css_echo), $echos);
 		$ret = "";
-		$info = array();
-		if(file_exists($dirToSave) && is_readable($dirToSave) && file_exists($pathToSave) && is_readable($pathToSave)) {
-			$file = file_get_contents($pathToSave);
-			$info = json_decode($file, true);
+		$r = new Request();
+		$info = $r->session->get("infoForAdmin", array());
+		if(!is_array($info)) {
+			$info = array();
 		}
 		$info = execEvent("admin_core_prints_info", $info);
 		if(sizeof($info)>0) {
@@ -569,23 +548,10 @@ class Core {
 				$ret .= $rt;
 			}
 			if($isUnset) {
-				if(sizeof($info)>0) {
-					$arrs = json_encode($info);
-					if(file_exists($dirToSave) && !is_writable($dirToSave)) {
-						@chmod($dirToSave, 0777);
-					}
-					if(file_exists($dirToSave) && is_readable($dirToSave) && file_exists($pathToSave) && !is_writable($pathToSave)) {
-						@chmod($pathToSave, 0777);
-					}
-					file_put_contents($pathToSave, $arrs);
+				if(sizeof($arrs)>0) {
+					$r->session->add("infoForAdmin", $arrs);
 				} else {
-					if(file_exists($dirToSave) && !is_writable($dirToSave)) {
-						@chmod($dirToSave, 0777);
-					}
-					if(file_exists($dirToSave) && is_readable($dirToSave) && file_exists($pathToSave) && !is_writable($pathToSave)) {
-						@chmod($pathToSave, 0777);
-					}
-					@unlink($pathToSave);
+					$r->session->delete("infoForAdmin", $arrs);
 				}
 			}
 		}

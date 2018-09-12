@@ -25,15 +25,15 @@
 				
 				</span>
 				
-				<span id="cachephp" class="col-md-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-sm-12" style="[if {clearCacheAll}==0]display:none;[/if {clearCacheAll}==0][if {clearCacheTmp}==1]display:block;[/if {clearCacheTmp}==1][if {clearCacheTmp}==0]display:none;[/if {clearCacheTmp}==0]">
+				<span id="CachePages" class="col-md-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-sm-12" style="[if {clearCacheAll}==0]display:none;[/if {clearCacheAll}==0][if {clearCacheTmp}==1]display:block;[/if {clearCacheTmp}==1][if {clearCacheTmp}==0]display:none;[/if {clearCacheTmp}==0]">
 					
-					<div class="xe-widget xe-counter xe-counter-purple" data-count=".num" data-from="0" data-to="{CachePHPSize}" data-suffix="{CachePHPSizeS}" data-duration="3" data-easing="false">
+					<div class="xe-widget xe-counter xe-counter-purple" data-count=".num" data-from="0" data-to="{CachePagesSize}" data-suffix="{CachePagesSizeS}" data-duration="3" data-easing="false">
 						<div class="xe-icon">
 							<i class="linecons-inbox"></i>
 						</div>
 						<div class="xe-label">
-							<strong class="num">{CachePHP}</strong>
-							<span>{L_"Cache Templates"}</span>
+							<strong class="num">{CachePages}</strong>
+							<span>{L_"Cache Pages"}</span>
 						</div>
 					</div>
 				
@@ -116,7 +116,7 @@ jQuery(document).ready(function() {
 			toastr.info(data, "{L_"Clear Cache Data"}");
 		});
 	});
-	jQuery("#cachephp").click(function() {
+	jQuery("#CachePages").click(function() {
 		jQuery.post("./?pages=Main&clear&tmp", function(data) {
 			toastr.info(data, "{L_"Clear Cache Templates"}");
 		});

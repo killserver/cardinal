@@ -435,7 +435,7 @@ class DBObject implements ArrayAccess {
 		return $this->WhereTo($name, $to, $val, $type);
 	}
 	
-	final public function WhereTo($name, $to = false, $val = false, $type = "AND") {
+	final public function WhereTo($name, $to = false, $val = false, $type = "AND", $save = true) {
 		if($to===false) {
 			$to = $name;
 			$name = "";
@@ -452,7 +452,7 @@ class DBObject implements ArrayAccess {
 				$to = "LIKE";
 			}
 		}
-		$this->where[][$type] = "`".$name."` ".$to." ".db::escape($val)."";
+		$this->where[][$type] = "`".$name."` ".$to." ".($save ? db::escape($val) : $val)."";
 	}
 	
 	final private function ReleaseWhere($where = "") {

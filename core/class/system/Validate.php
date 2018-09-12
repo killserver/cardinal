@@ -586,7 +586,7 @@ class Validate {
 	}
 	
 	final public static function json($str) {
-		return (bool) preg_match('/[^,:{}\\[\\]0-9.\\-+Eaeflnr-u \\n\\r\\t]/', preg_replace('/"(\\.|[^"\\\\])*"/', '', $str));
+		return $str === '""' || $str === '[]' || $str === '{}' || $str[0] === '"' && substr($str, -1) === '"' || $str[0] === '[' && substr($str, -1) === ']' || $str[0] === '{' && substr($str, -1) === '}';
 	}
 	
 	final public static function is_serialized($data) {

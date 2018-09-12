@@ -1317,17 +1317,7 @@ class templates {
 		} else {
 			$file = array($array[1]);
 		}
-		if(!isset($file[1])) {
-			$dir = ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file[0];
-		} elseif(isset($file[1]) && !empty($file[1])) {
-			$dir = ROOT_PATH."".self::$dir_skins.DS.$file[1].DS.$file[0];
-		} else {
-			$dir = ROOT_PATH."".self::$dir_skins.DS.$file[0];
-		}
-		$files = $array[0];
-		try {
-			$files = file_get_contents($dir);
-		} catch(Exception $ex) {}
+		$files = self::load_templates($file[0], "", (isset($file[1]) && !empty($file[1]) ? $file[1] : "null"));
 		$files = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $files);
 		return $files;
 	}
@@ -1344,21 +1334,11 @@ class templates {
 		} else {
 			$file = array($array[1]);
 		}
-		if(strpos($file[0], self::$typeTpl) === false) {
-			$file[0] = $file[0].".".self::$typeTpl;
+		if(strpos($file[0], self::$typeTpl)!==false) {
+			$file[0] = substr($file[0], 0, (-(strlen(".".self::$typeTpl))));
 		}
-		if(!isset($file[1])) {
-			$dir = ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file[0];
-		} elseif(isset($file[1]) && !empty($file[1])) {
-			$dir = ROOT_PATH."".self::$dir_skins.DS.$file[1].DS.$file[0];
-		} else {
-			$dir = ROOT_PATH."".self::$dir_skins.DS.$file[0];
-		}
-		$files = $array[0];
-		try {
-			$files = file_get_contents($dir);
-			$files = self::comp_datas($files, $file[0]);
-		} catch(Exception $ex) {}
+		$files = self::load_templates($file[0], "", (isset($file[1]) && !empty($file[1]) ? $file[1] : "null"));
+		$files = self::comp_datas($files, $file[0]);
 		return $files;
 	}
 
@@ -1832,13 +1812,7 @@ class templates {
      */
 	final public static function completed_assign_vars($file, $dir = "null") {
 		$time = self::time();
-		if($dir == "null") {
-			$tpl = self::loadFile(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".".self::$typeTpl);
-		} elseif(empty($dir)) {
-			$tpl = self::loadFile(ROOT_PATH."".self::$dir_skins.DS.$file.".".self::$typeTpl);
-		} else {
-			$tpl = self::loadFile(ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".".self::$typeTpl);
-		}
+		$tpl = self::load_templates($file, "", $dir);
 		$tpl = self::comp_datas($tpl, $file);
 		if($dir == "null") {
 			$tpl = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $tpl);
@@ -1863,6 +1837,8 @@ class templates {
 	final public static function check_exists($file, $dir = "null") {
 		if($dir == "null") {
 			return file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".".self::$typeTpl);
+		} elseif($dir=="admin") {
+			$tpl = file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."temp".DS.$file.".".self::$typeTpl);
 		} elseif(empty($dir)) {
 			return file_exists(ROOT_PATH."".self::$dir_skins.DS.$file.".".self::$typeTpl);
 		} else {
@@ -1913,6 +1889,9 @@ class templates {
 			self::$header = array_replace_recursive(self::$header, releaseSeo(array(), true), $header);
 		} else {
 			self::$header = array_replace_recursive($header, releaseSeo(array(), true), self::$header);
+		}
+		if(function_exists("execEventRef")) {
+			execEventRef("change_header", self::$header);
 		}
 		if(!empty($headerSet)) {
 			$manifest['mod_page'][HTTP::getip()]['title'] = self::$header['title'];
@@ -1974,7 +1953,13 @@ class templates {
 			$date = $arr[1];
 		}
 		if(!is_numeric($date)) {
-			return $arr[0];
+			if(!isset($arr[3]) || empty($arr[3])) {
+				$temp = $date;
+				$date = "";
+				$only_date = true;
+			} else {
+				return $arr[0];
+			}
 		}
 		return langdate($date, $temp, $only_date);
 	}
@@ -2019,6 +2004,9 @@ class templates {
 			$tpl = self::callback_array("#\{R_\[(.+?)\]\}#", ("templates::route"), $tpl);
 			if(preg_match("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true|false)\}#i", $tpl)) {
 				$tpl = self::callback_array("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,(true|false))\}#i", "templates::langdate", $tpl);
+			}
+			if(preg_match("#\{S_langdate=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true|false)\}#i", $tpl)) {
+				$tpl = self::callback_array("#\{S_langdate=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,(true|false))\}#i", "templates::langdate", $tpl);
 			}
 			$tpl = self::callback_array("#\{F_['\"](.+?)['\"],['\"](.+?)['\"],['\"](.+?)['\"]\}#", "templates::declension", $tpl);
 		}
@@ -2101,7 +2089,27 @@ class templates {
 			}
 		}
 
+		$tpl = self::callback_array("#\{E_\[(.+?)\](|\[(.+?)\])\}#", ("templates::execEvent"), $tpl);
+
 		return $tpl;
+	}
+
+	private static function execEvent($arr) {
+		$args = array();
+		if(isset($arr[3])) {
+			$exp = explode(";", $arr[3]);
+			for($i=0;$i<sizeof($exp);$i++) {
+				$exp[$i] = explode("=", $exp[$i]);
+				if(isset($exp[$i][0]) && isset($exp[$i][1])) {
+					$args[$exp[$i][0]] = $exp[$i][1];
+				} if(isset($exp[$i][0]) && !isset($exp[$i][1])) {
+					$args[$exp[$i][0]] = true;
+				} if(!isset($exp[$i][0]) && isset($exp[$i][1])) {
+					$args[] = $exp[$i][1];
+				}
+			}
+		}
+		return call_user_func_array("cardinalEvent::execute", array($arr[1], $args));
 	}
 
 	/**
@@ -2298,28 +2306,27 @@ class templates {
 	final public static function display() {
 	global $lang;
 		$time = self::time();
-		if(!file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.self::$mainTpl.".".self::$typeTpl) && !file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$mainSkins.DS.self::$mainTpl.".".self::$typeTpl)) {
+		if(!self::check_exists(self::$mainTpl, self::$skins) && !self::check_exists(self::$mainTpl, self::$mainSkins)) {
 			self::ErrorTemplate("error templates", ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.self::$mainTpl.".".self::$typeTpl);
 			return;
 		}
-		if(!defined("PHP_EX")) {
+		if(!defined("ROOT_EX")) {
 			$phpEx = substr(strrchr(__FILE__, '.'), 1);
 			if(empty($phpEx)) {
 				$phpEx = "php";
 			}
 		} else {
-			$phpEx = PHP_EX;
+			$phpEx = ROOT_EX;
 		}
-		if(file_exists(PATH_SKINS.self::$skins.DS."functions.".$phpEx)) {
+		if(self::check_exists("functions", self::$skins, $phpEx)) {
 			include_once(PATH_SKINS.self::$skins.DS."functions.".$phpEx);
 		}
-		if(file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."lang".DS."tpl.".ROOT_EX)) {
-			include_once(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."lang".DS."tpl.".ROOT_EX);
+		if(self::check_exists("tpl", self::$skins.DS."lang", $phpEx)) {
+			include_once(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."lang".DS."tpl.".$phpEx);
 		}
 		$h = self::completed_assign_vars(self::$mainTpl, (!empty(self::$mainSkins) ? self::$mainSkins : "null"));
-		if(file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."login.".self::$typeTpl)) {
-			$l = file_get_contents(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."login.".self::$typeTpl);
-			$l = iconv("cp1251", modules::get_config('charset'), $l);
+		if(self::check_exists("login", self::$skins)) {
+			$l = self::load_templates("login", modules::get_config("charset"), self::$skins);
 			$h = str_replace("{login}", $l, $h);
 		}
 		$head = "";
@@ -2360,10 +2367,11 @@ class templates {
 		}
 		if(isset($_GET['jajax']) || (getenv('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest' && isset($_GET['jajax']))) {
 			unset($h);
-			$thead = "<div id=\"pretitle\">{L_sitename}</div>";
+			$thead = "{L_sitename}";
 			if(isset(self::$header['title'])) {
-				$thead = "<div id=\"pretitle\">".self::$header['title']."</div>";
+				$thead = self::$header['title'];
 			}
+			$thead = "<div id=\"pretitle\">".$thead."</div>";
 			$h = $thead.$body;
 		} else {
 			$h = str_replace("{content}", $body, $h);

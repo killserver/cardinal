@@ -31,10 +31,12 @@ class Archer extends Core {
 	
 	function __construct() {
 		$request = new Request();
-		$page = $request->get->get('pageType', false);
-		$viewId = $request->get->get('viewId', false);
-		$viewId = intval($viewId);
 		$typeUni = $request->get->get('type', 'posts');
+		$page = $request->get->get('pageType', false);
+		$page = execEvent("change-page", $page, $typeUni);
+		$viewId = $request->get->get('viewId', false);
+		$viewId = execEvent("change-view-id", $viewId, $typeUni);
+		$viewId = intval($viewId);
 		$andWhere = $request->get->get("Where", false);
 		$typeWhere = $request->get->get("WhereType", false);
 		$dataWhere = $request->get->get("WhereData", false);
@@ -146,8 +148,10 @@ class Archer extends Core {
 					if(sizeof($ids)>0) {
 						$model = modules::loadModels("Model".$upFirst, $typeUni);
 						$model->SetTable($typeUni);
-						$model->WhereTo("", "", "IN(".implode(",", $ids).")");
+						$model->WhereTo("", "", "IN(".implode(",", $ids).")", "AND", false);
+						$model->multiple();
 						$model->Deletes();
+						cardinal::RegAction("Удалены записи ID:".implode(",", $ids)." в таблице ".$typeUni);
 					}
 				}
 				location("./?pages=Archer&type=".$typeUni);

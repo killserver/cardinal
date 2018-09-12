@@ -29,6 +29,13 @@ $printedVdump = false;
 
 require_once(ROOT_PATH."core".DS."loadConfig.".ROOT_EX);
 
+if(defined("PATH_MODULES") && file_exists(PATH_MODULES."loader.default.".ROOT_EX) && !file_exists(PATH_MODULES."loader.".ROOT_EX)) {
+	if(!is_writeable(PATH_MODULES."loader.default.".ROOT_EX)) {
+		@chmod(PATH_MODULES."loader.default.".ROOT_EX, 0777);
+	}
+	@rename(PATH_MODULES."loader.default.".ROOT_EX, PATH_MODULES."loader.".ROOT_EX);
+}
+
 function require_dir($dir = "", $modules = "", $force = false, $globs = false) { include_dir($dir, $modules, $force, $globs); }
 
 function include_dir($dir = "", $modules = "", $force = false, $globs = false) {

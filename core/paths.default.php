@@ -26,9 +26,6 @@ if(!defined("PATH_CACHE_SYSTEM")) {
 if(!defined("PATH_LOGS")) {
 	define("PATH_LOGS", ROOT_PATH.'core'.DS.'cache'.DS.'system'.DS);
 }
-if(!defined("PATH_CACHE_TEMP")) {
-	define("PATH_CACHE_TEMP", ROOT_PATH."core".DS."cache".DS."tmp".DS);
-}
 if(!defined("PATH_CACHE_LANGS")) {
 	define("PATH_CACHE_LANGS", ROOT_PATH.'core'.DS.'cache'.DS.'lang'.DS);
 }

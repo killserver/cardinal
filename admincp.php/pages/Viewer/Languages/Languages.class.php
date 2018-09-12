@@ -59,7 +59,7 @@ class Languages extends Core {
 		}
 		if(Arr::get($_GET, "saveAPI", false)) {
 			callAjax();
-			config::Update("apiKeyTranslate", Arr::get($_POST, "key", false));
+			config::Update("apiKeyTranslate", Arr::get($_POST, "api", false));
 			cardinal::RegAction("Сохранён новый ключ для перевода в разделе языковой панели");
 			return;
 		}

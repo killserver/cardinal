@@ -38,6 +38,10 @@ class cardinal {
 		}
 	}
 
+	public static function is_cli() {
+		return (php_sapi_name()==='cli' || defined('STDIN'));
+	}
+
 	final private static function robots() {
 		if(!defined("DEVELOPER_MODE") && defined("PATH_CACHE_SYSTEM") && file_exists(PATH_CACHE_SYSTEM."seoBlockDev.lock")) {
 			unlink(PATH_CACHE_SYSTEM."seoBlockDev.lock");

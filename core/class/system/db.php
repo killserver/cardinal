@@ -108,11 +108,11 @@ class db {
      * @param string $str Needed string
      * @return string Result saving
      */
-    final public static function escape($str) {
+    final public static function escape($str, $save = true) {
 		if(is_bool(self::$driver) || empty(self::$driver)) {
 			return str_replace(array('\x00', '\n', '\r', '\\', "'", '"', '\x1a'), array('\\x00', '\\n', '\\r', '\\\\', "\'", '\"', '\\x1a'), $str);
 		} else {
-			return self::$driver->escape($str);
+			return self::$driver->escape($str, $save);
 		}
 	}
 
@@ -359,6 +359,10 @@ class db {
 		if(is_string($host) && is_string($user) && is_string($pass) && is_string($chst) && is_string($port)) {
 			self::connect($host, $user, $pass, self::$dbName, $chst, $port);
 		}
+	}
+
+	final public static function reconnect() {
+		self::init();
 	}
 
 	final public static function flushCacheTables() {
@@ -848,7 +852,7 @@ class db {
 			$query = preg_replace("/([0-9a-f]){32}/", "********************************", $query); // Hides all hashes
 		}
 
-		$query = htmlspecialchars($query, ENT_QUOTES, 'ISO-8859-1');
+		$queryS = htmlspecialchars($query, ENT_QUOTES, 'ISO-8859-1');
 		$mysql_error = htmlspecialchars($mysql_error, ENT_QUOTES, 'ISO-8859-1');
 
 		$trace = debug_backtrace();
@@ -864,19 +868,21 @@ class db {
 			$trace[$level]['file'] = str_replace(ROOT_PATH, "", $trace[$level]['file']);
 		}
         $tmp = false;
-		if(self::$driver->get_type() === 1 && class_exists("modules") && method_exists("modules", "init_templates")) {
+		if(!defined("IS_CLI") && self::$driver->get_type() === 1 && class_exists("modules") && method_exists("modules", "init_templates")) {
             $tmp = modules::init_templates();
             $tmp->dir_skins("skins".DS);
             $tmp->assign_vars(array(
-				"query" => $query,
+				"query" => $queryS,
 				"error" => $mysql_error,
 				"error_num" => $mysql_error_num,
 				"file" => $trace[$level]['file'],
 				"line" => $trace[$level]['line'],
 			));
 			echo $tmp->completed_assign_vars("mysql_error", "core");
-		} else {
-			echo "<center><br />".$trace[$level]['file'].":".$trace[$level]['line']."<hr />Query:<br /><textarea cols=\"40\" rows=\"5\">".$query."</textarea><hr />[".$mysql_error_num."] ".$mysql_error."<br />";
+		} elseif(!defined("IS_CLI")) {
+			echo "<center><br />".$trace[$level]['file'].":".$trace[$level]['line']."<hr />Query:<br /><textarea cols=\"40\" rows=\"5\">".$queryS."</textarea><hr />[".$mysql_error_num."] ".$mysql_error."<br />";
+		} elseif(defined("IS_CLI")) {
+			echo "\e[0;41m[ERROR]\e[0m\n".$trace[$level]['file']." [".$trace[$level]['line']."]\n\n\e[0;36m[".$mysql_error_num."] ".$mysql_error."\e[0m\n\n-------\n\n".escapeshellcmd($query)."\n\n-------\n\n\n";
 		}
 		exit();
 	}

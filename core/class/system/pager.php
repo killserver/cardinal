@@ -96,7 +96,7 @@ class pager {
 							} else {
 								$this->pages[$c_link]['link'] = $url_page;
 							}
-							$this->pages[$c_link]['title'] = "".$j;
+							$this->pages[$c_link]['title'] = "".round($j);
 							$c_link++;
 						} else {
 							$this->pages[$c_link]['is_link'] = 1;
@@ -106,13 +106,13 @@ class pager {
 							} else {
 								$this->pages[$c_link]['link'] = $url_page.$p_page.$j;
 							}
-							$this->pages[$c_link]['title'] = "".$j;
+							$this->pages[$c_link]['title'] = "".round($j);
 							$c_link++;
 						}
 					} else {
 						$this->pages[$c_link]['is_link'] = 0;
 						$this->pages[$c_link]['now'] = 1;
-						$this->pages[$c_link]['title'] = "".$j;
+						$this->pages[$c_link]['title'] = "".round($j);
 						$c_link++;
 					}
 					if(empty($this->links['start'])) {
@@ -188,7 +188,7 @@ class pager {
 							} else {
 								$this->pages[$c_link]['link'] = $url_page;
 							}
-							$this->pages[$c_link]['title'] = $j;
+							$this->pages[$c_link]['title'] = "".round($j);
 							$c_link++;
 						} else {
 							$this->pages[$c_link]['is_link'] = 1;
@@ -198,13 +198,13 @@ class pager {
 							} else {
 								$this->pages[$c_link]['link'] = $url_page.$p_page.$j;
 							}
-							$this->pages[$c_link]['title'] = $j;
+							$this->pages[$c_link]['title'] = "".round($j);
 							$c_link++;
 						}
 					} else {
 						$this->pages[$c_link]['is_link'] = 0;
 						$this->pages[$c_link]['now'] = 1;
-						$this->pages[$c_link]['title'] = "".$j;
+						$this->pages[$c_link]['title'] = "".round($j);
 						$c_link++;
 					}
 				}
@@ -220,12 +220,12 @@ class pager {
 						$this->pages[$c_link]['link'] = $url_page.$p_page.$enpages_count;
 					}
 					$this->pages[$c_link]['now'] = 0;
-					$this->pages[$c_link]['title'] = $enpages_count;
+					$this->pages[$c_link]['title'] = "".round($enpages_count);
 					$c_link++;
 				} else {
 					$this->pages[$c_link]['is_link'] = 0;
 					$this->pages[$c_link]['now'] = 1;
-					$this->pages[$c_link]['title'] = "".$enpages_count;
+					$this->pages[$c_link]['title'] = "".round($enpages_count);
 					$c_link++;
 				}
 			}

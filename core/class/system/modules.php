@@ -265,54 +265,33 @@ class modules {
 				modules::manifest_set(array('dependency_modules', $files), $file);
 			}
 		}
-		if(defined("WITHOUT_DB")) {
-			if(file_exists(PATH_CACHE_USERDATA."modules.json")) {
-				$modulesLoad = array();
-				$files = file_get_contents(PATH_CACHE_USERDATA."modules.json");
-				try {
-					$json = json_decode($files, true);
-					$modulesLoad = array_merge($modulesLoad, $json);
-				} catch(Exception $ex) {}
-				$fileCheck = str_replace(str_replace(ROOT_PATH, "", PATH_MODULES), "", $file);
-				$fileCheck = str_replace(".class.".ROOT_EX, "", $fileCheck);
-				if(isset($modulesLoad[$fileCheck]) && isset($modulesLoad[$fileCheck]['active']) && $modulesLoad[$fileCheck]['active']===true) {
-					return true;
-				}
-			}
-			if(file_exists(PATH_MODULES."loader.".ROOT_EX)) {
-				$modulesLoad = array();
-				include(PATH_MODULES."loader.".ROOT_EX);
-				if(isset($modulesLoad[$file])) {
-					return true;
-				}
-			} else if(file_exists(PATH_MODULES."loader.default.".ROOT_EX)) {
-				$modulesLoad = array();
-				include(PATH_MODULES."loader.default.".ROOT_EX);
-				if(isset($modulesLoad[$file])) {
-					return true;
-				}
-			}
-			return false;
-		}
-		if(is_bool(self::$load_modules)) {
-			$cache = self::init_cache();
-			if(!$cache->exists("load_modules")) {
-				$db = self::init_db();
-				$db->doquery("SELECT `file` FROM {{modules}} WHERE `activ` LIKE \"yes\" AND `file` LIKE \"application%\"", true);
-				self::$load_modules = array();
-				while($row = $db->fetch_assoc()) {
-					self::$load_modules[$row['file']] = true;
-				}
-				$cache->set("load_modules", self::$load_modules);
-			} else {
-				self::$load_modules = $cache->get("load_modules");
+		if(file_exists(PATH_CACHE_USERDATA."modules.json")) {
+			$modulesLoad = array();
+			$files = file_get_contents(PATH_CACHE_USERDATA."modules.json");
+			try {
+				$json = json_decode($files, true);
+				$modulesLoad = array_merge($modulesLoad, $json);
+			} catch(Exception $ex) {}
+			$fileCheck = str_replace(str_replace(ROOT_PATH, "", PATH_MODULES), "", $file);
+			$fileCheck = str_replace(".class.".ROOT_EX, "", $fileCheck);
+			if(isset($modulesLoad[$fileCheck]) && isset($modulesLoad[$fileCheck]['active']) && $modulesLoad[$fileCheck]['active']===true) {
+				return true;
 			}
 		}
-		if(isset(self::$load_modules[$file])) {
-			return true;
-		} else {
-			return false;
+		if(file_exists(PATH_MODULES."loader.".ROOT_EX)) {
+			$modulesLoad = array();
+			include(PATH_MODULES."loader.".ROOT_EX);
+			if(isset($modulesLoad[$file])) {
+				return true;
+			}
+		} else if(file_exists(PATH_MODULES."loader.default.".ROOT_EX)) {
+			$modulesLoad = array();
+			include(PATH_MODULES."loader.default.".ROOT_EX);
+			if(isset($modulesLoad[$file])) {
+				return true;
+			}
 		}
+		return false;
 	}
 
 	final public static function AccessUser($arr) {
@@ -453,12 +432,13 @@ class modules {
 					$manifest['jscss'][$type]['full'][$name] = array("url" => $url.($mark ? AmperOr($url).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
 				}
 			} else {
+				$link = $url.($mark ? AmperOr($url).time() : "");
 				if($jsCheck1!==false) {
-					$manifest['jscss'][$type][$jsCheck1][] = array("url" => $url.($mark ? AmperOr($url).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
+					$manifest['jscss'][$type][$jsCheck1][] = array("url" => $link, "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
 				} else if(isset($jsCheck['path'])) {
-					$manifest['jscss'][$type]['link'][] = array("url" => $url.($mark ? AmperOr($url).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
+					$manifest['jscss'][$type]['link'][] = array("url" => $link, "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
 				} else {
-					$manifest['jscss'][$type]['full'][] = array("url" => $url.($mark ? AmperOr($url).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
+					$manifest['jscss'][$type]['full'][] = array("url" => $link, "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
 				}
 			}
 		}
@@ -566,7 +546,7 @@ class modules {
 
 	final public static function initialize($class, $path = "") {
 		$arr = array();
-		if(file_exists(PATH_CACHE_USERDATA."modules.json")) {
+		if(file_exists(PATH_CACHE_USERDATA."modules.json") && is_readable(PATH_CACHE_USERDATA."modules.json")) {
 			$file = file_get_contents(PATH_CACHE_USERDATA."modules.json");
 			$arrs = json_decode($file, true);
 			$arr = array_merge($arr, $arrs);
@@ -579,6 +559,18 @@ class modules {
 					$arr[$class] = array();
 				}
 				$arr[$class] = array_merge($arr[$class], array("installTime" => time(), "version" => (property_exists($class, "version") ? $class::$version : "0.1")));
+				if(!is_writeable(PATH_CACHE_USERDATA)) {
+					@chmod(PATH_CACHE_USERDATA, 0777);
+					if(!is_writeable(PATH_CACHE_USERDATA)) {
+						return false;
+					}
+				}
+				if(!is_writeable(PATH_CACHE_USERDATA."modules.json")) {
+					@chmod(PATH_CACHE_USERDATA."modules.json", 0777);
+					if(!is_writeable(PATH_CACHE_USERDATA."modules.json")) {
+						return false;
+					}
+				}
 				@file_put_contents(PATH_CACHE_USERDATA."modules.json", json_encode($arr));
 				cardinal::RegAction("Установка модуля \"".$class."\" версии ".(property_exists($class, "version") ? $class::$version : "0.1"));
 			}
@@ -590,6 +582,18 @@ class modules {
 					$arr[$class] = array();
 				}
 				$arr[$class] = array_merge($arr[$class], array("updateTime" => time(), "version" => $class::$version));
+				if(!is_writeable(PATH_CACHE_USERDATA)) {
+					@chmod(PATH_CACHE_USERDATA, 0777);
+					if(!is_writeable(PATH_CACHE_USERDATA)) {
+						return false;
+					}
+				}
+				if(!is_writeable(PATH_CACHE_USERDATA."modules.json")) {
+					@chmod(PATH_CACHE_USERDATA."modules.json", 0777);
+					if(!is_writeable(PATH_CACHE_USERDATA."modules.json")) {
+						return false;
+					}
+				}
 				@file_put_contents(PATH_CACHE_USERDATA."modules.json", json_encode($arr));
 				cardinal::RegAction("Обновление модуля \"".$class."\" с версии ".$arr[$class]['version']." до версии ".$class::$version);
 			}

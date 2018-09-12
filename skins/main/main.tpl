@@ -31,6 +31,7 @@ Image: https://pm1.narvii.com/6400/94d71caf77143700121d7da6e33469437144cd34_hq.j
 		</footer>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="{THEME}/js/vendor/jquery-3.2.1.min.js"><\/script>')</script>
+        {create_js}
         <script src="{THEME}/js/plugins.js"></script>
         <script src="{THEME}/js/main.{S_time}.js"></script>
     </body>

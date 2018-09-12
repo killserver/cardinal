@@ -14,10 +14,10 @@
 			<td>{trash.tTable}</td>
 			<td>{S_langdata="{trash.tTime}","d-m-Y H:i:s",true}</td>
 			<td>{trash.tIp}</td>
-			<td><a href="./?pages=RecycleBin&recover={trash.tId}" class="btn btn-purple">Восстановить</a></td>
+			<td><a href="./?pages=RecycleBin&recover={trash.tId}" class="btn btn-block btn-purple">Восстановить</a></td>
 		</tr>
 		<tr style="text-align:center;">
-			<td colspan="6"><a href="javascript:;" onclick="getDescr(this);return false;" data-table="{trash.tTable}">{L_descr}</a><div class="spoiler-body" style="display:none;">{trash.tData}</div></td>
+			<td colspan="6"><a href="javascript:;" onclick="getDescr(this);return false;" data-table="{trash.tTable}">{L_descr}</a><script type="text/template" class="spoiler-body" style="display:none;">{trash.tData}</script></td>
 		</tr>
 	[/foreach]
 	</tbody>
@@ -26,6 +26,7 @@
 function getDescr(tt) {
 	jQuery(".modal-title").html("Данные из \""+jQuery(tt).attr("data-table")+"\"");
 	jQuery('#modal-4').modal('show', {backdrop: 'static'});
+	jQuery("#modal-4 .modal-dialog").css("width", "90%");
 	var descr = jQuery(tt).parent().children('.spoiler-body').html();
 	descr = JSON.parse(descr);
 	var data = "<table width=\"100%\" class=\"table table-bordered table-striped\">";

@@ -28,9 +28,6 @@ class Main extends Core {
 		if(file_exists(PATH_MEDIA."error.lock") && userlevel::is(LEVEL_CREATOR)) {
 			$message .= "<div><div class=\"label label-warning\">{L_\"Обратите внимание\"}</div>&nbsp;{L_\"Файл\"}&nbsp;<b>".DS."".str_replace(array(ROOT_PATH, DS), array("", DS_DB), PATH_MEDIA)."error.lock</b>&nbsp;{L_\"присутствует на сервере\"}.&nbsp;{L_\"Рекомендуется удалить его прежде чем сдать проект.\"}</div>";
 		}
-		if(!db::connected()) {
-			$message .= "<div><div class=\"label label-warning\">{L_\"Обратите внимание\"}</div>&nbsp;{L_\"Подключение к базе данных - отсутствует\"}.&nbsp;{L_\"Рекомендуется создать подключение для активации СЕО-модуля.\"}</div>";
-		}
 		if(Arr::get($_GET, "debugPanel", false)) {
 			if(isset($_COOKIE['cardinal_debug'])) {
 				HTTP::set_cookie("cardinal_debug", "", true);
@@ -54,10 +51,10 @@ class Main extends Core {
 		} else {
 			templates::assign_var("clearCacheData", "0");
 		}
-		if(userlevel::get("clearcache_tmp")) {
-			templates::assign_var("clearCacheTmp", "1");
+		if(userlevel::get("clearcache_pages")) {
+			templates::assign_var("clearCachePages", "1");
 		} else {
-			templates::assign_var("clearCacheTmp", "0");
+			templates::assign_var("clearCachePages", "0");
 		}
 		templates::assign_var("debugPanel", "0");
 		if(isset($_COOKIE['cardinal_debug'])) {

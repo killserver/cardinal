@@ -99,9 +99,9 @@ class Main_Cache extends Main {
 				$size += filesize($path.$files[$i]);
 			}
 		}
-		templates::assign_var("CachePHP", $this->formatSize($size));
-		templates::assign_var("CachePHPSizeS", $this->formatSize($size, "text"));
-		templates::assign_var("CachePHPSize", $this->formatSize($size, "integer"));
+		templates::assign_var("CachePages", $this->formatSize($size));
+		templates::assign_var("CachePagesSizeS", $this->formatSize($size, "text"));
+		templates::assign_var("CachePagesSize", $this->formatSize($size, "integer"));
 	}
 	
 }
