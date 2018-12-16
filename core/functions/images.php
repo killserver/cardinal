@@ -4,24 +4,12 @@ echo "403 ERROR";
 die();
 }
 
-//ToDo: А эта функция мне ещё на кой чёрт?!
 function images($name, $save) {
-	if(!is_uploaded_file($_FILES[$name]['tmp_name'])) {
-		return "";
-	}
-	$exp = explode("/", $_FILES[$name]['type']);
-	if(current($exp)!="image") {
-		return "";
-	}
-	$img = getimagesize($_FILES[$name]['tmp_name']);
-	if(empty($img)) {
-		return "";
-	}
-	if(!move_uploaded_file($_FILES[$name]['tmp_name'], $save)) {
-		return "";
-	} else {
-		return str_replace(ROOT_PATH, "", $save);
-	}
+	$file = $_FILES[$name];
+	$directory = dirname($save);
+	$info = pathinfo($save);
+	$filename = $info['filename'];
+	return call_user_func_array("Files::saveFile", array($file, $filename, $directory, 0644, ""));
 }
 
 function saveFile(array $file, $filename = "", $directory = "", $chmod = 0644, $type = "") {

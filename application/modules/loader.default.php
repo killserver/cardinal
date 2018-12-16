@@ -8,7 +8,6 @@ $modulesLoad = array_merge($modulesLoad, array(
 	"application".DS."modules".DS."base.class.".ROOT_EX => true,
 	"application".DS."modules".DS."mobile.class.".ROOT_EX => true,
 	"application".DS."modules".DS."changelog.class.".ROOT_EX => true,
-	"application".DS."modules".DS."SEOBlock.class.".ROOT_EX => true,
 ));
 
 ?>

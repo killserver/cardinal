@@ -635,11 +635,72 @@ class Validate {
 		return strlen(strip_tags($string)) < strlen($string);
 	}
 
-	function is_uuid4($uuid) {
+	final public static function is_uuid4($uuid) {
 		if(!is_string($uuid)) {
 			return false;
 		}
 		return (bool) preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/', $uuid);
+	}
+
+	final private static function mbstring_binary_safe_encoding($reset = false) {
+	    static $encodings = array();
+	    static $overloaded = null;
+	    if(is_null($overloaded)) {
+	        $overloaded = function_exists('mb_internal_encoding') && (ini_get('mbstring.func_overload') & 2);
+	    }
+	    if($overloaded===false) {
+	        return;
+	    }
+	    if(!$reset) {
+	        $encoding = mb_internal_encoding();
+	        array_push($encodings, $encoding);
+	        mb_internal_encoding('ISO-8859-1');
+	    }
+	    if($reset && $encodings) {
+	        $encoding = array_pop($encodings);
+	        mb_internal_encoding($encoding);
+	    }
+	}
+
+	final public static function is_utf8($str) {
+		self::mbstring_binary_safe_encoding();
+		$length = strlen($str);
+		self::mbstring_binary_safe_encoding(true);
+		for($i=0;$i<$length;$i++) {
+			$c = ord($str[$i]);
+			if($c < 0x80) { // 0bbbbbbb
+				$n = 0;
+			} else if(($c & 0xE0) == 0xC0) { // 110bbbbb
+				$n = 1;
+			} else if(($c & 0xF0) == 0xE0) { // 1110bbbb
+				$n = 2;
+			} else if(($c & 0xF8) == 0xF0) { // 11110bbb
+				$n = 3;
+			} else if(($c & 0xFC) == 0xF8) { // 111110bb
+				$n = 4;
+			} else if(($c & 0xFE) == 0xFC) { // 1111110b
+				$n = 5;
+			} else { // Does not match any model
+				return false;
+			}
+			for($j=0;$j<$n;$j++) { // n bytes matching 10bbbbbb follow ?
+				if((++$i == $length) || ((ord($str[$i]) & 0xC0) != 0x80)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	final public static function is_ascii($str) {
+		if(is_array($str)) {
+			$str = implode($str);
+		}
+		return !preg_match('/[^\x00-\x7F]/S', $str);
+	}
+	
+	final public static function is_countable($var) {
+		return is_array($var) || $var instanceof Countable || $var instanceof ResourceBundle || $var instanceof SimpleXmlElement;
 	}
 	
 }

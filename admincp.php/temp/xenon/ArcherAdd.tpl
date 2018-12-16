@@ -6,22 +6,37 @@
 					<h3 class="panel-title">{ArcherMind}</h3>
 				</div>
 				<div class="panel-body">[/!ajax]
-						[if {count[supportedLang]}>=1]<ul class="nav nav-tabs nav-tabs-justified" data-support="lang">
-							[foreach block=supportedLang]<li>
-								<a href="#home-3" data-toggle="tab" data-lang="{supportedLang.lang}">{supportedLang.lang}</a>
-							</li>[/foreach]
-						</ul>[/if {count[supportedLang]}>=1]
+						[if {count[supportedLang]}>=1]
+							</div></div>
+							<div class="panel panel-default panel-tabs" data-panel-lang="true">
+								<div class="panel-body">
+									<ul class="nav nav-tabs nav-tabs-justified" data-support="lang">
+										[foreach block=supportedLang]<li>
+											<a href="#home-3" data-toggle="tab" data-lang="{supportedLang.lang}">{supportedLang.lang}</a>
+										</li>[/foreach]
+									</ul>
+								</div>
+							</div>
+							<div class="panel panel-default">
+								<div class="panel-body">
+						[/if {count[supportedLang]}>=1]
 						<br><br>
 						<input type="hidden" name="removeImg" class="removeImages" value="">
 						{ArcherData}
-						[!ajax]<button class="btn btn-savePage btn-icon btn-icon-standalone btn-icon-standalone-right btn-sm">
-							<i class="fa-save"></i>
-							<span>{L_save}</span>
-						</button>
+						[!ajax]
+				</div>
+			</div>
+			<div class="panel panel-default panel-tabs" data-panel-submit="true">
+				<div class="panel-body">
+					<button class="btn btn-single btn-savePage btn-icon btn-icon-standalone btn-icon-standalone-right btn-sm">
+						<i class="fa-save"></i>
+						<span>{L_save}</span>
+					</button>
 				</div>
 			</div>
 		</div>
 	</div>
+	{E_[KernalArcher::AfterForm][type={ArcherPath};data={addition}]}
 </form>[/!ajax]
 <style>
 #inputForFile .array {
@@ -60,32 +75,35 @@ $("body").off("click").on("click", ".removeImg", function() {
 	});
 	return false;
 });
-var selectLangForm = ucfirst(selectLang);
-$(".form-horizontal ul li a[data-lang='"+selectLangForm+"']").parent().addClass("active");
-$(".form-horizontal .form-group[data-group][data-lang]").each(function(i, elem) {
-	if($(elem).attr("data-lang")===selectLangForm) {
-		$(elem).css("display", "block");
-	} else {
-		$(elem).css("display", "none");
-	}
-});
-$(".form-horizontal ul li a").click(function() {
-	var lang = $(this).attr("data-lang");
+function reinitLang() {
+	var selectLangForm = ucfirst(selectLang);
+	$(".form-horizontal ul li a[data-lang='"+selectLangForm+"']").parent().addClass("active");
 	$(".form-horizontal .form-group[data-group][data-lang]").each(function(i, elem) {
-		if($(elem).attr("data-lang")===lang) {
+		if($(elem).attr("data-lang")===selectLangForm) {
 			$(elem).css("display", "block");
 		} else {
 			$(elem).css("display", "none");
 		}
 	});
-});
-function ucfirst(text) { return text.substr(0, 1).toUpperCase()+text.substr(1); }
-selectedLang = ucfirst(selectLang);
-var arrLang = [];
-for(var i=0;i<langSupport.length;i++) {
-	if(langSupport[i]!=selectedLang) { arrLang[arrLang.length] = langSupport[i]; }
+	$(".form-horizontal ul li a").off("click").click(function() {
+		var lang = $(this).attr("data-lang");
+		$(".form-horizontal .form-group[data-group][data-lang]").each(function(i, elem) {
+			if($(elem).attr("data-lang")===lang) {
+				$(elem).css("display", "block");
+			} else {
+				$(elem).css("display", "none");
+			}
+		});
+	});
+	function ucfirst(text) { return text.substr(0, 1).toUpperCase()+text.substr(1); }
+	selectedLang = ucfirst(selectLang);
+	var arrLang = [];
+	for(var i=0;i<langSupport.length;i++) {
+		if(langSupport[i]!=selectedLang) { arrLang[arrLang.length] = langSupport[i]; }
+	}
+	langSupport = arrLang;
 }
-langSupport = arrLang;
+reinitLang();
 var onInteractive = {};
 $(document).ready(function() {
 	setTimeout(function() {
@@ -175,6 +193,13 @@ function addInputFile(th, name) {
 	jQuery("input[type='file'][accept*='image']").unbind("change").change(function() {
 		readURL(this);
 	});
+	i++;
+}
+function rand(min, max) { if(min===undefined) min=-9999999; if(max===undefined) max=9999999; if(max) return Math.floor(Math.random()*(max-min+1))+min; else return Math.floor(Math.random()*(min+1)); }
+function addInputFileAccess(th, name, type) {
+	var elem = jQuery(th).parent().find("div#inputForFiles");
+	var field_id = rand();
+	elem.append('<div class="row array" data-show="'+field_id+'"><div class="col-sm-10"><input class="form-control" id="'+field_id+'" type="text"'+(elem.attr("data-accept") ? 'accept="'+elem.attr("data-accept")+'" data-accept="'+elem.attr("data-accept")+'"' : "")+' name="'+name+'[]" placeholder="Выберите файл" style="position:fixed;top:-99999px;left:-99999px;z-index:-1000;"><a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/assets/tinymce/filemanager/dialog.php?type='+type+'&field_id='+field_id+'&relative_url=0" class="btn btn-icon btn-success iframe-btn btn-block"><i class="fa-plus"></i></a></div><div class=\'col-sm-2\'><a class=\'btn btn-red btn-block fa-remove\' onclick=\'jQuery(this).parent().parent().remove();\'></a></div></div>');
 	i++;
 }
 function readURL(input) {

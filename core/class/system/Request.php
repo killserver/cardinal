@@ -23,7 +23,7 @@ class Request {
 	
 }
 
-class RequestMethod {
+class RequestMethod implements Countable {
 	
 	private $data = array();
 	private $type = "";
@@ -32,6 +32,10 @@ class RequestMethod {
 		$this->data = $arr;
 		$this->type = $type;
 		return $this;
+	}
+
+	final public function count() {
+		return sizeof($this->data);
 	}
 
 	final public function add($key, $val) {
@@ -173,7 +177,7 @@ class RequestMethod {
 	}
 	
 	final public function found($keys = "", $default = "") {
-		return Arr::found($this->data, $key, $default);
+		return Arr::found($this->data, $keys, $default);
 	}
 	
 	final public function push($mixed = "") {

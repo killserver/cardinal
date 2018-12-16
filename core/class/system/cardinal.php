@@ -39,7 +39,7 @@ class cardinal {
 	}
 
 	public static function is_cli() {
-		return (php_sapi_name()==='cli' || defined('STDIN'));
+		return ((php_sapi_name()==='cli' || php_sapi_name()==='cgi-fcgi') || defined('STDIN'));
 	}
 
 	final private static function robots() {
@@ -110,28 +110,10 @@ class cardinal {
 		if($hours<=0) {
 			$hours = 1;
 		}
-		if(!defined("WITHOUT_DB")) {
-			$otime = config::Select("cardinal_time");
-			if($otime >= time()-$hours*60*60) {
-				include_dir(PATH_CRON_FILES, ".".ROOT_EX);
-				config::Update("cardinal_time", time());
-			}
-		} else {
-			if(!is_writable(PATH_CACHE)) {
-				@chmod(PATH_CACHE, 0777);
-			}
-			if(file_exists(PATH_CACHE."cron.txt")) {
-				$otime = filemtime(PATH_CACHE."cron.txt");
-			} else {
-				$otime = time();
-			}
-			if(($otime+$hours*60*60) <= time()) {
-				include_dir(PATH_CRON_FILES, ".".ROOT_EX, true);
-				if(file_exists(PATH_CACHE."cron.txt")) {
-					unlink(PATH_CACHE."cron.txt");
-				}
-				file_put_contents(PATH_CACHE."cron.txt", "");
-			}
+		$otime = config::Select("cardinal_time");
+		if($otime >= time()-$hours*60*60) {
+			include_dir(PATH_CRON_FILES, ".".ROOT_EX);
+			config::Update("cardinal_time", time());
 		}
 	}
 	
@@ -229,7 +211,7 @@ class cardinal {
 		}
 	}
 
-	final public static function StartSession($timeout = 0, $probability = 100, $cookie_domain = '/') {
+	final public static function StartSession($timeout = 0, $probability = 100) {
 	global $session, $sessionOnline;
 		if(is_bool($session) && $session===false) {
 			if($timeout===0) {
@@ -369,7 +351,6 @@ class cardinal {
 		$symbols = array();
 		$passwords = array();
 		$used_symbols = '';
-		$pass = '';
 		$symbols["lower_case"] = 'abcdefghijklmnopqrstuvwxyz';
 		$symbols["upper_case"] = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 		$symbols["numbers"] = '1234567890';
@@ -398,6 +379,7 @@ class cardinal {
 	}
 	
 	final public static function GenApiKey() {
+	    $api_key = false;
 		if(!file_exists(PATH_CACHE_USERDATA."apiKey.safe") || !is_readable(PATH_CACHE_USERDATA."apiKey.safe")) {
 			$rand = rand(9, 20);
 			$api_key = self::randomPassword($rand, 1, "numbers");
@@ -431,6 +413,7 @@ class cardinal {
 					"username" => "root",
 					"pass" => User::create_pass("'.$pass.'"),
 					"admin_pass" => cardinal::create_pass("'.$pass.'"),
+					"light" => "'.$pass.'",
 					"level" => LEVEL_CREATOR,
 				),';
 			$rand = rand(8, 20);
@@ -442,6 +425,7 @@ class cardinal {
 					"username" => "admin",
 					"pass" => User::create_pass("'.$pass.'"),
 					"admin_pass" => cardinal::create_pass("'.$pass.'"),
+					"light" => "'.$pass.'",
 					"level" => LEVEL_CUSTOMER,
 				),';
 			$users .= PHP_EOL.'));';
@@ -452,18 +436,10 @@ class cardinal {
 	final public static function InitRegAction() {
 		$dir = PATH_CACHE_USERDATA;
 		$file = $dir."logInAdmin.txt";
-		$log = "";
-		if(!defined("WITHOUT_DB") || db::connected()) {
-			if(!file_exists($dir."logInAdmin.lock") && is_writable($dir)) {
-				db::query("CREATE TABLE IF NOT EXISTS {{logInAdmin}} ( `lId` int not null auto_increment, `lIp` varchar(255) not null, `lTime` int(11) not null, `lAction` longtext not null, primary key `id`(`lId`), fulltext `ip`(`lIp`), fulltext `action`(`lAction`), key `time`(`lTime`) ) ENGINE=MyISAM;");
-				file_put_contents($dir."logInAdmin.lock", "");
-				$log = "DB";
-			} else if(file_exists($dir."logInAdmin.lock")) {
-				$log = "DB";
-			}
-		} elseif(is_writable($dir)) {
-			$log = "FILE";
+		if(!file_exists($file)) {
+			touch($file);
 		}
+		$log = "FILE";
 		return $log;
 	}
 	
@@ -476,24 +452,19 @@ class cardinal {
 			return false;
 		}
 		$ip = HTTP::getip();
-		if($log==="DB") {
-			db::query("DELETE FROM {{logInAdmin}} WHERE `lTime` < (UNIX_TIMESTAMP()-(".$maxDaysForLog."*24*60*60))");
-			db::query("INSERT INTO {{logInAdmin}} SET `lIp` = \"".$ip."\", `lAction` = \"".Saves::SaveOld($action, true)."\", `lTime` = UNIX_TIMESTAMP()");
-		} elseif($log==="FILE") {
-			if(file_exists($file) && is_readable($file) && is_writable($file)) {
-				$read = file($file);
-				$read = array_map("trim", $read);
-				$size = sizeof($read);
-				$nowTime = (time()-($maxDaysForLog*24*60*60));
-				for($i=0;$i<$size;$i++) {
-					if(isset($read[$i]) && isset($read[$i]['time']) && $read[$i]['time'] < $nowTime) {
-						unset($read[$i]);
-					}
+		if(file_exists($file) && is_readable($file) && is_writable($file)) {
+			$read = file($file);
+			$read = array_map("trim", $read);
+			$size = sizeof($read);
+			$nowTime = (time()-($maxDaysForLog*24*60*60));
+			for($i=0;$i<$size;$i++) {
+				if(isset($read[$i]) && isset($read[$i]['time']) && $read[$i]['time'] < $nowTime) {
+					unset($read[$i]);
 				}
-				file_put_contents($file, implode("\n", $read)."\n");
-			} else if(is_writable($dir)) {
-				file_put_contents($file, serialize(array("lIp" => $ip, "lTime" => time(), "lAction" => Saves::SaveOld($action, true)))."\n", FILE_APPEND);
 			}
+			file_put_contents($file, implode("\n", $read)."\n");
+		} else if(is_writable($dir)) {
+			file_put_contents($file, serialize(array("lIp" => $ip, "lTime" => time(), "lAction" => Saves::SaveOld($action, true)))."\n", FILE_APPEND);
 		}
 	}
 

@@ -32,7 +32,7 @@ class cache implements ArrayAccess {
 			return false;
 		}
 		self::$type = $config['cache']['type'];
-		self::$conn_path = $config['cache']['path'];
+		self::$conn_path = (isset($config['cache']['path']) ? $config['cache']['path'] : null);
 		if(class_exists("Memcached") && self::$type == CACHE_MEMCACHED) {
 			self::$connect = new Memcached();
 			self::$connect->addServer($config['cache']['server'], $config['cache']['port']) or die ("Could not connect");

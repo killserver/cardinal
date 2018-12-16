@@ -34,7 +34,6 @@ class Logs extends Core {
 		}
 		if((defined("WITHOUT_DB") || config::Select('logs')==ERROR_FILE) && file_exists(PATH_CACHE_SYSTEM."php_log.txt")) {
 			$logs = file(PATH_CACHE_SYSTEM."php_log.txt");
-			$log_el = array();
 			for($i=(sizeof($logs)-1);$i>=0;$i--) {
 				$log = json_decode(trim($logs[$i]));
 				$at = unserialize(str_replace('\\"', "\"", htmlspecialchars_decode($log->request_state)));

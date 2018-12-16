@@ -26,10 +26,12 @@ class cardinalEvent {
 				$priority = sizeof(self::$collection[$typeEvent][$action]);
 			}
 			if(isset(self::$collection[$typeEvent][$action][$priority])) {
-				foreach(self::$collection[$typeEvent][$action] as $pr => $datas) {
+				$list = self::$collection[$typeEvent][$action];
+				krsort($list);
+				foreach($list as $pr => $datas) {
 					unset(self::$collection[$typeEvent][$action][$pr]);
-					$pr++;
-					self::$collection[$typeEvent][$action][$pr] = $datas;
+					$k = $pr+1;
+					self::$collection[$typeEvent][$action][$k] = $datas;
 				}
 			}
 			self::$collection[$typeEvent][$action][$priority] = array("fn" => $callback, "data" => $params, "loader" => $loader);
@@ -42,7 +44,9 @@ class cardinalEvent {
 				$priority = sizeof(self::$collection[$typeEvent][$action]);
 			}
 			if(isset(self::$collection[$typeEvent][$action][$priority])) {
-				foreach(self::$collection[$typeEvent][$action] as $pr => $datas) {
+				$list = self::$collection[$typeEvent][$action];
+				krsort($list);
+				foreach($list as $pr => $datas) {
 					unset(self::$collection[$typeEvent][$action][$pr]);
 					$pr++;
 					self::$collection[$typeEvent][$action][$pr] = $datas;
@@ -114,6 +118,19 @@ class cardinalEvent {
 		}
 	}
 
+	public static function exists($action) {
+		return array_key_exists($action, self::$events);
+	}
+
+	public static function did($action) {
+		$ret = self::exists($action);
+		if($ret) {
+			return self::$events[$action]['called'];
+		} else {
+			return 0;
+		}
+	}
+
 	public static function getListeners($action = "") {
 		$listener = array();
 		foreach(self::$collection as $collection) {
@@ -156,8 +173,10 @@ class cardinalEvent {
 				$loader = debug_backtrace();
 				self::$loader = $loader[0];
 			}
-			self::$events[$action] = self::$loader;
+			self::$events[$action] = array("data" => self::$loader, "called" => 1, "time" => microtime_float());
 			self::$loader = array();
+		} else if(!empty($action) && isset(self::$events[$action])) {
+			self::$events[$action]['called']++;
 		}
 		if(!empty($action) && isset(self::$collection['standart']) && isset(self::$collection['standart'][$action])) {
 			ksort(self::$collection['standart'][$action]);
@@ -174,6 +193,9 @@ class cardinalEvent {
 				$ret = call_user_func_array($v['fn'], $data);
 				$return = $ret;
 			}
+			if(!empty($action) && isset(self::$events[$action])) {
+				self::$events[$action]['time'] = (self::$events[$action]['time']);
+			}
 			return $return;
 		} else {
 			return $return;
@@ -186,14 +208,19 @@ class cardinalEvent {
 				$loader = debug_backtrace();
 				self::$loader = $loader[0];
 			}
-			self::$events[$action] = self::$loader;
+			self::$events[$action] = array("data" => self::$loader, "called" => 1, "time" => microtime_float());
 			self::$loader = array();
+		} else if(!empty($action) && isset(self::$events[$action])) {
+			self::$events[$action]['called']++;
 		}
 		if(!empty($action) && isset(self::$collection['ref']) && isset(self::$collection['ref'][$action])) {
 			ksort(self::$collection['ref'][$action]);
 			foreach(self::$collection['ref'][$action] as $v) {
 				$data = array(&$ref1, &$ref2, &$ref3, &$ref4, &$ref5, &$ref6, &$ref7, &$ref8);
 				call_user_func_array($v['fn'], $data);
+			}
+			if(!empty($action) && isset(self::$events[$action])) {
+				self::$events[$action]['time'] = (self::$events[$action]['time']);
 			}
 			return true;
 		} else {

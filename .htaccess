@@ -2,6 +2,11 @@ AddDefaultCharset UTF-8
 ServerSignature Off
 FileETag None
 
+<FilesMatch "\.(md|exe|sh|bak|inc|pot|po|mo|log|sql)$">
+	Order allow,deny
+	Deny from all
+</FilesMatch>
+
 <IfModule mod_autoindex.c>
 	Options -Indexes
 </IfModule>

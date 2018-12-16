@@ -32,7 +32,6 @@ class ImportExport extends Core {
 			ROOT_PATH."core".DS."cache".DS."page".DS => PATH_CACHE_PAGE,
 			ROOT_PATH.'core'.DS.'cache'.DS.'system'.DS => PATH_CACHE_SYSTEM,
 			ROOT_PATH.'core'.DS.'cache'.DS.'system'.DS => PATH_LOGS,
-			ROOT_PATH."core".DS."cache".DS."tmp".DS => PATH_CACHE_TEMP,
 			ROOT_PATH.'core'.DS.'cache'.DS.'lang'.DS => PATH_CACHE_LANGS,
 			ROOT_PATH."core".DS."cache".DS."session".DS => PATH_CACHE_SESSION,
 			ROOT_PATH."core".DS."functions".DS => PATH_FUNCTIONS,
@@ -54,7 +53,6 @@ class ImportExport extends Core {
 			ROOT_PATH."admincp.php" => ADMINCP_DIRECTORY,
 		);
 		$zip = new ZipArchive();
-		$files = $fileinfo = array();
 		if($zip->open($zipfile)) {
 			for($i=0;$i<$zip->numFiles;$i++) {
 				$fileName = $zip->getNameIndex($i);
@@ -117,7 +115,6 @@ class ImportExport extends Core {
 		$this->createDir($relpathNow."zip".DS);
 		if(Arr::get($_GET, "getDiff", false)!==false) {
 			$exc = array();
-			$exc[] = PATH_CACHE_TEMP;
 			$exc[] = PATH_CACHE_SESSION;
 			$exc[] = dirname(__FILE__).DS;
 
@@ -133,7 +130,6 @@ class ImportExport extends Core {
 			$d = read_dir(ROOT_PATH, "all", true, true, $exc);
 			$d = array_map(array($this, "filter"), $d);
 			$this->getAll();
-			$toZip = array();
 			for($i=0;$i<sizeof($this->all['tree']);$i++) {
 				for($z=0;$z<sizeof($d);$z++) {
 					if(strcasecmp($this->all['tree'][$i]['path'], $d[$z])==0) {
@@ -193,7 +189,6 @@ class ImportExport extends Core {
 		}
 		if(Arr::get($_GET, "single", false)!==false) {
 			$exc = array();
-			$exc[] = PATH_CACHE_TEMP;
 			$exc[] = PATH_CACHE_SESSION;
 			$exc[] = dirname(__FILE__).DS;
 
@@ -209,7 +204,6 @@ class ImportExport extends Core {
 			$d = read_dir(ROOT_PATH, "all", true, true, $exc);
 			$d = array_map(array($this, "filter"), $d);
 			$this->getAll();
-			$toZip = array();
 			for($i=0;$i<sizeof($this->all['tree']);$i++) {
 				for($z=0;$z<sizeof($d);$z++) {
 					if(strcasecmp($this->all['tree'][$i]['path'], $d[$z])==0) {

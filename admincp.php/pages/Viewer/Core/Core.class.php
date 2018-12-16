@@ -53,7 +53,10 @@ class Core {
 	}
 	
 	protected function ParseLang() {
-	global $lang;
+		global $lang;
+		if(!is_array($lang)) {
+			$lang = array();
+		}
 		$dir = ADMIN_LANGS.lang::get_lg().DS;
 		if(is_dir($dir)) {
 			if($dh = dir($dir)) {
@@ -77,6 +80,7 @@ class Core {
 		} else {
 			return $this->count_unmoder;
 		}
+		return true;
 	}
 	
 	protected function title($titles = "", $andHead = false) {
@@ -88,14 +92,16 @@ class Core {
 		} else {
 			return $this->title;
 		}
+		return true;
 	}
 	
 	protected function headTitle($titles = "") {
 		if(!empty($titles)) {
 			$this->headTitle = $titles;
 		} else {
-			return $this->headTitle.(!empty($this->headTitle) ? " &rsaquo; " : "")."Admin Panel for {L_sitename}";
+			return $this->headTitle;
 		}
+		return true;
 	}
 	
 	protected function ParseDirSkins($dir, $getData = false, $parse = 1) {
@@ -151,7 +157,7 @@ class Core {
 		return $skins;
 	}
 
-	private function get_file_data($file, $default_headers, $default = false) {
+	protected function get_file_data($file, $default_headers, $default = false) {
 		$fp = fopen($file, 'r');
 		$file_data = fread($fp, 8192);
 		fclose($fp);
@@ -233,6 +239,7 @@ class Core {
 				return self::$css;
 			}
 		}
+		return true;
 	}
 
 	private function loadMenu() {
@@ -277,7 +284,7 @@ class Core {
 						"existSub" => ($type=="cat"&&sizeof($datas)>1 ? "true" : "false"),
 						"value" => $datas[$i][$is]['title'],
 						"link" => $datas[$i][$is]['link'],
-						"is_now" => (($is_now==$now) ? "1" : "0"),
+						"is_now" => (strpos($now, $is_now)!==false ? "1" : "0"),
 						"type" => $type,
 						"type_st" => ($type=="cat"&&$datas[$i][$is]['type']=="cat" ? "start" : ""),
 						"type_end" => ($type=="cat"&&$count==$is&&$datas[$i][$is]['type']=="item" ? "end" : ""),
@@ -291,26 +298,14 @@ class Core {
 	
 	private function CheckLoadPlugins($file) {
 		if(is_bool($this->load_adminmodules)) {
-			if(defined("WITHOUT_DB")) {
-				if(file_exists(ADMIN_VIEWER."Core".DS."Plugins".DS."loader.".ROOT_EX)) {
-					$adminCore = array();
-					include(ADMIN_VIEWER."Core".DS."Plugins".DS."loader.".ROOT_EX);
-					$this->load_adminmodules = $adminCore;
-				} else if(file_exists(ADMIN_VIEWER."Core".DS."Plugins".DS."loader.default.".ROOT_EX)) {
-					$adminCore = array();
-					include(ADMIN_VIEWER."Core".DS."Plugins".DS."loader.default.".ROOT_EX);
-					$this->load_adminmodules = $adminCore;
-				}
-			} elseif(!cache::Exists("load_adminmodules")) {
-				$delete = str_replace(ROOT_PATH, "", ADMIN_VIEWER."Core".DS."Plugins".DS);
-				db::doquery("SELECT `file` FROM {{modules}} WHERE `activ` LIKE \"yes\" AND `type` LIKE \"admincp\"", true);
-				$this->load_adminmodules = array();
-				while($row = db::fetch_assoc()) {
-					$this->load_adminmodules[str_replace($delete, "", $row['file'])] = true;
-				}
-				cache::Set("load_adminmodules", $this->load_adminmodules);
-			} elseif(cache::Exists("load_adminmodules")) {
-				$this->load_adminmodules = cache::Get("load_adminmodules");
+			if(file_exists(ADMIN_VIEWER."Core".DS."Plugins".DS."loader.".ROOT_EX)) {
+				$adminCore = array();
+				include(ADMIN_VIEWER."Core".DS."Plugins".DS."loader.".ROOT_EX);
+				$this->load_adminmodules = $adminCore;
+			} else if(file_exists(ADMIN_VIEWER."Core".DS."Plugins".DS."loader.default.".ROOT_EX)) {
+				$adminCore = array();
+				include(ADMIN_VIEWER."Core".DS."Plugins".DS."loader.default.".ROOT_EX);
+				$this->load_adminmodules = $adminCore;
 			}
 		}
 		if(isset($this->load_adminmodules[$file])) {
@@ -392,15 +387,59 @@ class Core {
 		$r->session->add("infoForAdmin", $arr);
 		return $arr;
 	}
+
+	function headers($echo) {
+		$header = "";
+		$h = new Headers();
+		$header .= $h->getFavicon(DS."favicon", array(
+			"32x32",
+			"64x64",
+			"128x128",
+		));
+		$header .= $h->getFavicon(DS."uploads".DS."icon".DS."favicon-", array(
+			"32x32",
+			"64x64",
+			"128x128",
+		));
+		$imageCheck = file_exists(ROOT_PATH."logo.gif") || file_exists(ROOT_PATH."logo.jpg") || file_exists(ROOT_PATH."logo.jpeg") || file_exists(ROOT_PATH."logo.png") || file_exists(ROOT_PATH."uploads".DS."logo-for-site.gif") || file_exists(ROOT_PATH."uploads".DS."logo-for-site.jpg") || file_exists(ROOT_PATH."uploads".DS."logo-for-site.jpeg") || file_exists(ROOT_PATH."uploads".DS."logo-for-site.png");
+		if($imageCheck) {
+			if(file_exists(ROOT_PATH."logo.gif")) {
+				$imageLink = config::Select("default_http_host")."logo.gif";
+			} else if(file_exists(ROOT_PATH."logo.jpg")) {
+				$imageLink = config::Select("default_http_host")."logo.jpg";
+			} else if(file_exists(ROOT_PATH."logo.png")) {
+				$imageLink = config::Select("default_http_host")."logo.png";
+			} else if(file_exists(ROOT_PATH."uploads".DS."logo-for-site.gif")) {
+				$imageLink = config::Select("default_http_host")."uploads/logo-for-site.gif";
+			} else if(file_exists(ROOT_PATH."uploads".DS."logo-for-site.jpg")) {
+				$imageLink = config::Select("default_http_host")."uploads/logo-for-site.jpg";
+			} else if(file_exists(ROOT_PATH."uploads".DS."logo-for-site.jpeg")) {
+				$imageLink = config::Select("default_http_host")."uploads/logo-for-site.jpeg";
+			} else if(file_exists(ROOT_PATH."uploads".DS."logo-for-site.png")) {
+				$imageLink = config::Select("default_http_host")."uploads/logo-for-site.png";
+			} else {
+				$imageCheck = false;
+			}
+		}
+		if($imageCheck && !empty($imageLink)) {
+			$header .= "<meta property=\"og:image\" content=\"".$imageLink."?".time()."\" />\n";
+			$header .= "<meta itemprop=\"image\" content=\"".$imageLink."?".time()."\" />\n";
+			$header .= "<link rel=\"apple-touch-startup-image\" href=\"".$imageLink."?".time()."\">\n";
+		}
+		$header .= "<meta name=\"apple-mobile-web-app-title\" content=\"".(!empty($headTitle) ? $headTitle." &rsaquo; " : "")."Admin Panel for ".lang::get_lang("sitename")."\">\n";
+		$header .= "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">\n";
+		return str_replace("{header}", $header, $echo);
+	}
 	
 	protected function Prints($echo, $print = false, $force = false) {
 	global $lang;
 		if(!userlevel::get("admin") || !isset($_COOKIE[COOK_ADMIN_USER]) || !isset($_COOKIE[COOK_ADMIN_PASS])) {
 			$ref = urlencode(str_replace(ROOT_PATH, "", cut(getenv("REQUEST_URI"), "/".ADMINCP_DIRECTORY."/")));
 			location("{C_default_http_host}".ADMINCP_DIRECTORY."/?pages=Login".(!empty($ref) ? "&ref=".$ref : ""));
-			return;
+			return false;
 		}
 		if(isset($_GET['removeCode'])) {
+            $isUnset = false;
 			$r = new Request();
 			$arrs = $r->session->get("infoForAdmin", array());
 			if(!is_array($arrs)) {
@@ -427,12 +466,6 @@ class Core {
 			HTTP::echos("done");
 			return false;
 		}
-		if(Route::param("lang")!="") {
-			$langs = Route::param("lang");
-		} else {
-			$langs = config::Select("lang");
-		}
-		templates::assign_var("langPanel", $langs);
 		if(Arr::get($_GET, "setLanguage", false) && strpos(HTTP::getServer("HTTP_REFERER"), config::Select("default_http_host"))!==false && strpos(HTTP::getServer("HTTP_REFERER"), ADMINCP_DIRECTORY)!==false) {
 			$support = lang::support();
 			for($i=0;$i<sizeof($support);$i++) {
@@ -443,29 +476,47 @@ class Core {
 			}
 			location(htmlspecialchars_decode(HTTP::getServer("HTTP_REFERER")));die();
 		}
-		$this->ParseLang();
-		Route::RegParam("lang", config::Select("lang"));
+		$uriNow = HTTP::getServer("REQUEST_URI");
+		$link = config::Select("default_http_local").ADMINCP_DIRECTORY."/";
+		$uriNow = substr($uriNow, strlen($link));
+		$mainPage = config::Select("mainPageAdmin");
+		if($mainPage!="?pages=main" && (empty($uriNow) || $uriNow=="?pages=main")) {
+			location($link.$mainPage);die();
+		}
 		$routeLang = HTTP::getServer(ROUTE_GET_URL);
 		preg_match("#^/([a-zA-Z]+)/#", $routeLang, $arr);
-		if(isset($arr[1])) {
+		if(isset($_COOKIE['langSet'])) {
+			$support = lang::support(true);
+			if(in_array($_COOKIE['langSet'], $support)) {
+				lang::set_lang($_COOKIE['langSet']);
+				lang::init_lang();
+				Route::RegParam("lang", $_COOKIE['langSet']);
+				config::Set("lang", $_COOKIE['langSet']);
+			}
+		} else if(isset($arr[1])) {
 			$support = lang::support(true);
 			if(in_array($arr[1], $support)) {
 				lang::set_lang($arr[1]);
 				lang::init_lang();
 				Route::RegParam("lang", $arr[1]);
+				config::Set("lang", $arr[1]);
 			}
-		} else if(isset($_COOKIE['langSet'])) {
-			lang::set_lang($_COOKIE['langSet']);
-			lang::init_lang();
-			Route::RegParam("lang", $_COOKIE['langSet']);
 		}
+		if(Route::param("lang")!="") {
+			$langs = Route::param("lang");
+		} else {
+			$langs = config::Select("lang");
+		}
+		templates::assign_var("langPanel", $langs);
+		$this->ParseLang();
+		Route::RegParam("lang", config::Select("lang"));
 		if(!$print) {
 			$echo = (templates::completed_assign_vars($echo, null));
 		}
 		execEvent("admin_print_ready");
 		if(isset($_POST['jajax']) || isset($_GET['jajax'])) {
 			HTTP::echos(templates::view($echo));
-			return;
+			return false;
 		}
 		templates::assign_var("count_Yui", "false");
 		if(file_exists(PATH_CACHE."yui.txt")) {
@@ -476,8 +527,9 @@ class Core {
 			}
 		}
 		templates::assign_var("count_unmoder", $this->unmoder());
-		templates::assign_var("head_title", $this->headTitle());
-		templates::assign_var("title_admin", $this->title());
+		$headTitle = execEvent("print_admin_head_title", $this->headTitle());
+		templates::assign_var("head_title", (!empty($headTitle) ? $headTitle." &rsaquo; " : "")."Admin Panel for {L_sitename}");
+		templates::assign_var("title_admin", execEvent("print_admin_title", $this->title()));
 		$this->loadMenu();
 		templates::assign_var("nowLangText", "{L_Languages}&nbsp;".nucfirst(lang::get_lg()));
 		templates::assign_var("nowLangImg", ADMIN_FLAGS_UI.lang::get_lg().".png");
@@ -493,6 +545,7 @@ class Core {
 			}
 		}
 		$echos = templates::view(templates::completed_assign_vars("main", null));
+		$echos = $this->headers($echos);
 		if(sizeof(self::$modules)>0 && isset(self::$modules['after'])) {
 			foreach(self::$modules['after'] as $name => $func) {
 				$echos = call_user_func($func, $echos);
@@ -548,10 +601,10 @@ class Core {
 				$ret .= $rt;
 			}
 			if($isUnset) {
-				if(sizeof($arrs)>0) {
-					$r->session->add("infoForAdmin", $arrs);
+				if(sizeof($info)>0) {
+					$r->session->add("infoForAdmin", $info);
 				} else {
-					$r->session->delete("infoForAdmin", $arrs);
+					$r->session->delete("infoForAdmin", $info);
 				}
 			}
 		}
@@ -585,7 +638,7 @@ class Core {
 			if(isset($_GET['type']) || Route::param("type", false)) {
 				if(($sublinke = Route::param("type", false))!==false) {
 					$sublink[] = $sublinke;
-				} else if(isset($_GET['type'])) {
+				} else if(isset($_GET['type']) && isset($_GET['pages'])) {
 					$sublink[] = $_GET['pages'];
 				}
 			}
@@ -605,6 +658,7 @@ class Core {
 		$echoView = execEvent("print_before_admin").execEvent("print_admin", $echoView);
 		$echoView .= execEvent("print_after_admin");
 		echo execEvent("printed_admin", str_replace("{main_admin}", $echoView, $echos));
+		return true;
 	}
 	
 }

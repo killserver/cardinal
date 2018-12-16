@@ -18,7 +18,7 @@ die();
 
 class DBObject implements ArrayAccess {
 	
-	private $loadedTable = "";
+	public $loadedTable = "";
 	private $groupBy = "";
 	private $where = array();
 	private $limit = 1;
@@ -27,6 +27,7 @@ class DBObject implements ArrayAccess {
 	private $orderBy = array();
 	private $Attributes = array();
 	private $selectAdd = array();
+	private $selectRename = array();
 	private $setAttrFor = array();
 	private $allowEmptyAttr = true;
 	private $pseudoFields = array();
@@ -44,7 +45,6 @@ class DBObject implements ArrayAccess {
 	
 	final public function getInstance($notClearTable = true) {
 		$th = clone $this;
-		$rt = get_object_vars($th);
 		if($notClearTable===false) {
 			$th->loadedTable = "";
 		} else {
@@ -58,6 +58,7 @@ class DBObject implements ArrayAccess {
 		$th->orderBy = array();
 		$th->Attributes = array();
 		$th->selectAdd = array();
+		$th->selectRename = array();
 		$th->setAttrFor = array();
 		$th->allowEmptyAttr = true;
 		$th->pseudoFields = array();
@@ -127,6 +128,9 @@ class DBObject implements ArrayAccess {
 		}
 		if(isset($ret['selectAdd'])) {
 			unset($ret['selectAdd']);
+		}
+		if(isset($ret['selectRename'])) {
+			unset($ret['selectRename']);
 		}
 		if(isset($ret['setAttrFor'])) {
 			unset($ret['setAttrFor']);
@@ -256,6 +260,9 @@ class DBObject implements ArrayAccess {
 			if(isset($th->selectAdd)) {
 				unset($th->selectAdd);
 			}
+			if(isset($th->selectRename)) {
+				unset($th->selectRename);
+			}
 			if(isset($th->setAttrFor)) {
 				unset($th->setAttrFor);
 			}
@@ -284,7 +291,7 @@ class DBObject implements ArrayAccess {
 			settype($var, "array");
 		} else if(is_bool($var)) {
 			settype($var, "boolean");
-		} else if(is_float($var+0)) {
+		} else if(preg_match("/^\\d+\\.\\d+$/", $var) === 1) {
 			settype($var, "float");
 		} else if(is_int($var) || is_integer($var) || is_numeric($var)) {
 			settype($var, "integer");
@@ -338,7 +345,7 @@ class DBObject implements ArrayAccess {
 		return true;
 	}
 	
-	final public function getAttribute($field, $attr, $table = "", $empty = false) {
+	final public function getAttribute($field, $attr, $table = "") {
 		if(empty($table)) {
 			$table = $this->loadedTable;
 		}
@@ -463,7 +470,9 @@ class DBObject implements ArrayAccess {
 			$listAll = $last = "";
 			$where = $this->where;
 			for($i=0;$i<sizeof($where);$i++) {
-				list($arrK, $arrV) = each($where[$i]);
+				$v = ($where[$i]);
+				$arrK = key($v);
+				$arrV = current($v);
 				$last = $arrK;
 				$listAll .= $arrV." ".$last." ";
 			}
@@ -478,7 +487,9 @@ class DBObject implements ArrayAccess {
 			$orders = $orderBy;
 		} elseif(sizeof($this->orderBy)>0) {
 			for($i=0;$i<sizeof($this->orderBy);$i++) {
-				list($arrK, $arrV) = each($this->orderBy[$i]);
+				$v = ($this->orderBy[$i]);
+				$arrK = key($v);
+				$arrV = current($v);
 				$orders .= $arrK." ".$arrV.", ";
 			}
 			$orders = substr($orders, 0, 0-strlen(", "));
@@ -505,7 +516,7 @@ class DBObject implements ArrayAccess {
 		} elseif(!empty($this->limit)) {
 			$limits = $this->limit;
 		}
-		if($limits<1) {
+		if(is_numeric($limits) && $limits<1) {
 			$limits = "";
 		}
 		return (!empty($limits) || $limits==1 ? " LIMIT ".$limits." " : "");
@@ -596,6 +607,11 @@ class DBObject implements ArrayAccess {
 			die();
 		}
 	}
+
+	final public function renameField($field, $as) {
+		$this->selectRename[$field] = $as;
+		return true;
+	}
 	
 	final public function Select($table = "", $where = "", $orderBy = "", $limit = "", $offset = "", $groupby = "") {
 		if(empty($this->loadedTable) && empty($table)) {
@@ -622,7 +638,14 @@ class DBObject implements ArrayAccess {
 		$offset = $this->ReleaseOffset($offset);
 		$groupby = $this->ReleaseGroupBy($groupby);
 		$table = $this->addPrefixTable($table);
-		$sql = "SELECT ".implode(", ", array_map(array(&$this, "getFieldForSelect"), $keys))." FROM ".$table.$where.$groupby.$orderBy.$limit.$offset;
+		$k = array_keys($keys);
+		for($i=0;$i<sizeof($k);$i++) {
+			if(isset($this->selectRename[$k[$i]])) {
+				$keys[$k[$i]] = "`".$keys[$k[$i]]."` AS `".$this->selectRename[$k[$i]]."`";
+			}
+		}
+		$keys = array_map(array(&$this, "getFieldForSelect"), $keys);
+		$sql = "SELECT ".implode(", ", $keys)." FROM ".$table.$where.$groupby.$orderBy.$limit.$offset;
 		if(defined("PATH_CACHE_SYSTEM") && PATH_CACHE_SYSTEM!=="") {
 			$fileCache = PATH_CACHE_SYSTEM.$table."_".md5($sql).".cache";
 		}
@@ -636,7 +659,7 @@ class DBObject implements ArrayAccess {
 			return $result;
 		}
 		$rel = db::doquery($sql, true);
-		if(!$this->multiple && db::num_rows($rel) <= 1) {
+		if(!$this->multiple && db::num_rows($rel) >= 1) {
 			$ret = db::fetch_object($rel, get_class($this));
 			if(is_null($ret)) {
 				return $this;
@@ -653,8 +676,9 @@ class DBObject implements ArrayAccess {
 				$cacheData = serialize($ret);
 				file_put_contents($fileCache, $cacheData);
 			}
-			return $this->getRus($ret);
-		} else {
+			$ret = $this->getRus($ret);
+			return (function_exists("execEvent") ? execEvent("DBOBject-Select-Completed", $ret) : $ret);
+		} else if($this->multiple && db::num_rows($rel)>=1) {
 			$arr = array();
 			if($this->multiple && db::num_rows()==0) {
 				return array($this);
@@ -669,7 +693,9 @@ class DBObject implements ArrayAccess {
 						$row->{$k} = $v;
 					}
 				}
-				$arr[] = $this->getRus($row);
+				$row->loadedTable = $this->loadedTable;
+				$row = $this->getRus($row);
+				$arr[] = (function_exists("execEvent") ? execEvent("DBOBject-Select-Completed", $row) : $row);
 			}
 			db::free($rel);
 			if($cached && isset($fileCache)) {
@@ -677,6 +703,8 @@ class DBObject implements ArrayAccess {
 				file_put_contents($fileCache, $cacheData);
 			}
 			return $arr;
+		} else {
+			return false;
 		}
 	}
 
@@ -684,8 +712,8 @@ class DBObject implements ArrayAccess {
 		$this->allowedRus = $val;
 	}
 
-	final private function getRus($arr) {
-		if($this->allowedRus===false) {
+	final private function getRus($arr, $force = false) {
+		if($force===false && $this->allowedRus===false) {
 			return $arr;
 		}
 		$lang = lang::support(true);
@@ -998,6 +1026,37 @@ class DBObject implements ArrayAccess {
 				if(isset($this->pseudoPosition[$elem][$type][$i]['name']) && $this->pseudoPosition[$elem][$type][$i]['name']==$name) {
 					unset($this->pseudoPosition[$elem][$type][$i]);
 				}
+			}
+		}
+		return true;
+	}
+	
+	final public function addPseudoBlock($elem, $type = "after", $attr = array()) {
+		$name = md5(uniqid(true).microtime_float());
+		if(!isset($this->pseudoPosition[$elem])) {
+			$this->pseudoPosition[$elem] = array();
+		}
+		if(!isset($this->pseudoPosition[$elem][$type])) {
+			$this->pseudoPosition[$elem][$type] = array();
+		}
+		$this->pseudoPosition[$elem][$type][] = array("name" => $name, "val" => "");
+		foreach($attr as $k => $v) {
+			if(!isset($this->setAttrFor[$name])) {
+				$this->setAttrFor[$name] = array();
+			}
+			$this->setAttrFor[$name][$k] = $v;
+		}
+		return true;
+	}
+	
+	final public function removePseudoBlock($elem, $type = "after") {
+		if(isset($this->pseudoPosition[$elem]) && isset($this->pseudoPosition[$elem][$type]) && is_array($this->pseudoPosition[$elem][$type])) {
+			for($i=0;$i<sizeof($this->pseudoPosition[$elem][$type]);$i++) {
+				$name = $this->pseudoPosition[$elem][$type][$i]['name'];
+				if(isset($this->setAttrFor[$name])) {
+					unset($this->setAttrFor[$name]);
+				}
+				unset($this->pseudoPosition[$elem][$type][$i]);
 			}
 		}
 		return true;

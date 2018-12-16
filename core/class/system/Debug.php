@@ -120,10 +120,15 @@ class Debug {
 		$events = cardinalEvent::getEventList();
 		templates::assign_var("count_events", sizeof($events));
 		foreach($events as $k => $v) {
+			$time = $v['time'];
+			$called = $v['called'];
+			$v = $v['data'];
 			templates::assign_vars(array(
-				"name" => $k,
-				"file" => str_replace(ROOT_PATH, DS, $v['file']),
-				"line" => $v['line'],
+				"name" => (isset($v['function']) && is_string($v['function']) && strpos($v['function'], "Ref")!==false ? "<span style='color:#00ff00'>[?]</span>&nbsp;" : "").$k,
+				"file" => str_replace(ROOT_PATH, DS, (isset($v['file']) ? $v['file'] : "")),
+				"line" => (isset($v['line']) ? $v['line'] : ""),
+				"time" => self::timespan($time, microtime_float()),
+				"called" => $called,
 				"args" => sizeof($v['args'])-1,
 			), "events", "events".$i);
 			$i++;
@@ -132,6 +137,72 @@ class Debug {
 		templates::set_skins("");
 		$tpl = templates::completed_assign_vars("debug_panel", "core");
 		return templates::view($tpl);
+	}
+
+	private static function timespan($seconds = 1, $time = 0) {
+		if(!is_numeric($seconds)) {
+			$seconds = 1;
+		}
+		if(is_numeric($time) && $time<=0) {
+			$time = time();
+		}
+		if($time >= $seconds) {
+			$seconds = $time - $seconds;
+		}
+
+		$result = array();
+		$years = floor($seconds / 31536000);
+
+		if($years > 0) {
+			$result[] = $years.' years';
+		}
+
+		$seconds -= $years*31536000;
+		$months = floor($seconds/2628000);
+
+		if($years > 0 || $months > 0) {
+			if($months > 0) {
+				$result[] = $months.' months';
+			}
+			$seconds -= $months * 2628000;
+		}
+
+		$weeks = floor($seconds / 604800);
+		if($years > 0 || $months > 0 || $weeks > 0) {
+			if($weeks > 0) {
+				$result[] = $weeks.' week';
+			}
+			$seconds -= $weeks * 604800;
+		}
+
+		$days = floor($seconds / 86400);
+		if($months > 0 || $weeks > 0 || $days > 0) {
+			if($days > 0) {
+				$result[] = $days.' days';
+			}
+			$seconds -= $days * 86400;
+		}
+
+		$hours = floor($seconds / 3600);
+		if($days > 0 || $hours > 0) {
+			if($hours > 0) {
+				$result[] = $hours.' hours';
+			}
+			$seconds -= $hours * 3600;
+		}
+
+		$minutes = floor($seconds / 60);
+		if($days > 0 || $hours > 0 || $minutes > 0) {
+			if($minutes > 0) {
+				$result[] = $minutes.' minutes';
+			}
+			$seconds -= $minutes * 60;
+		}
+
+		if(empty($result)) {
+			$result[] = $seconds.' seconds';
+		}
+	return implode(" ", $result);
 	}
 	
 	final public static function FileLine($file) {

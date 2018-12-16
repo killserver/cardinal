@@ -19,11 +19,12 @@ class Archer_Edit {
 				$list = call_user_func_array(KernelArcher::$editModel["Edit"][$i], array($list, $getExclude));
 			}
 		}
-		$list = execEvent("archer_list_done", $list);
+		$list = execEvent("archer_list_done", $list, $table);
 		if(isset($_GET['get'])) {
 			$k = $_GET['get'];
 			$l = $models->getAttribute($k, 'type');
-			$field = KernelArcher::Viewing($l, $k, "", "", false, false, "", true);
+			$r = $models->getAttribute($k, 'required');
+			$field = KernelArcher::Viewing($l, $k, "", "", $r, false, false, "", true);
 			$field = templates::view($field);
 			vdump($field);
 			die();
@@ -60,7 +61,6 @@ class Archer_Edit {
 			}
 			$attr = $models->getAttribute($k, "Attr");
 			$lang = "";
-			$placeholder = false;
 			if($attr==="supportLang") {
 				$lang = $models->getAttribute($k, "Lang");
 				$supportedLang[$lang] = array("lang" => $lang);
@@ -69,6 +69,7 @@ class Archer_Edit {
 			$fields[$k] = array("type" => $l, "value" => $v);
 			$default = ($where==$k ? $whereData : $models->getAttribute($k, 'default'));
 			$typeData = $models->getAttribute($k, "typeData");
+			$r = $models->getAttribute($k, 'required');
 			if(is_array($v) && (!empty($where) && !empty($whereData) && $where==$k && isset($v[$whereData]) || isset($v['default']))) {
 				$default = (!empty($where) && !empty($whereData) && $where==$k && isset($v[$whereData]) ? $v[$whereData] : $v['default']);
 				if(isset($v['default'])) {
@@ -79,7 +80,7 @@ class Archer_Edit {
 				$default = (!empty($where) && !empty($whereData) && $where==$k && isset($v[$whereData]) ? $v[$whereData] : (empty($v) ? $default : $v));
 				$v = implode(",", $typeData);
 			}
-			$body .= KernelArcher::Viewing($l, $k, $v, $default, false, $isAjax, $lang, $models);
+			$body .= KernelArcher::Viewing($l, $k, $v, $default, $r, false, $isAjax, $lang, $models);
 		}
 		sortByKey($supportedLang);
 		execEvent("archer_data_ready", $fields, $supportedLang);
@@ -87,7 +88,7 @@ class Archer_Edit {
 		foreach($supportedLang as $v) {
 			templates::assign_vars($v, "supportedLang");
 		}
-		$tpl = str_replace("{addition}", $addition, $tpl);
+		$tpl = str_replace("{addition}", execEvent("archer_addition", $addition, $page, $table), $tpl);
 		$tpl = str_replace("{ArcherPageNow}", $page, $tpl);
 		$tpl = str_replace("{ArcherPage}", $page.($page!="Add" ? "&viewId=".$isId : ""), $tpl);
 		$tpl = str_replace("{ArcherPath}", str_replace(PREFIX_DB, "", $table), $tpl);

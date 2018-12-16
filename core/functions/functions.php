@@ -20,6 +20,7 @@ die();
 
 function function_call($func_name, $func_arg = array()) {
 global $manifest;
+    $result = false;
 	$func_name = execEvent("function_called", $func_name);
 	if(isset($manifest['functions'][$func_name]) && is_array($manifest['functions'][$func_name]) && !is_callable($manifest['functions'][$func_name])) {
 		for($is=0;$is<sizeof($manifest['functions'][$func_name]);$is++) {
@@ -67,11 +68,24 @@ function get_site_path($path) { return function_call('get_site_path', array($pat
 function or_get_site_path($path) {
 	$str = str_replace(ROOT_PATH, "", $path);
 	$str = str_replace(DS, "/", $str);
-	return $str;
+	$site = config::Select("default_http_local");
+	return $site.ltrim($str, "/");
+}
+
+function get_site_url($path) { return function_call('get_site_url', array($path)); }
+function or_get_site_url($path) {
+	$str = str_replace(ROOT_PATH, "", $path);
+	$str = str_replace(DS, "/", $str);
+	$str = ltrim($str, "");
+	return config::Select("default_http_local").$str;
+}
+
+function json_encode_unicode($arr, $params) {
+	return CardinalJSON::json_encode_unicode($arr, $params);
 }
 
 function loadConfig($file = "") {
-global $config;
+	global $config;
 	if($file==='' && !defined("ROOT_PATH")) {
 		throw new Exception("Error load config file. Path is not set");
 		die();
@@ -172,8 +186,8 @@ function or_nmail() {
 	$mail->CharSet = (class_exists("config") && method_exists("config", "Select") && config::Select("charset") ? config::Select("charset") : "UTF-8");
 	$mail->ContentType = 'text/html';
 	$mail->Priority = 1;
-	$mail->From = "info@".$server;
-	$mail->FromName = "info";
+	$mail->From = execEvent("mail_sender", "info")."@".$server;
+	$mail->FromName = execEvent("mail_sender_name", "info");
 	if(!is_array($for)) {
 		$for = array($for => "".$for);
 	}
@@ -357,26 +371,6 @@ function in_array_strpos($str, $arr, $rebuild = false) {
 	return $ret;
 }
 
-function location($link, $time = 0, $exit = true, $code = 301){return function_call('location', array($link, $time, $exit, $code));}
-function or_location($link, $time = 0, $exit = true, $code = 301) {
-	HTTP::Location(templates::view($link), $time, $exit, $code);
-}
-
-
-function search_file($file, $dir = "") { return function_call('search_file', array($file, $dir)); }
-function or_search_file($file, $dir = "") {
-	if(empty($dir)) {
-		return glob(ROOT_PATH.$file);
-	} else {
-		$ed = explode(DS, $dir);
-		$en = end($ed);
-		if(!empty($en)) {
-			$dir = $dir.DS;
-		}
-		return glob(ROOT_PATH.$dir.$file);
-	}
-}
-
 function read_dir($dir, $type = "all", $addDir = false, $recursive = false, $exclusions = array(), $returnArray = false) {
 	$exclusions[] = ".";
 	$exclusions[] = "..";
@@ -390,7 +384,25 @@ function read_dir($dir, $type = "all", $addDir = false, $recursive = false, $exc
 				if($recursive && is_dir($dir.$file)) {
 					$fileZ = read_dir($dir.$file.DS, $type, $addDir, $recursive, $exclusions, $returnArray);
 					$files = array_merge($files, $fileZ);
-				} else if(($type=="dir" || is_file($dir.$file)) && (($type=="dir" || $type=="all") || (is_array($type) ? in_array_strpos($file, $type) : strpos($file, $type)!==false)) && $file!="." && $file!=".." && $file!="index.".ROOT_EX && $file!="index.html" && $file!=".htaccess") {
+				} else if(($type=="dir" || $type=="all") && is_dir($dir.$file) && $file!="." && $file!=".." && $file!="index.".ROOT_EX && $file!="index.html" && $file!=".htaccess") {
+					if($returnArray) {
+						$dirN = rtrim($dir, DS);
+						$dirN = str_replace(ROOT_PATH, "", $dirN);
+						$files[$dirN]['path'] = $dirN;
+						$files[$dirN]['children'][] = $file;
+					} else {
+						$files[] = ($addDir ? $dir : "").$file;
+					}
+				} else if(($type=="file" || $type=="all") && is_file($dir.$file) && $file!="." && $file!=".." && $file!="index.".ROOT_EX && $file!="index.html" && $file!=".htaccess") {
+					if($returnArray) {
+						$dirN = rtrim($dir, DS);
+						$dirN = str_replace(ROOT_PATH, "", $dirN);
+						$files[$dirN]['path'] = $dirN;
+						$files[$dirN]['children'][] = $file;
+					} else {
+						$files[] = ($addDir ? $dir : "").$file;
+					}
+				} else if((is_array($type) ? in_array_strpos($file, $type) : strpos($file, $type)!==false) && $file!="." && $file!=".." && $file!="index.".ROOT_EX && $file!="index.html" && $file!=".htaccess") {
 					if($returnArray) {
 						$dirN = rtrim($dir, DS);
 						$dirN = str_replace(ROOT_PATH, "", $dirN);
@@ -573,7 +585,11 @@ function vdump() {
 		ob_start();
 		call_user_func_array("var_dump", $list);
 		$t = ob_get_clean();
-		echo htmlspecialchars($t);
+		if(!defined("IS_CLI")) {
+			echo htmlspecialchars($t);
+		} else {
+			echo $t;
+		}
 	}
 	if(!defined("IS_CLI")) {
 		echo '</pre></div>'.PHP_EOL;
@@ -583,31 +599,20 @@ function vdump() {
 	$printedVdump = true;
 }
 
-function vdebug() {
-	Debug::activation();
-	Debug::echoDebugMode(true);
-	Debug::limitOnView(0);
-	$backtrace = debug_backtrace();
-	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "<b style=\"color:#70f;\">Called:</b> ".str_replace(ROOT_PATH, DS, $backtrace[0]['file'])." [".$backtrace[0]['line']."]\n\n" : "")."</pre>";
-	if(func_num_args()>0) {
-		echo call_user_func_array(array("Debug", "vars"), func_get_args());
-	}
-}
-
-function var_debug() {
-	$list = func_get_args();
-	$backtrace = debug_backtrace();
-	echo '<pre style="text-align:left;">'. (isset($backtrace[0]) ? "<b style=\"color:#80f;\">Called:</b> ".str_replace(ROOT_PATH, DS, $backtrace[0]['file'])." [".$backtrace[0]['line']."]\n\n" : "");
-	echo "<code>";
-	if(sizeof($list)>0) {
-		foreach($list as $v) {
-			echo call_user_func_array("var_debug_prepare", array($v));
+function map_deep($value, $callback) {
+	if(is_array($value)) {
+		foreach ($value as $index => $item) {
+			$value[$index] = map_deep($item, $callback);
 		}
+	} else if(is_object($value)) {
+		$object_vars = get_object_vars($value);
+		foreach($object_vars as $property_name => $property_value) {
+			$value->$property_name = map_deep($property_value, $callback);
+		}
+	} else {
+		$value = call_user_func($callback, $value);
 	}
-	echo "</code>";
-	echo '</pre>';
-	echo '<link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/vs2015.min.css" /><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script><script>hljs.initHighlightingOnLoad();</script>';
+	return $value;
 }
 
 function cdie() {
@@ -639,61 +644,6 @@ function buildBacktrace($backtrace = array(), $withoutFirst = false) {
 	foreach($backtrace as $v) {
 		echo "<b style=\"color:#d11;\">Called:</b> ".$v['file']." [".$v['line']."]\n";
 	}
-}
-
-function var_debug_prepare($data, $withData = true) {
-	$type = gettype($data);
-	if(is_object($data) || is_array($data)) {
-		$num = sizeof($data);
-		foreach($data as $k => $v) {
-			$data[$k] = var_debug_prepare($v, false);
-		}
-	} else if(is_numeric($data)) {
-		$num = strlen($data);
-	} else if(is_bool($data)) {
-		$num = false;
-	} else if(is_null($data)) {
-		$num = false;
-		$type = false;
-	} else {
-		$num = strlen($data);
-		$data = htmlspecialchars($data);
-	}
-	if($withData) {
-		$list = ($type!==false || $num!==false ? '<font color="green">'.($type!==false ? $type : '').($num!==false ? '('.$num.')' : "").'</font>&nbsp;' : '');
-		ob_start();
-		var_dump($data);
-		$data = ob_get_clean();
-		if(($s = strpos($data, " "))!==false) {
-			$data = substr($data, $s);
-		} else if(($s = strpos($data, "("))!==false) {
-			$data = substr($data, $s);
-		}
-		$data = preg_replace("#=\>\n(.+?)([a-z])#", " => $2", $data);
-		$data = $list.$data;
-	}
-	return $data;
-}
-
-function is_ssl() {
-	if(
-		   (HTTP::getServer('HTTPS') && HTTP::getServer('HTTPS') !== 'off')
-        || (HTTP::getServer('HTTP_X_FORWARDED_PROTO') && HTTP::getServer('HTTP_X_FORWARDED_PROTO') == 'https')
-        || (HTTP::getServer('HTTP_X_FORWARDED_SSL') && HTTP::getServer('HTTP_X_FORWARDED_SSL') == 'on')
-        || (HTTP::getServer('SERVER_PORT', true) && HTTP::getServer('SERVER_PORT') == 443)
-        || (HTTP::getServer('HTTP_X_FORWARDED_PORT', true) && HTTP::getServer('HTTP_X_FORWARDED_PORT') == 443)
-        || (HTTP::getServer('REQUEST_SCHEME', true) && HTTP::getServer('REQUEST_SCHEME') == 'https')
-		|| (HTTP::getServer('CF_VISITOR', true) && HTTP::getServer('CF_VISITOR') == '{"scheme":"https"}')
-		|| (HTTP::getServer('HTTP_CF_VISITOR', true) && HTTP::getServer('HTTP_CF_VISITOR') == '{"scheme":"https"}')
-    ) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
-function protocol() {
-	return (is_ssl() ? "https" : "http");
 }
 
 function check_smartphone() {
@@ -737,13 +687,66 @@ function pageBar($total, $current, $prefix = "", $postfix = "") {
 	return $pageBar;
 }
 
-function callAjax() {
-	templates::$gzip = false;
-	Debug::activShow(false);
-}
-
 function generate_uuid4() {
 	return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mrand(0, 0xffff), mrand(0, 0xffff), mrand(0, 0xffff), mrand(0, 0x0fff) | 0x4000, mrand(0, 0x3fff) | 0x8000, mrand(0, 0xffff), mrand(0, 0xffff), mrand(0, 0xffff));
+}
+
+function parser_video($content, $start, $end = "") {
+	$pos = strpos($content, $start);
+	$content = substr($content, $pos);
+	if($end!=="") {
+		$pos = strpos($content, $end);
+	} else {
+		$pos = strlen($content);
+	}
+	$content = substr($content, 0, $pos);
+	$content = str_replace($start, "", $content);
+return $content;
+}
+
+function closetags($html, $singleTagsAdd = array()) { return function_call('closetags', array($html, $singleTagsAdd)); }
+function or_closetags($html, $singleTagsAdd = array()) {
+	$single_tags = array('meta', 'img', 'br', 'link', 'area', 'input', 'hr', 'col', 'param', 'base');
+	if(sizeof($singleTagsAdd)>0) {
+		$single_tags = array_merge($single_tags, $singleTagsAdd);
+	}
+	preg_match_all('~<([a-z0-9]+)(?: .*)?(?<![/|/ ])>~iU', $html, $result);
+	$openedtags = $result[1];
+	preg_match_all('~</([a-z0-9]+)>~iU', $html, $result);
+	$closedtags = $result[1];
+	$len_opened = sizeof($openedtags);
+	if(sizeof($closedtags) == $len_opened) {
+		return $html;
+	}
+    $openedtags = array_reverse($openedtags);
+	for($i=0;$i<$len_opened;$i++) {
+		if(!in_array($openedtags[$i], $single_tags)) {
+			if(($key = array_search($openedtags[$i], $closedtags)) !== false) {
+				unset($closedtags[$key]);
+			} else {
+				$html .= '</'.$openedtags[$i].'>';
+			}
+		}
+	}
+	return $html;
+}
+
+if(!function_exists('is_countable')) {
+    function is_countable($var) {
+    	return Validate::is_countable($var);
+    }
+}
+
+if(!function_exists('array_key_first')) {
+    function array_key_first(array $array) {
+    	return key($array);
+    }
+}
+if(!function_exists('array_key_last')) {
+    function array_key_last(array $array) {
+    	end($array);
+    	return key($array);
+    }
 }
 
 ?>

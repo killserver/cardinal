@@ -152,25 +152,9 @@ class config implements ArrayAccess {
 
 	final public static function init() {
 		global $config;
-		if(defined("WITHOUT_DB") || !class_exists("db") || !method_exists("db", "connected") || !db::connected()) {
-			$cfg = self::initWithoutDB();
-			self::$config = array_replace_recursive($config, self::$config, $cfg);
-			return self::$config;
-		}
-		if(!cache::Exists("config")) {
-			$configs = array();
-			db::doquery("SELECT `config_name`, `config_value` FROM {{config}}", true);
-			while($conf = db::fetch_array()) {
-				$ret = self::ReadConfig($conf['config_name'], $conf['config_value']);
-				$configs = array_merge($configs, $ret);
-			}
-			self::$config = array_replace_recursive($configs, self::$config);
-			cache::Set("config", $configs);
-			unset($configs);
-		} else {
-			self::$config = array_replace_recursive(cache::Get("config"), self::$config);
-		}
-		self::$config = (sizeof(self::$config) > 0 ? array_replace_recursive($config, self::$config) : $config);
+		$cfg = self::initWithoutDB();
+		self::$config = array_replace_recursive($config, self::$config, $cfg);
+		return self::$config;
 	}
 
 	final public static function All() {
@@ -383,18 +367,9 @@ class config implements ArrayAccess {
 	}
 
 	final public static function Update() {
-		if(defined("WITHOUT_DB") || !class_exists("db") || !method_exists("db", "connected") || !db::connected()) {
-			$data = func_get_args();
-			array_unshift($data, "edit");
-			return call_user_func_array("self::initWithoutDB", $data);
-		}
-		db::doquery("REPLACE INTO {{config}} SET `config_value` = \"".$data."\", `config_name` = \"".$name."\"");
-		cache::Delete("config");
-		if(!empty(self::$config[$data])) {
-			return self::$config[$data];
-		} else {
-			return true;
-		}
+		$data = func_get_args();
+		array_unshift($data, "edit");
+		return call_user_func_array("self::initWithoutDB", $data);
 	}
 	
 	final public function __get($val) {

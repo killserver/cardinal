@@ -48,7 +48,7 @@ class Archer_Shield {
 	public function Headers($table, $page, $model, $tpl) {
 		$modelName = get_class($model);
 		$getExclude = KernelArcher::excludeField("get", "Shield");
-		$first = $model->getFirst();
+		/*$first = $model->getFirst();*/
 		$h = $model->getComments(true);
 		$h = array_values($h);
 		$head = "";
@@ -103,14 +103,19 @@ class Archer_Shield {
 				continue;
 			}
 			$type = $model->getAttribute($d[$i], "type", $table, true);
-			$quickEditor = "";
 			$infoField = "infoField";
-			$active = false;
-			$val = "{L_\"{".$modelName.".".$d[$i]."}\"}";
+            $activeQ = false;
 			$activeQuickEditor = (is_bool(KernelArcher::$disabledQuickEditor) && KernelArcher::$disabledQuickEditor === false);
 			if(!$activeQuickEditor) {
-				if(is_array(KernelArcher::$disabledQuickEditor) && isset(KernelArcher::$disabledQuickEditor[$d[$i]]) && ((is_bool(KernelArcher::$disabledQuickEditor[$d[$i]]) && KernelArcher::$disabledQuickEditor[$d[$i]]===false) || (is_string(KernelArcher::$disabledQuickEditor[$d[$i]]) && KernelArcher::$disabledQuickEditor[$d[$i]]==="no") || (is_numeric(KernelArcher::$disabledQuickEditor[$d[$i]]) && KernelArcher::$disabledQuickEditor[$d[$i]]===0))) {
-					$activeQuickEditor = false;
+				$activeQ = false;
+				if(is_array(KernelArcher::$disabledQuickEditor) && isset(KernelArcher::$disabledQuickEditor[$d[$i]]) && (
+					(is_bool(KernelArcher::$disabledQuickEditor[$d[$i]]) && KernelArcher::$disabledQuickEditor[$d[$i]]===true)
+					||
+					(is_string(KernelArcher::$disabledQuickEditor[$d[$i]]) && KernelArcher::$disabledQuickEditor[$d[$i]]==="yes")
+					||
+					(is_numeric(KernelArcher::$disabledQuickEditor[$d[$i]]) && KernelArcher::$disabledQuickEditor[$d[$i]]===1)
+				)) {
+					$activeQ = true;
 				}
 			}
 			if($type=="date") {
@@ -119,40 +124,35 @@ class Archer_Shield {
 				$val = "{S_langdata=\"{".$modelName.".".$d[$i]."}\",\"H:i:s\"}";
 			} else if($type=="datetime") {
 				$val = "{S_langdata=\"{".$modelName.".".$d[$i]."}\",\"d F Y H:i:s\"}{".$modelName.".".$d[$i]."}";
+			} else {
+				$val = "{L_\"{".$modelName.".".$d[$i]."}\"}";
 			}
-			if($i!=0 && $activeQuickEditor) {
+			$quickEditor = "";
+			if($i!=0 && $activeQ) {
 				$quickEditor = " data-pk=\"{".$modelName.".".$first."}\" data-name=\"".$d[$i]."\"";
 				if($type=="select" || $type=="array" || $type=="enum") {
 					$infoField = "";
 					//$quickEditor .= " data-type=\"select\" data-source=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Archer&type=".$modelName."&pageType=QuickEdit&loadSelect=".$d[$i]."\"";
 				} else if($type=="date") {
-					$active = true;
 					$quickEditor .= " data-type=\"date\"";
 				} else if($type=="time") {
-					$active = true;
 					$quickEditor .= " data-type=\"time\"";
 				} else if($type=="datetime") {
-					$active = true;
 					$quickEditor .= " data-type=\"datetime\"";
 				} else if($type=="int" || $type=="price" || $type=="tinyint" || $type=="smallint" || $type=="mediumint" || $type=="bigint") {
-					$active = true;
 					$quickEditor .= " data-type=\"number\"";
 				} else if($type=="shorttext" || $type=="mediumtext" || $type=="text" || $type=="longtext") {
-					//$active = false;
 				} else if($type=="varchar") {
-					$active = true;
 					$quickEditor .= " data-type=\"text\"";
 				} else {
 					$quickEditor .= " data-type=\"text\"";
 				}
-				if($active) {
-					$quickEditor = " class=\"quickEdit\"".$quickEditor;
-				}
+				$infoField .= " quickEdit";
 			}
 			execEventRef("KernelArcher::Shield::Element-before", $modelName, $first, $d[$i], $infoField);
 			$data .= execEvent("KernelArcher::Shield::Element-before", "", $modelName, $first, $d[$i], $infoField);
 			$data .= execEvent("KernelArcher::Shield::Element-".$i."-before", "", $modelName, $first, $d[$i], $infoField);
-			$data .= "<td data-id=\"{".$modelName.".".$first."}\" data-table=\"".$modelName."\" data-name=\"".$d[$i]."\" class=\"".$infoField."\"><span".$quickEditor.">".$val."</span></td>";
+			$data .= "<td data-id=\"{".$modelName.".".$first."}\" data-table=\"".$modelName."\" data-name=\"".$d[$i]."\" class=\"".$infoField."\"".$quickEditor."><span".$quickEditor.">".execEvent("KernelArcher::Shield::Element", $val, $modelName, $first, $d[$i], $infoField)."</span></td>";
 			$data .= execEvent("KernelArcher::Shield::Element-".$i."-after", "", $modelName, $first, $d[$i], $infoField);
 			$data .= execEvent("KernelArcher::Shield::Element-after", "", $modelName, $first, $d[$i], $infoField);
 			execEventRef("KernelArcher::Shield::Element-after", $modelName, $first, $d[$i], $infoField);
@@ -182,8 +182,12 @@ class Archer_Shield {
 		$tpl = str_replace("{ArcherPage}", $modelName, $tpl);
 		$tpl = str_replace("{ArcherSort}", implode(",", $sortBy), $tpl);
 		$tpl = str_replace("{ArcherTable}", str_replace(PREFIX_DB, "", $table), $tpl);
-		$tpl = str_replace("{ArcherAll}", ($counts+2), $tpl);
-		$tpl = str_replace("{ArcherNotTouch}", ($counts+1), $tpl);
+		$countAll = $counts+1;
+		if(config::Select("disableMassAction")!==false) {
+			$countAll++;
+		}
+		$tpl = str_replace("{ArcherAll}", ($countAll+1), $tpl);
+		$tpl = str_replace("{ArcherNotTouch}", ($countAll), $tpl);
 		return $tpl;
 	}
 	

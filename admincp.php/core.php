@@ -45,7 +45,6 @@ function cardinalAutoloadAdmin($class) {
     } else if(strpos($class, "_")===false) {
         $in_page = "Errors";
         include_once(ADMIN_VIEWER."Errors".DS."Errors.class.".ROOT_EX);
-        new Errors();
     }
 }
 if(version_compare(PHP_VERSION, '5.1.2', '>=')) {
@@ -61,9 +60,18 @@ if(version_compare(PHP_VERSION, '5.1.2', '>=')) {
 }
 
 $in_page = "Main";
-Route::setSecret("route_".uniqid());
-$t = execEvent("adminRoute");
+execEvent("adminRoute");
 Route::setError(0);
+if(config::Select("new_method_uri")) {
+	Route::newMethod();
+}
+Route::Build(array(
+	"route" => modules::manifest_get('route'),
+), 2);
+Route::Config(array(
+	"rewrite" => config::Select("rewrite"),
+	"default_http_host" => config::Select("default_http_host"),
+));
 Route::Load($in_page);
 $langs = $lang; $tmp = $templates; $dbs = $db;
 extract(Route::param());
@@ -77,6 +85,8 @@ templates::set_skins("");
 $resp = Route::param("response", false);
 if($resp!==false) {
 	$view = "Errors";
+} else if(($class = Route::param("class"))!==false) {
+	$view = $class;
 } else if(($in_page = Route::param("in_page"))!==false) {
 	$view = $in_page;
 } else if(isset($_GET['pages']) && $_GET['pages'] != "Core") {
@@ -99,7 +109,10 @@ if(class_exists($view)) {
 	if(method_exists(''.$view, 'start')) {
 		call_user_func(array(&$view, "start"));
 	}
-	new $view();
+	$call = new $view();
+	if(isset($method) && method_exists($call, $method)) {
+		call_user_func_array(array($call, $method), array());
+	}
 } else {
 	$in_page = "Errors";
 	$in_page = execEvent("admin_page_notfound", $in_page);

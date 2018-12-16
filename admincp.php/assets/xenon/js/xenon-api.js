@@ -18,8 +18,7 @@ function rtl() // checks whether the content is in RTL mode
 
 
 // Page Loader
-function show_loading_bar(options)
-{
+function show_loading_bar(options) {
 	var defaults = {
 		pct: 0, 
 		delay: 1.3, 
@@ -80,8 +79,7 @@ function show_loading_bar(options)
 	}});
 }
 
-function hide_loading_bar()
-{
+function hide_loading_bar() {
 	var $ = jQuery,
 		$loading_bar = $(".xenon-loading-bar"),
 		$pct = $loading_bar.find('span');
@@ -116,4 +114,46 @@ jQuery(document).ready(function() {
 		jQuery(".bgFon").css("backgroundColor", "#000");
 		jQuery(".bgFon > span.imgHere").css("backgroundImage", "url('https://raw.githubusercontent.com/killserver/ForCardinal/master/bg/"+Math.round(randShow)+".jpg')");
 	}
+	$("form").each(function(i, form) {
+		$(form).find("input[required],textarea[required],select[required]").each(function(i, elem) {
+			$(elem).removeAttr("required");
+			$(elem).addClass("required");
+		});
+	});
+	$("body").on("submit", "form", function() {
+		var ret = true;
+		var first = 0;
+		$(this).find("input.required,textarea.required,select.required").each(function(i, elem) {
+			$(elem).attr("required", "required");
+			if(elem.checkValidity()===false && $(elem).attr("type")=="file" && $(elem).next()[0].tagName.toLowerCase()!="a") {
+				if(first===0) {
+					first = document.documentElement.scrollTop + elem.getBoundingClientRect().top - 50;
+				}
+				ret = false;
+				$(elem).removeClass("errorInput").delay(1).queue(function(){
+					$(this).addClass("errorInput").dequeue();
+				});
+			} else if(elem.checkValidity()===false && $(elem).hasClass("onlyText")===false && $(elem).hasClass("onlytext")===false) {
+				if(first===0) {
+					first = document.documentElement.scrollTop + $(elem).parent().find(".mce-tinymce")[0].getBoundingClientRect().top - 50;
+				}
+				ret = false;
+				$(elem).parent().find(".mce-tinymce").removeClass("errorInput").delay(1).queue(function(){
+					$(this).addClass("errorInput").dequeue();
+				});
+			} else if(elem.checkValidity()===false) {
+				ret = false;
+				$(elem).removeClass("errorInput").delay(1).queue(function(){
+					$(this).addClass("errorInput").dequeue();
+				});
+			}
+			$(elem).removeAttr("required");
+		});
+		if(first!=0) {
+			$("html,body").animate({
+				scrollTop: first,
+			}, 500);
+		}
+		return ret;
+	});
 });

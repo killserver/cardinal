@@ -15,7 +15,17 @@ class Users extends Core {
 		} else {
 			$activ = "no";
 		}
-		User::create(array("username" => $name), array("alt_name" => ToTranslit($name)), array("light" => $password), array("time_reg" => time()), array("pass" => $pass), array("admin_pass" => $admin_pass), array("level" => $level), array("email" => $email), array("activ" => $activ));
+		User::create(array(
+			"username" => $name,
+			"alt_name" => ToTranslit($name),
+			"light" => $password,
+			"time_reg" => time(),
+			"pass" => $pass,
+			"admin_pass" => $admin_pass,
+			"level" => $level,
+			"email" => $email,
+			"activ" => $activ
+		));
 		cardinal::RegAction("Добавление нового пользователя \"".$name."\"");
 		location("./?pages=Users");
 		return;
@@ -34,7 +44,17 @@ class Users extends Core {
 		} else {
 			$activ = "no";
 		}
-		User::update(array("username" => $name), array("alt_name" => ToTranslit($name)), array("light" => $password), array("time_reg" => time()), array("pass" => $pass), array("admin_pass" => $admin_pass), array("level" => $level), array("email" => $email), array("activ" => $activ), $id);
+		User::update(array(
+			"username" => $name,
+			"alt_name" => ToTranslit($name),
+			"light" => $password,
+			"time_reg" => time(),
+			"pass" => $pass,
+			"admin_pass" => $admin_pass,
+			"level" => $level,
+			"email" => $email,
+			"activ" => $activ
+		));
 		cardinal::RegAction("Обновление данных пользователя \"".$name."\"");
 		location("./?pages=Users");
 		return;
@@ -110,13 +130,13 @@ class Users extends Core {
 				$row['email'] = "";
 			}
 			templates::assign_vars($row, "users", $k);
-			if($row['level']==LEVEL_ADMIN) {
+			if($row['level']>=LEVEL_ADMIN) {
 				templates::assign_vars($row, "usersAdmin", $k);
 			}
 			if($row['level']==LEVEL_MODER) {
 				templates::assign_vars($row, "usersModer", $k);
 			}
-			if($row['level']==LEVEL_USER) {
+			if(!isset($row['level']) || $row['level']==LEVEL_USER) {
 				templates::assign_vars($row, "usersUser", $k);
 			}
 			$i++;

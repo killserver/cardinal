@@ -19,9 +19,9 @@ die();
 }
 
 function nchr($ascii){return function_call('chr', array($ascii));}
-function or_chr($ascii) {
+function or_chr($code) {
 	if(function_exists("mb_chr") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload')!==false && MB_OVERLOAD_STRING) {
-		return mb_chr($ascii, config::Select('charset'));
+		return mb_chr($code, config::Select('charset'));
 	}
 	if(0x80 > $code %= 0x200000) {
 		$s = chr($code);
@@ -231,16 +231,15 @@ function or_nstr_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT) {
 
 function nstr_padv2($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT){return function_call('nstr_pad', array($str, $pad_len, $pad_str, $dir));}
 function or_nstr_padv2($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT) {
-    $encoding = iconv_charset($str);
     $padBefore = $dir === STR_PAD_BOTH || $dir === STR_PAD_LEFT;
     $padAfter = $dir === STR_PAD_BOTH || $dir === STR_PAD_RIGHT;
-    $pad_len -= nstrlen($str, $encoding);
+    $pad_len -= nstrlen($str);
     $targetLen = $padBefore && $padAfter ? $pad_len / 2 : $pad_len;
-    $strToRepeatLen = nstrlen($pad_str, $encoding);
+    $strToRepeatLen = nstrlen($pad_str);
     $repeatTimes = ceil($targetLen / $strToRepeatLen);
     $repeatedString = str_repeat($pad_str, max(0, $repeatTimes)); // safe if used with valid utf-8 strings
-    $before = $padBefore ? nsubstr($repeatedString, 0, floor($targetLen), $encoding) : '';
-    $after = $padAfter ? nsubstr($repeatedString, 0, ceil($targetLen), $encoding) : '';
+    $before = $padBefore ? nsubstr($repeatedString, 0, floor($targetLen)) : '';
+    $after = $padAfter ? nsubstr($repeatedString, 0, ceil($targetLen)) : '';
     return $before . $str . $after;
 }
 
@@ -299,17 +298,6 @@ function nlcfirst($text, $all = false) {
 		$fc .= strtolowers(nsubstr($text, 1));
 	}
 	return $fc;
-}
-
-/*
- New on version 6.3
-*/
-function is_ascii($str){return function_call('is_ascii', array($str));}
-function or_is_ascii($str) {
-	if(is_array($str)) {
-		$str = implode($str);
-	}
-	return !preg_match('/[^\x00-\x7F]/S', $str);
 }
 
 /*
@@ -488,7 +476,7 @@ function or_plural_form($arr) {
 
 function _e($arr){return function_call('_e', func_get_args());}
 function or__e() {
-	$ret = func_get_args();
+	$ret = $rets = func_get_args();
 	if(class_exists("cardinalEvent") && method_exists("cardinalEvent", "execute")) {
 		$rets = cardinalEvent::execute("_e_before", $ret);
 	}

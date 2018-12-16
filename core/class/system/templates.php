@@ -131,7 +131,7 @@ class templates {
 			$phpEx = PHP_EX;
 		}
 		if(file_exists(PATH_SKINS.self::$skins.DS."functions.".$phpEx)) {
-			include_once(PATH_SKINS.self::$skins.DS."functions.".$phpEx);
+			require_once(PATH_SKINS.self::$skins.DS."functions.".$phpEx);
 		}
 		if(!defined("TEMPLATEPATH")) {
 			define("TEMPLATEPATH", PATH_SKINS.self::$skins.DS);
@@ -823,7 +823,7 @@ class templates {
     final private static function checkMobileExec($type) {
 	global $mobileDetect;
 		if(!in_array($type, array('desktop', 'tablet', 'mobile', 'iOS', 'androidOS'))) {
-			throw trigger_error("ERROR check type device");
+			throw new Exception("ERROR check type device");
 		}
 		if(!is_object($mobileDetect)) {
 			$mobileDetect = new Mobile_Detect();
@@ -1317,7 +1317,7 @@ class templates {
 		} else {
 			$file = array($array[1]);
 		}
-		$files = self::load_templates($file[0], "", (isset($file[1]) && !empty($file[1]) ? $file[1] : "null"));
+		$files = self::load_templates($file[0], "", (isset($file[1]) && !empty($file[1]) ? $file[1] : "null"), "");
 		$files = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $files);
 		return $files;
 	}
@@ -1427,13 +1427,23 @@ class templates {
 	}
 
 	final private static function callFn($arr) {
-		if(function_exists($arr[1])) {
-			if(strpos($arr[3], ";")!==false) {
-				$arr[3] = explode(";", $arr[3]);
+		if(is_callable($arr[1])) {
+			if(isset($arr[3])) {
+				if(strpos($arr[3], ";")!==false) {
+					$arr[3] = explode(";", $arr[3]);
+				} else {
+					$arr[3] = array($arr[3]);
+				}
 			} else {
-				$arr[3] = array($arr[3]);
+				$arr[3] = array();
 			}
-			return call_user_func_array($arr[1], $arr[3]);
+			$res = call_user_func_array($arr[1], $arr[3]);
+			if($res===true) {
+				$res = "true";
+			} else if($res===false) {
+				$res = "false";
+			}
+			return $res;
 		} else {
 			return $arr[0];
 		}
@@ -1506,12 +1516,13 @@ class templates {
 		for($i=0;$i<sizeof($size);$i++) {
 			$rets[$size[$i]] = array("img" => self::imageRes(array("", $link."&width=".$size[$i])), "size" => $size[$i]);
 		}
-		return (sizeof($rets)>0 ? $rets : $ret);
+		return (sizeof($rets)>0 ? $rets : $link);
 	}
 
 	final private static function retinaImg($arr) {
 		$link = $arr[1];
 		$size = false;
+		$type = "img";
 		if(isset($arr[4])) {
 			$size = $arr[4];
 		}
@@ -1677,6 +1688,8 @@ class templates {
 			$src_img = imagecreatefromgif($filename_ROOT_PATH);
 		} elseif($image_type == IMAGETYPE_PNG) {
 			$src_img = imagecreatefrompng($filename_ROOT_PATH);
+		} else {
+			throw new Exception("Error type image");die();
 		}
 		imagealphablending( $dest_imgs, false );
 		imagesavealpha( $dest_imgs, true );
@@ -1726,7 +1739,7 @@ class templates {
 		if($image_type == IMAGETYPE_JPEG) {
 			imagejpeg($thumb, $filename_ROOT_PATH, $compression);
 		} elseif($image_type == IMAGETYPE_GIF) {
-			imagegif($thumb, $filename_ROOT_PATH, $compression);
+			imagegif($thumb, $filename_ROOT_PATH);
 		} elseif($image_type == IMAGETYPE_PNG) {
 			//header("content-type:image/png");
 			imagepng($thumb, $filename_ROOT_PATH);
@@ -1771,16 +1784,19 @@ class templates {
 	 * @param string $dir Directory template
 	 * @return string Template for further using
      */
-	final public static function load_templates($file, $charset = "", $dir = "null") {
+	final public static function load_templates($file, $charset = "", $dir = "null", $type = true) {
+		if($type===true) {
+			$type = ".".self::$typeTpl;
+		}
 		$time = self::time();
 		if($dir == "null") {
-			$tpl = self::loadFile(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".".self::$typeTpl);
+			$tpl = self::loadFile(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.$type);
 		} elseif($dir=="admin") {
-			$tpl = self::loadFile(ROOT_PATH.ADMINCP_DIRECTORY.DS."temp".DS.$file.".".self::$typeTpl);
+			$tpl = self::loadFile(ROOT_PATH.ADMINCP_DIRECTORY.DS."temp".DS.$file.$type);
 		} elseif(empty($dir)) {
-			$tpl = self::loadFile(ROOT_PATH."".self::$dir_skins.DS.$file.".".self::$typeTpl);
+			$tpl = self::loadFile(ROOT_PATH."".self::$dir_skins.DS.$file.$type);
 		} else {
-			$tpl = self::loadFile(ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".".self::$typeTpl);
+			$tpl = self::loadFile(ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.$type);
 		}
 		if(!empty($charset)) {
 			$tpl = iconv($charset, modules::get_config("charset"), $tpl);
@@ -1807,7 +1823,6 @@ class templates {
 	 * @access public
 	 * @param string $file File template
 	 * @param string $dir Directory template
-	 * @param bool|false $test //ToDo: WTF?!
 	 * @return array|mixed|NUll|string Completed template
      */
 	final public static function completed_assign_vars($file, $dir = "null") {
@@ -1829,20 +1844,39 @@ class templates {
 	 * @access public
 	 * @param string $file File template
 	 * @param string $dir Directory template
-	 * @param bool|false $test //ToDo: WTF?!
 	 * @return array|mixed|NUll|string Completed template
 	 */
-	final public static function complited_assing_vars($file, $dir = "null", $test = false) { return self::completed_assign_vars($file, $dir, $test); }
+	final public static function complited_assing_vars($file, $dir = "null") {
+		return self::completed_assign_vars($file, $dir);
+	}
 
-	final public static function check_exists($file, $dir = "null") {
+	final public static function check_exists($file, $dir = "null", $type = true) {
+		if($type===true) {
+			$type = ".".self::$typeTpl;
+		}
 		if($dir == "null") {
-			return file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.".".self::$typeTpl);
+			return file_exists(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.$type);
 		} elseif($dir=="admin") {
-			$tpl = file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."temp".DS.$file.".".self::$typeTpl);
+			$tpl = file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."temp".DS.$file.$type);
 		} elseif(empty($dir)) {
-			return file_exists(ROOT_PATH."".self::$dir_skins.DS.$file.".".self::$typeTpl);
+			return file_exists(ROOT_PATH."".self::$dir_skins.DS.$file.$type);
 		} else {
-			return file_exists(ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.".".self::$typeTpl);
+			return file_exists(ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.$type);
+		}
+	}
+
+	final public static function findTemplate($file, $dir = "null", $type = true) {
+		if($type===true) {
+			$type = ".".self::$typeTpl;
+		}
+		if($dir == "null") {
+			return (ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.$file.$type);
+		} elseif($dir=="admin") {
+			$tpl = (ROOT_PATH.ADMINCP_DIRECTORY.DS."temp".DS.$file.$type);
+		} elseif(empty($dir)) {
+			return (ROOT_PATH."".self::$dir_skins.DS.$file.$type);
+		} else {
+			return (ROOT_PATH."".self::$dir_skins.DS.$dir.DS.$file.$type);
 		}
 	}
 
@@ -1946,6 +1980,7 @@ class templates {
 		} else {
 			$temp = ", H:i";
 		}
+		$only_date = false;
 		if(isset($arr[4]) && !empty($arr[4])) {
 			$only_date = true;
 		}
@@ -1964,20 +1999,29 @@ class templates {
 		return langdate($date, $temp, $only_date);
 	}
 
+	private static function set($arr) {
+		self::$blocks[$arr[1]] = self::comp_datas($arr[2]);
+		return "";
+	}
+
 	/**
 	 * Final completed template
 	 * @access public
 	 * @param string $tpl File template
 	 * @param string $file Sub file for completed
-	 * @param bool|false $test ToDo: WTF?!
+	 * @param string $type Type compile
 	 * @return array|mixed|NUll Done completed
      */
 	public static function comp_datas($tpl, $file = "null", $type = "all") {
 		$tpl = preg_replace("/\/\/\/\*\*\*(.+?)\*\*\*\/\/\//is", "", $tpl);
-		$tpl = execEvent("compileTPL", $tpl, $file, $type);
+		if(function_exists("execEvent")) {
+			$tpl = execEvent("compileTPL", $tpl, $file, $type);
+			$tpl = execEvent("templates::compile::before", $tpl, $file, $type);
+		}
+		$tpl = self::callback_array("#\[SET \{(.+?)\}=\{(.+?)\}\]#i", ("templates::set"), $tpl);
 
 		if($type=="all" || $type=="ecomp") {
-			if(modules::manifest_get(array("temp", "block"))!==false) {
+			if(class_exists("modules") && modules::manifest_get(array("temp", "block"))!==false) {
 				self::$blocks = array_merge(self::$blocks, modules::manifest_get(array("temp", "block")));
 			}
 			foreach(self::$blocks as $name => $val) {
@@ -2078,8 +2122,8 @@ class templates {
 			$tpl = self::callback_array("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
 			$tpl = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $tpl);
 			$tpl = self::callback_array("#\{IMG_[\"'](.+?)[\"']\}#", ("templates::imageRes"), $tpl);
-			$tpl = self::callback_array("#\{RETINA_[\"'](.+?)[\"'],[\"'](.+?)[\"'](|,[\"'](.+?)[\"'])\}#", ("templates::retinaImg"), $tpl);
 			$tpl = self::callback_array("#\{FN_[\"'](.+?)[\"'](,[\"'](.*?)[\"'])\}#", "templates::callFn", $tpl);
+			$tpl = self::callback_array("#\{RETINA_[\"'](.+?)[\"'],[\"'](.+?)[\"'](|,[\"'](.+?)[\"'])\}#", ("templates::retinaImg"), $tpl);
 			if(strpos($tpl, "[clear]") !== false) {
 				foreach($array_use as $name => $val) {
 					unset(self::$blocks[$name]);
@@ -2090,14 +2134,18 @@ class templates {
 		}
 
 		$tpl = self::callback_array("#\{E_\[(.+?)\](|\[(.+?)\])\}#", ("templates::execEvent"), $tpl);
+		if(function_exists("execEvent")) {
+			$tpl = execEvent("templates::compile::after", $tpl, $file, $type);
+		}
 
 		return $tpl;
 	}
 
 	private static function execEvent($arr) {
-		$args = array();
+		$args = array($arr[1], false);
 		if(isset($arr[3])) {
 			$exp = explode(";", $arr[3]);
+			$size = 2;
 			for($i=0;$i<sizeof($exp);$i++) {
 				$exp[$i] = explode("=", $exp[$i]);
 				if(isset($exp[$i][0]) && isset($exp[$i][1])) {
@@ -2105,11 +2153,13 @@ class templates {
 				} if(isset($exp[$i][0]) && !isset($exp[$i][1])) {
 					$args[$exp[$i][0]] = true;
 				} if(!isset($exp[$i][0]) && isset($exp[$i][1])) {
-					$args[] = $exp[$i][1];
+					$args[$size] = $exp[$i][1];
 				}
+				$size++;
 			}
 		}
-		return call_user_func_array("cardinalEvent::execute", array($arr[1], $args));
+		$ret = call_user_func_array("cardinalEvent::execute", $args);
+		return ($ret===false ? "" : $ret);
 	}
 
 	/**
@@ -2234,6 +2284,17 @@ class templates {
 	return $html;
 	}
 	// Gorlum's minifier EOF
+	
+	final public static function error($mess) {
+		if(self::check_exists(self::$mainTpl, self::$skins)) {
+			self::assign_var("message", $mess);
+			$h = self::completed_assign_vars(self::$mainTpl, (!empty(self::$mainSkins) ? self::$mainSkins : "null"));
+		} else {
+			$h = $mess;
+		}
+		self::completed($h);
+		self::display();
+	}
 
 	/**
 	 * Style error template
@@ -2318,13 +2379,16 @@ class templates {
 		} else {
 			$phpEx = ROOT_EX;
 		}
-		if(self::check_exists("functions", self::$skins, $phpEx)) {
-			include_once(PATH_SKINS.self::$skins.DS."functions.".$phpEx);
+		if(function_exists("execEventRef")) {
+			execEventRef("templates::display");
 		}
 		if(self::check_exists("tpl", self::$skins.DS."lang", $phpEx)) {
 			include_once(ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS."lang".DS."tpl.".$phpEx);
 		}
 		$h = self::completed_assign_vars(self::$mainTpl, (!empty(self::$mainSkins) ? self::$mainSkins : "null"));
+		if(function_exists("execEvent")) {
+			$h = execEvent("templates::mainPageLoad", $h);
+		}
 		if(self::check_exists("login", self::$skins)) {
 			$l = self::load_templates("login", modules::get_config("charset"), self::$skins);
 			$h = str_replace("{login}", $l, $h);
@@ -2333,13 +2397,24 @@ class templates {
 		if(isset(self::$module['head']['before'])) {
 			$head .= self::$module['head']['before'];
 		}
+		$no_js = false;
+		$no_css = false;
+		$headerInit = false;
 		if(strpos($h, "{create_js}")!==false) {
-			$head .= headers(self::$header, false, true);
-			$header = new Headers();
+			$no_js = true;
+			if($headerInit===false) {
+				$header = new Headers();
+			}
 			$h = str_replace("{create_js}", $header->create_js(), $h);
-		} else {
-			$head .= headers(self::$header);
 		}
+		if(strpos($h, "{create_css}")!==false) {
+			$no_css = true;
+			if($headerInit===false) {
+				$header = new Headers();
+			}
+			$h = str_replace("{create_css}", $header->create_css(), $h);
+		}
+		$head .= headers(self::$header, false, $no_js, $no_css);
 		if(isset(self::$module['head']['after'])) {
 			$head .= self::$module['head']['after'];
 		}
@@ -2355,15 +2430,6 @@ class templates {
 		$body .= self::$tmp;
 		if(isset(self::$module['body']['after'])) {
 			$body .= self::$module['body']['after'];
-		}
-		if(strpos($h, "{meta_tt}")!==false) {
-			if(isset(self::$header['meta_body'])) {
-				$mtt = meta(self::$header['meta_body']);
-				$h = str_replace("{meta_tt}", $mtt, $h);
-				unset($mtt);
-			} else {
-				$h = str_replace("{meta_tt}", meta(), $h);
-			}
 		}
 		if(isset($_GET['jajax']) || (getenv('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest' && isset($_GET['jajax']))) {
 			unset($h);
@@ -2388,6 +2454,8 @@ class templates {
 		}
 		if(config::Select("manifestCache")) {
 			$h = self::linkToHeader($h);
+		} else if(config::Select("fastLoad")) {
+			$h = self::linkToHeader($h, false);
 		}
 		$h = self::callback_array("#\{<html>\}#", ("templates::multipleHead"), $h);
 		if(!preg_match("#<html.*?lang=['\"](.+?)['\"].*?>#iU", $h)) {
@@ -2418,59 +2486,54 @@ class templates {
 		self::$time += self::time()-$time;
 	}
 
-	final private static function linkToHeader($tpl) {
-		$linkAll = array();
-		preg_match_all("#<link.*?href=['\"](.+?)['\"].*?>#is", $tpl, $link);
+	final private static function linkToHeader($tpl, $manifestAccess = true) {
+		if(!isset($_SERVER['REQUEST_URI'])) {
+			return $tpl;
+		}
+		$scripts = $css = array();
+		preg_match_all("#<link(.*?)href=['\"](.+?)['\"](.*?)>#is", $tpl, $link);
+		if(isset($link[2]) && is_Array($link[2]) && sizeof($link[2])>0) {
+			for($i=0;$i<sizeof($link[2]);$i++) {
+				if(strpos($link[2][$i], ".ico")===false && strpos($link[2][$i], ".png")===false && strpos($link[2][$i], ".jpg")===false && strpos($link[2][$i], ".jpeg")===false) {
+					$lk = "<link".$link[1][$i]."href=\"".$link[2][$i]."\"".$link[3][$i].">";
+					if(strpos($lk, "stylesheet")===false) {
+						continue;
+					}
+					$lk = str_replace("rel='stylesheet'", "rel=\"preload\" as=\"style\" onload=\"this.onload=null;this.rel='stylesheet'\"", $lk);
+					$lk = str_replace("rel='stylesheet'", "rel='preload' as='style' onload='this.onload=null;this.rel=\'stylesheet\''", $lk);
+					$tpl = str_replace($link[0][$i], $lk, $tpl);
+					$css[$link[2][$i]] = true;
+				}
+			}
+		}
+		preg_match_all("#<script.*?src=['\"](.+?)['\"].*?>#i", $tpl, $link);
 		if(isset($link[1]) && is_Array($link[1]) && sizeof($link[1])>0) {
-			$link[1] = array_unique($link[1]);
-			$link[1] = array_values($link[1]);
 			for($i=0;$i<sizeof($link[1]);$i++) {
 				if(strpos($link[1][$i], ".ico")===false && strpos($link[1][$i], ".png")===false && strpos($link[1][$i], ".jpg")===false && strpos($link[1][$i], ".jpeg")===false) {
-					header("link: <".$link[1][$i].">; rel=preload; as=style", false);
-				} else {
-					unset($link[1][$i]);
+					$scripts[$link[1][$i]] = true;
 				}
 			}
-			$linkAll = array_merge($linkAll, $link[1]);
 		}
-		preg_match_all("#<script.*?src=['\"](.+?)['\"].*?>#is", $tpl, $link);
-		if(isset($link[1]) && is_Array($link[1]) && sizeof($link[1])>0) {
-			$link[1] = array_unique($link[1]);
-			$link[1] = array_values($link[1]);
-			for($i=0;$i<sizeof($link[1]);$i++) {
-				if(strpos($link[1][$i], ".ico")===false && strpos($link[1][$i], ".png")===false && strpos($link[1][$i], ".jpg")===false && strpos($link[1][$i], ".jpeg")===false) {
-					header("link: <".$link[1][$i].">; rel=preload; as=script", false);
-				} else {
-					unset($link[1][$i]);
-				}
-			}
-			$linkAll = array_merge($linkAll, $link[1]);
+		$scripts = array_keys($scripts);
+		$scripts = array_unique($scripts);
+		$scripts = array_values($scripts);
+		$css = array_keys($css);
+		$css = array_unique($css);
+		$css = array_values($css);
+		for($i=0;$i<sizeof($scripts);$i++) {
+			header("link: <".$scripts[$i].">; rel=preload; as=script", false);
 		}
-		if(file_exists(PATH_MANIFEST) && is_dir(PATH_MANIFEST) && is_writable(PATH_MANIFEST)) {
-			preg_match_all("#<img.*?src=['\"](.+?)['\"].*?>#is", $tpl, $link);
-			if(isset($link[1]) && is_Array($link[1]) && sizeof($link[1])>0) {
-				$link[1] = array_unique($link[1]);
-				$link[1] = array_values($link[1]);
-				$linkAll = array_merge($linkAll, $link[1]);
-			}
-			$mdLink = $linkAll;
-			for($i=0;$i<sizeof($linkAll);$i++) {
-				$time = time();
-				if(strpos($mdLink[$i], "".$time)!==false) {
-					$mdLink[$i] = str_replace($time, "", $mdLink[$i]);
-				}
-				if(strpos($linkAll[$i], "&")!==false && strpos($linkAll[$i], "&amp;")===false) {
-					$linkAll[$i] = str_replace("&", "&amp;", $linkAll[$i]);
-				}
-			}
-			$mdLink = array_unique($mdLink);
-			$mdLink = array_values($mdLink);
-			$linkAll = array_unique($linkAll);
-			$linkAll = array_values($linkAll);
+		for($i=0;$i<sizeof($css);$i++) {
+			header("link: <".$css[$i].">; rel=preload; as=style", false);
+		}
+		if($manifestAccess && file_exists(PATH_MANIFEST) && is_dir(PATH_MANIFEST) && file_exists(PATH_MANIFEST.md5($_SERVER['REQUEST_URI']).".txt")) {
+			return file_get_contents(PATH_MANIFEST.md5($_SERVER['REQUEST_URI']).".txt");
+		}
+		if($manifestAccess && file_exists(PATH_MANIFEST) && is_dir(PATH_MANIFEST) && is_writable(PATH_MANIFEST)) {
+			$linkAll = array_merge($scripts, $css);
 			if(isset($linkAll) && is_Array($linkAll) && sizeof($linkAll)>0) {
 				$linkAll = serialize($linkAll);
-				$mdLink = serialize($mdLink);
-				$md5 = var_export($mdLink, true);
+				$md5 = var_export($linkAll, true);
 				$md5 = md5($md5);
 				if(!file_exists(PATH_MANIFEST.$md5.".txt")) {
 					file_put_contents(PATH_MANIFEST.$md5.".txt", $linkAll);

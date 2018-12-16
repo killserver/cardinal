@@ -7,10 +7,10 @@ class SettingUser extends Core {
 	private static $exclude = array();
 	private static $title = "";
 
-	public static function add($html, $name = "", $altName = "") {
-		if(empty($altName)) {
+	public static function add($html, $name = ""/*, $altName = ""*/) {
+		/*if(empty($altName)) {
 			$altName = uniqid();
-		}
+		}*/
 		$file = $filename = "";
 		$trace = debug_backtrace();
 		if(isset($trace[0]) && isset($trace[0]['file'])) {
@@ -119,11 +119,12 @@ class SettingUser extends Core {
 		templates::accessNull();
 		$tmp = str_replace("{head}", (sizeof(self::$head)>1 ? implode("", self::$head) : ""), $tmp);
 		$tmp = str_replace("{data}", implode("", self::$html), $tmp);
+		$tmp = templates::comp_datas($tmp);
 		$name = lang::get_lang("sitename");
 		$descr = lang::get_lang("s_description");
 		$this->title((empty(self::$title) ? "{L_'Настройки'}" : self::$title));
 		$tmp = str_replace("{sitename}", htmlspecialchars($name), $tmp);
-		$tmp = str_replace("{sitename}", htmlspecialchars($descr), $tmp);
+		$tmp = str_replace("{s_description}", htmlspecialchars($descr), $tmp);
 		$this->Prints($tmp, true);
 	}
 

@@ -33,12 +33,13 @@
 			langSupport = JSON.parse(langSupport);
 		} catch(Exception) {}
 	</script>
+	{header}
 
 	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 </head>
 <body class="page-body {C_defaultAdminSkin}">
 
-	[if {C_accessChangeSkin}==true]<div class="settings-pane">
+	[if {C_accessChangeSkin}==true]<div class="settings-pane accessChangeSkin">
 			
 		<a href="#" data-toggle="settings-pane" data-animate="true">
 			&times;
@@ -254,7 +255,7 @@
 					</div>
 					
 					<!-- This will open the popup with user profile settings, you can use for any purpose, just be creative -->
-					[if {C_accessChangeSkin}==true]<div class="settings-icon">
+					[if {C_accessChangeSkin}==true]<div class="settings-icon accessChangeSkin">
 						<a href="#" data-toggle="settings-pane" data-animate="true">
 							<i class="linecons-cog"></i>
 						</a>
@@ -437,6 +438,7 @@
 		
 	</div>
 	
+	{E_[admin_footer]}
 	
 	<div class="modal fade custom-width" id="modal-3" data-backdrop="static">
 		<div class="modal-dialog" style="width:95%;height:90%;">
@@ -559,10 +561,12 @@
 		var link = jQuery("#"+field_id).val();
 		var http_link = link;
 		link = link.replace(default_link, "");
-		jQuery("#"+field_id).val(link);
-		var par = jQuery("#img"+field_id).parent();
-		par.find("#img"+field_id).remove();
-		par.prepend('<a data-link="'+field_id+'" id="img'+field_id+'" href="'+http_link+'"'+(type=="image" || type=="imageArrayAccess" ? " class=\"showPreview new\"" : "")+' target="_blank">Просмотреть</a>');
+		jQuery("#"+field_id).val(link).change();
+		var par = jQuery("#"+field_id)[0].closest(".row");
+		var pas = $(par).find("a[href*='file']").parent();
+		$(par).find("br").remove();
+		$(par).find("a[data-link]").remove();
+		pas.append('<a data-link="'+field_id+'" id="img'+field_id+'" href="'+http_link+'"'+(type.indexOf("image")>-1 || type.indexOf("imageAccess")>-1 || type.indexOf("imageArrayAccess")>-1 ? " class=\"showPreview new\"" : "")+' target="_blank">Просмотреть</a>');
 		jQuery(".showPreview.new").each(function(i, elem) {
 			jQuery(elem).parent().find("img").remove();
 			jQuery(elem).after("<br><img src='"+jQuery(elem).attr("href")+"' data-link='"+jQuery(elem).attr("data-link")+"' width='200'>");
@@ -573,7 +577,7 @@
 	<style type="text/css">.mce-branding-powered-by { display: none !important; }</style>
 
 	<!-- JavaScripts initializations and stuff -->
-	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-custom.js?1"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-custom.js?2"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/toastr/toastr.min.js?1"></script>
 </body>
 </html>

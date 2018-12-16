@@ -32,3 +32,15 @@ if(!function_exists('is_iterable')) {
 function is_uuid4($uuid) {
 	return Validate::is_uuid4($uuid);
 }
+
+
+function is_utf8($str) {
+	return Validate::is_utf8($str);
+}
+
+/*
+ New on version 6.3
+*/
+function is_ascii($str) {
+	return Validate::is_ascii($str);
+}

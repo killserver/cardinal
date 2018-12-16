@@ -1,5 +1,5 @@
 {
-	"selector": "textarea:not(.onlyText)",
+	"selector": "textarea:not(.onlyText):not(.onlytext)",
 	"height": 500,
 	"language" : selectLang,
 	"plugins": ["advlist", "autolink", "code", "charmap", "fullscreen", "lists", "link", "localautosave", "media", "image", "imagetools", "paste", "responsivefilemanager", "visualblocks"],
@@ -38,6 +38,26 @@
 	"external_filemanager_path": default_admin_link+"assets/tinymce/filemanager/",
 	"filemanager_title": "{L_'Загрузка файлов'}", 
 	"external_plugins": { "filemanager" : default_admin_link+"assets/tinymce/filemanager/plugin.min.js"},
-	"readonly": (typeof(readOnlyEditor)=='undefined' ? 0 : 1)
+	"readonly": (typeof(readOnlyEditor)=='undefined' ? 0 : 1),
+	"oninit": function() {
+		var ed = tinyMCE.get(0);
+		ed.pasteAsPlainText = true;
+		if(tinymce.isOpera || /Firefox\/2/.test(navigator.userAgent)) {
+			ed.onKeyDown.add(function (ed, e) {
+				if(((tinymce.isMac ? e.metaKey : e.ctrlKey) && e.keyCode == 86) || (e.shiftKey && e.keyCode == 45)) {
+					ed.pasteAsPlainText = true;
+				}
+			});
+		} else {
+			ed.onPaste.addToTop(function (ed, e) {
+				ed.pasteAsPlainText = true;
+			});
+		}
+	},
+	"setup": function(ed) {
+		ed.on('change', function(e) {
+			$("#"+ed.id).text(ed.getContent());
+		});
+	}
 /* remove this */
 }

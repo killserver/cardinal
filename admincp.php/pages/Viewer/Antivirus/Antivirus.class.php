@@ -72,7 +72,7 @@ class Antivirus extends Core {
 			if(!file_exists(PATH_CACHE_SYSTEM."fileMask.sha1")) {
 				$md5 = array();
 				for($i=0;$i<sizeof($fileList);$i++) {
-					if(strpos($fileList[$i], PATH_CACHE_SYSTEM)!==false || strpos($fileList[$i], PATH_CACHE_TEMP)!==false || strpos($fileList[$i], PATH_CACHE_PAGE)!==false) {
+					if(strpos($fileList[$i], PATH_CACHE_SYSTEM)!==false || strpos($fileList[$i], PATH_CACHE_PAGE)!==false) {
 						continue;
 					}
 					$path = str_replace(ROOT_PATH, "", $fileList[$i]);
@@ -117,7 +117,7 @@ class Antivirus extends Core {
 		$warning = array();
 		$count = 0;
 		for($i=0;$i<sizeof($dirList);$i++) {
-			if(in_array($dirList[$i]['path'], $exclude) || (strpos($dirList[$i]['path'], PATH_CACHE)!==false || strpos($dirList[$i]['path'], PATH_CACHE_SYSTEM)!==false || strpos($dirList[$i]['path'], PATH_CACHE_TEMP)!==false || strpos($dirList[$i]['path'], PATH_CACHE_PAGE)!==false)) {
+			if(in_array($dirList[$i]['path'], $exclude) || (strpos($dirList[$i]['path'], PATH_CACHE)!==false || strpos($dirList[$i]['path'], PATH_CACHE_SYSTEM)!==false || strpos($dirList[$i]['path'], PATH_CACHE_PAGE)!==false)) {
 				// need  || strpos($dirList[$i]['path'], ROOT_PATH."uploads".DS)!==false) ??
 				continue;
 			}

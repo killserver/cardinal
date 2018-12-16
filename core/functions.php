@@ -58,13 +58,17 @@ global $globalClass;
 					if($inc && is_file($dir.DS.$file) && strpos($file, $modules) === false) {
 						continue;
 					}
-					if($inc && !modules::load_modules($strip_path.$file, $modules)) {
+					$check = file_exists(ROOT_PATH.$strip_path.$file) && !is_file(ROOT_PATH.$strip_path.$file) && file_exists(ROOT_PATH.$strip_path.$file.DS) && is_dir(ROOT_PATH.$strip_path.$file.DS);
+					if($inc && !modules::load_modules($strip_path.$file, $modules, $check)) {
 						if(!$force) {
 							continue;
 						}
 					}
+					$replace = $modules;
 					if(strpos($file, "dev-")!==false) {
-						if(!isset($_COOKIE['dev']) && userlevels::get("developer")) {
+						if(isset($_COOKIE['cardinal_debug']) || userlevel::get("developer")) {
+							$replace = array($replace, "dev-");
+						} else {
 							continue;
 						}
 					}
@@ -72,17 +76,19 @@ global $globalClass;
 						$useNew = true;
 					}
 					if($useNew) {
-						$class = str_replace($modules, "", $file);
+						$class = str_replace($replace, "", $file);
 						if(file_exists($dir.$class.DS."init.".ROOT_EX)) {
 							require_once($dir.$class.DS."init.".ROOT_EX);
 						} else if(file_exists($dir.$class.DS.$class.".".ROOT_EX)) {
 							require_once($dir.$class.DS.$class.".".ROOT_EX);
+						} else if(file_exists($dir.$class.DS.$class.".class.".ROOT_EX)) {
+							require_once($dir.$class.DS.$class.".class.".ROOT_EX);
 						}
 					} else {
 						require_once($dir.$file);
 					}
 					if($inc) {
-						$class = str_replace($modules, "", $file);
+						$class = str_replace($replace, "", $file);
 						if(class_exists($class)) {
 							if(modules::initialize($class, ($useNew ? $dir.$class.DS : $dir.$file))) {
 								if($useNew) {

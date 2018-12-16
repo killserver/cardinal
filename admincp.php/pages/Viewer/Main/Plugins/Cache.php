@@ -17,13 +17,6 @@ class Main_Cache extends Main {
 	
 	public function __construct() {
 		if(isset($_GET['clear']) && isset($_GET['tmp'])) {
-			$path = PATH_CACHE_TEMP;
-			$files = read_dir($path);
-			for($i=0;$i<sizeof($files);$i++) {
-				if($files[$i] != "index.php" && $files[$i] != "index.html") {
-					unlink($path.$files[$i]);
-				}
-			}
 			$path = PATH_CACHE_PAGE;
 			$files = read_dir($path);
 			for($i=0;$i<sizeof($files);$i++) {
@@ -81,15 +74,6 @@ class Main_Cache extends Main {
 		templates::assign_var("CacheSizeS", $this->formatSize($size, "text"));
 		templates::assign_var("CacheSize", $this->formatSize($size, "integer"));
 		$size = 0;
-		$path = PATH_CACHE_TEMP;
-		$files = read_dir($path);
-		for($i=0;$i<sizeof($files);$i++) {
-			if($files[$i] == "index.php" || $files[$i] == "index.html") {
-				unset($files[$i]);
-			} else {
-				$size += filesize($path.$files[$i]);
-			}
-		}
 		$path = PATH_CACHE_PAGE;
 		$files = read_dir($path);
 		for($i=0;$i<sizeof($files);$i++) {

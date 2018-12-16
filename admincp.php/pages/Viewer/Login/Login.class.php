@@ -55,7 +55,7 @@ class Login extends Core {
 	}
 
 	function __construct() {
-	global $user, $users;
+	global $user;
 		if(isset($_GET['out'])) {
 			HTTP::set_cookie(COOK_ADMIN_USER, "", true);
 			HTTP::set_cookie(COOK_ADMIN_PASS, "", true);
@@ -71,6 +71,7 @@ class Login extends Core {
 			Debug::activShow(false);
 			$check = false;
 			$is_admin = false;
+            $given_username = $sendPass = "";
 			if((Arr::get($_POST, 'username', false)) && (Arr::get($_POST, 'passwd', false))) {
 				$given_username = Arr::get($_POST, 'username', "");
 				$given_password = Arr::get($_POST, 'passwd', "");
@@ -87,9 +88,6 @@ class Login extends Core {
 				}
 			}
 			if($check===true) {
-				if($is_admin) {
-					$row = array("pass" => "cardinal", "level" => LEVEL_CREATOR);
-				}
 				cardinal::RegAction("Авторизация в админ-панели. Пользователь \"".$given_username."\"");
 				$resp['accessGranted'] = true;
 				HTTP::set_cookie('is_admin_login', 1, false, false);

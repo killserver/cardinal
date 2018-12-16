@@ -12,8 +12,8 @@ class Languages extends Core {
 			return $text;
 		}
 		$isArr = false;
+        $orText = $text;
 		if(is_array($text)) {
-			$orText = $text;
 			foreach($text as $k => $v) {
 				if(is_array($v)) {
 					unset($text[$k]);
@@ -146,6 +146,7 @@ class Languages extends Core {
 				$v = $this->translate($v, $newLang, $orLang);
 				lang::Update($newLang, $k, $v);
 			}
+			execEvent("create_language", $newLang);
 			cardinal::RegAction("Создан новый язык \"".$newLang."\" в разделе языковой панели");
 			location("./?pages=Languages&page=main");
 			return true;
@@ -196,7 +197,7 @@ class Languages extends Core {
 			if(!is_writeable(PATH_MEDIA)) {
 				chmod(PATH_MEDIA, 0777);
 			}
-			@file_put_contents(PATH_MEDIA."config.init.".ROOT_EX, '<?php'.PHP_EOL.'lang::set_lang("'.$lang.'");Route::SetLang("'.$lang.'", true);$mainLangSite = "'.$lang.'";');
+			@file_put_contents(PATH_MEDIA."config.langSettings.".ROOT_EX, '<?php'.PHP_EOL.'lang::set_lang("'.$lang.'");Route::SetLang("'.$lang.'", true);$mainLangSite = "'.$lang.'";');
 			$ret = "1";
 			HTTP::echos($ret);
 			cardinal::RegAction("Установлен язык по-умолчанию \"".$lang."\" в разделе языковой панели");

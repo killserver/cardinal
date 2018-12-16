@@ -21,7 +21,7 @@ class Info {
 		execEventRef("ping_list", $pingList);
 		for($i=0;$i<sizeof($pingList);$i++) {
 			$parser = new Parser();
-			$parser->url($parsers);
+			$parser->url($pingList[$i]);
 			$parser->timeout(3);
 			$parser->post(array("server" => str_replace("https", "http", config::Select('default_http_host')), "ip" => (isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR'] : ""), "version" => (defined("VERSION") ? VERSION : ""), "online" => $online));
 			$parser->get();

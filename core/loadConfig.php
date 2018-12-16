@@ -8,6 +8,7 @@ function cardinalAutoload($class) {
     if(stripos(ini_get('include_path'), $class)!==false && class_exists($class, false)) {
         return false;
     }
+    $class = str_replace("\\", DIRECTORY_SEPARATOR, $class);
     if(file_exists(PATH_AUTOLOADS.$class.".".ROOT_EX)) {
         include_once(PATH_AUTOLOADS.$class.".".ROOT_EX);
     } elseif(file_exists(PATH_CLASS.$class.".".ROOT_EX)) {
@@ -19,15 +20,9 @@ function cardinalAutoload($class) {
     }
 }
 if(version_compare(PHP_VERSION, '5.1.2', '>=')) {
-	if (version_compare(PHP_VERSION, '5.3.0', '>=')) {
-		spl_autoload_register('cardinalAutoload', true, true);
-	} else {
-		spl_autoload_register('cardinalAutoload');
-	}
+	include(dirname(__FILE__).DIRECTORY_SEPARATOR."register70.php");
 } else {
-	function __autoload($class) {
-		cardinalAutoload($class);
-	}
+	include(dirname(__FILE__).DIRECTORY_SEPARATOR."register53.php");
 }
 
 function addEvent() {
@@ -40,25 +35,27 @@ function addEventRef() {
 	cardinalEvent::loader($loader[0]);
 	return call_user_func_array("cardinalEvent::addListenerRef", func_get_args());
 }
-
 function removeEvent() {
 	return call_user_func_array("cardinalEvent::removeListener", func_get_args());
 }
-
 function removeEventRef() {
 	return call_user_func_array("cardinalEvent::removeListenerRef", func_get_args());
 }
-
 function execEvent() {
 	$loader = debug_backtrace();
 	cardinalEvent::loader($loader[0]);
 	return call_user_func_array("cardinalEvent::execute", func_get_args());
 }
-
-function execEventRef($action, &$args1 = "", &$args2 = "", &$args3 = "", &$args4 = "", &$args5 = "", &$args6 = "", &$args7 = "", &$args8 = "") {
+function execEventRef($action, &$args1 = "", &$args2 = "", &$args3 = "", &$args4 = "", &$args5 = "", &$args6 = "", &$args7 = "", &$args8 = "", &$args9 = "", &$args10 = "") {
 	$loader = debug_backtrace();
 	cardinalEvent::loader($loader[0]);
-	return call_user_func_array("cardinalEvent::executeRef", array($action, &$args1, &$args2, &$args3, &$args4, &$args5, &$args6, &$args7, &$args8));
+	return call_user_func_array("cardinalEvent::executeRef", array($action, &$args1, &$args2, &$args3, &$args4, &$args5, &$args6, &$args7, &$args8, &$args9, &$args10));
+}
+function didEvent() {
+	return call_user_func_array("cardinalEvent::did", func_get_args());
+}
+function existsEvent() {
+	return call_user_func_array("cardinalEvent::exists", func_get_args());
 }
 
 function errorHeader() {
@@ -73,7 +70,7 @@ function errorHeader() {
 
 
 $host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua");
-$protocol = "http";
+HTTP::$protocol = $protocol = "http";
 if(
 	   (isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
 	|| (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && !empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')
@@ -84,7 +81,7 @@ if(
 	|| (isset($_SERVER['CF_VISITOR']) && $_SERVER['CF_VISITOR'] == '{"scheme":"https"}')
 	|| (isset($_SERVER['HTTP_CF_VISITOR']) && $_SERVER['HTTP_CF_VISITOR'] == '{"scheme":"https"}')
 ) {
-	$protocol = "https";
+	HTTP::$protocol = $protocol = "https";
 }
 $hostMD5 = substr(md5($host), 0, 6);
 if(isset($_SERVER['SCRIPT_NAME'])) {
@@ -100,6 +97,7 @@ $config = array(
 	"charset" => "utf-8",
 );
 $config = execEvent("before_load_config", $config);
+
 if(file_exists(PATH_MEDIA."config.client.".ROOT_EX)) {
 	if(!is_writable(PATH_MEDIA."config.client.".ROOT_EX)) {
 		@chmod(PATH_MEDIA."config.client.".ROOT_EX, 0664);
@@ -127,36 +125,36 @@ if(!defined("COOK_ADMIN_PASS")) {
 if(defined("VERSION") && !defined("START_VERSION")) {
 	define("START_VERSION", VERSION);
 }
-if(!defined("WITHOUT_DB")) {
-	define("INSTALLER", true);
+if(!defined("SUPPORT_WEBP")) {
+	define("SUPPORT_WEBP", BrowserSupport::webp());
+}
+if(!defined("SUPPORT_JP2")) {
+	define("SUPPORT_JP2", BrowserSupport::jp2());
+}
+if(!defined("SUPPORT_JXR")) {
+	define("SUPPORT_JXR", BrowserSupport::jxr());
+}
+if(!defined("SUPPORT_GZIP")) {
+	define("SUPPORT_GZIP", BrowserSupport::gzip());
 }
 
 
 
-if(defined("WITHOUT_DB")) {
-	$config = array_merge($config, array(
-		"default_http_local" => $link,
-		"default_http_hostname" => $host,
-		"default_http_host" => $protocol."://".$host.$link,
-	));
-	unset($link);
-}
-if(!defined("WITHOUT_DB") && !defined("IS_INSTALLER") && (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], "install")===false)) {
-	if(isset($_SERVER['PHP_SELF'])) {
-		$link = str_replace(array("index.".ROOT_EX, "install.".ROOT_EX, ADMINCP_DIRECTORY."/"), "", $_SERVER['PHP_SELF']);
-	} else {
-		$link = "/";
-	}
-	header("Location: ".(isset($_SERVER['HTTP_HOST']) ? $protocol."://".$_SERVER['HTTP_HOST'] : "").$link."install.".ROOT_EX);
-	unset($link);
-	die();
-}
+$config = array_merge($config, array(
+	"default_http_local" => $link,
+	"default_http_hostname" => $host,
+	"default_http_host" => $protocol."://".$host.$link,
+));
+unset($link);
 
 if(file_exists(PATH_MEDIA."config.".ROOT_EX)) {
 	require_once(PATH_MEDIA."config.".ROOT_EX);
 }
 if(file_exists(PATH_MEDIA."config.install.".ROOT_EX)) {
 	require_once(PATH_MEDIA."config.install.".ROOT_EX);
+}
+if(file_exists(PATH_MEDIA."config.langSettings.".ROOT_EX)) {
+	include_once(PATH_MEDIA."config.langSettings.".ROOT_EX);
 }
 if(file_exists(PATH_MEDIA."config.".str_replace("www.", "", $host).".".ROOT_EX)) {
 	require_once(PATH_MEDIA."config.".str_replace("www.", "", $host).".".ROOT_EX);

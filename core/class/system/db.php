@@ -146,9 +146,9 @@ class db {
     final public static function OpenDriver() {
 		$driv = self::$driver_name;
 		if(!is_string($driv) || !class_exists($driv)) {
-			if(defined("ROOT_PATH") && file_exists(PATH_CACHE_USERDATA."db_lock.lock") && is_readable(PATH_CACHE_USERDATA."db_lock.lock")) {
+			if(defined("PATH_CACHE_USERDATA") && file_exists(PATH_CACHE_USERDATA."db_lock.lock") && is_readable(PATH_CACHE_USERDATA."db_lock.lock")) {
 				$driv = file_get_contents(PATH_CACHE_USERDATA."db_lock.lock");
-			} elseif(!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock") && is_readable(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock")) {
+			} elseif(!defined("PATH_CACHE_USERDATA") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock") && is_readable(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock")) {
 				$driv = file_get_contents(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock");
 			} else {
 				self::$driverGen = true;
@@ -156,7 +156,7 @@ class db {
 				$driv = $driv[array_rand($driv)];
 				self::$driver_name = $driv;
 			}
-			if(!defined("ROOT_PATH")) {
+			if(!defined("PATH_CACHE_USERDATA")) {
 				include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."DBDrivers".DIRECTORY_SEPARATOR.$driv.".".ROOT_EX);
 			}
 		}
@@ -240,13 +240,13 @@ class db {
 					||
 					(
 						(
-							(defined("ROOT_PATH") && file_exists(PATH_MEDIA."db.".ROOT_EX))
+							(defined("PATH_MEDIA") && file_exists(PATH_MEDIA."db.".ROOT_EX))
 							||
-							(!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX))
+							(!defined("PATH_MEDIA") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.config.".ROOT_EX))
 							||
-							(defined("ROOT_PATH") && file_exists(PATH_MEDIA."db.".str_replace("www.", "", $host).".".ROOT_EX))
+							(defined("PATH_MEDIA") && file_exists(PATH_MEDIA."db.".str_replace("www.", "", $host).".".ROOT_EX))
 							||
-							(!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".str_replace("www.", "", $host).".".ROOT_EX))
+							(!defined("PATH_MEDIA") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.config.".str_replace("www.", "", $host).".".ROOT_EX))
 						)
 						&&
 						defined("WITHOUT_DB")
@@ -254,6 +254,9 @@ class db {
 				)
 			)
 		) {
+			if(!defined("PATH_MEDIA")) {
+				self::config();
+			}
 			self::init();
 		}
 	}
@@ -262,32 +265,40 @@ class db {
 		$host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua");
 		if(sizeof($config)==0 &&
 				(
-					(defined("ROOT_PATH") && !file_exists(PATH_MEDIA."db.".$host.".".ROOT_EX))
-					||
-					(defined("ROOT_PATH") && !file_exists(PATH_MEDIA."db.".ROOT_EX))
-					||
-					(!defined("ROOT_PATH") && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".$host.".".ROOT_EX))
-					||
-					(!defined("ROOT_PATH") && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX))
+					(defined("PATH_MEDIA") && !file_exists(PATH_MEDIA."db.".$host.".".ROOT_EX))
+					&&
+					(defined("PATH_MEDIA") && !file_exists(PATH_MEDIA."db.".ROOT_EX))
+					&&
+					(!defined("PATH_MEDIA") && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.config.".$host.".".ROOT_EX))
+					&&
+					(!defined("PATH_MEDIA") && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.config.".ROOT_EX))
 				)
 		) {
-			errorHeader();
+			if(function_exists("errorHeader")) {
+				errorHeader();
+			}
 			throw new Exception("Config file for db or data in config is not correct");
 			die();
-		} else if(defined("ROOT_PATH") && file_exists(PATH_MEDIA."db.".$host.".".ROOT_EX)) {
+		} else if(defined("PATH_MEDIA") && file_exists(PATH_MEDIA."db.".$host.".".ROOT_EX)) {
 			include_once(PATH_MEDIA."db.".$host.".".ROOT_EX);
 			if(isset($config['db'])) {
 				$config = $config['db'];
 			}
-		} else if(!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".$host.".".ROOT_EX)) {
-			include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".$host.".".ROOT_EX);
-		} else if(defined("ROOT_PATH") && file_exists(PATH_MEDIA."db.".ROOT_EX)) {
+		} else if(!defined("PATH_MEDIA") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.config.".$host.".".ROOT_EX)) {
+			include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."db.config.".$host.".".ROOT_EX);
+			if(isset($config['db'])) {
+				$config = $config['db'];
+			}
+		} else if(defined("PATH_MEDIA") && file_exists(PATH_MEDIA."db.".ROOT_EX)) {
 			include_once(PATH_MEDIA."db.".ROOT_EX);
 			if(isset($config['db'])) {
 				$config = $config['db'];
 			}
-		} else if(!defined("ROOT_PATH") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX)) {
-			include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."db.".ROOT_EX);
+		} else if(!defined("PATH_MEDIA") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.config.".ROOT_EX)) {
+			include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."db.config.".ROOT_EX);
+			if(isset($config['db'])) {
+				$config = $config['db'];
+			}
 		}
 		self::$configInit = array_merge(self::$configInit, $config);
 	}
@@ -307,49 +318,49 @@ class db {
 			$port = config::Select('db', 'port');
 		} else {
 			if(!isset(self::$configInit['driver'])) {
-				errorHeader();
+				if(function_exists("errorHeader")) { errorHeader(); }
 				throw new Exception("Error! Driver is not set");
 				die();
 			} else {
 				self::$driver_name = self::$configInit['driver'];
 			}
 			if(!isset(self::$configInit['db'])) {
-				errorHeader();
+				if(function_exists("errorHeader")) { errorHeader(); }
 				throw new Exception("Error! DB is not set");
 				die();
 			} else {
 				self::$dbName = self::$configInit['db'];
 			}
 			if(!isset(self::$configInit['host'])) {
-				errorHeader();
+				if(function_exists("errorHeader")) { errorHeader(); }
 				throw new Exception("Error! Host is not set");
 				die();
 			} else {
 				$host = self::$configInit['host'];
 			}
 			if(!isset(self::$configInit['user'])) {
-				errorHeader();
+				if(function_exists("errorHeader")) { errorHeader(); }
 				throw new Exception("Error! User is not set");
 				die();
 			} else {
 				$user = self::$configInit['user'];
 			}
 			if(!isset(self::$configInit['pass'])) {
-				errorHeader();
+				if(function_exists("errorHeader")) { errorHeader(); }
 				throw new Exception("Error! Password is not set");
 				die();
 			} else {
 				$pass = self::$configInit['pass'];
 			}
 			if(!isset(self::$configInit['charset'])) {
-				errorHeader();
+				if(function_exists("errorHeader")) { errorHeader(); }
 				throw new Exception("Error! Charset is not set");
 				die();
 			} else {
 				$chst = self::$configInit['charset'];
 			}
 			if(!isset(self::$configInit['port'])) {
-				errorHeader();
+				if(function_exists("errorHeader")) { errorHeader(); }
 				throw new Exception("Error! Port is not set");
 				die();
 			} else {
@@ -479,7 +490,7 @@ class db {
 		foreach(self::$param['param'] as $n => $v) {
 			$sql = str_replace(array("::".$n, ":".$n, "$".$n), $v, $sql);
 		}
-		unset(self::$param);
+		self::$param = array("sql" => "", "param" => array());
 		return self::query($sql);
 	}
 
@@ -507,7 +518,7 @@ class db {
      * @param bool $check Only execute query and return object
      * @return $this|bool This object or query or associative array
      */
-    final public static function doquery($query, $only = "", $check = false) {
+    final public static function doquery($query, $only = "") {
 	global $user;
 		$table = preg_replace("/(.*)(FROM|TABLE|UPDATE|INSERT INTO) (.+?) (.*)/", "$3", $query);
 		$badword = false;
@@ -529,7 +540,7 @@ class db {
 			$badword = true;
 		}
 		if($badword) {
-			errorHeader();
+			if(function_exists("errorHeader")) { errorHeader(); }
 			$message = 'Привет, я не знаю то, что Вы пробовали сделать, но команда, которую Вы только послали базе данных, не выглядела очень дружественной и она была заблокированна.<br /><br />Ваш IP, и другие данные переданны администрации сервера. Удачи!.';
 			$report  = "Hacking attempt (".date("d.m.Y H:i:s")." - [".time()."]):\n";
 			$report .= ">Database Inforamation\n";
@@ -561,19 +572,15 @@ class db {
 			die($message);
 		}
 		self::$qid = self::query($query);
-		if(!$check) {
-			if(strpos($query, "SELECT") !== false || strpos($query, "SHOW TABLE") !== false) {
-				if(!empty($only)) {
-					return self::$qid;
-				} else {
-					return self::fetch_assoc();
-				}
-			} else {
-				return self::$qid;
-			}
-		} else {
-			return $this;
-		}
+        if(strpos($query, "SELECT") !== false || strpos($query, "SHOW TABLE") !== false) {
+            if(!empty($only)) {
+                return self::$qid;
+            } else {
+                return self::fetch_assoc();
+            }
+        } else {
+            return self::$qid;
+        }
 	}
 
     /**
@@ -597,7 +604,7 @@ class db {
 			$db_name = config::Select('db','db');
 		} else {
 			if(!isset(self::$configInit['db'])) {
-				errorHeader();
+				if(function_exists("errorHeader")) { errorHeader(); }
 				throw new Exception("Error! DB is not set");
 			} else {
 				$db_name = self::$configInit['db'];
@@ -637,7 +644,7 @@ class db {
 			if($backtrace[$i]['file']!=$file) {
 				$ret = $backtrace[$i];
 				foreach($ret as $k => $v) {
-					if(is_string($v)) {
+					if(is_string($v) && defined("ROOT_PATH") && defined("DS")) {
 						$ret[$k] = str_replace(ROOT_PATH, DS, $v);
 					}
 				}
@@ -647,16 +654,7 @@ class db {
 		return $ret;
 	}
 
-    /**
-     * Just execute query
-     * @param string $query Query for execute
-     * @return bool|mixed Just execute query
-     */
-    final public static function query($query) {
-		if(is_bool(self::$driver) || empty(self::$driver)) {
-			return false;
-		}
-		$caller = self::getTrace(debug_backtrace());
+	final public static function getQuery($query) {
 		if(strpos($query, '{{') !== false && defined("PREFIX_DB") && PREFIX_DB!=="") {
 			if(preg_match("/CREATE|DROP/", $query)) {
 				$query = str_replace(array('{{', '}}'), array("`".PREFIX_DB, "`"), $query);
@@ -672,6 +670,20 @@ class db {
 		if(strpos($query, '{{') !== false) {
 			$query = str_replace(array("{{", "}}"), "`", $query);
 		}
+		return $query;
+	}
+
+    /**
+     * Just execute query
+     * @param string $query Query for execute
+     * @return bool|mixed Just execute query
+     */
+    final public static function query($query) {
+		if(is_bool(self::$driver) || empty(self::$driver)) {
+			return false;
+		}
+		$caller = self::getTrace(debug_backtrace());
+		$query = self::getQuery($query);
 		$stime = self::time();
 		self::$qid = $return = self::$driver->query($query);
 		$etime = self::time()-$stime;
@@ -834,7 +846,7 @@ class db {
      * @param array $arr Info of query
      */
     final public static function error($arr) {
-		errorHeader();
+		if(function_exists("errorHeader")) { errorHeader(); }
 		$mysql_error = $arr['mysql_error'];
 		$mysql_error_num = $arr['mysql_error_num'];
 		$query = $arr['query'];
@@ -867,7 +879,6 @@ class db {
 		if(defined("ROOT_PATH")) {
 			$trace[$level]['file'] = str_replace(ROOT_PATH, "", $trace[$level]['file']);
 		}
-        $tmp = false;
 		if(!defined("IS_CLI") && self::$driver->get_type() === 1 && class_exists("modules") && method_exists("modules", "init_templates")) {
             $tmp = modules::init_templates();
             $tmp->dir_skins("skins".DS);
@@ -891,7 +902,7 @@ class db {
 		if(empty($path) && defined("ROOT_PATH") && defined("DS") && (!file_exists(PATH_CACHE_USERDATA) || !is_writable(PATH_CACHE_USERDATA))) {
 			return false;
 		}
-		$pathToSave = "";
+        $pathToSave = "";
 		if(!empty($path) && defined("ROOT_PATH") && (!file_exists(ROOT_PATH.$path) || !is_writable(ROOT_PATH.$path))) {
 			return false;
 		} else {
@@ -920,6 +931,7 @@ class db {
 		} else {
 			$tables = is_array($tables) ? $tables : explode(',',$tables);
 		}
+        $return = "";
 		foreach($tables as $table) {
 			$result = self::query('SELECT * FROM '.$table);
 			$num_fields = self::num_fields($result);

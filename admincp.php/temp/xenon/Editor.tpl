@@ -82,10 +82,12 @@
 var editor = ace.edit("editor");
 var type = "text";
 var dataGet = "";
+var loadedFile = "{file}";
 function loadFile(file) {
 	$.post("./?pages=Editor&getType="+file, function(data) {
 		type = data;
 		$.post("./?pages=Editor&load="+file, function(datas) {
+			loadedFile = file;
 			dataGet = datas.replace(/<\\\?php/g, "<?php");
 			editor.setValue(dataGet, -1);
 			editor.getSession().setMode("ace/mode/"+type);
@@ -104,7 +106,7 @@ jQuery('#fileTree').fileTree({ root: '/', script: './?pages=Editor&tree=1', fold
 	loadFile(file);
 });
 $(".send").click(function() {
-	$.post("./?pages=Editor&save={file}", {data: editor.getValue()}, function(data) {
+	$.post("./?pages=Editor&save="+loadedFile, {data: editor.getValue()}, function(data) {
 		toastr.info(data, "Saved");
 	});
 });

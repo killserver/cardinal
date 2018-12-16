@@ -29,7 +29,7 @@ if(class_exists("PHPMailer")) {
  * @author  Andy Prevost (codeworxtech) <codeworxtech@users.sourceforge.net>
  * @author  Brent R. Matzelle (original founder)
  */
-class PHPMailer
+class PHPMailer5
 {
     const CHARSET_ISO88591 = 'iso-8859-1';
     const CHARSET_UTF8 = 'utf-8';
@@ -3311,8 +3311,11 @@ class PHPMailer
      *
      * @return bool True on successfully adding an attachment
      */
-    public function addEmbeddedImage($path, $cid, $name = '', $encoding = static::ENCODING_BASE64, $type = '', $disposition = 'inline')
+    public function addEmbeddedImage($path, $cid, $name = '', $encoding = '', $type = '', $disposition = 'inline')
     {
+        if($encoding==='') {
+            $encoding = static::ENCODING_BASE64;
+        }
         if (!@is_file($path)) {
             $this->setError($this->lang('file_access') . $path);
 
@@ -3365,10 +3368,13 @@ class PHPMailer
         $string,
         $cid,
         $name = '',
-        $encoding = static::ENCODING_BASE64,
+        $encoding = '',
         $type = '',
         $disposition = 'inline'
     ) {
+        if($encoding==='') {
+            $encoding = static::ENCODING_BASE64;
+        }
         // If a MIME type is not specified, try to work it out from the name
         if ('' == $type and !empty($name)) {
             $type = static::filenameToType($name);

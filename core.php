@@ -121,6 +121,8 @@ if(function_exists("ob_implicit_flush")) {
 	ob_implicit_flush(0);
 	$manifest['gzip'] = true;
 }
+$sessionOnline = false;
+$session = false;
 
 $targets = array('PHP_SELF', 'HTTP_USER_AGENT', 'HTTP_REFERER', 'QUERY_STRING', 'REQUEST_URI', 'PATH_INFO');
 foreach($targets as $target) {
@@ -194,95 +196,21 @@ if(empty($phpEx)) {
 if(!defined("ROOT_EX") && strpos($phpEx, '/') === false) {
 	define("ROOT_EX", $phpEx);
 }
-if(file_exists(ROOT_PATH."core".DS."modules".DS)) {
-	if(file_exists(ROOT_PATH."core".DS."modules".DS."loader.default.".ROOT_EX)) {
-		$file = file_get_contents(ROOT_PATH."core".DS."modules".DS."loader.default.".ROOT_EX);
-		$file = str_replace('"core\\', '"application".DS."', $file);
-		$file = str_replace('"core/', '"application".DS."', $file);
-		$file = str_replace('"core".DS', '"application".DS', $file);
-		file_put_contents(ROOT_PATH."core".DS."modules".DS."loader.default.".ROOT_EX, $file);
-	}
-	if(file_exists(ROOT_PATH."core".DS."modules".DS."loader.".ROOT_EX)) {
-		$file = file_get_contents(ROOT_PATH."core".DS."modules".DS."loader.".ROOT_EX);
-		$file = str_replace('"core\\', '"application".DS."', $file);
-		$file = str_replace('"core/', '"application".DS."', $file);
-		$file = str_replace('"core".DS', '"application".DS', $file);
-		file_put_contents(ROOT_PATH."core".DS."modules".DS."loader.".ROOT_EX, $file);
-	}
-	if(!file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."application.lock")) {
-		function rrmdirModules($dir) {
-			if(is_dir($dir)) {
-				$files = @scandir($dir);
-				foreach($files as $file) {
-					if($file != "." && $file != "..") {
-						if(is_file($dir.DS.$file)) {
-							@unlink($dir.DS.$file);
-						} else if(is_dir($dir.DS.$file.DS)) {
-							rrmdirModules($dir.DS.$file.DS);
-							@rmdir($dir.DS.$file.DS);
-						}
-					}
-				}
-				if($dir != "." && $dir != "..") {
-					@unlink($dir);
-				}
-			}
-		}
-		function rcopyModules($src, $dst) {
-			if(is_dir($src)) {
-				@mkdir($dst, 0777);
-				$files = @scandir($src);
-				foreach($files as $file) {
-					if($file != "." && $file != "..") {
-						rcopyModules($src.DS.$file, $dst.DS.$file);
-					}
-				}
-			} else if(file_exists($src)) {
-				@copy($src, $dst);
-			}
-		}
-		rcopyModules(ROOT_PATH."core".DS."modules", ROOT_PATH."application");
-		rrmdirModules(ROOT_PATH."core".DS."modules");
-		@mkdir(ROOT_PATH."core".DS."modules");
-		if(!file_exists(ROOT_PATH."application".DS."modules".DS)) {
-			if(!file_exists(ROOT_PATH."application".DS."modules".DS)) {
-				@mkdir(ROOT_PATH."application".DS."modules".DS, 0777, true);
-			}
-			$files = @scandir(ROOT_PATH."application".DS);
-			foreach($files as $file) {
-				if(is_file(ROOT_PATH."application".DS.$file)) {
-					@copy(ROOT_PATH."application".DS.$file, ROOT_PATH."application".DS."modules".DS.$file);
-					@unlink(ROOT_PATH."application".DS.$file);
-				}
-			}
-		}
-		@file_put_contents(ROOT_PATH."core".DS."cache".DS."system".DS."application.lock", "");
-	}
-	if(!defined("PATH_MODULES")) {
-		define("PATH_MODULES", ROOT_PATH."application".DS."modules".DS);
-	}
-	if(!defined("PATH_AUTOLOADS")) {
-		define("PATH_AUTOLOADS", ROOT_PATH."application".DS."autoload".DS);
-	}
-	if(!defined("PATH_HOOKS")) {
-		define("PATH_HOOKS", ROOT_PATH."application".DS."hooks".DS);
-	}
-	if(!defined("PATH_LOAD_LIBRARY")) {
-		define("PATH_LOAD_LIBRARY", ROOT_PATH."application".DS."library".DS);
-	}
-	if(!defined("PATH_MODELS")) {
-		define("PATH_MODELS", ROOT_PATH."application".DS."models".DS);
-	}
-	if(!defined("PATH_CRON_FILES")) {
-		define("PATH_CRON_FILES", ROOT_PATH."application".DS."cron".DS);
-	}
-}
+
 if(file_exists(ROOT_PATH."core".DS."paths.".ROOT_EX)) {
 	include_once(ROOT_PATH."core".DS."paths.".ROOT_EX);
 } else if(file_exists(ROOT_PATH."core".DS."paths.default.".ROOT_EX)) {
 	include_once(ROOT_PATH."core".DS."paths.default.".ROOT_EX);
 }
 
+if(sizeof($_POST)==0 && sizeof($_FILES)==0 && file_exists(ROOT_PATH."updater.".ROOT_EX)) {
+	if(file_exists(PATH_MEDIA."firstInstall.lock")) {
+		include_once(ROOT_PATH."updater.".ROOT_EX);
+	}
+}
+if(!file_exists(PATH_MEDIA."firstInstall.lock")) {
+	@file_put_contents(PATH_MEDIA."firstInstall.lock", date("d-m-Y H:i:s"));
+}
 if(file_exists(PATH_MEDIA."definition.php")) {
 	include_once(PATH_MEDIA."definition.php");
 }
@@ -312,12 +240,7 @@ if(!defined("ENABLED_SUPPORTS") && file_exists(PATH_MEDIA."enabledSupports.lock"
 if(!defined("ERROR_VIEW") && file_exists(PATH_MEDIA."error.lock")) {
 	define("ERROR_VIEW", true);
 }
-if(!defined("PERMISSION_PHP") && file_exists(PATH_MEDIA."phpINtmp.lock")) {
-	define("PERMISSION_PHP", true);
-}
-
 $Timer = microtime_float();
-
 if(!defined("SYSTEM_TIME_START")) {
 	define("SYSTEM_TIME_START", time());
 }
@@ -373,34 +296,19 @@ if(PHP_VERSION_ID>50600) {
 	ini_set("iconv.internal_encoding", $config['charset']);
 }
 
-HTTP::$protocol = "http";
-if(
-	   (isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-	|| (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && !empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')
-	|| (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && !empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] == 'on')
-	|| (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
-	|| (isset($_SERVER['HTTP_X_FORWARDED_PORT']) && $_SERVER['HTTP_X_FORWARDED_PORT'] == 443)
-	|| (isset($_SERVER['REQUEST_SCHEME']) && $_SERVER['REQUEST_SCHEME'] == 'https')
-	|| (isset($_SERVER['CF_VISITOR']) && $_SERVER['CF_VISITOR'] == '{"scheme":"https"}')
-	|| (isset($_SERVER['HTTP_CF_VISITOR']) && $_SERVER['HTTP_CF_VISITOR'] == '{"scheme":"https"}')
-) {
-	HTTP::$protocol = "https";
-}
+/*cardinal::StartSession();
+execEvent("init_session");*/
 
-$sessionOnline = false;
-$session = false;
-cardinal::StartSession();
-execEvent("init_session");
 if(isset($sessionOnline) && is_writeable(PATH_CACHE_USERDATA)) {
 	clearstatcache();
-	$SessionDir = session_save_path();
+	$SessionDir = PATH_CACHE_SESSION;
 	$Timeout = 3 * 60;
 	$Timeout = execEvent("timeout_session_online", $Timeout);
 	$usersOnline = 0;
 	$online = 0;
 	if($Handler = @scandir($SessionDir)) {
 		for($i=0;$i<sizeof($Handler);$i++) {
-			if($Handler[$i]=="index.html"||$Handler[$i]=="index.".ROOT_EX) {
+			if($Handler[$i]=="index.html"||$Handler[$i]=="index.".ROOT_EX||$Handler[$i]==".htaccess") {
 				continue;
 			}
 			if(time()-@filemtime($SessionDir.$Handler[$i])<$Timeout) {
@@ -426,18 +334,19 @@ $config_templates = array(
 	"skins_test_shab" => (HTTP::CheckIp(modules::get_config('ip_test_shab')) ? modules::get_config('skins', 'test_shab') : ""),
 	"skins_mobile" => modules::get_config('skins', 'mobile'),
 );
+if(!defined("PATH_TEMPLATE")) {
+	define("PATH_TEMPLATE", PATH_SKINS.$config_templates['skins_skins'].DS);
+}
 
 cardinal::InstallFirst();
 
-if(defined("WITHOUT_DB") || !defined("INSTALLER")) {
-	if(!defined("WITHOUT_DB") && !defined("IS_CRON_FILE") && isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], $config['default_http_hostname'])===false) {
-		header("HTTP/1.1 301 Moved Permanently");
-		header("Location: ".HTTP::$protocol."://".$config['default_http_hostname'].$_SERVER['REQUEST_URI']);
-	die();
-	}
-	User::PathUsers(PATH_CACHE_USERDATA);
-	User::load();
+if(!defined("WITHOUT_DB") && !defined("IS_CRON_FILE") && isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], $config['default_http_hostname'])===false) {
+	header("HTTP/1.1 301 Moved Permanently");
+	header("Location: ".HTTP::$protocol."://".$config['default_http_hostname'].$_SERVER['REQUEST_URI']);
+die();
 }
+User::PathUsers(PATH_CACHE_USERDATA);
+User::load();
 
 $templates = new templates($config_templates);
 templates::SetConfig($config_templates);
@@ -469,6 +378,34 @@ if(cardinal::is_cli()) {
 	if(!defined("IS_CLI")) {
 		define("IS_CLI", true);
 	}
+	function getCmd($command) {
+		ob_start();
+		passthru($command);
+		$var = ob_get_contents();
+		ob_end_clean();
+		return $var;
+	}
+	$cols = getCmd("tput cols");
+	system("clear");
+	system("clear");
+	system("clear");
+	system("clear");
+	system("clear");
+	system("clear");
+	system("clear");
+	$file = file(PATH_SKINS."core".DS."logo-ascii.txt");
+	$cols /= 2;
+	$cols -= 25;
+	$cols = ceil($cols);
+	$mess = "-= System Cardinal Engine =-";
+	$messP = "-= System \e[0;31mCardinal Engine\e[0m =-";
+	$echo = chr(27).chr(91).'H'.chr(27).chr(91).'J'.PHP_EOL;
+	$echo .= str_pad(" ", $cols+ceil((strlen($mess)-7.5)/2), " ", STR_PAD_LEFT).$messP." ".PHP_EOL.PHP_EOL;
+	for($i=0;$i<sizeof($file);$i++) {
+		$echo .= str_pad(" ", $cols, " ", STR_PAD_LEFT)."\e[0;36m".$file[$i]."\e[0m";
+	}
+	$echo .= PHP_EOL.PHP_EOL.PHP_EOL;
+	echo $echo;
 	execEvent("cli_ready");
 }
 ?>

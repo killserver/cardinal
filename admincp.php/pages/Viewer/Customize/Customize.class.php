@@ -216,16 +216,25 @@ class Customize extends Core {
 			$this->showErr('File not image');
 			return;
 		}
-		$width = imagesx($im);
-		$height = imagesy($im);
-		if($width!=$height) {
-			$this->showErr('ICO images must be width = height');
-			return;
-		}
+        /*$width = imagesx($im);
+        $height = imagesy($im);
+        if($width!=$height) {
+            $this->showErr('ICO images must be width = height');
+            return;
+        }*/
 		foreach($sizes as $size) {
-			$ico_lib = new PHP_ICO( $image, array($size) );
-			$ico_lib->save_ico( $filename.DS."favicon-".$size[0]."x".$size[1].".".$type );
+			$n = new Image($image);
+			$n->resizePX($size[0], $size[1]);
+			$n->compress(90);
+			$n->save($filename.DS."favicon-".$size[0]."x".$size[1]);
 		}
+		$ico_lib = new PHP_ICO($image, array(array(16, 16)));
+		$ico_lib->save_ico(ROOT_PATH."favicon.".$type);
+		foreach($sizes as $size) {
+			$ico_lib = new PHP_ICO($image, array($size));
+			$ico_lib->save_ico($filename.DS."favicon-".$size[0]."x".$size[1].".".$type);
+		}
+
 	}
 	
 	function __construct() {

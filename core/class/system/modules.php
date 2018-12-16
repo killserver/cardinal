@@ -26,6 +26,33 @@ class modules {
 	
 	private static $load_modules = false;
 	private static $access_user = array('id', 'username', 'alt_name', 'level', 'email', 'time_reg', 'last_activ', 'activ', 'avatar');
+	private static $allowedLevels = array();
+	private static $allowedLevelsActive = false;
+	private static $listenersAjax = array();
+
+	final public static function registerAjax($call, $listener) {
+		if(!isset(self::$listenersAjax[$call])) {
+			self::$listenersAjax[$call] = array();
+		}
+		self::$listenersAjax[$call][] = $listener;
+	}
+
+	final public static function execAjax($methods) {
+		$ret = array();
+		for($method=0;$method<sizeof($methods);$method++) {
+			if(isset(self::$listenersAjax[$methods[$method]])) {
+				for($i=0;$i<sizeof(self::$listenersAjax[$methods[$method]]);$i++) {
+					if(is_callable(self::$listenersAjax[$methods[$method]][$i])) {
+						$rt = call_user_func_array(self::$listenersAjax[$methods[$method]][$i], array($ret[$methods[$method]], $methods[$method]));
+						if(!is_null($rt)) {
+							$ret[$methods[$method]] = $rt;
+						}
+					}
+				}
+			}
+		}
+		return json_encode($ret);
+	}
 	
 	final public static function checkObject($obj, $name, $checkParent = false) {
 		if(gettype($name)!="string") {
@@ -84,6 +111,8 @@ class modules {
 						if(method_exists($ret, "init_model")) {
 							$ret->init_model($autoload);
 						}
+						$ret->loadTable($autoload);
+						$ret = execEvent("loadModels", $ret, $class);
 						return $ret;
 					} else {
 						errorHeader();
@@ -102,6 +131,8 @@ class modules {
 			if(method_exists($ret, "init_model")) {
 				$ret->init_model($autoload);
 			}
+			$ret->loadTable($autoload);
+			$ret = execEvent("loadModels", $ret, $class);
 			return $ret;
 		} else {
 			errorHeader();
@@ -112,6 +143,21 @@ class modules {
 
 	final public static function loadModel($model) {
 		return self::loadModels("Model".ucfirst($model), "{{".$model."}}");
+	}
+
+	final public static function reData($data) {
+		if(is_object($data) || is_array($data)) {
+			foreach($data as $k => &$v) {
+				if(is_object($v) || is_array($v)) {
+					$v = self::reData($v);
+				} else if(Validate::is_serialized($v)) {
+					$v = unserialize($v);
+				} else if(Validate::json($v)) {
+					$v = json_decode($v, true);
+				}
+			}
+		}
+		return $data;
 	}
 	
 	final public static function loader($class, $standard = array()) {
@@ -177,6 +223,7 @@ class modules {
 	global $lang;
 		$langs = self::init_lang();
 		$lang = $langs->init_lang(false);
+		$return = "";
 		if(strlen($array)>0 && is_array($lang) && isset($lang[$get][$array])) {
 			$return = array($lang[$get][$array]);
 		} else if(isset($lang[$get]) && is_array($lang)) {
@@ -217,10 +264,6 @@ class modules {
 		}
 	}
 
-	final public static function init_bb() {
-		return new bbcodes();
-	}
-
 	final public static function init_config() {
 		return new config();
 	}
@@ -248,12 +291,15 @@ class modules {
 		return cardinal::CheckVersion($check, $old);
 	}
 	
-	final public static function load_modules($file, $load) {
-		if(!defined("WITHOUT_DB") && (defined("IS_INSTALLER") || !self::init_db()->connected())) {
-			return false;
-		}
-		if(!defined("WITHOUT_DB") || !defined("START_VERSION")) {
+	final public static function load_modules($file, $load, $isDir = false) {
+		if(!defined("START_VERSION")) {
 			return true;
+		}
+		if($isDir) {
+			$bname = basename($file);
+			if(file_exists(ROOT_PATH.$file.DS.$bname.".".ROOT_EX) || file_exists(ROOT_PATH.$file.DS.$bname.".class.".ROOT_EX)) {
+				$file = $bname;
+			}
 		}
 		if(self::CheckVersion("3.1", START_VERSION)) {
 			return true;
@@ -268,10 +314,12 @@ class modules {
 		if(file_exists(PATH_CACHE_USERDATA."modules.json")) {
 			$modulesLoad = array();
 			$files = file_get_contents(PATH_CACHE_USERDATA."modules.json");
-			try {
-				$json = json_decode($files, true);
-				$modulesLoad = array_merge($modulesLoad, $json);
-			} catch(Exception $ex) {}
+			if(!empty($files)) {
+				try {
+					$json = json_decode($files, true);
+					$modulesLoad = array_merge($modulesLoad, $json);
+				} catch(Exception $ex) {}
+			}
 			$fileCheck = str_replace(str_replace(ROOT_PATH, "", PATH_MODULES), "", $file);
 			$fileCheck = str_replace(".class.".ROOT_EX, "", $fileCheck);
 			if(isset($modulesLoad[$fileCheck]) && isset($modulesLoad[$fileCheck]['active']) && $modulesLoad[$fileCheck]['active']===true) {
@@ -314,7 +362,13 @@ class modules {
 	global $user;
 		User::PathUsers(PATH_CACHE_USERDATA);
 		$user = User::load();
-		if(in_array($get, self::$access_user)) {
+		if(self::get_config("allow_get_all_info")) {
+			if(isset($user[$get]) && !in_array($get, array("admin_pass", "pass", "light"))) {
+				return $user[$get];
+			} else {
+				return false;
+			}
+		} else if(in_array($get, self::$access_user)) {
 			if(isset($user[$get])) {
 				return $user[$get];
 			} else {
@@ -323,6 +377,33 @@ class modules {
 		} else {
 			return false;
 		}
+	}
+
+	final public static function allowFrom($file, $from = "admin") {
+		if($from==="admin") {
+			$args = array(LEVEL_CREATOR, LEVEL_CUSTOMER, LEVEL_ADMIN);
+		} else if($from==="reg") {
+			$args = array(LEVEL_CREATOR, LEVEL_CUSTOMER, LEVEL_ADMIN, LEVEL_MODER, LEVEL_USER);
+		} else if($from==="all") {
+			$args = array(LEVEL_CREATOR, LEVEL_CUSTOMER, LEVEL_ADMIN, LEVEL_MODER, LEVEL_USER, LEVEL_GUEST);
+		} else if(preg_match("#(\d)#", $from)) {
+			$args = func_get_args();
+		} else {
+			throw new Exception("Unknown levels from access", 1);
+			die();
+		}
+		if(self::$allowedLevelsActive===false) {
+			addEvent("loadUserLevels", "modules::allower");
+			self::$allowedLevelsActive = true;
+		}
+		for($i=0;$i<sizeof($args);$i++) {
+			self::$allowedLevels[$args[$i]]['access_'.$file] = "yes";
+		}
+	}
+
+	final public static function allower($levels) {
+		$levels = array_replace_recursive($levels, self::$allowedLevels);
+		return $levels;
 	}
 
 	final public static function manifest_log($select, $set) {
@@ -399,8 +480,8 @@ class modules {
 		}
 	}
 
-	final public static function regCssJs($js, $type, $mark = false, $name = "") {
-	global $manifest;
+	final public static function regCssJs($js, $type, $mark = false, $name = "", $id = false, $cross = false) {
+		global $manifest;
 		$jsCheck1 = false;
 		if(strpos($type, "-")!==false) {
 			$type = explode("-", $type);
@@ -409,7 +490,7 @@ class modules {
 		}
 		if(is_array($js) && !isset($js['url'])) {
 			foreach($js as $k => $v) {
-				self::regCssJs($v, $type, $mark, (is_numeric($k) ? $name : $k));
+				self::regCssJs($v, $type, $mark, (is_numeric($k) ? $name : $k), $id, $cross);
 			}
 		} else {
 			if(!isset($manifest['jscss'][$type])) {
@@ -423,29 +504,40 @@ class modules {
 			}
 			$url = (is_array($js) && isset($js['url']) ? $js['url'] : $js);
 			$jsCheck = ($jsCheck1===false ? parse_url($url) : $jsCheck1);
-			if(!empty($name)) {
-				if($jsCheck1!==false) {
-					$manifest['jscss'][$type][$jsCheck1][$name] = array("url" => $url.($mark ? AmperOr($url).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
-				} else if(isset($jsCheck['path'])) {
-					$manifest['jscss'][$type]['link'][$name] = array("url" => $url.($mark ? AmperOr($url).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
-				} else {
-					$manifest['jscss'][$type]['full'][$name] = array("url" => $url.($mark ? AmperOr($url).time() : ""), "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
-				}
+			if(empty($name)) {
+				$name = $url;
+			}
+			$link = $url.($mark ? self::AmperOr($url).time() : "");
+			if($jsCheck1!==false) {
+				$typeData = $jsCheck1;
+			} else if(isset($jsCheck['path'])) {
+				$typeData = 'link';
 			} else {
-				$link = $url.($mark ? AmperOr($url).time() : "");
-				if($jsCheck1!==false) {
-					$manifest['jscss'][$type][$jsCheck1][] = array("url" => $link, "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
-				} else if(isset($jsCheck['path'])) {
-					$manifest['jscss'][$type]['link'][] = array("url" => $link, "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
-				} else {
-					$manifest['jscss'][$type]['full'][] = array("url" => $link, "defer" => (isset($js['defer']) && $js['defer']==true ? true : false));
+				$typeData = 'full';
+			}
+			if($id===false) {
+				$id = sizeof($manifest['jscss'][$type][$typeData]);
+			}
+			if(isset($manifest['jscss'][$type][$typeData][$id])) {
+				$list = $manifest['jscss'][$type][$typeData];
+				krsort($list);
+				foreach($list as $pr => $datas) {
+					unset($manifest['jscss'][$type][$typeData][$pr]);
+					$k = $pr+1;
+					$manifest['jscss'][$type][$typeData][$k] = $datas;
 				}
 			}
+			$manifest['jscss'][$type][$typeData][$id] = array("name" => $name, "url" => $link, "defer" => (isset($js['defer']) && $js['defer']==true ? true : false), "cross" => $cross);
+			ksort($manifest['jscss'][$type][$typeData]);
 		}
+	}
+	
+	final public static function AmperOr($str) {
+		return strpos($str, "?")===false ? "?" : "&";
 	}
 
 	final public static function unRegCssJs($js, $type = "null", $reforce = false) {
-	global $manifest;
+		global $manifest;
 		if($type=="null" || $reforce===1) {
 			self::unRegCssJs($js, "css", ($reforce===false ? 1 : 2));
 			return;
@@ -460,14 +552,14 @@ class modules {
 			if(isset($jsCheck['path']) && isset($manifest['jscss'][$type]['link']) && is_array($manifest['jscss'][$type]['link']) && sizeof($manifest['jscss'][$type]['link'])>0) {
 				$key = array_keys($manifest['jscss'][$type]['link']);
 				for($i=0;$i<sizeof($key);$i++) {
-					if(strpos($url, $key[$i])!==false || strpos($manifest['jscss'][$type]['link'][$key[$i]]['url'], $url)!==false) {
+					if(strpos($manifest['jscss'][$type]['link'][$key[$i]]['url'], $url)!==false || $manifest['jscss'][$type]['link'][$key[$i]]['name']===$url) {
 						unset($manifest['jscss'][$type]['link'][$key[$i]]);
 					}
 				}
 			} else if(isset($manifest['jscss'][$type]['full']) && is_array($manifest['jscss'][$type]['full']) && sizeof($manifest['jscss'][$type]['full'])>0) {
 				$key = array_keys($manifest['jscss'][$type]['full']);
 				for($i=0;$i<sizeof($manifest['jscss'][$type]['full']);$i++) {
-					if(strpos($url, $key[$i])!==false || strpos($manifest['jscss'][$type]['full'][$key[$i]]['url'], $url)!==false) {
+					if(strpos($manifest['jscss'][$type]['full'][$key[$i]]['url'], $url)!==false || $manifest['jscss'][$type]['full'][$key[$i]]['name']===$url) {
 						unset($manifest['jscss'][$type]['full'][$key[$i]]);
 					}
 				}
@@ -548,8 +640,10 @@ class modules {
 		$arr = array();
 		if(file_exists(PATH_CACHE_USERDATA."modules.json") && is_readable(PATH_CACHE_USERDATA."modules.json")) {
 			$file = file_get_contents(PATH_CACHE_USERDATA."modules.json");
-			$arrs = json_decode($file, true);
-			$arr = array_merge($arr, $arrs);
+			if(!empty($files)) {
+				$arrs = json_decode($file, true);
+				$arr = array_merge($arr, $arrs);
+			}
 			if(isset($arr[$class]) && isset($arr[$class]['active']) && $arr[$class]['active']!==true) {
 				return false;
 			}
@@ -561,17 +655,11 @@ class modules {
 				$arr[$class] = array_merge($arr[$class], array("installTime" => time(), "version" => (property_exists($class, "version") ? $class::$version : "0.1")));
 				if(!is_writeable(PATH_CACHE_USERDATA)) {
 					@chmod(PATH_CACHE_USERDATA, 0777);
-					if(!is_writeable(PATH_CACHE_USERDATA)) {
-						return false;
-					}
 				}
 				if(!is_writeable(PATH_CACHE_USERDATA."modules.json")) {
 					@chmod(PATH_CACHE_USERDATA."modules.json", 0777);
-					if(!is_writeable(PATH_CACHE_USERDATA."modules.json")) {
-						return false;
-					}
 				}
-				@file_put_contents(PATH_CACHE_USERDATA."modules.json", json_encode($arr));
+				@file_put_contents(PATH_CACHE_USERDATA."modules.json", CardinalJSON::save($arr));
 				cardinal::RegAction("Установка модуля \"".$class."\" версии ".(property_exists($class, "version") ? $class::$version : "0.1"));
 			}
 			if(isset($arr[$class]['installTime']) && class_exists($class, false) && isset($arr[$class]['version']) && property_exists($class, "version") && $class::$version > $arr[$class]['version']) {
@@ -581,20 +669,14 @@ class modules {
 				if(!isset($arr[$class])) {
 					$arr[$class] = array();
 				}
-				$arr[$class] = array_merge($arr[$class], array("updateTime" => time(), "version" => $class::$version));
 				if(!is_writeable(PATH_CACHE_USERDATA)) {
 					@chmod(PATH_CACHE_USERDATA, 0777);
-					if(!is_writeable(PATH_CACHE_USERDATA)) {
-						return false;
-					}
 				}
 				if(!is_writeable(PATH_CACHE_USERDATA."modules.json")) {
 					@chmod(PATH_CACHE_USERDATA."modules.json", 0777);
-					if(!is_writeable(PATH_CACHE_USERDATA."modules.json")) {
-						return false;
-					}
 				}
-				@file_put_contents(PATH_CACHE_USERDATA."modules.json", json_encode($arr));
+				$arr[$class] = array_merge($arr[$class], array("updateTime" => time(), "version" => $class::$version));
+				@file_put_contents(PATH_CACHE_USERDATA."modules.json", CardinalJSON::save($arr));
 				cardinal::RegAction("Обновление модуля \"".$class."\" с версии ".$arr[$class]['version']." до версии ".$class::$version);
 			}
 		}
@@ -627,9 +709,13 @@ class modules {
 			}
 			$arr[$class]['active'] = $set;
 			if(!is_writable(PATH_CACHE_USERDATA)) {
-				@chmod(PATH_CACHE_USERDATA, 0777);
+				chmod(PATH_CACHE_USERDATA, 0777);
 			}
-			@file_put_contents(PATH_CACHE_USERDATA."modules.json", json_encode($arr));
+			if(file_exists(PATH_CACHE_USERDATA."modules.json") && !is_writable(PATH_CACHE_USERDATA."modules.json")) {
+				chmod(PATH_CACHE_USERDATA."modules.json", 0777);
+			}
+			$t = CardinalJSON::save($arr);
+			file_put_contents(PATH_CACHE_USERDATA."modules.json", $t);
 			return true;
 		} else {
 			return (isset($arr[$class]) && isset($arr[$class]['active']) && $arr[$class]['active']===true ? $arr[$class]['active'] : false);

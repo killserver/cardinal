@@ -7528,3 +7528,82 @@ span#doc_time .delimer {
 span > img[src='/'] {
     display: none;
 }
+
+[data-panel-lang="true"] {
+  position: sticky;
+  top: -20px;
+  left: 0;
+  z-index: 200;
+  background: #fff;
+  margin-top: -67px;
+  margin-bottom: -80px !important;
+}
+[data-panel-submit="true"] {
+  position: sticky;
+  bottom: -25px;
+  left: 0;
+  z-index: 200;
+  background: #fff;
+}
+.errorInput {
+    -webkit-animation: errorAnim 600ms ease-in-out 6;
+       -moz-animation: errorAnim 600ms ease-in-out 6;
+         -o-animation: errorAnim 600ms ease-in-out 6;
+            animation: errorAnim 600ms ease-in-out 6;
+}
+@-webkit-keyframes errorAnim {
+    0% {
+        -webkit-box-shadow: 0px 0px 0px 0px transparent;
+                box-shadow: 0px 0px 0px 0px transparent;
+    }
+    50% {
+        -webkit-box-shadow: 0px 0px 2px 2px #cc3f44;
+                box-shadow: 0px 0px 2px 2px #cc3f44;
+    }
+    100% {
+        -webkit-box-shadow: 0px 0px 0px 0px transparent;
+                box-shadow: 0px 0px 0px 0px transparent;
+    }
+}
+@-moz-keyframes errorAnim {
+    0% {
+        -moz-box-shadow: 0px 0px 0px 0px transparent;
+             box-shadow: 0px 0px 0px 0px transparent;
+    }
+    50% {
+        -moz-box-shadow: 0px 0px 2px 2px #cc3f44;
+             box-shadow: 0px 0px 2px 2px #cc3f44;
+    }
+    100% {
+        -moz-box-shadow: 0px 0px 0px 0px transparent;
+             box-shadow: 0px 0px 0px 0px transparent;
+    }
+}
+@-o-keyframes errorAnim {
+    0% {
+        box-shadow: 0px 0px 0px 0px transparent;
+    }
+    50% {
+        box-shadow: 0px 0px 2px 2px #cc3f44;
+    }
+    100% {
+        box-shadow: 0px 0px 0px 0px transparent;
+    }
+}
+@keyframes errorAnim {
+    0% {
+        -webkit-box-shadow: 0px 0px 0px 0px transparent;
+           -moz-box-shadow: 0px 0px 0px 0px transparent;
+                box-shadow: 0px 0px 0px 0px transparent;
+    }
+    50% {
+        -webkit-box-shadow: 0px 0px 2px 2px #cc3f44;
+           -moz-box-shadow: 0px 0px 2px 2px #cc3f44;
+                box-shadow: 0px 0px 2px 2px #cc3f44;
+    }
+    100% {
+        -webkit-box-shadow: 0px 0px 0px 0px transparent;
+           -moz-box-shadow: 0px 0px 0px 0px transparent;
+                box-shadow: 0px 0px 0px 0px transparent;
+    }
+}

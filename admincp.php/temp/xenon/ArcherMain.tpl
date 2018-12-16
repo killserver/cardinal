@@ -1,34 +1,46 @@
-<center><a href="./?pages=Archer&type={ArcherTable}&pageType=Add{addition}" class="btn btn-secondary">{L_add}</a></center>
+[if {C_disableAdd}!=1]<center><a href="./?pages=Archer&type={ArcherTable}&pageType=Add{addition}" class="btn btn-secondary">{L_add}</a></center>[/if {C_disableAdd}!=1]
 <form method="post" action="./?pages=Archer&type={ArcherTable}&pageType=MultiAction">
 	<table id="example-1" class="table table-striped table-bordered" cellspacing="0" width="100%">
 		<thead>
 			<tr>
-				<th><label class="checkbox"><input type="checkbox" class="cbr deleteAll"></label></th>
+				[if {C_disableMassAction}!=1]<th><label class="checkbox"><input type="checkbox" class="cbr deleteAll"></label></th>[/if {C_disableMassAction}!=1]
 				{ArcherMind}
 			</tr>
 		</thead>
 		<tfoot>
 			<tr>
-				<th><label class="checkbox"><input type="checkbox" class="cbr deleteAll"></label></th>
+				[if {C_disableMassAction}!=1]<th><label class="checkbox"><input type="checkbox" class="cbr deleteAll"></label></th>[/if {C_disableMassAction}!=1]
 				{ArcherMind}
 			</tr>
-			<tr><td colspan="{ArcherAll}"><div class="row"><div class="col-sm-offset-9"><div class="col-sm-7"><select name="action" class="form-control" style="width:100%;"><option value="">{L_"Выберите действие"}</option><option value="delete">{L_"Удалить"}</option></select></div><div class="col-sm-5"><input type="submit" class="btn btn-purple" value="{L_"Выполнить"}"></div></div></div></td></tr>
+			[if {C_disableMassAction}!=1]<tr><td colspan="{ArcherAll}"><div class="row"><div class="col-sm-offset-9"><div class="col-sm-7"><select name="action" class="form-control" style="width:100%;"><option value="">{L_"Выберите действие"}</option><option value="delete">{L_"Удалить"}</option></select></div><div class="col-sm-5"><input type="submit" class="btn btn-purple" value="{L_"Выполнить"}"></div></div></div></td></tr>[/if {C_disableMassAction}!=1]
 		</tfoot>
 		<tbody>
 		[foreach block={ArcherPage}]<tr>
-			<td><label class="checkbox"><input type="checkbox" class="cbr" name="delete[]" value="{{ArcherPage}.{ArcherFirst}}"></label></td>
+			[if {C_disableMassAction}!=1]<td><label class="checkbox"><input type="checkbox" class="cbr" name="delete[]" value="{{ArcherPage}.{ArcherFirst}}"></label></td>[/if {C_disableMassAction}!=1]
 			{ArcherData}
 			<td>
 				[if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Copy&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-turquoise btn-block">{L_"Клонировать"}</a>[/if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]
-				[if {{ArcherPage}.DisableEdit}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Edit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-edit btn-block">{L_"Редактировать"}</a>[/if {{ArcherPage}.DisableEdit}!="yes"]
-				[if {{ArcherPage}.DisableRemove}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Delete&viewId={{ArcherPage}.{ArcherFirst}}{addition}" onclick="return confirmDelete();" class="btn btn-red btn-block">{L_"Удалить"}</a>[/if {{ArcherPage}.DisableRemove}!="yes"]
+				[if {C_disableEdit}!=1&&{{ArcherPage}.DisableEdit}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Edit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-edit btn-block">{L_"Редактировать"}</a>[/if {C_disableEdit}!=1&&{{ArcherPage}.DisableEdit}!="yes"]
+				[if {C_disableDelete}!=1&&{{ArcherPage}.DisableRemove}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Delete&viewId={{ArcherPage}.{ArcherFirst}}{addition}" onclick="return confirmDelete();" class="btn btn-red btn-block">{L_"Удалить"}</a>[/if {C_disableDelete}!=1&&{{ArcherPage}.DisableRemove}!="yes"]
+				{E_[customOptions][type={ArcherTable};id={{ArcherPage}.{ArcherFirst}}]}
 			</td>
 		</tr>[/foreach]
 		</tbody>
 	</table>
 </form>
+[if {activate_pager}==yes]
+<ul class="pagination">
+	<li><a href="{prevLinkPager}"><i class="fa-angle-left"></i></a></li>
+	[foreach block=pager]
+		[foreachif {pager.now}!=1]<li><a href="{pager.link}">{pager.title}</a></li>[/foreachif {pager.now}!=1]
+		[foreachif {pager.now}==1]<li class="disabled"><a>{pager.title}</a></li>[/foreachif {pager.now}==1]
+	[/foreach]
+	<li><a href="{nextLinkPager}"><i class="fa-angle-right"></i></a></li>
+</ul>
+[/if {activate_pager}==yes]
 <script type="text/javascript">
 jQuery(document).ready(function() {
+[if {activate_pager}==no]
 	var dTable = jQuery("#example-1").dataTable({
 		language: {
 			"processing": "{L_"Подождите"}...",
@@ -79,17 +91,6 @@ jQuery(document).ready(function() {
 			dTable.yadcf([{column_number: getId}]);
 		}
 	}
-	if(typeof($.fn.editableform)!=="undefined") {
-		$.fn.editableform.buttons = '<button type="submit" class="btn btn-primary btn-sm editable-submit"><i class="fa fa-check"></i></button><button type="button" class="btn btn-default btn-sm editable-cancel"><i class="fa fa-close"></i></button>';
-		$('.quickEdit').editable({
-			url: '{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Archer&type={ArcherTable}&pageType=QuickEdit&Save=true',
-			validate: function(value) {
-				if($.trim(value) == '') {
-					return '{L_"Данное поле не может быть пустым"}';
-				}
-			}
-		});
-	}
 	var arrToSave = {};
 	var linkForAutoSave = encodeURIComponent(window.location.href.split(default_admin_link)[1])+"&v=1";
 	if(localStorage.getItem(linkForAutoSave)===null) {
@@ -114,6 +115,19 @@ jQuery(document).ready(function() {
 				arrToSave[k] = $(this).val();
 				localStorage.setItem(linkForAutoSave, JSON.stringify(arrToSave));
 			});
+		});
+	}
+[/if {activate_pager}==no]
+	if(typeof($.fn.editableform)!=="undefined") {
+		console.log("Test");
+		$.fn.editableform.buttons = '<button type="submit" class="btn btn-primary btn-sm editable-submit"><i class="fa fa-check"></i></button><button type="button" class="btn btn-default btn-sm editable-cancel"><i class="fa fa-close"></i></button>';
+		$('.quickEdit span').editable({
+			url: '{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Archer&type={ArcherTable}&pageType=QuickEdit&Save=true',
+			validate: function(value) {
+				if($.trim(value) == '') {
+					return '{L_"Данное поле не может быть пустым"}';
+				}
+			}
 		});
 	}
 	jQuery(".deleteAll").click(function() {

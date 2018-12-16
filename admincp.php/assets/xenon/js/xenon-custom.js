@@ -1094,6 +1094,8 @@ var public_vars = public_vars || {};
 				$this.addClass('is-focused');
 			}
 		});
+
+		$(".sidebar-menu .main-menu li > ul li.active").parents("li").addClass("active")
 		
 	});
 

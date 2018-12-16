@@ -7,7 +7,7 @@ die();
 class Arr {
 	
 	private static $array = array();
-	private static $empty = false;
+	private static $empty = true;
 	private static $separ = "";
 	
 	public function __construct(array $arr) {
@@ -237,7 +237,7 @@ class Arr {
 		}
 	}
 	
-	final private static function mapSelf($callback, $array = array()) {
+	final private static function mapSelf($callback) {
 		foreach(self::$array as $key => $val) {
 			if(is_array($val)) {
 				self::$array[$key] = self::mapSelf($callback, $val);
@@ -268,7 +268,7 @@ class Arr {
 		}
 	}
 	
-	final private static function filterSelf($callback, $array = array()) {
+	final private static function filterSelf($callback) {
 		foreach(self::$array as $key => $val) {
 			if(is_array($val)) {
 				self::$array[$key] = self::filterSelf($callback, $val);
@@ -291,7 +291,7 @@ class Arr {
 	}
 	
 	final public static function wrap($array) {
-		return (!is_array($array) ? array($value) : $value);
+		return (!is_array($array) ? array($array) : $array);
 	}
 	
 	final public static function GetAll() {

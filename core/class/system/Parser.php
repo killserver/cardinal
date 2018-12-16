@@ -458,8 +458,8 @@ class Parser {
 					for($i=0;$i<sizeof($this->headers["Set-Cookie"]);$i++) {
 						$exp = explode("=", $this->headers["Set-Cookie"][$i]);
 						if(isset($c[$exp[0]])) {
-							if(!is_array($c[$exp[0]])) {
-								$t = $c[$exp[0]];
+                            $t = $c[$exp[0]];
+                            if(!is_array($c[$exp[0]])) {
 								$c[$exp[0]] = array();
 							}
 							$c[$exp[0]][] = $t;

@@ -164,7 +164,7 @@ class Files {
 		for($i=0;$i<$file_count;$i++) {
 			foreach($file_keys as $key) {
 				$fik = array_keys($file_post[$key]);
-				$fiv = array_values($file_post[$key]);
+				//$fiv = array_values($file_post[$key]);
 				$file_ary[$fik[$i]][$key] = $file_post[$key][$fik[$i]];
 			}
 		}

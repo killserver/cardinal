@@ -21,6 +21,9 @@ exit();
 class page {
 	
 	function view() {
+	}
+
+    function __construct() {
 		execEvent("before_print_index");
 		$page = Route::param('pages');
 		if($page>1) {
@@ -39,41 +42,6 @@ class page {
 		$title = array_merge($title, releaseSeo(array(), true));
 		templates::completed($tmp, $title);
 		templates::display();
-	}
-
-    function __construct() {
-		if(defined("WITHOUT_DB") || !db::connected()) {
-			$this->view();
-			return false;
-		}
-		Route::RegParam("inPage", "index");
-		$pages = Route::param('pages');
-		$count = db::doquery("SELECT COUNT(`id`) AS `ct` FROM {{posts}} WHERE `active` LIKE \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP() AND `type` LIKE \"post\"" : ""));
-		db::free();
-		templates::assign_var("count", $count['ct']);
-		if(isset($pages) && is_numeric($pages) && $pages > 0) {
-			$page = intval($pages);
-		} else {
-			$page = 1;
-		}
-		$start = is_numeric($pages) ? intval($pages)-1 : 0;
-		$limit = 9;
-		$pg = new pager($start, $count['ct'], $limit, "main", "pages", 10, true);
-		$pages = $pg->get();
-		$limits = $pg->limit();
-		$prevLink = $pg->prevLink();
-		$nextLink = $pg->nextLink();
-		unset($pg);
-		templates::assign_vars(array("prevLink" => $prevLink, "nextLink" => $nextLink));
-		foreach($pages as $id=>$page) {
-			templates::assign_vars($page, "pages", $id);
-		}
-		db::doquery("SELECT `id`, `alt_name`, `title`, `image`, `descr`, `time`, `added` FROM {{posts}} WHERE `active` LIKE \"yes\"".(config::Select("new_date") ? " AND `time` <= UNIX_TIMESTAMP()" : "")." AND `type` LIKE \"post\" ORDER BY `id` DESC ".$limits, true);
-		while($row = db::fetch_assoc()) {
-			$row['short_descr'] = trim(cut(trim(bbcodes::clear_bbcode($row['descr'])), 100));
-			templates::assign_vars($row, "index", "index".$row['id']);
-		}
-		$this->view();
 	}
 
 }

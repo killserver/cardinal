@@ -97,6 +97,9 @@ class pager {
 								$this->pages[$c_link]['link'] = $url_page;
 							}
 							$this->pages[$c_link]['title'] = "".round($j);
+							if(empty($this->links['start']) && isset($this->pages[$c_link]['link'])) {
+								$this->links['start'] = $this->pages[$c_link]['link'];
+							}
 							$c_link++;
 						} else {
 							$this->pages[$c_link]['is_link'] = 1;
@@ -107,16 +110,19 @@ class pager {
 								$this->pages[$c_link]['link'] = $url_page.$p_page.$j;
 							}
 							$this->pages[$c_link]['title'] = "".round($j);
+							if(empty($this->links['start']) && isset($this->pages[$c_link]['link'])) {
+								$this->links['start'] = $this->pages[$c_link]['link'];
+							}
 							$c_link++;
 						}
 					} else {
 						$this->pages[$c_link]['is_link'] = 0;
 						$this->pages[$c_link]['now'] = 1;
 						$this->pages[$c_link]['title'] = "".round($j);
+						if(empty($this->links['start']) && isset($this->pages[$c_link]['link'])) {
+							$this->links['start'] = $this->pages[$c_link]['link'];
+						}
 						$c_link++;
-					}
-					if(empty($this->links['start'])) {
-						$this->links['start'] = $this->pages[$c_link]['link'];
 					}
 				}
 			} else {

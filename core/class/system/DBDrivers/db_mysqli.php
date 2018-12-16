@@ -44,7 +44,9 @@ class db_mysqli extends DriverParam implements drivers {
 			}
 			return $ret;
 		} catch(Exception $ex) {
-			errorHeader();
+			if(function_exists("errorHeader")) {
+				errorHeader();
+			}
 			return false;
 		}
 	}
@@ -58,7 +60,9 @@ class db_mysqli extends DriverParam implements drivers {
 				}
 				return $ret;
 			} catch(Exception $ex) {
-				errorHeader();
+				if(function_exists("errorHeader")) {
+					errorHeader();
+				}
 				return false;
 			}
 		} else {
@@ -67,7 +71,9 @@ class db_mysqli extends DriverParam implements drivers {
 	}
 	public function connect($host, $user, $pass, $db, $charset, $port) {
 		if (!class_exists('mysqli')) {
-			errorHeader();
+			if(function_exists("errorHeader")) {
+				errorHeader();
+			}
 			if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
 				HTTP::echos('Server database MySQLi not support PHP');
 			} else {
@@ -76,7 +82,9 @@ class db_mysqli extends DriverParam implements drivers {
 			die();
 		}
 		if(!@$this->mc = mysqli_init()) {
-			errorHeader();
+			if(function_exists("errorHeader")) {
+				errorHeader();
+			}
 			if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
 				HTTP::echos("[error]");
 			} else {
@@ -91,7 +99,9 @@ class db_mysqli extends DriverParam implements drivers {
 				if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
 					HTTP::echos();
 				}
-				errorHeader();
+				if(function_exists("errorHeader")) {
+					errorHeader();
+				}
 				switch($this->mc->connect_errno) {
 					case 1044:
 					case 1045:
@@ -119,7 +129,7 @@ class db_mysqli extends DriverParam implements drivers {
 			$this->connecten = true;
 			$this->mc->autocommit(false);
 		} catch(Exception $e) {
-			errorHeader();
+			if(function_exists("errorHeader")) { errorHeader(); }
 			if(class_exists("cardinalError")) {
 				cardinalError::handlePhpError($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
 			} else {

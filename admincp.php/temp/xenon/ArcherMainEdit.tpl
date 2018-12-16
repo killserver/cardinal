@@ -49,12 +49,13 @@ jQuery(document).ready(function() {
 		aLengthMenu: [
 			[10, 25, 50, 100, -1], [10, 25, 50, 100, "{L_"Всё"}"]
 		],
-		"aoColumnDefs": [{
+		/*"aoColumnDefs": [{
 			'bSortable': false,
 			'aTargets': [
-				{ArcherNotTouch}
+				0, {ArcherNotTouch}
 			]
-		}]
+		}],
+		"order": [[ 0, false ], [ {orderById}, "{orderBySort}" ]]*/
 	});
 	var sorted = [{ArcherSort}];
 	if(sorted.length>0) {

@@ -130,13 +130,13 @@ class Saves {
     		return $ret;
     	}
 		$uri = preg_replace("|[^\d\w ]+|i", "", $uri);
-		$str = strip_tags($str);
-		$str = html_entity_decode($str, ENT_QUOTES, 'UTF-8');
-		$str = preg_replace("#[\.;:\]\}\[\{\+\)\(\*&\^\$\#@\!±`%~']#iu", '', $str);
-		$str = preg_replace("#[\"\']#", '', $str);
-		$str = preg_replace("#[\’]#", '-', $str);
-		$str = preg_replace("#[/_|+ -]+#u", "-", $str);
-		$str = trim($str, "-");
+        $uri = strip_tags($uri);
+		$uri = html_entity_decode($uri, ENT_QUOTES, 'UTF-8');
+		$uri = preg_replace("#[\.;:\]\}\[\{\+\)\(\*&\^\$\#@\!±`%~']#iu", '', $uri);
+		$uri = preg_replace("#[\"\']#", '', $uri);
+		$uri = preg_replace("#[\’]#", '-', $uri);
+		$uri = preg_replace("#[/_|+ -]+#u", "-", $uri);
+		$uri = trim($uri, "-");
 		$uri = htmlspecialchars($uri, ENT_QUOTES, 'ISO-8859-1');
 		$uri = self::SaveOld($uri, true);
 		return $uri;

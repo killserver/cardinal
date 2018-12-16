@@ -27,9 +27,10 @@ if((isset($_SERVER['PATH_INFO']) && strpos($_SERVER['PATH_INFO'], "/favicon.ico"
 define("IS_CORE", true);
 include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."core.php");
 
-if(!defined("INSTALLER") && !userlevel::get("site")) {
+if(!userlevel::get("site")) {
 	templates::error("{L_error_level_full}", "{L_error_level}");
 }
+
 if(is_array($config) && sizeof($config)>0 && isset($config["default_http_local"]) && isset($_SERVER['REQUEST_URI']) && $_SERVER['REQUEST_URI']=="/index.php") {
 	header("Location: ".$config["default_http_local"], TRUE, 301);
 	exit();
@@ -82,6 +83,8 @@ Route::Config(array(
 	"default_http_host" => config::Select("default_http_host"),
 ));
 Route::Load($page);
+execEventRef("route_completed");
+extract(Route::param());
 $pages = Route::param('page');
 if(!(!$pages)) {
 	$page = $pages;
@@ -121,10 +124,13 @@ if(isset($globalClass) && is_array($globalClass) && sizeof($globalClass)>0) {
 }
 if(!$is_file && empty($file)) {
 	if($class == "page") {
-		view_pages($page);
+		$args = array();
+		$args[] = $page;
+		$args = array_merge($args, $langPanel);
+		call_user_func_array("view_pages", $args);
 	}
 	if(is_object($class) || class_exists($class)) {
-		$page = new $class();
+		$page = new $class($langPanel);
 		if(!empty($method) && method_exists($page, $method)) {
 			call_user_func_array(array(&$page, $method), $langPanel);
 		}

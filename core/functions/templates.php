@@ -28,7 +28,7 @@ echo "403 ERROR";
 die();
 }
 
-function meta($array = array()) {
+/*function meta($array = array()) {
 	templates::assign_vars(array(
 		"url" => "{C_default_http_host}",
 		"title" => "{L_sitename}",
@@ -44,7 +44,7 @@ function meta($array = array()) {
 	unset($array);
 	$te = templates::lcud(templates::completed_assign_vars("meta", "core"));
 return $te;
-}
+}*/
 
 // <meta type="og:image" content="http://site.ru/image.jpg">
 // addSeo("image", "http://site.ru/image.jpg");
@@ -148,30 +148,13 @@ global $seoBlock;
 	}
 }
 
-function createForm($inputs, $to = "", $head = "") {
-	$form = "";
-	if(!empty($head)) {
-		$form .= "<h4>".$head."</h4>";
-	}
-	$form .= "<form method=\"post\"".(!empty($to) ? " action=\"".$to."\"" : "")." enctype=\"multipart/form-data\">";
-	for($i=0;$i<sizeof($inputs);$i++) {
-		if(!isset($inputs[$i])) {
-			continue;
-		}
-		$form .= "<div".(isset($inputs[$i]['className']) ? " class=\"".$inputs[$i]['className']."\"" : "").">".(isset($inputs[$i]['name']) ? "<label for=\"input".$i."\">".$inputs[$i]['name']."</label>" : "").(isset($inputs[$i]['html']) && $inputs[$i]['html']=="textarea" ? "<textarea id=\"input".$i."\" name=\"inputData[".$i."]\"".(isset($inputs[$i]['attr']) ? " ".$inputs[$i]['attr'] : "")."></textarea>" : "<input id=\"input".$i."\" type=\"".(isset($inputs[$i]['type']) ? $inputs[$i]['type'] : "text")."\" name=\"inputData[".$i."]\"".(isset($inputs[$i]['placeholder']) ? " placeholder=\"".$inputs[$i]['placeholder']."\"" : "").(isset($inputs[$i]['required']) ? " required=\"required\"" : "")."".(isset($inputs[$i]['attr']) ? " ".$inputs[$i]['attr'] : "").">")."</div>";
-	}
-	$form .= "<div><input type=\"submit\"".(isset($inputs['submit']['value']) ? " value=\"".$inputs['submit']['value']."\"" : "")."></div>";
-	$form .= "</form>";
-	return $form;
+function AmperOr() {
+	return call_user_func_array("modules::AmperOr", func_get_args());
 }
 
-function AmperOr($str) {
-	return strpos($str, "?")===false ? "?" : "&";
-}
-
-function headers($array = array(), $clear = false, $no_js = false) {
+function headers($array = array(), $clear = false, $no_js = false, $no_css = false) {
 	$rt = new Headers();
-	return $rt->builder($array, $clear, $no_js);
+	return $rt->builder($array, $clear, $no_js, $no_css);
 }
 
 // regCssJs("{THEME}/jquery.js", "js", true)
@@ -189,6 +172,10 @@ function ajax_check() {
 	} else {
 		return "html";
 	}
+}
+
+function ajax($arr) {
+	HTTP::ajax($arr);
 }
 
 ?>

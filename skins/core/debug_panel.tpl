@@ -211,6 +211,8 @@ function DebugPanel_ShowHidePanel() {
 					<th>event</th>
 					<th>file</th>
 					<th>arguments</th>
+					<th>called</th>
+					<th>time</th>
 				</tr>
 				[foreach block=events]
 					<tr>
@@ -218,11 +220,13 @@ function DebugPanel_ShowHidePanel() {
 						<td>{events.name}</td>
 						<td><span>{events.file} [{events.line}]</span></td>
 						<td>{events.args}</td>
+						<td>{events.called}</td>
+						<td>{events.time}</td>
 					</tr>
 				[/foreach]
 				<tr class="total">
 					<td></td>
-					<td class="center" colspan="3"><span>Total</span> {count_events} <span>events</span></td>
+					<td class="center" colspan="5"><span>Total</span> {count_events} <span>events</span></td>
 				</tr>
 			</table>
 		</div>

@@ -90,13 +90,13 @@ if(!defined("DEBUG_ALL")) {
 }
 
 if(!defined("VERSION")) {
-	define("VERSION", "10.6");
+	define("VERSION", "11.0");
 }
 if(!defined("VERSION_ADMIN_STYLE")) {
 	define("VERSION_ADMIN_STYLE", "1.9");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "106001");
+	define("INTVERSION", "110021");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "6.5");
@@ -158,9 +158,6 @@ $config = array_merge($config, array(
 	
 	"viewport" => "width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover, minimal-ui",
 
-	"default_http_local" => "/",
-	"default_http_hostname" => "online-killer.pp.ua",
-	"default_http_host" => HTTP::$protocol."://online-killer.pp.ua/",
 	"charset" => "utf-8",
 	"FullMenu" => true,
 	"manifestCache" => false,
@@ -174,7 +171,6 @@ $config = array_merge($config, array(
 	"git_install" => true,
 	"git_beta" => true,
 	"rewrite" => true,
-	"gzip" => false,
 	"mobyActive" => false,
 	"default_http_mobyhost" => "",
 	"new_method_uri" => true,

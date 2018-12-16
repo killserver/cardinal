@@ -231,6 +231,10 @@ class HTTP {
 			return false;
 		}
 	}
+
+	final public static function contentType($type, $charset = "") {
+		return self::setContentType($type, $charset);
+	}
 	
 	final public static function StatusHeader($code) {
 		$code = abs(intval($code));
@@ -405,6 +409,12 @@ class HTTP {
 		if($die) {
 			die();
 		}
+	}
+
+	final public static function ajax($arr) {
+		self::setContentType("application/json", config::Select("charset"));
+		callAjax();
+		self::echos(json_encode($arr), true);
 	}
 	
 }

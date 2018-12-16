@@ -28,15 +28,11 @@ class cardinalError {
 	}
 	
 	final public static function TplDebug($arr) {
-		return Debug::TplDebug($type, $echo);
+		return Debug::TplDebug($arr);
 	}
 	
 	final public static function Debug($type = "", $echo = false) {
 		return Debug::DebugAll($type, $echo);
-	}
-	
-	final private static function FileLine($file) {
-		return Debug::FileLine($file);
 	}
 	
 	final public static function SetEcho($echo = false) {
@@ -140,7 +136,7 @@ class cardinalError {
 		if(defined('STDIN')) {
 			return true;
 		}
-		if(php_sapi_name()==='cli') {
+		if((php_sapi_name()==='cli' || php_sapi_name()==='cgi-fcgi') || defined('STDIN')) {
 			return true;
 		}
 		if(empty($_SERVER['REMOTE_ADDR']) && !isset($_SERVER['HTTP_USER_AGENT']) && sizeof($_SERVER['argv'])>0) {
@@ -175,7 +171,6 @@ CREATE TABLE `error_log` (
 primary key `id`(`id`)
 ) ENGINE=MyISAM;
 */
-			$db = false;
 			if(defined("WITHOUT_DB") || config::Select('logs')==ERROR_FILE) {
 				if(is_writable(PATH_LOGS)) {
 					file_put_contents(PATH_LOGS."php_log.txt", json_encode(array("times" => time(), "ip" => self::getip(), "exception_type" => self::FriendlyErrorType($e->getCode()), "message" => self::saves($messagePrefix . $e->getMessage()), "filename" => self::saves($file), "line" => $e->getLine(), "trace_string" => self::saves(self::getExceptionTraceAsString($e)), "request_state" => self::saves(serialize($request), true)))."\n", FILE_APPEND);
@@ -218,35 +213,12 @@ primary key `id`(`id`)
 				} else {
 					self::viewOnPage("<div style=\"text-decoration:underline;\"><div style=\"padding-top: 10px; text-transform: uppercase;\">[" . self::FriendlyErrorType($e->getCode()) . "] " . $e->getMessage() . " - " . self::saves($file) . " (" . $e->getLine() . ")</div><br />\n<b>[" . self::FriendlyErrorType($e->getCode()) . "]</b></div><br />\n<span style=\"border:0.1em dotted black;padding:0.5em;display:block;\">" . nl2br(self::saves(self::getExceptionTraceAsString($e))) . "</span></div>");
 				}
-				/*if(!defined("ERROR_VIEW")) {
-					self::viewOnPage("<div style=\"text-decoration:underline;\"><div style=\"padding-top: 10px;text-transform: uppercase;\"><h1>Error!</h1> <b>[" . self::FriendlyErrorType($e->getCode()) . "]</b> level error. Error code <h2 style=\"display:inline-block;\">(" . self::NextId($db) . ")</h2>. Please, report developer</div></div>"));
-				} else {
-					if(file_exists(PATH_SKINS."phpError.tpl")) {
-						$file = file_get_contents(PATH_SKINS."phpError.tpl");
-						$file = str_replace(array(
-								"{code}",
-								"{message}",
-								"{file}",
-								"{line}",
-								"{trace}"
-						), array(
-								self::FriendlyErrorType($e->getCode()),
-								$e->getMessage(),
-								self::saves($file),
-								$e->getLine(),
-								nl2br(self::saves(self::getExceptionTraceAsString($e)))
-						), $file);
-						self::viewOnPage($file);
-					} else {
-						self::viewOnPage("<div style=\"text-decoration:underline;\"><div style=\"padding-top: 10px; text-transform: uppercase;\">[" . self::FriendlyErrorType($e->getCode()) . "] " . $e->getMessage() . " - " . self::saves($file) . " (" . $e->getLine() . ")</div><br />\n<b>[" . self::FriendlyErrorType($e->getCode()) . "]</b></div><br />\n<span style=\"border:0.1em dotted black;padding:0.5em;display:block;\">" . nl2br(self::saves(self::getExceptionTraceAsString($e))) . "</span></div>");
-					}
-				}*/
 			}
 			die();
 		}
 		catch (Exception $e) {}
 	}
-	
+	/*
 	final private static function NextId($db = false) {
 		if(defined("WITHOUT_DB") || config::Select('logs')==ERROR_FILE) {
 			if(!file_exists(PATH_LOGS."php_log.txt") || !is_readable(PATH_LOGS."php_log.txt")) {
@@ -271,7 +243,7 @@ primary key `id`(`id`)
 		}
 		return $id;
 	}
-	
+	*/
 	final private static function getExceptionTraceAsString($exception) {
 		$rtn = "";
 		$count = 0;

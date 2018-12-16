@@ -45,6 +45,7 @@ class Route {
 	private static $_langForce = "";
 	private static $_loaded = "";
 	private static $_newMethod = false;
+	private static $_named = "";
 
 	final public static function newMethod() {
 		self::$_newMethod = true;
@@ -177,7 +178,10 @@ class Route {
 		return array_key_exists($route, $_routes);
 	}
 
-	final public static function Name($route) {
+	final public static function Name($route = false) {
+		if($route===false) {
+			return self::$_named;
+		}
 		$_routes = self::GetBuild();
 		return array_search($route, $_routes);
 	}
@@ -243,25 +247,6 @@ class Route {
 
 		return $params;
 	}
-	
-	final private static function PreDefault($url) {
-		$page = $url;
-		if(!empty($url)) {
-			if(strpos($page, "&") !== false) {
-				$pages = explode("&", $page);
-				if(empty($pages[0])) {
-					$page = $pages[1];
-				} else {
-					$page = $pages[0];
-				}
-			}
-			if(strpos($page, "=") !== false) {
-				$pages = explode("=", $page);
-				$page = $pages[0];
-			}
-		}
-		return $page;
-	}
 
 	final public function GetDefaults() {
 		if(!is_array($this->_defaults)) {
@@ -295,7 +280,6 @@ class Route {
 	final public static function Load($default = "") {
 		$uri = getenv(ROUTE_GET_URL);
 		$v = getenv("SCRIPT_NAME");
-		$len = "index.php";
 		if(($pos = strpos($v, "index.php"))!==false) {
 			$v = substr($v, 0, $pos);
 		}
@@ -321,43 +305,101 @@ class Route {
 		if($v!=="/") {
 			$uri = str_replace($v, "", $uri);
 		}
-		if($uri==="") {
-			return array('params' => array("pages" => "main"), 'route' => "");
-		}
 		if(!isset($GLOBALS[self::$_secret])) {
+			if($uri==="") {
+				return array('params' => array("pages" => "main"), 'route' => "");
+			}
 			return false;
 		}
-		$preload = self::PreDefault($uri);
-		if($preload!=$default) {
-			$routes = $GLOBALS[self::$_secret];
-			$params = "";
-			foreach($routes as $name => $route) {
-				if($params = $route->Matches($uri, $default)) {
-					$newLang = array();
-					if(class_exists("lang", false) && method_exists("lang", "support")) {
-						$langs = lang::support();
-						for($i=0;$i<sizeof($langs);$i++) {
-							$clearLang = $langs[$i];
-							if(strlen($langs[$i])>2) {
-								$clearLang = substr($clearLang, 4, -3);
+		$routes = $GLOBALS[self::$_secret];
+		foreach($routes as $name => $route) {
+			if($params = $route->Matches($uri, $default)) {
+				$newLang = array();
+				if(class_exists("lang", false) && method_exists("lang", "support")) {
+					$langs = lang::support();
+					for($i=0;$i<sizeof($langs);$i++) {
+						$clearLang = $langs[$i];
+						if(strlen($langs[$i])>2) {
+							$clearLang = substr($clearLang, 4, -3);
+						}
+						$newLang[$clearLang] = $langs[$i];
+					}
+				}
+				if(!empty(self::$_langForce) && !isset($params['now_lang'])) {
+					$params['lang'] = self::$_langForce;
+				} else if(isset($params['now_lang']) && !empty($params['now_lang']) && sizeof($newLang)>0 && (empty($params['now_lang']) || isset($newLang[$params['now_lang']]))) {
+					$params['lang'] = $params['now_lang'];
+				} else if(isset($params['now_lang']) && !empty($params['now_lang']) && sizeof($newLang)>0 && !isset($newLang[$params['now_lang']])) {
+					header("HTTP/1.1 301 Moved Permanently");
+					header("Location: ".$v.substr($uri, 3));
+					die();
+				}
+				self::$_named = $name;
+				self::$_loaded = $uri;
+				self::$_params = array_merge(self::$_params, $params);
+				return array('params' => $params, 'route' => $route);
+			}
+		}
+		if(class_exists("templates")) {
+			$path = explode("/", $uri);
+			$path = implode("-", $path);
+			$path = str_Replace(array(".".ROOT_EX, ".tpl", ".html"), "", $path);
+			if(templates::check_exists($path)) {
+				$loader = true;
+			} else {
+				$newLang = array();
+				if(class_exists("lang", false) && method_exists("lang", "support")) {
+					$langs = lang::support();
+					for($i=0;$i<sizeof($langs);$i++) {
+						$clearLang = $langs[$i];
+						if(strlen($langs[$i])>2) {
+							$clearLang = substr($clearLang, 4, -3);
+						}
+						$newLang[$clearLang] = $langs[$i];
+					}
+				}
+				foreach($newLang as $k => $v) {
+					if(substr($path, 0, 2)==$k) {
+						$path = substr($path, strlen($k)+1);
+					}
+				}
+				$loader = templates::check_exists($path);
+			}
+			if($loader) {
+				$paths = templates::findTemplate($path);
+				if(is_readable($paths)) {
+					$f = fopen($paths, "r");
+					$r = fread($f, 50);
+					fclose($f);
+					preg_match("#///\*\*\*(.+?)\*\*\*///#is", $r, $all);
+					if(isset($all[1])) {
+						$all = trim($all[1])."\n";
+						preg_match_all("#(.*?):(.*?)\n#is", $all, $find);
+						if(isset($find[1])) {
+							$arr = array();
+							for($i=0;$i<sizeof($find[1]);$i++) {
+								$arr[$find[1][$i]] = trim($find[2][$i]);
 							}
-							$newLang[$clearLang] = $langs[$i];
+							if(isset($arr['loaded'])) {
+								$param = array("page" => "loadTemplate", "template" => $path, "only" => isset($arr['only']), "path" => $paths);
+								self::$_params = array_merge(self::$_params, $param);
+								return array('params' => $param, 'route' => "");
+							}
 						}
 					}
-					if(!empty(self::$_langForce) && !isset($params['now_lang'])) {
-						$params['lang'] = self::$_langForce;
-					} else if(isset($params['now_lang']) && !empty($params['now_lang']) && sizeof($newLang)>0 && isset($newLang[$params['now_lang']])) {
-						$params['lang'] = $params['now_lang'];
-					} else if(isset($params['now_lang']) && !empty($params['now_lang']) && sizeof($newLang)>0 && !isset($newLang[$params['now_lang']])) {
-						header("HTTP/1.1 301 Moved Permanently");
-						header("Location: ".$v.substr($uri, 3));
-						die();
-					}
-					self::$_loaded = $uri;
-					self::$_params = array_merge(self::$_params, $params);
-					return array('params' => $params, 'route' => $route);
 				}
 			}
+			if(templates::check_exists($path, "null", ".html")) {
+				$paths = templates::findTemplate($path, "null", ".html");
+				if(is_readable($paths)) {
+					$param = array("page" => "loadTemplate", "template" => $path, "only" => true, "path" => $paths);
+					self::$_params = array_merge(self::$_params, $param);
+					return array('params' => $param, 'route' => "");
+				}
+			}
+		}
+		if($uri==="") {
+			return array('params' => array("pages" => "main"), 'route' => "");
 		}
 		if($uri!==false) {
 			$param = self::$_errorRoute;

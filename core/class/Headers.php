@@ -8,34 +8,42 @@ class Headers {
 
 	private $configMetaData = false;
 
-	public function create_js($clear = false) {
+	public function create_js() {
 		global $manifest;
 		$sRet = "";
-
 		if(($jscss = Arr::get($manifest, 'jscss', false))!==false && sizeof($manifest['jscss'])>0) {
-			if(($css = Arr::get($jscss, 'css'))!==false) {//isset($manifest['jscss']['css'])
-				$css = execEvent("before_jscss_print_css", $css);
-				if(isset($css['link']) && is_array($css['link']) && sizeof($css['link'])>0) {
-					foreach($css['link'] as $v) {
-						$sRet .= "<link href=\"".$v['url']."\" rel=\"stylesheet\" type=\"text/css\">\n";
-					}
-				}
-				if(isset($css) && isset($css['full']) && is_array($css['full']) && sizeof($css['full'])>0) {
-					foreach($css['full'] as $v) {
-						$sRet .= "<style type=\"text/css\">".$v['url']."</style>\n";
-					}
-				}
-			}
 			if(($js = Arr::get($jscss, 'js'))!==false) {
 				$js = execEvent("before_jscss_print_js", $js);
 				if(isset($js['link']) && is_array($js['link']) && sizeof($js['link'])>0) {
 					foreach($js['link'] as $v) {
-						$sRet .= "<script type=\"text/javascript\" src=\"".$v['url']."\"".(isset($v['defer']) && $v['defer']==true ? " defer=\"defer\"" : "")."></script>\n";
+						$sRet .= "<script type=\"text/javascript\" src=\"".$v['url']."\"".(isset($v['defer']) && $v['defer']==true ? " defer=\"defer\"" : "").(isset($v['cross']) && $v['cross'] ? " crossorigin=".($v['cross']===true ? "\"crossorigin\"" : $v['cross']) : "")."></script>\n";
 					}
 				}
 				if(isset($js['full']) && is_array($js['full']) && sizeof($js['full'])>0) {
 					foreach($js['full'] as $v) {
 						$sRet .= "<script type=\"text/javascript\"".(isset($v['defer']) && $v['defer']==true ? " defer=\"defer\"" : "").">".$v['url']."</script>\n";
+					}
+				}
+			}
+		}
+		unset($all, $js, $user);
+		return $sRet;
+	}
+
+	public function create_css() {
+		global $manifest;
+		$sRet = "";
+		if(($jscss = Arr::get($manifest, 'jscss', false))!==false && sizeof($manifest['jscss'])>0) {
+			if(($css = Arr::get($jscss, 'css'))!==false) {//isset($manifest['jscss']['css'])
+				$css = execEvent("before_jscss_print_css", $css);
+				if(isset($css['link']) && is_array($css['link']) && sizeof($css['link'])>0) {
+					foreach($css['link'] as $v) {
+						$sRet .= "<link href=\"".$v['url']."\" rel=\"stylesheet\" type=\"text/css\"".(isset($v['cross']) && $v['cross'] ? " crossorigin=".($v['cross']===true ? "\"crossorigin\"" : $v['cross']) : "").">\n";
+					}
+				}
+				if(isset($css) && isset($css['full']) && is_array($css['full']) && sizeof($css['full'])>0) {
+					foreach($css['full'] as $v) {
+						$sRet .= "<style type=\"text/css\">".$v['url']."</style>\n";
 					}
 				}
 			}
@@ -51,13 +59,14 @@ class Headers {
 		$type = $types[$type];
 		$type2 = explode("/", $type);
 		$type2 = end($type2);
-		$header = "<link href=\"".$link."\" rel=\"shortcut icon\" type=\"".$type."\" />\n";
-		$header .= "<link rel=\"shortcut icon\" type=\"".$type2."\" href=\"".$link."\" sizes=\"".$size."\" />\n";
-		$header .= "<link rel=\"icon\" type=\"".$type2."\" href=\"".$link."\" sizes=\"".$size."\" />\n";
+		$header = "<link rel=\"shortcut icon\" href=\"".$link."\" type=\"image/".$type."\" />\n";
+		$header .= "<link rel=\"shortcut icon\" href=\"".$link."\" type=\"image/".$type2."\" sizes=\"".$size."\" />\n";
+		$header .= "<link rel=\"icon\" type=\"image/".$type2."\" href=\"".$link."\" sizes=\"".$size."\" />\n";
+		$header .= "<link rel=\"icon\" type=\"image/vnd.microsoft.icon\" href=\"".$link."\" sizes=\"".$size."\" />\n";
 		return $header;
 	}
 
-	private function getFavicon($link, array $size = array()) {
+	public function getFavicon($link, array $size = array()) {
 		$html = "";
 		$size[] = "";
 		$size[] = "16x16";
@@ -65,40 +74,51 @@ class Headers {
 		$keys = array();
 		for($i=0;$i<sizeof($size);$i++) {
 			if(file_exists(ROOT_PATH.$link.$size[$i].".ico")) {
-				$keys[ROOT_PATH.$link.$size[$i].".ico"] = get_site_path(ROOT_PATH.$link.$size[$i].".ico");
+				$keys[ROOT_PATH.$link.$size[$i].".ico"] = array("url" => get_site_path(ROOT_PATH.$link.$size[$i].".ico"), "size" => $size[$i]);
 			}
 			if(file_exists(ROOT_PATH.$link.$size[$i].".png")) {
-				$keys[ROOT_PATH.$link.$size[$i].".png"] = get_site_path(ROOT_PATH.$link.$size[$i].".png");
+				$keys[ROOT_PATH.$link.$size[$i].".png"] = array("url" => get_site_path(ROOT_PATH.$link.$size[$i].".png"), "size" => $size[$i]);
 			}
 			if(file_exists(ROOT_PATH.$link.$size[$i].".jpg")) {
-				$keys[ROOT_PATH.$link.$size[$i].".jpg"] = get_site_path(ROOT_PATH.$link.$size[$i].".jpg");
+				$keys[ROOT_PATH.$link.$size[$i].".jpg"] = array("url" => get_site_path(ROOT_PATH.$link.$size[$i].".jpg"), "size" => $size[$i]);
 			}
 			if(file_exists(ROOT_PATH.$link.$size[$i].".jpeg")) {
-				$keys[ROOT_PATH.$link.$size[$i].".jpeg"] = get_site_path(ROOT_PATH.$link.$size[$i].".jpeg");
+				$keys[ROOT_PATH.$link.$size[$i].".jpeg"] = array("url" => get_site_path(ROOT_PATH.$link.$size[$i].".jpeg"), "size" => $size[$i]);
 			}
 		}
 		$keys = array_values($keys);
 		for($i=0;$i<sizeof($keys);$i++) {
-			$html .= $this->faviconBuilder($keys[$i]);
+			$html .= $this->faviconBuilder($keys[$i]['url'], (empty($keys[$i]['size']) ? "16x16" : $keys[$i]['size']));
+		}
+		if(sizeof($keys)>0) {
+			$e = end($keys);
+			$html .= "<link rel=\"apple-touch-icon-precomposed\" href=\"".$e['url']."\" />\n";
+			$html .= "<link rel=\"apple-touch-icon\" href=\"".$e['url']."\" />\n";
+			$html .= "<meta name=\"msapplication-TileImage\" content=\"".$e['url']."\" />\n";
 		}
 		return $html;
 	}
 
+	private static $isAdmin = false;
+
 	function __construct() {
+		if(config::Select("deactive_site_adminbar")===false && isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && userlevel::get("admin") && Arr::get($_GET, "noShowAdmin", false)===false && !defined("IS_NOSHOWADMIN") && self::$isAdmin===false) {
+			modules::regCssJs(array(
+				"fontawesome-font" => "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css",
+				"admin-bar-css" => get_site_path(PATH_SKINS)."core/admin.min.css",
+			), "css", true);
+			modules::regCssJs(get_site_path(PATH_SKINS)."core/admin.min.js", "js", true, "admin-bar-js");
+			self::$isAdmin = true;
+		}
 	}
 
-	function builder($array = array(), $clear = false, $no_js = false) {
+	function builder($array = array(), $clear = false, $no_js = false, $no_css = false) {
 		$header = "";
 		$getMeta = Arr::get($array, 'meta', false);
 		$sitename = htmlspecialchars(lang::get_lang("sitename"));
 		$sitename = cardinalEvent::execute("before_show_sitename", $sitename);
 		$activeAdmin = false;
-		if(config::Select("deactive_site_adminbar")===false && isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && userlevel::get("admin") && Arr::get($_GET, "noShowAdmin", false)===false && !defined("IS_NOSHOWADMIN")) {
-			modules::regCssJs("{C_default_http_local}".get_site_path(PATH_SKINS)."core/admin.min.js", "js", true, "admin-bar-js");
-			modules::regCssJs(array(
-				"fontawesome-font" => "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css",
-				"admin-bar-css" => "{C_default_http_local}".get_site_path(PATH_SKINS)."core/admin.min.css",
-			), "css", true);
+		if(self::$isAdmin===true) {
 			$activeAdmin = true;
 		}
 		if(!Arr::get($array, 'title', false) && empty($array['title'])) {
@@ -163,6 +183,7 @@ class Headers {
 		if($imageCheck && !empty($imageLink)) {
 			$header .= "<meta property=\"og:image\" content=\"".$imageLink."?".time()."\" />\n";
 			$header .= "<meta itemprop=\"image\" content=\"".$imageLink."?".time()."\" />\n";
+			$header .= "<link rel=\"apple-touch-startup-image\" href=\"".$imageLink."?".time()."\">\n";
 		}
 		
 
@@ -216,8 +237,12 @@ class Headers {
 			$header .= "<link rel=\"canonical\" href=\"".$canonical."\" />\n";
 		}
 		if(!$no_js) {
-			execEvent("before_jscss_print");
+			execEvent("before_jscss_js_print");
 			$header .= $this->create_js($clear);
+		}
+		if(!$no_css) {
+			execEvent("before_jscss_css_print");
+			$header .= $this->create_css($clear);
 		}
 		$link_rss = "";
 		if(!file_exists(ROOT_PATH."rss.xml")) {
@@ -294,8 +319,8 @@ class Headers {
 			$links = array();
 			$this->loadMenuAdmin($links);
 			sort($links);
+			execEventRef("admin_menu_sorted", $links);
 			$level = User::get("level");
-			$menu = "";
 			$newMenu = array();
 			foreach($links as $name => $datas) {
 				$types = array_values($datas);
@@ -317,7 +342,7 @@ class Headers {
 			if($editor!==false && Arr::get($editor, "class", false)) {
 				$editPage = "{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=".$editor['class'].(isset($editor['page']) ? "&".$editor['page'] : "").(defined("ROUTE_GET_URL") ? "&ref=".urlencode(HTTP::getServer(ROUTE_GET_URL)) : "");
 			}
-			$menu = "<div class=\"adminCoreCardinal\"><a href=\"{C_default_http_local}\" class=\"logo\"></a>".(config::Select("deactiveMainMenu")!="1" ? "<a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/{C_mainPageAdmin}\" class=\"linkToAdmin\">{L_'adminpanel'}</a>" : "").(!empty($editPage) ? "<div class=\"items\"><a href=\"".$editPage."\"><i class=\"fa-edit\"></i><span>{L_'Редактировать'}</span></a></div>":"").$this->menuAdminHeader($newMenu)."<div class=\"user\"><span>{U_username}</span><div class=\"dropped\"><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Login&out\"><i class=\"fa-user-times\"></i>{L_'logout'}</a></div></div></div>";
+			$menu = "<div class=\"adminCoreCardinal\"><a href=\"{C_default_http_local}\" class=\"logo\"></a>".(config::Select("deactiveMainMenu")!="1" ? "<a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/{C_mainPageAdmin}\" class=\"linkToAdmin\">{L_'adminpanel'}</a>" : "")."<div class=\"elems\">".(!empty($editPage) ? "<div class=\"items\"><a href=\"".$editPage."\"><i class=\"fa-edit\"></i><span>{L_'Редактировать'}</span></a></div>":"").$this->menuAdminHeader($newMenu)."<div class=\"user\"><span>{U_username}</span><div class=\"dropped\"><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Login&out\"><i class=\"fa-user-times\"></i>{L_'logout'}</a></div></div></div></div>";
 			cardinalEvent::addListener("templates::display", array($this, "addAdminPanelToPage"), $menu);
 		}
 		unset($array);
@@ -339,8 +364,11 @@ class Headers {
 			}
 		}
 		$this->adminPanelVsort($links);
-		$all = 0;
 		$page_v = HTTP::getServer("REQUEST_URI");
+		$local = config::Select("default_http_local");
+		if(strlen($local)>1) {
+			$page_v = str_replace($local, "/", $page_v);
+		}
 		$now = str_replace(array(ADMINCP_DIRECTORY."/?", ADMINCP_DIRECTORY."/"), "", substr($page_v, 1, strlen($page_v)));
 		if($now==="") {
 			$now = "pages=main";
@@ -360,7 +388,7 @@ class Headers {
 			if(isset($v['items'])) {
 				$cat = true;
 			}
-			$menu .= (!$isCat ? "<div class=\"items".($cat ? " hasDropped" : "")."\">" : "")."<a href=\"".$v['link']."\"".($cat ? " class=\"subItem\"": "").">".(isset($v['icon']) && !empty($v['icon']) ? "<i class=\"".$v['icon']."\"></i>" : "")."<span>".$v['title']."</span></a>";
+			$menu .= (!$isCat ? "<div class=\"items".($cat ? " hasDropped" : "")."\">" : "")."<a href=\"".$v['link']."\" class=\"".($cat ? "subItem": "")."".(isset($v['class']) ? " ".$v['class']: "")."\">".(isset($v['icon']) && !empty($v['icon']) ? "<i class=\"".$v['icon']."\"></i>" : "")."<span>".$v['title']."</span></a>";
 			$menu .= ($cat ? "<div class=\"dropped\">" : "");
 			if($cat) {
 				$menu .= $this->menuAdminHeader($v['items'], true);

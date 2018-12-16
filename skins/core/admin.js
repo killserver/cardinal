@@ -1,41 +1,50 @@
-if(typeof(jQuery)==="undefined") {
-	var element = document.createElement("script");element.src = default_link+'skins/core/jquery-3.2.1.min.js';document.body.appendChild(element);
-}
+var nowAdminCardinal = "";
 var checkedAdmin = setInterval(function() {
 	if(typeof(jQuery)!=="undefined") {
+		clearInterval(checkedAdmin);
 		jQuery(document).ready(function(){
-			jQuery("body").addClass("adminbarCardinal");
-			var nowAdminCardinal = jQuery(".adminCoreCardinal").html();
 			function createNormalAdmin() {
-				var elemsFirst = [];
+				jQuery(".adminCoreCardinal").addClass("test");
 				var elems = [];
-				var width = 0;
-				var userWidth = jQuery(".adminCoreCardinal > .user").width();
-				var linkAdmin = jQuery(".adminCoreCardinal > .linkToAdmin").width();
-				jQuery(".adminCoreCardinal > .items").each(function(i,k) {
+				var userWidth = jQuery("html").hasClass("hideUserCardinal") ? 0 : jQuery(".adminCoreCardinal > .elems > .user").outerWidth();
+				var linkAdmin = jQuery(".adminCoreCardinal > .linkToAdmin").outerWidth();
+				var logoWidth = jQuery(".adminCoreCardinal > .logo").outerWidth();
+				var windowWidth = jQuery(window).width();
+				var elemsFirst = [];
+				jQuery(".adminCoreCardinal > .elems > .items").each(function(i,k) {
 					elemsFirst.push(jQuery(k));
 				});
+				var width = 0;
+				width += userWidth+linkAdmin+logoWidth;
+				width += (jQuery("html").hasClass("hideUserCardinal") ? 250 : 350);
+				var widthCurrent = windowWidth;
 				for(var i=0;i<elemsFirst.length;i++) {
-					var widthEl = elemsFirst[i].width();
-					if((jQuery(window).width()-userWidth-linkAdmin-350) < width){
+					var widthEl = elemsFirst[i].outerWidth();
+					if(width > widthCurrent){
 						elems.push(elemsFirst[i]);
 						jQuery(elemsFirst[i]).remove();
 					}
 					width += widthEl;
 				}
 				if(elems.length > 0){
-					jQuery(".adminCoreCardinal > .user").before("<div class=\'more\'><div class=\'elems\'></div></div>");
+					jQuery(".adminCoreCardinal > .elems > .user").before("<div class=\'more\'><div class=\'elems\'></div></div>");
 					for(var iz=0;iz<elems.length;iz++){
-						jQuery(".adminCoreCardinal > .more > .elems").append(elems[iz]);
+						jQuery(".adminCoreCardinal > .elems > .more > .elems").append(elems[iz]);
 					}
 				}
-				clearInterval(checkedAdmin);
+				jQuery(".adminCoreCardinal").removeClass("test");
 			}
-			jQuery(window).resize(function(){
-				jQuery(".adminCoreCardinal").html(nowAdminCardinal);
-				createNormalAdmin();
-			});
-			createNormalAdmin();
+			setTimeout(function() {
+				jQuery("body").addClass("adminbarCardinal");
+				if(nowAdminCardinal.length==0) {
+					nowAdminCardinal = jQuery(".adminCoreCardinal").html();
+					createNormalAdmin();
+				}
+				jQuery(window).resize(function(){
+					jQuery(".adminCoreCardinal").html(nowAdminCardinal);
+					createNormalAdmin();
+				});
+			}, 1000);
 		});
 	}
 }, 200);

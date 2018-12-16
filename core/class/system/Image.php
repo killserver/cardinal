@@ -90,6 +90,7 @@ class Image {
 				$sx = imagesx($image);
 				$max_y = imagesy($image) - 1;
 				$half_y = $max_y / 2;
+                $sy = imagesy($image);
 				if(imageistruecolor($image)) {
 					$temp_image = imagecreatetruecolor(1, $sy);
 				} else {
@@ -118,8 +119,8 @@ class Image {
 	}
 
 	function compress($compress = 75) {
-		if($max>0) {
-			$this->compress = $max/100*$compress;
+		if($compress>0) {
+			$this->compress = $compress/100*$compress;
 		}
 		$this->compress = round($compress);
 		return $this;
@@ -216,7 +217,7 @@ class Image {
 		return $this;
 	}
 
-	function save($file = false) {
+	function save($file = false, $type = false) {
 		$width = ($this->resizeWidth===false ? $this->imageWidth : $this->resizeWidth);
 		$height = ($this->resizeHeight===false ? $this->imageHeight : $this->resizeHeight);
 
@@ -227,7 +228,9 @@ class Image {
 		imagealphablending($new_image, true);
 		$color = imagecolorallocatealpha($new_image, $red, $green, $blue, $this->transparent);
 		imagefill($new_image, 0, 0, $color);
-		imageantialias($new_image, true);
+		if(function_exists("imageantialias")) {
+			imageantialias($new_image, true);
+		}
 
 		if($this->filter!==false && is_object($this->filter) && method_exists($this->filter, "apply")) {
 			$this->filter->apply($this->source_image);
@@ -263,7 +266,9 @@ class Image {
 			$cropped_rotated_image = imagecreatetruecolor($width, $height);
 			imagesavealpha($cropped_rotated_image, true);
 			imagealphablending($cropped_rotated_image, true);
-			imageantialias($cropped_rotated_image, true);
+			if(function_exists("imageantialias")) {
+				imageantialias($cropped_rotated_image, true);
+			}
 			imagefill($cropped_rotated_image, 0, 0, $color);
 			imagecolortransparent($cropped_rotated_image, $color);
 			imagecopyresampled($cropped_rotated_image, $rotated_image, 0, 0, $dx / 2, $dy / 2, $width, $height, $width, $height);
@@ -271,12 +276,18 @@ class Image {
 			$rotated_image = $cropped_rotated_image;
 		}
 
+		if($type===false) { $type = $this->typeImage; }
+
 		if($this->typeImage=="jpg") {
 			if($this->headers===true) { header("Content-type: image/jpeg"); }
 			$imgt = "ImageJPEG";
 		} else if($this->typeImage=="png") {
 			if($this->headers===true) { header("Content-type: image/png"); }
 			$imgt = "ImagePNG";
+			if($this->compress<=100 && $this->compress>=10) {
+				$this->compress /= 11;
+				$this->compress = round($this->compress);
+			}
 		} else if($this->typeImage=="gif") {
 			if($this->headers===true) { header("Content-type: image/gif"); }
 			$imgt = "ImageGIF";
@@ -284,11 +295,13 @@ class Image {
 			if($this->headers===true) { header("Content-type: image/wbmp"); }
 			$imgt = "ImageWBMP";
 		}
-
+        if(!is_callable($imgt)) {
+            return false;
+        }
 		if($file!==false) {
-			$imgt($rotated_image, $file, $this->compress);
+			return call_user_func_array($imgt, array($rotated_image, $file.".".$type, $this->compress));
 		} else {
-			$imgt($rotated_image, null, $this->compress);
+            return call_user_func_array($imgt, array($rotated_image, null, $this->compress));
 		}
 	}
 
@@ -466,7 +479,7 @@ class ImageFilter {
 		}
 		if($this->gaussian_blur!==false) {
 			for($x=1;$x<=$this->gaussian_blur;$x++) {
-				if($i%11 == 0) {//each 10th time apply 'IMG_FILTER_SMOOTH' with 'level of smoothness' set to -7
+				if($x%11 == 0) {//each 10th time apply 'IMG_FILTER_SMOOTH' with 'level of smoothness' set to -7
 					imagefilter($img, IMG_FILTER_SMOOTH, -7);
 				}
 				imagefilter($img, IMG_FILTER_GAUSSIAN_BLUR);
