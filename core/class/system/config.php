@@ -57,9 +57,10 @@ class config implements ArrayAccess {
 		if(!is_writable($dir)) {
 			@chmod($dir, 0777);
 		}
-		$filePATH = $dir."configWithoutDB.txt";
+		$filePATH = $dir."configWithoutDB.php";
 		if($action == "read" && file_exists($filePATH) && is_readable($filePATH)) {
 			$file = file_get_contents($filePATH);
+			$file = substr($file, strlen('<?php die(); ?>'));
 			$configWDB = unserialize($file);
 		} elseif($action=="edit") {
 			if(!(!empty($name) && ((file_exists($filePATH) && is_readable($filePATH)) || is_writable($dir)))) {
@@ -67,6 +68,7 @@ class config implements ArrayAccess {
 			}
 			if(file_exists($filePATH) && is_readable($filePATH)) {
 				$file = file_get_contents($filePATH);
+				$file = substr($file, strlen('<?php die(); ?>'));
 				$configWDB = unserialize($file);
 			}
 			if(!empty($valF)) {
@@ -112,7 +114,7 @@ class config implements ArrayAccess {
 				unlink($filePATH);
 			}
 			if(is_writable($dir)) {
-				file_put_contents($filePATH, serialize($configWDB));
+				file_put_contents($filePATH, '<?php die(); ?>'.serialize($configWDB));
 			}
 			return true;
 		} elseif($action=="delete") {
@@ -121,6 +123,7 @@ class config implements ArrayAccess {
 			}
 			if((!isset($configWDB[$name]) || !isset($configWDB[$name][$val])) && file_exists($filePATH) && is_readable($filePATH)) {
 				$file = file_get_contents($filePATH);
+				$file = substr($file, strlen('<?php die(); ?>'));
 				$configWDB = unserialize($file);
 			}
 			$update = false;
@@ -142,7 +145,7 @@ class config implements ArrayAccess {
 					unlink($filePATH);
 				}
 				if(is_writable($dir)) {
-					file_put_contents($filePATH, serialize($configWDB));
+					file_put_contents($filePATH, '<?php die(); ?>'.serialize($configWDB));
 				}
 			}
 			return true;

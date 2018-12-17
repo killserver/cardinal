@@ -206,6 +206,12 @@ if(defined("PATH_CACHE_USERDATA") && file_exists(PATH_CACHE_USERDATA."userList.p
 		$users = array_merge($users, $usersFile);
 	}
 }
+if(defined("PATH_CACHE_USERDATA") && file_exists(PATH_CACHE_USERDATA."configWithoutDB.txt") && !file_exists(PATH_CACHE_USERDATA."configWithoutDB.php")) {
+	$file = file_get_contents(PATH_CACHE_USERDATA."configWithoutDB.txt");
+	$file = '<?php die(); ?>'.$file;
+	@file_put_contents(PATH_CACHE_USERDATA."configWithoutDB.php", $file);
+	@unlink(PATH_CACHE_USERDATA."configWithoutDB.txt");
+}
 if(defined("PATH_FUNCTIONS") && file_exists(PATH_FUNCTIONS."login.".ROOT_EX)) {
 	@unlink(PATH_FUNCTIONS."login.".ROOT_EX);
 }

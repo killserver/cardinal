@@ -6,8 +6,8 @@
 		[if {fileExists}==false]
 		<a href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/" target="_blank">Войти в админ панель</a>
 		<p>Доступы к админ-панели:</p>
-		<div><label for="">Логин:</label><input type="text" readonly="readonly" value="{FN_'User::getUserData','admin;username'}" onclick="this.select()"></div>
-		<div><label for="">Пароль:</label><input type="text" readonly="readonly" value="{FN_'User::getUserData','admin;light'}" onclick="this.select()"></div>
+		<div><label for="">Логин:</label><input type="text" readonly="readonly" value="{FN_'User::getUserData','root;username'}" onclick="this.select()"></div>
+		<div><label for="">Пароль:</label><input type="text" readonly="readonly" value="{FN_'User::getUserData','root;light'}" onclick="this.select()"></div>
 		<span style="display:none;">{FN_'file_put_contents','{D_PATH_MEDIA}firstUser.lock;null'}</span>
 		[/if {fileExists}==false]
 	</div>
@@ -130,6 +130,7 @@
 	.garland_2{background-position: 0 -36px}
 	.garland_3{background-position: 0 -72px}
 	.garland_4{background-position: 0 -108px}
+	body.adminbarCardinal #garland { margin-top: 30px; }
 </style>
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="0" style="display:none;">
 	<filter id="myblurfilter" width="110%" height="110%">
@@ -139,41 +140,276 @@
 </svg>
 <script type="text/javascript">
 	function garland() {  
-	nums = document.getElementById('nums_1').innerHTML;
-	if(nums == 1) {document.getElementById('garland').className='garland_1';document.getElementById('nums_1').innerHTML='2'}
-	if(nums == 2) {document.getElementById('garland').className='garland_2';document.getElementById('nums_1').innerHTML='3'}
-	if(nums == 3) {document.getElementById('garland').className='garland_3';document.getElementById('nums_1').innerHTML='4'}
-	if(nums == 4) {document.getElementById('garland').className='garland_4';document.getElementById('nums_1').innerHTML='1'}
+		nums = document.getElementById('nums_1').innerHTML;
+		if(nums == 1) {document.getElementById('garland').className='garland_1';document.getElementById('nums_1').innerHTML='2'}
+		if(nums == 2) {document.getElementById('garland').className='garland_2';document.getElementById('nums_1').innerHTML='3'}
+		if(nums == 3) {document.getElementById('garland').className='garland_3';document.getElementById('nums_1').innerHTML='4'}
+		if(nums == 4) {document.getElementById('garland').className='garland_4';document.getElementById('nums_1').innerHTML='1'}
 	}
-	setInterval(function(){garland()}, 300) 
-	context = new AudioContext();
-	var t = new Audio();
-	t.src = "{THEME}/holidays_-_jingle_bells.mp3";
-	t.preload="true";
-	var btn = document.querySelector("#muted");
-	t.addEventListener('loadeddata', function() {
-		t.loop=true;
-		t.muted=true;
-		t.autoplay=true;
-		t.playbackRate=1.5;
-		t.play().then(function() {
-			btn.className = btn.className.replace("notLoad", "");
-			t.muted=false;
-		});
-	});
-	btn.addEventListener("click", function(e) {
-		e.preventDefault();
-		if(this.className.indexOf("notLoad")>-1) {
-			return false;
+	var ready = (function(){
+
+	    var readyList,
+	        DOMContentLoaded,
+	        class2type = {};
+	        class2type["[object Boolean]"] = "boolean";
+	        class2type["[object Number]"] = "number";
+	        class2type["[object String]"] = "string";
+	        class2type["[object Function]"] = "function";
+	        class2type["[object Array]"] = "array";
+	        class2type["[object Date]"] = "date";
+	        class2type["[object RegExp]"] = "regexp";
+	        class2type["[object Object]"] = "object";
+
+	    var ReadyObj = {
+	        // Is the DOM ready to be used? Set to true once it occurs.
+	        isReady: false,
+	        // A counter to track how many items to wait for before
+	        // the ready event fires. See #6781
+	        readyWait: 1,
+	        // Hold (or release) the ready event
+	        holdReady: function( hold ) {
+	            if ( hold ) {
+	                ReadyObj.readyWait++;
+	            } else {
+	                ReadyObj.ready( true );
+	            }
+	        },
+	        // Handle when the DOM is ready
+	        ready: function( wait ) {
+	            // Either a released hold or an DOMready/load event and not yet ready
+	            if ( (wait === true && !--ReadyObj.readyWait) || (wait !== true && !ReadyObj.isReady) ) {
+	                // Make sure body exists, at least, in case IE gets a little overzealous (ticket #5443).
+	                if ( !document.body ) {
+	                    return setTimeout( ReadyObj.ready, 1 );
+	                }
+
+	                // Remember that the DOM is ready
+	                ReadyObj.isReady = true;
+	                // If a normal DOM Ready event fired, decrement, and wait if need be
+	                if ( wait !== true && --ReadyObj.readyWait > 0 ) {
+	                    return;
+	                }
+	                // If there are functions bound, to execute
+	                readyList.resolveWith( document, [ ReadyObj ] );
+
+	                // Trigger any bound ready events
+	                //if ( ReadyObj.fn.trigger ) {
+	                //    ReadyObj( document ).trigger( "ready" ).unbind( "ready" );
+	                //}
+	            }
+	        },
+	        bindReady: function() {
+	            if ( readyList ) {
+	                return;
+	            }
+	            readyList = ReadyObj._Deferred();
+
+	            // Catch cases where $(document).ready() is called after the
+	            // browser event has already occurred.
+	            if ( document.readyState === "complete" ) {
+	                // Handle it asynchronously to allow scripts the opportunity to delay ready
+	                return setTimeout( ReadyObj.ready, 1 );
+	            }
+
+	            // Mozilla, Opera and webkit nightlies currently support this event
+	            if ( document.addEventListener ) {
+	                // Use the handy event callback
+	                document.addEventListener( "DOMContentLoaded", DOMContentLoaded, false );
+	                // A fallback to window.onload, that will always work
+	                window.addEventListener( "load", ReadyObj.ready, false );
+
+	            // If IE event model is used
+	            } else if ( document.attachEvent ) {
+	                // ensure firing before onload,
+	                // maybe late but safe also for iframes
+	                document.attachEvent( "onreadystatechange", DOMContentLoaded );
+
+	                // A fallback to window.onload, that will always work
+	                window.attachEvent( "onload", ReadyObj.ready );
+
+	                // If IE and not a frame
+	                // continually check to see if the document is ready
+	                var toplevel = false;
+
+	                try {
+	                    toplevel = window.frameElement == null;
+	                } catch(e) {}
+
+	                if ( document.documentElement.doScroll && toplevel ) {
+	                    doScrollCheck();
+	                }
+	            }
+	        },
+	        _Deferred: function() {
+	            var // callbacks list
+	                callbacks = [],
+	                // stored [ context , args ]
+	                fired,
+	                // to avoid firing when already doing so
+	                firing,
+	                // flag to know if the deferred has been cancelled
+	                cancelled,
+	                // the deferred itself
+	                deferred  = {
+
+	                    // done( f1, f2, ...)
+	                    done: function() {
+	                        if ( !cancelled ) {
+	                            var args = arguments,
+	                                i,
+	                                length,
+	                                elem,
+	                                type,
+	                                _fired;
+	                            if ( fired ) {
+	                                _fired = fired;
+	                                fired = 0;
+	                            }
+	                            for ( i = 0, length = args.length; i < length; i++ ) {
+	                                elem = args[ i ];
+	                                type = ReadyObj.type( elem );
+	                                if ( type === "array" ) {
+	                                    deferred.done.apply( deferred, elem );
+	                                } else if ( type === "function" ) {
+	                                    callbacks.push( elem );
+	                                }
+	                            }
+	                            if ( _fired ) {
+	                                deferred.resolveWith( _fired[ 0 ], _fired[ 1 ] );
+	                            }
+	                        }
+	                        return this;
+	                    },
+
+	                    // resolve with given context and args
+	                    resolveWith: function( context, args ) {
+	                        if ( !cancelled && !fired && !firing ) {
+	                            // make sure args are available (#8421)
+	                            args = args || [];
+	                            firing = 1;
+	                            try {
+	                                while( callbacks[ 0 ] ) {
+	                                    callbacks.shift().apply( context, args );//shifts a callback, and applies it to document
+	                                }
+	                            }
+	                            finally {
+	                                fired = [ context, args ];
+	                                firing = 0;
+	                            }
+	                        }
+	                        return this;
+	                    },
+
+	                    // resolve with this as context and given arguments
+	                    resolve: function() {
+	                        deferred.resolveWith( this, arguments );
+	                        return this;
+	                    },
+
+	                    // Has this deferred been resolved?
+	                    isResolved: function() {
+	                        return !!( firing || fired );
+	                    },
+
+	                    // Cancel
+	                    cancel: function() {
+	                        cancelled = 1;
+	                        callbacks = [];
+	                        return this;
+	                    }
+	                };
+
+	            return deferred;
+	        },
+	        type: function( obj ) {
+	            return obj == null ?
+	                String( obj ) :
+	                class2type[ Object.prototype.toString.call(obj) ] || "object";
+	        }
+	    }
+	    // The DOM ready check for Internet Explorer
+	    function doScrollCheck() {
+	        if ( ReadyObj.isReady ) {
+	            return;
+	        }
+
+	        try {
+	            // If IE is used, use the trick by Diego Perini
+	            // http://javascript.nwbox.com/IEContentLoaded/
+	            document.documentElement.doScroll("left");
+	        } catch(e) {
+	            setTimeout( doScrollCheck, 1 );
+	            return;
+	        }
+
+	        // and execute any waiting functions
+	        ReadyObj.ready();
+	    }
+	    // Cleanup functions for the document ready method
+	    if ( document.addEventListener ) {
+	        DOMContentLoaded = function() {
+	            document.removeEventListener( "DOMContentLoaded", DOMContentLoaded, false );
+	            ReadyObj.ready();
+	        };
+
+	    } else if ( document.attachEvent ) {
+	        DOMContentLoaded = function() {
+	            // Make sure body exists, at least, in case IE gets a little overzealous (ticket #5443).
+	            if ( document.readyState === "complete" ) {
+	                document.detachEvent( "onreadystatechange", DOMContentLoaded );
+	                ReadyObj.ready();
+	            }
+	        };
+	    }
+	    function ready( fn ) {
+	        // Attach the listeners
+	        ReadyObj.bindReady();
+
+	        var type = ReadyObj.type( fn );
+
+	        // Add the callback
+	        readyList.done( fn );//readyList is result of _Deferred()
+	    }
+	    return ready;
+	})();
+	ready(function() {
+		var context = new AudioContext();
+		setInterval(function(){garland()}, 300)
+		var t = window.t = document.createElement("iframe");
+		t.allow="autoplay";
+		t.src = "{THEME}/holidays_-_jingle_bells.mp3";
+		document.children[0].appendChild(t);
+		t.onload = function() {
+			t.contentWindow.document.querySelector("video").preload="true";
+
+			var btn = document.querySelector("#muted");
+			t.contentWindow.document.querySelector("video").addEventListener('loadeddata', function() {
+				t.contentWindow.document.querySelector("video").loop=true;
+				t.contentWindow.document.querySelector("video").setAttribute("allow", "autoplay");
+				t.contentWindow.document.querySelector("video").autoplay=true;
+				t.contentWindow.document.querySelector("video").playbackRate=1.5;
+				t.contentWindow.document.querySelector("video").play().then(function() {
+					btn.className = btn.className.replace("notLoad", "");
+				}).catch(function() {
+					t.contentWindow.document.querySelector("video").muted=true;
+					t.contentWindow.document.querySelector("video").play();
+				});
+			});
+			btn.addEventListener("click", function(e) {
+				e.preventDefault();
+				if(this.className.indexOf("notLoad")>-1) {
+					return false;
+				}
+				t.contentWindow.document.querySelector("video").muted = (!t.contentWindow.document.querySelector("video").muted);
+				if(t.muted) {
+					this.className += " muted ";
+				} else {
+					this.className = t.contentWindow.document.querySelector("video").className.replace(" muted ", "");
+				}
+			});
+			t.contentWindow.document.querySelector("video").load();
 		}
-		t.muted = (!t.muted);
-		if(t.muted) {
-			this.className += " muted ";
-		} else {
-			this.className = t.className.replace(" muted ", "");
-		}
 	});
-	t.load();
 	var aaSnowConfig = {snowflakes: '200'};
 	var idleTimeout = 1000,
 		idleNow = false,
