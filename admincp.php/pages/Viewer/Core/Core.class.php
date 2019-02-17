@@ -43,13 +43,13 @@ class Core {
 	}
 	
 	public static function __callStatic($call, $args) {
-		$new = __METHOD__;
-		return $this->$new($call, $args);
+		$name = get_class();
+		$cl = new $name();
+		return call_user_func_array(array($cl, $call), $args);
 	}
 	
 	public function __call($call, array $args) {
-		$new = __METHOD__;
-		return $this->$new($call, $args);
+		return call_user_func_array(array($this, $call), $args);
 	}
 	
 	protected function ParseLang() {
@@ -284,7 +284,7 @@ class Core {
 						"existSub" => ($type=="cat"&&sizeof($datas)>1 ? "true" : "false"),
 						"value" => $datas[$i][$is]['title'],
 						"link" => $datas[$i][$is]['link'],
-						"is_now" => (strpos($now, $is_now)!==false ? "1" : "0"),
+						"is_now" => (!empty($is_now) && strpos($now, $is_now)!==false ? "1" : "0"),
 						"type" => $type,
 						"type_st" => ($type=="cat"&&$datas[$i][$is]['type']=="cat" ? "start" : ""),
 						"type_end" => ($type=="cat"&&$count==$is&&$datas[$i][$is]['type']=="item" ? "end" : ""),

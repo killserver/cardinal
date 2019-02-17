@@ -7607,3 +7607,6 @@ span > img[src='/'] {
                 box-shadow: 0px 0px 0px 0px transparent;
     }
 }
+.panel .panel-heading > .panel-options a:focus {
+    text-decoration: none;
+}

@@ -101,7 +101,10 @@ if(in_array($view, array_keys($defined))) {
 	$view = $defined[$view];
 }
 $in_page = $view;
-if(class_exists($view)) {
+if(isset($fnCall) && is_callable($fnCall)) {
+	$core = new Core();
+	call_user_func_array($fnCall, array($core, $view));
+} else if(class_exists($view)) {
 	if(!defined("ADMIN_PAGE_NOW")) {
 		define("ADMIN_PAGE_NOW", $view);
 	}

@@ -276,7 +276,7 @@ class Image {
 			$rotated_image = $cropped_rotated_image;
 		}
 
-		if($type===false) { $type = $this->typeImage; }
+		//if($type===false) { $type = $this->typeImage; }
 
 		if($this->typeImage=="jpg") {
 			if($this->headers===true) { header("Content-type: image/jpeg"); }
@@ -298,7 +298,9 @@ class Image {
         if(!is_callable($imgt)) {
             return false;
         }
-		if($file!==false) {
+		if($file!==false && $type===false) {
+			return call_user_func_array($imgt, array($rotated_image, $file, $this->compress));
+		} else if($file!==false && $type!==false) {
 			return call_user_func_array($imgt, array($rotated_image, $file.".".$type, $this->compress));
 		} else {
             return call_user_func_array($imgt, array($rotated_image, null, $this->compress));

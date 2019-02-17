@@ -542,6 +542,39 @@ class Debug {
 			return '<small style="color:green;font-weight:bold;">'.gettype($var).'</small> '.htmlspecialchars(print_r($var, TRUE), ENT_NOQUOTES, self::$charset);
 		}
 	}
+
+	final public static function vdump() {
+		global $printedVdump;
+		$list = func_get_args();
+		$backtrace = debug_backtrace();
+		if(!defined("IS_CLI") && $printedVdump===false) {
+			if(function_exists("nocache_headers")) { nocache_headers(); }
+			echo '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><meta name="viewport" content="width=device-width"><title>Cardinal &rsaquo; Debug</title><meta name="robots" content="noindex,follow"></head><style>html { background: #f1f1f1; } body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; } div.container { background: #fff; color: #444; margin: 2em auto; padding: 0em 2em 1em; max-width: 700px; -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.13); box-shadow: 0 1px 3px rgba(0,0,0,0.13); } div.info { border-bottom: 1px solid #dadada; clear: both; color: #666; background: #fff; word-break: break-all; max-width: 100%; font-size: 19px; padding: 1em 0px 7px; font-family: \'Roboto\'; margin-bottom: 1.5rem; } pre { text-align: left; margin: 0px 0px 1em; font-family: Consolas, Monaco, monospace; font-size: 12px; word-break: break-word; max-width: 100%; white-space: pre-wrap; line-height: 20px; }</style><body>';
+			if(function_exists("addEvent")) { addEvent("shutdownCardinal", function() { echo "</body></html>"; }, "", 999999999); }
+		}
+		if(!defined("IS_CLI")) {
+			echo '<div class="container"><div class="info">'. (isset($backtrace[0]) ? "<b>Called:</b><span> ".(defined("ROOT_PATH") ? str_replace(ROOT_PATH, DS, $backtrace[0]['file']) : $backtrace[0]['file'])." [".$backtrace[0]['line']."]&nbsp;<i>".date("d-m-Y H:i:s", fileatime($backtrace[0]['file']))."</i>" : "")."</span>".(isset($backtrace[0]) ? "<br>" : "")."</div>";
+			echo '<pre>';
+		} else {
+			echo (isset($backtrace[0]) ? "Called: ".$backtrace[0]['file']." [".$backtrace[0]['line']."] ".date("d-m-Y H:i:s", fileatime($backtrace[0]['file'])) : "")." ".(isset($backtrace[0]) ? PHP_EOL.PHP_EOL : "");
+		}
+		if(sizeof($list)>0) {
+			ob_start();
+			call_user_func_array("var_dump", $list);
+			$t = ob_get_clean();
+			if(!defined("IS_CLI")) {
+				echo htmlspecialchars($t);
+			} else {
+				echo $t;
+			}
+		}
+		if(!defined("IS_CLI")) {
+			echo '</pre></div>'.PHP_EOL;
+		} else {
+			echo PHP_EOL.PHP_EOL;
+		}
+		$printedVdump = true;
+	}
 	
 	
 	private static $breakpoint;

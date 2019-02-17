@@ -102,6 +102,7 @@ if(!(!$method)) {
 	$method = '';
 }
 unset($classes);
+$callback = Route::param('callback');
 $manifest['now_page'] = $page;
 $manifest['mod_page'][HTTP::getip()]['page'] = $page;
 $is_file = Route::param('is_file');
@@ -122,7 +123,13 @@ if(isset($globalClass) && is_array($globalClass) && sizeof($globalClass)>0) {
 		}
 	}
 }
-if(!$is_file && empty($file)) {
+if(is_array($callback) && sizeof($callback)>0) {
+	foreach($callback as $call) {
+		if(is_callable($call)) {
+			call_user_func_array($call, $langPanel);
+		}
+	}
+} else if(!$is_file && empty($file)) {
 	if($class == "page") {
 		$args = array();
 		$args[] = $page;
@@ -131,11 +138,14 @@ if(!$is_file && empty($file)) {
 	}
 	if(is_object($class) || class_exists($class)) {
 		$page = new $class($langPanel);
+		if(method_exists($page, "start")) {
+			call_user_func_array(array(&$page, "start"), $langPanel);
+		}
 		if(!empty($method) && method_exists($page, $method)) {
 			call_user_func_array(array(&$page, $method), $langPanel);
 		}
 	}
-} else {
+} else if($is_file || !empty($file)) {
 	if(file_exists($file)) {
 		require_once($file);
 	} else {

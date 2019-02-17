@@ -25,27 +25,49 @@ class config implements ArrayAccess {
 		global $config;
 		self::$config = array_merge($config, self::$config);
 	}
-	
-	final public static function ReadConfig($name, $val) {
-		$configs = array();
-		if(strpos($val, ":-:")!==false) {
-			$vals = array();
-			if(strpos($val, ";-;")!==false) {
-				$exp = explode(";-;", $val);
-				for($i=0;$i<sizeof($exp);$i++) {
-					$ex = explode(":-:", $exp[$i]);
-					$vals[$ex[0]] = $ex[1];
-				}
-				$configs[$name] = $vals;
-			} else {
-				$exp = explode(":-:", $val);
-				$vals[$exp[0]] = $exp[1];
-				$configs[$name] = $vals;
-			}
+
+	private static $tryRead = 0;
+	private static $tryWrite = 0;
+
+	final private static function readFile($files) {
+		chmod($files, 0400);
+		if(($fp1 = fopen($files, "r"))!==false) {
+			$file = fread($fp1, filesize($files));
+			fclose($fp1);
+		} else if(self::$tryRead>5) {
+			throw new Exception("Error reading user list", 1);
+			die();
 		} else {
-			$configs[$name] = $val;
+			usleep(300);
+			self::$tryRead++;
+			return self::readFile($files);
 		}
-		return $configs;
+		self::$tryRead = 0;
+		chmod($files, 0644);
+		return $file;
+	}
+
+	final private static function safeSave($file, $d) {
+		if(!file_exists($file)) {
+			file_put_contents($file, "");
+		}
+		chmod($file, 0200);
+		$ret = false;
+		if(($fp = fopen($file, "w"))!==false) {
+			fwrite($fp, $d);
+			fclose($fp);
+			$ret = true;
+		} else if(self::$tryWrite>5) {
+			throw new Exception("Error writing user list", 1);
+			die();
+		} else {
+			usleep(300);
+			self::$tryWrite++;
+			return self::safeSave($file, $d);
+		}
+		self::$tryWrite = 0;
+		chmod($file, 0644);
+		return $ret;
 	}
 	
 	final private static function initWithoutDB($action = "read", $name = "", $val = "", $valS = "", $valTh = "", $valF = "") {
@@ -53,21 +75,21 @@ class config implements ArrayAccess {
 		if(!isset($configWDB) || !is_array($configWDB)) {
 			$configWDB = array();
 		}
-		$dir = defined("ROOT_PATH") ? PATH_CACHE_USERDATA : dirname(__FILE__).DIRECTORY_SEPARATOR;
+		$dir = defined("PATH_CACHE_USERDATA") ? PATH_CACHE_USERDATA : dirname(__FILE__).DIRECTORY_SEPARATOR;
 		if(!is_writable($dir)) {
 			@chmod($dir, 0777);
 		}
 		$filePATH = $dir."configWithoutDB.php";
-		if($action == "read" && file_exists($filePATH) && is_readable($filePATH)) {
-			$file = file_get_contents($filePATH);
+		if($action == "read" && file_exists($filePATH)) {
+			$file = self::readFile($filePATH);
 			$file = substr($file, strlen('<?php die(); ?>'));
 			$configWDB = unserialize($file);
 		} elseif($action=="edit") {
-			if(!(!empty($name) && ((file_exists($filePATH) && is_readable($filePATH)) || is_writable($dir)))) {
+			if(!(!empty($name) && (file_exists($filePATH) || is_writable($dir)))) {
 				return false;
 			}
-			if(file_exists($filePATH) && is_readable($filePATH)) {
-				$file = file_get_contents($filePATH);
+			if(file_exists($filePATH)) {
+				$file = self::readFile($filePATH);
 				$file = substr($file, strlen('<?php die(); ?>'));
 				$configWDB = unserialize($file);
 			}
@@ -110,19 +132,16 @@ class config implements ArrayAccess {
 				}
 				$configWDB[$name] = $val;
 			}
-			if(file_exists($filePATH)) {
-				unlink($filePATH);
-			}
 			if(is_writable($dir)) {
-				file_put_contents($filePATH, '<?php die(); ?>'.serialize($configWDB));
+				self::safeSave($filePATH, '<?php die(); ?>'.serialize($configWDB));
 			}
 			return true;
 		} elseif($action=="delete") {
-			if(!(!empty($name) && ((file_exists($filePATH) && is_readable($filePATH)) || is_writable($dir)))) {
+			if(!(!empty($name) && (file_exists($filePATH) || is_writable($dir)))) {
 				return false;
 			}
-			if((!isset($configWDB[$name]) || !isset($configWDB[$name][$val])) && file_exists($filePATH) && is_readable($filePATH)) {
-				$file = file_get_contents($filePATH);
+			if((!isset($configWDB[$name]) || !isset($configWDB[$name][$val])) && file_exists($filePATH)) {
+				$file = self::readFile($filePATH);
 				$file = substr($file, strlen('<?php die(); ?>'));
 				$configWDB = unserialize($file);
 			}
@@ -141,11 +160,8 @@ class config implements ArrayAccess {
 				$update = true;
 			}
 			if($update) {
-				if(file_exists($filePATH)) {
-					unlink($filePATH);
-				}
 				if(is_writable($dir)) {
-					file_put_contents($filePATH, '<?php die(); ?>'.serialize($configWDB));
+					self::safeSave($filePATH, '<?php die(); ?>'.serialize($configWDB));
 				}
 			}
 			return true;

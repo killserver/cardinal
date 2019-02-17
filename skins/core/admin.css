@@ -348,6 +348,7 @@ html.onHoverAdmin .adminCoreCardinal.test > .elems > .more {
     float: left;
     position: relative;
     height: 2.8em;
+    width: auto;
 }
 
 .adminCoreCardinal > .elems > .more:before {

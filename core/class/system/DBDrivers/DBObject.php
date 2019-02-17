@@ -42,6 +42,10 @@ class DBObject implements ArrayAccess {
 			$this->loadedTable = $table;
 		}
 	}
+
+	final public function loadedTable() {
+		return $this->loadedTable;
+	}
 	
 	final public function getInstance($notClearTable = true) {
 		$th = clone $this;
@@ -146,6 +150,37 @@ class DBObject implements ArrayAccess {
 		}
 		if(isset($ret['pseudoPosition'])) {
 			unset($ret['pseudoPosition']);
+		}
+	}
+
+	final public function take($count) {
+		if(!is_numeric($count)) {
+			$c = explode(",", $count);
+			$if = intval($c[0]);
+		} else {
+			$if = $count;
+		}
+		if(2>=$if) {
+			$this->multiple = true;
+		}
+		return $this;
+	}
+
+	final public function getOnce() {
+		$g = $this->Select();
+		if(!is_array($g)) {
+			return $g;
+		} else {
+			return current($g);
+		}
+	}
+
+	final public function getList() {
+		$g = $this->Select();
+		if(!is_array($g)) {
+			return array($g);
+		} else {
+			return ($g);
 		}
 	}
 	

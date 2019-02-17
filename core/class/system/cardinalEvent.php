@@ -22,7 +22,7 @@ class cardinalEvent {
 			if(!isset(self::$collection[$typeEvent][$action])) {
 				self::$collection[$typeEvent][$action] = array();
 			}
-			if($priority===false) {
+			if($priority===false || $priority===null) {
 				$priority = sizeof(self::$collection[$typeEvent][$action]);
 			}
 			if(isset(self::$collection[$typeEvent][$action][$priority])) {
@@ -40,7 +40,7 @@ class cardinalEvent {
 			if(!isset(self::$collection[$typeEvent][$action])) {
 				self::$collection[$typeEvent][$action] = array();
 			}
-			if($priority===false) {
+			if($priority===false || $priority===null) {
 				$priority = sizeof(self::$collection[$typeEvent][$action]);
 			}
 			if(isset(self::$collection[$typeEvent][$action][$priority])) {

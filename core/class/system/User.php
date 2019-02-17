@@ -33,24 +33,54 @@ class User {
 		}
 	}
 
-	final private static function safeSave($file, $d) {
-		$ret = false;
-		$fp = fopen($file, "w+");
-		if(flock($fp, LOCK_EX)) {
-			ftruncate($fp, 0);
-			fwrite($fp, $d);
-			fflush($fp);
-			flock($fp, LOCK_UN);
-			$ret = true;
+	private static $tryRead = 0;
+	private static $tryWrite = 0;
+
+	final private static function readFile($files) {
+		chmod($files, 0400);
+		if(($fp1 = fopen($files, "r"))!==false) {
+			$file = fread($fp1, filesize($files));
+			fclose($fp1);
+		} else if(self::$tryRead>5) {
+			throw new Exception("Error reading user list", 1);
+			die();
+		} else {
+			usleep(300);
+			self::$tryRead++;
+			return self::readFile($files);
 		}
-		fclose($fp);
+		self::$tryRead = 0;
+		chmod($files, 0644);
+		return $file;
+	}
+
+	final private static function safeSave($file, $d) {
+		if(!file_exists($file)) {
+			file_put_contents($file, "");
+		}
+		chmod($file, 0200);
+		$ret = false;
+		if(($fp = fopen($file, "w"))!==false) {
+			fwrite($fp, $d);
+			fclose($fp);
+			$ret = true;
+		} else if(self::$tryWrite>5) {
+			throw new Exception("Error writing user list", 1);
+			die();
+		} else {
+			usleep(300);
+			self::$tryWrite++;
+			return self::safeSave($file, $d);
+		}
+		self::$tryWrite = 0;
+		chmod($file, 0644);
 		return $ret;
 	}
 
 	final private static function defend($users) {
 		$php = self::PathUsers()."userList.php";
-		if(file_exists($php) && is_readable($php)) {
-			$file = file_get_contents($php);
+		if(file_exists($php)) {
+			$file = self::readFile($php);
 			$file = preg_replace("#\<\?(.*?)\?\>#is", "", $file);
 			if(self::is_json($file)) {
 				$usersFile = json_decode($file, true);
@@ -86,7 +116,7 @@ class User {
 		return $data;
 	}
 
-	final public static function All($withLoaded = false) {
+	final public static function All($onlyUsers = true) {
 		$users = array();
 		$userLoad = false;
 		if(isset($_SERVER['HTTP_HOST']) && file_exists(PATH_MEDIA."users".str_replace("www.", "", $_SERVER['HTTP_HOST']).".".ROOT_EX)) {
@@ -113,10 +143,10 @@ class User {
 				$id++;
 			}
 		}
-		if($withLoaded) {
-			return array($users, $userLoad);
-		} else {
+		if($onlyUsers) {
 			return $users;
+		} else {
+			return array($users, $userLoad);
 		}
 	}
 	
@@ -151,7 +181,7 @@ class User {
 	}
 
 	final public static function loadUsers() {
-		return self::All(true);
+		return self::All(false);
 	}
 	
 	final public static function load() {
@@ -239,7 +269,7 @@ class User {
 	
 	final public static function checkExists($login, $default = false) {
 		$d = self::All();
-		$ret = array_key_exists($login, $d[0]);
+		$ret = array_key_exists($login, $d);
 		if($ret===false) {
 			$ret = $default;
 		}

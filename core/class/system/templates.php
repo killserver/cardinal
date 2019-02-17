@@ -380,12 +380,11 @@ class templates {
 				self::assign_vars($v, $name, $name.$k.$i);
 			} else if(is_object($arr) && $arr instanceof DBObject) {
 				$v = $arr->getArray();
-				var_dump($v);
 				$vs = cardinalEvent::execute("templates::loadObject", $v);
 				if(!empty($vs)) {
 					$v = $vs;
 				}
-				self::loadObject($v, $name, $i);
+				self::assign_vars($v, $name);
 			} else if(is_object($v) && $v instanceof DBObject) {
 				$v = $v->getArray();
 				$vs = cardinalEvent::execute("templates::loadObject", $v);
@@ -747,8 +746,11 @@ class templates {
      */
 	final private static function lang($array) {
 		if(isset($array[4])) {
+			$array[2] = preg_replace("/\s{2,}/", ' ', $array[2]);
+			$array[4] = preg_replace("/\s{2,}/", ' ', $array[4]);
 			$isset = modules::get_lang($array[2], $array[4]);
 		} else {
+			$array[2] = preg_replace("/\s{2,}/", ' ', $array[2]);
 			$isset = modules::get_lang($array[2]);
 		}
 		if(!empty($isset) && $isset!='""') {
@@ -1759,7 +1761,16 @@ class templates {
 		$tpl = $data[5];
 		$sub = "";
 		for($i=$data[1];$i<=$data[2];$i=$i+$step) {
-			$sub .= str_replace("{id}", $i, $tpl);
+			$dd = $tpl;
+			$dd = str_replace('{$id}', $i, $dd);
+			$dd = str_replace('{id}', $i, $dd);
+			$dd = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $dd);
+			$dd = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $dd);
+			$dd = self::callback_array('#\[forif (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/forif \\1\]#i', ("templates::is"), $dd);
+			$dd = self::callback_array('#\[forif (.*?)\]([\s\S]*?)\[/forif \\1\]#i', ("templates::is"), $dd);
+			$dd = self::callback_array("#\\[forif (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/forif\\]#i", ("templates::is"), $dd);
+			$dd = self::callback_array("#\\[forif (.*?)\\]([\s\S]*?)\\[/forif\\]#i", ("templates::is"), $dd);
+			$sub .= $dd;
 		}
 		return $sub;
 	}
@@ -2142,7 +2153,7 @@ class templates {
 	}
 
 	private static function execEvent($arr) {
-		$args = array($arr[1], false);
+		$args = array($arr[1], "");
 		if(isset($arr[3])) {
 			$exp = explode(";", $arr[3]);
 			$size = 2;

@@ -65,6 +65,8 @@ global $seoBlock;
 	$link = (isset($meta['canonicalLink']) ? $meta['canonicalLink'] : (isset($meta['link']) ? $meta['link'] : (isset($seoBlock['og']['link']) ? $seoBlock['og']['link'] : (isset($seoBlock['ogp']['link']) ? $seoBlock['ogp']['link'] : (isset($seoBlock['main']['canonical']) ? $seoBlock['main']['canonical'] : (isset($seoBlock['main']['link']) ? $seoBlock['main']['link'] : (isset($seoBlock['main']['url']) ? $seoBlock['main']['url'] : "")))))));
 	$keywords = (isset($meta['keywords']) ? $meta['keywords'] : (isset($seoBlock['ogp']['keywords']) ? $seoBlock['ogp']['keywords'] : (isset($seoBlock['og']['keywords']) ? $seoBlock['og']['keywords'] : (isset($seoBlock['main']['keywords']) ? $seoBlock['main']['keywords'] : ""))));
 	$robots = (isset($meta['robots']) ? $meta['robots'] : (isset($seoBlock['ogp']['robots']) ? $seoBlock['ogp']['robots'] : (isset($seoBlock['og']['robots']) ? $seoBlock['og']['robots'] : (isset($seoBlock['main']['robots']) ? $seoBlock['main']['robots'] : "all"))));
+	$prev = (isset($meta['prevLink']) ? $meta['prevLink'] : (isset($meta['prev']) ? $meta['prev'] : (isset($seoBlock['og']['prev']) ? $seoBlock['og']['prev'] : (isset($seoBlock['ogp']['prev']) ? $seoBlock['ogp']['prev'] : (isset($seoBlock['main']['prev']) ? $seoBlock['main']['prev'] : (isset($seoBlock['main']['prev']) ? $seoBlock['main']['prev'] : ""))))));
+	$next = (isset($meta['nextLink']) ? $meta['nextLink'] : (isset($meta['next']) ? $meta['next'] : (isset($seoBlock['og']['next']) ? $seoBlock['og']['next'] : (isset($seoBlock['ogp']['next']) ? $seoBlock['ogp']['next'] : (isset($seoBlock['main']['next']) ? $seoBlock['main']['next'] : (isset($seoBlock['main']['next']) ? $seoBlock['main']['next'] : ""))))));
 	if($imageCheck) {
 		if(isset($seoBlock['ogp']['image'])) {
 			$cLink = substr($seoBlock['ogp']['image'], 0, 1);
@@ -132,11 +134,13 @@ global $seoBlock;
 		),
 	));
 	if($imageCheck && !empty($imageLink)) {
-		$meta = array_merge($meta, array(
-			"link" => array(
-				"image_src" => $imageLink."?".time(),
-			),
-		));
+		$meta["link"]["image_src"] = $imageLink."?".time();
+	}
+	if(!empty($next)) {
+		$meta["link"]["next"] = $next;
+	}
+	if(!empty($prev)) {
+		$meta["link"]["prev"] = $prev;
 	}
 	if($clear) {
 		unset($seoBlock);

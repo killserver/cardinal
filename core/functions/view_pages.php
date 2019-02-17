@@ -179,8 +179,6 @@ global $manifest;
 			include_once(PATH_PAGES."pong.".ROOT_EX);
 		break;
 		case "main":
-			include_once(PATH_PAGES."main.".ROOT_EX);
-		break;
 		default:
 			if(array_key_exists("default", $manifest['class_pages'])) {
 				if(array_key_exists("default", $manifest['before_ini_class'])) {

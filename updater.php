@@ -272,6 +272,9 @@ if(defined("ADMINCP_DIRECTORY") && file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."p
 if(defined("ADMINCP_DIRECTORY") && file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Antivirus".DS)) {
 	@rmdir(ROOT_PATH.ADMINCP_DIRECTORY.DS."pages".DS."Viewer".DS."Antivirus".DS);
 }
+if(file_exists(PATH_MEDIA."config.settings.".ROOT_EX) && !file_exists(PATH_MEDIA."config.init.".ROOT_EX)) {
+	@rename(PATH_MEDIA."config.settings.".ROOT_EX, PATH_MEDIA."config.init.".ROOT_EX);
+}
 echo file_get_contents(PATH_SKINS."core".DS."updater.html");
 @unlink(__FILE__);
 die();

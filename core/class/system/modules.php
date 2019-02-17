@@ -70,6 +70,9 @@ class modules {
 
 	final public static function get_config($get, $array = "", $default = false) {
 	global $config;
+		if(class_exists("config")) {
+			config::init();
+		}
 		if(!empty($array)) {
 			if(isset($config[$get][$array])) {
 				return $config[$get][$array];
@@ -87,13 +90,22 @@ class modules {
 
 	final public static function set_config($get, $val) {
 	global $config;
+		if(class_exists("config")) {
+			config::init();
+		}
 		if(is_array($get)) {
 			if(!isset($config[$get[0]])) {
 				$config[$get[0]] = array();
 			}
 			$config[$get[0]][$get[1]] = $val;
+			if(class_exists("config")) {
+				config::Set($get[0], $get[1], $val);
+			}
 			return true;
 		} else {
+			if(class_exists("config")) {
+				config::Set($get, $val);
+			}
 			$config[$get] = $val;
 			return true;
 		}

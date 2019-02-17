@@ -171,10 +171,13 @@ function removeInputFile(th, name, val) {
 	jQuery('input[name="deleteArray['+name+']"]').val(val+","+bef);
 	jQuery(th).parent().parent().remove();
 }
-jQuery(document).ready(function() {
+function showPreviewFn() {
 	jQuery(".showPreview").each(function(i, elem) {
 		jQuery(elem).after("<br><img src='"+jQuery(elem).attr("href")+"' width='200' style='background:#333; display: table;'>");
 	});
+}
+jQuery(document).ready(function() {
+	showPreviewFn();
 	jQuery("body").on("click", ".accessRemove", function() {
 		var count = jQuery(".containerFiles[data-parent='"+jQuery(this).attr("data-parent")+"'] input").length;
 		if(count==1) {

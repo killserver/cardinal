@@ -34,6 +34,7 @@ class SettingUser extends Core {
 	}
 
 	function Saves($arr) {
+		$arr = execEvent("save_settings", $arr);
 		$ret = "";
 		foreach($arr as $k => $v) {
 			$ret .= "'".$k."' => ".(is_array($v) ? "array(".$this->Saves($v).")," : "'".str_replace("'", "\'", $v)."',");

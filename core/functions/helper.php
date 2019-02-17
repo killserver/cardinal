@@ -366,3 +366,48 @@ function create_pass($pass) { return function_call('create_pass', array($pass));
 function or_create_pass($pass) {
 	return User::create_pass($pass);
 }
+
+function add_setting_tab($html, $name = "") {
+	if(class_exists("SettingUser", false)) {
+		SettingUser::add($html, $name);
+	}
+}
+
+$settingUserMainTpl = array();
+function add_setting($html, $name = "") {
+	global $settingUserMainTpl;
+	$settingUserMainTpl[$name] = $html;
+	addEventRef("settinguser_main", function(&$t) {
+		global $settingUserMainTpl;
+		foreach($settingUserMainTpl as $v) {
+			$t .= $v;
+		}
+	});
+}
+
+function closetags($html, $singleTagsAdd = array()) { return function_call('closetags', array($html, $singleTagsAdd)); }
+function or_closetags($html, $singleTagsAdd = array()) {
+	$single_tags = array('meta', 'img', 'br', 'link', 'area', 'input', 'hr', 'col', 'param', 'base');
+	if(sizeof($singleTagsAdd)>0) {
+		$single_tags = array_merge($single_tags, $singleTagsAdd);
+	}
+	preg_match_all('~<([a-z0-9]+)(?: .*)?(?<![/|/ ])>~iU', $html, $result);
+	$openedtags = $result[1];
+	preg_match_all('~</([a-z0-9]+)>~iU', $html, $result);
+	$closedtags = $result[1];
+	$len_opened = sizeof($openedtags);
+	if(sizeof($closedtags) == $len_opened) {
+		return $html;
+	}
+    $openedtags = array_reverse($openedtags);
+	for($i=0;$i<$len_opened;$i++) {
+		if(!in_array($openedtags[$i], $single_tags)) {
+			if(($key = array_search($openedtags[$i], $closedtags)) !== false) {
+				unset($closedtags[$key]);
+			} else {
+				$html .= '</'.$openedtags[$i].'>';
+			}
+		}
+	}
+	return $html;
+}

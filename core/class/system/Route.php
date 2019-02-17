@@ -496,6 +496,32 @@ class Route {
 		}
 	}
 
+	final public static function method($method, $uri_callback = "", $regex = array(), $callback = "") {
+		$class = __class__;
+		if(is_callable($regex)) {
+			$callback = $regex;
+			$regex = array();
+		}
+		$ret = self::get($uri_callback);
+		if($ret===false) {
+			$ret = new $class($uri_callback, $regex);
+		}
+		$method = explode("|", strtolower($method));
+		if(isset($_SERVER['REQUEST_METHOD']) && !in_array(strtolower($_SERVER['REQUEST_METHOD']), $method)) {
+			return $ret;
+		}
+		if(!is_array($ret->_defaults['callback'])) {
+			$ret->_defaults['callback'] = array();
+		}
+		if(is_callable($callback)) {
+			$ret->_defaults['callback'][] = $callback;
+		}
+		self::Build(array(
+			"".self::$_secret."" => array($uri_callback => $ret),
+		), 2);
+		return $ret;
+	}
+
 }
 
 ?>

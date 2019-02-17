@@ -486,11 +486,14 @@ if(!function_exists('iterable_to_traversable')) {
 	}
 }
 
-function removeBOM($string) { 
-	if(substr($string, 0, 3) == pack('CCC', 0xef, 0xbb, 0xbf)) { 
-		$string=substr($string, 3); 
-	} 
-	return $string; 
+function removeBOM($string) {
+	if(substr($string, 0, 3) == pack('CCC', 0xef, 0xbb, 0xbf)) {
+		$string=substr($string, 3);
+	}
+	if(substr($string, -3) == pack('CCC', 0xef, 0xbb, 0xbf)) {
+		$string=substr($string, 0, -3);
+	}
+	return $string;
 }
 
 function sortByKey(&$arr) {
@@ -567,36 +570,7 @@ function showCli() {
 }
 
 function vdump() {
-	global $printedVdump;
-	$list = func_get_args();
-	$backtrace = debug_backtrace();
-	if(!defined("IS_CLI") && $printedVdump===false) {
-		nocache_headers();
-		echo '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><meta name="viewport" content="width=device-width"><title>Cardinal &rsaquo; Debug</title><meta name="robots" content="noindex,follow"></head><style>html { background: #f1f1f1; } body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; } div.container { background: #fff; color: #444; margin: 2em auto; padding: 0em 2em 1em; max-width: 700px; -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.13); box-shadow: 0 1px 3px rgba(0,0,0,0.13); } div.info { border-bottom: 1px solid #dadada; clear: both; color: #666; background: #fff; word-break: break-all; max-width: 100%; font-size: 19px; padding: 1em 0px 7px; font-family: \'Roboto\'; margin-bottom: 1.5rem; } pre { text-align: left; margin: 0px 0px 1em; font-family: Consolas, Monaco, monospace; font-size: 12px; word-break: break-word; max-width: 100%; white-space: pre-wrap; line-height: 20px; }</style><body>';
-		addEvent("shutdownCardinal", function() { echo "</body></html>"; }, "", 999999999);
-	}
-	if(!defined("IS_CLI")) {
-		echo '<div class="container"><div class="info">'. (isset($backtrace[0]) ? "<b>Called:</b><span> ".str_replace(ROOT_PATH, DS, $backtrace[0]['file'])." [".$backtrace[0]['line']."]&nbsp;<i>".date("d-m-Y H:i:s", fileatime($backtrace[0]['file']))."</i>" : "")."</span>".(isset($backtrace[0]) ? "<br>" : "")."</div>";
-		echo '<pre>';
-	} else {
-		echo (isset($backtrace[0]) ? "Called: ".$backtrace[0]['file']." [".$backtrace[0]['line']."] ".date("d-m-Y H:i:s", fileatime($backtrace[0]['file'])) : "")." ".(isset($backtrace[0]) ? PHP_EOL.PHP_EOL : "");
-	}
-	if(sizeof($list)>0) {
-		ob_start();
-		call_user_func_array("var_dump", $list);
-		$t = ob_get_clean();
-		if(!defined("IS_CLI")) {
-			echo htmlspecialchars($t);
-		} else {
-			echo $t;
-		}
-	}
-	if(!defined("IS_CLI")) {
-		echo '</pre></div>'.PHP_EOL;
-	} else {
-		echo PHP_EOL.PHP_EOL;
-	}
-	$printedVdump = true;
+	call_user_func_array("Debug::vdump", func_get_args());
 }
 
 function map_deep($value, $callback) {
@@ -702,33 +676,6 @@ function parser_video($content, $start, $end = "") {
 	$content = substr($content, 0, $pos);
 	$content = str_replace($start, "", $content);
 return $content;
-}
-
-function closetags($html, $singleTagsAdd = array()) { return function_call('closetags', array($html, $singleTagsAdd)); }
-function or_closetags($html, $singleTagsAdd = array()) {
-	$single_tags = array('meta', 'img', 'br', 'link', 'area', 'input', 'hr', 'col', 'param', 'base');
-	if(sizeof($singleTagsAdd)>0) {
-		$single_tags = array_merge($single_tags, $singleTagsAdd);
-	}
-	preg_match_all('~<([a-z0-9]+)(?: .*)?(?<![/|/ ])>~iU', $html, $result);
-	$openedtags = $result[1];
-	preg_match_all('~</([a-z0-9]+)>~iU', $html, $result);
-	$closedtags = $result[1];
-	$len_opened = sizeof($openedtags);
-	if(sizeof($closedtags) == $len_opened) {
-		return $html;
-	}
-    $openedtags = array_reverse($openedtags);
-	for($i=0;$i<$len_opened;$i++) {
-		if(!in_array($openedtags[$i], $single_tags)) {
-			if(($key = array_search($openedtags[$i], $closedtags)) !== false) {
-				unset($closedtags[$key]);
-			} else {
-				$html .= '</'.$openedtags[$i].'>';
-			}
-		}
-	}
-	return $html;
 }
 
 if(!function_exists('is_countable')) {
