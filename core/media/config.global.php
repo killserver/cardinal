@@ -90,13 +90,13 @@ if(!defined("DEBUG_ALL")) {
 }
 
 if(!defined("VERSION")) {
-	define("VERSION", "11.0");
+	define("VERSION", "11.1");
 }
 if(!defined("VERSION_ADMIN_STYLE")) {
-	define("VERSION_ADMIN_STYLE", "1.9");
+	define("VERSION_ADMIN_STYLE", "1.10");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "110028");
+	define("INTVERSION", "110128");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "6.5");

@@ -33,65 +33,17 @@ class User {
 		}
 	}
 
-	private static $tryRead = 0;
-	private static $tryWrite = 0;
-
-	final private static function readFile($files) {
-		chmod($files, 0400);
-		if(($fp1 = fopen($files, "r"))!==false) {
-			$file = fread($fp1, filesize($files));
-			fclose($fp1);
-		} else if(self::$tryRead>5) {
-			throw new Exception("Error reading user list", 1);
-			die();
-		} else {
-			usleep(300);
-			self::$tryRead++;
-			return self::readFile($files);
-		}
-		self::$tryRead = 0;
-		chmod($files, 0644);
-		return $file;
-	}
-
-	final private static function safeSave($file, $d) {
-		if(!file_exists($file)) {
-			file_put_contents($file, "");
-		}
-		chmod($file, 0200);
-		$ret = false;
-		if(($fp = fopen($file, "w"))!==false) {
-			fwrite($fp, $d);
-			fclose($fp);
-			$ret = true;
-		} else if(self::$tryWrite>5) {
-			throw new Exception("Error writing user list", 1);
-			die();
-		} else {
-			usleep(300);
-			self::$tryWrite++;
-			return self::safeSave($file, $d);
-		}
-		self::$tryWrite = 0;
-		chmod($file, 0644);
-		return $ret;
-	}
-
 	final private static function defend($users) {
 		$php = self::PathUsers()."userList.php";
 		if(file_exists($php)) {
-			$file = self::readFile($php);
+			$file = Defender::readFile($php);
 			$file = preg_replace("#\<\?(.*?)\?\>#is", "", $file);
-			if(self::is_json($file)) {
+			if(Validate::json($file)) {
 				$usersFile = json_decode($file, true);
 				$users = array_merge($users, $usersFile);
 			}
 		}
 		return $users;
-	}
-	
-	final private static function is_json($str) {
-		return $str === '""' || $str === '[]' || $str === '{}' || $str[0] === '"' && substr($str, -1) === '"' || $str[0] === '[' && substr($str, -1) === ']' || $str[0] === '{' && substr($str, -1) === '}';
 	}
 
 	final public static function getUserData($username, $field, $default = false) {
@@ -148,36 +100,6 @@ class User {
 		} else {
 			return array($users, $userLoad);
 		}
-	}
-	
-	final private static function normalizerJSON($data) {
-		$arr = array();
-		$tab = 1;
-		$d = false;
-		for($f=0;$f<strlen($data);$f++) {
-			$bytes = $data[$f];
-			if($d && $bytes === $d) {
-				$data[$f - 1] !== "\\" && ($d = !1);
-			} else if(!$d && ($bytes === '"' || $bytes === "'")) {
-				$d = $bytes;
-			} else if(!$d && ($bytes === " " || $bytes === "\t")) {
-				$bytes = "";
-			} else if(!$d && $bytes === ":") {
-				$bytes = $bytes." ";
-			} else if(!$d && $bytes === ",") {
-				$bytes = $bytes."\n";
-				$bytes = str_pad($bytes, ($tab * 2), " ");
-			} else if(!$d && ($bytes === "[" || $bytes === "{")) {
-				$tab++;
-				$bytes .= "\n";
-				$bytes = str_pad($bytes, ($tab * 2), " ");
-			} else if(!$d && ($bytes === "]" || $bytes === "}")) {
-				$tab--;
-				$bytes = str_pad("\n", ($tab * 2), " ").$bytes;
-			}
-			array_push($arr, $bytes);
-		}
-		return implode("", $arr);
 	}
 
 	final public static function loadUsers() {
@@ -353,7 +275,7 @@ class User {
 		if(!is_writable($path)) {
 			@chmod($path, 0777);
 		}
-		self::safeSave($path."userList.php", "<?php die(); ?>".self::normalizerJSON(self::jsonEncode($users)));
+		Defender::safeSave($path."userList.php", "<?php die(); ?>".CardinalJSON::save($users));
 		return true;
 	}
 	
@@ -392,22 +314,8 @@ class User {
 		if(!is_writable($path)) {
 			@chmod($path, 0777);
 		}
-		self::safeSave($path."userList.php", "<?php die(); ?>".self::normalizerJSON(self::jsonEncode($users)));
+		Defender::safeSave($path."userList.php", "<?php die(); ?>".CardinalJSON::save($users));
 		return true;
-	}
-
-	final private static function jsonEncode($arr) {
-		if(defined('JSON_UNESCAPED_UNICODE')) {
-			return json_encode($arr, JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
-		} else {
-			return preg_replace_callback('/(?<!\\\\)\\\\u([0-9a-f]{4})/i', "User::json_encode_unicode_fn", json_encode($arr));
-		}
-	}
-
-	final private static function json_encode_unicode_fn($m) {
-		$d = pack("H*", $m[1]);
-		$r = mb_convert_encoding($d, "UTF8", "UTF-16BE");
-		return $r!=="?" && $r!=="" ? $r : $m[0];
 	}
 
 	final public static function remove($username) {
@@ -420,7 +328,7 @@ class User {
 		if(!is_writable($path)) {
 			@chmod($path, 0777);
 		}
-		self::safeSave($path."userList.php", "<?php die(); ?>".self::normalizerJSON(self::jsonEncode($users)));
+		Defender::safeSave($path."userList.php", "<?php die(); ?>".CardinalJSON::save($users));
 		return true;
 	}
 

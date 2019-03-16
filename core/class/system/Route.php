@@ -449,11 +449,11 @@ class Route {
 	}
 
 	final public function Uri($params = array()) {
-		if(!empty(self::$_lang)) {
-			$params['lang'] = self::$_lang;
-		}
 		if(!empty(self::$_langForce) && (!isset($params['lang']) || $params['lang'] == config::Select("lang"))) {
 			$params['lang'] = self::$_langForce;
+		}
+		if(!empty(self::$_lang)) {
+			$params['lang'] = self::$_lang;
 		}
 		$uri = $this->_uri;
 		if(strpos($uri, '<') === false && strpos($uri, '(') === false) {
@@ -496,8 +496,14 @@ class Route {
 		}
 	}
 
-	final public static function method($method, $uri_callback = "", $regex = array(), $callback = "") {
+	final public static function method($method, $uri_callback = "", $name = "", $regex = array(), $callback = "") {
 		$class = __class__;
+		if(is_callable($name) || is_array($name)) {
+			$regex = $name;
+			$name = $uri_callback;
+		} else if(empty($name)) {
+			$name = $uri_callback;
+		}
 		if(is_callable($regex)) {
 			$callback = $regex;
 			$regex = array();
@@ -517,7 +523,7 @@ class Route {
 			$ret->_defaults['callback'][] = $callback;
 		}
 		self::Build(array(
-			"".self::$_secret."" => array($uri_callback => $ret),
+			"".self::$_secret."" => array($name => $ret),
 		), 2);
 		return $ret;
 	}

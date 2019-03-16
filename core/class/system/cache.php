@@ -28,9 +28,6 @@ class cache implements ArrayAccess {
 
 	final public function __construct() {
 	global $config;
-		if(defined("INSTALLER")) {
-			return false;
-		}
 		self::$type = $config['cache']['type'];
 		self::$conn_path = (isset($config['cache']['path']) ? $config['cache']['path'] : null);
 		if(class_exists("Memcached") && self::$type == CACHE_MEMCACHED) {

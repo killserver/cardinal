@@ -210,13 +210,20 @@ class KernelArcher {
 		if(Arr::get($_GET, "orderTo", false)) {
 			$addition .= "&orderTo=".Arr::get($_GET, "orderTo");
 		}
+		$ref = Arr::get($_GET, "ref", false);
+		if($ref===false) {
+			$ref = "{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition;
+		} else {
+			$ref = htmlspecialchars_decode($ref);
+		}
+		call_user_func_array("Core::addInfo", array("<b>Успешно добавили запись</b>", "info", false, (60), true));
 		if(!empty($objTemplate)) {
 			if(isset($_GET['type'])) {
-				location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition, 3, false);
+				//location($ref, 3, false);
 			}
-			$this->UnlimitedBladeWorks($objTemplate, $template, $load);
+			//$this->UnlimitedBladeWorks($objTemplate, $template, $load);
 		} else if(isset($_GET['type'])) {
-			location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition);
+			location($ref);
 		}
 	}
 	
@@ -467,11 +474,13 @@ class KernelArcher {
 		} else {
 			$ref = htmlspecialchars_decode($ref);
 		}
+		call_user_func_array("Core::addInfo", array("<b>Изменения успешно сохранены</b> ID записи: ".$selectId, "info", false, (60), true));
 		if(!empty($objTemplate)) {
 			if(isset($_GET['type'])) {
-				location($ref, 3, false);
+				location($ref);
+				//location($ref, 3, false);
 			}
-			$this->UnlimitedBladeWorks($objTemplate, $template, $load);
+			//$this->UnlimitedBladeWorks($objTemplate, $template, $load);
 		} else if(isset($_GET['type'])) {
 			location($ref);
 		}
@@ -548,7 +557,7 @@ class KernelArcher {
 				@chmod(PATH_CACHE_USERDATA, 0777);
 			}
 			if(!file_exists(PATH_CACHE_USERDATA."trashBin.lock")) {
-				db::query("CREATE TABLE IF NOT EXISTS {{trashBin}} ( `tId` int not null auto_increment, `tTable` varchar(255) not null, `tData` longtext not null, `tTime` int(11) not null, `tIp` varchar(255) not null, primary key `id`(`tId`) ) ENGINE=MyISAM;");
+				db::query("CREATE TABLE IF NOT EXISTS {{trashbin}} ( `tId` int not null auto_increment, `tTable` varchar(255) not null, `tData` longtext not null, `tTime` int(11) not null, `tIp` varchar(255) not null, primary key `id`(`tId`) ) ENGINE=MyISAM;");
 				file_put_contents(PATH_CACHE_USERDATA."trashBin.lock", "");
 			}
 			$trash = true;
@@ -595,7 +604,7 @@ class KernelArcher {
 			}
 			cardinal::RegAction("Удаление данных в Арчере. Модель \"".$modelName."\". ИД: \"".$first."\"");
 		} else {
-			db::doquery("INSERT INTO {{trashBin}} SET `tTable` = ".db::escape($this->selectTable).", `tData` = ".db::escape(json_encode($models)).", `tTime`= UNIX_TIMESTAMP(), `tIp` = '".HTTP::getip()."'");
+			db::doquery("INSERT INTO {{trashbin}} SET `tTable` = ".db::escape($this->selectTable).", `tData` = ".db::escape(json_encode($models)).", `tTime`= UNIX_TIMESTAMP(), `tIp` = '".HTTP::getip()."'");
 			cardinal::RegAction("Перемещение данных в Арчере в корзину. Модель \"".$modelName."\". ИД: \"".$first."\"");
 		}
 		$del = execEvent("KernelArcher-TakeDelete-After", $model);
@@ -604,13 +613,27 @@ class KernelArcher {
 		if(Arr::get($_GET, "ShowPages", false)) {
 			$addition .= "&ShowPages=".Arr::get($_GET, "ShowPages");
 		}
+		if(Arr::get($_GET, "orderBy", false)) {
+			$addition .= "&orderBy=".Arr::get($_GET, "orderBy");
+		}
+		if(Arr::get($_GET, "orderTo", false)) {
+			$addition .= "&orderTo=".Arr::get($_GET, "orderTo");
+		}
+		$ref = Arr::get($_GET, "ref", false);
+		if($ref===false) {
+			$ref = "{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition;
+		} else {
+			$ref = htmlspecialchars_decode($ref);
+		}
+		call_user_func_array("Core::addInfo", array("<b>Запись успешно удалена</b> ID записи: ".$selectId, "info", false, (60), true));
 		if(!empty($objTemplate)) {
 			if(isset($_GET['type'])) {
-				location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition, 3, false);
+				//location($ref, 3, false);
+				location($ref);
 			}
-			$this->UnlimitedBladeWorks($objTemplate, $template, $load);
+			//$this->UnlimitedBladeWorks($objTemplate, $template, $load);
 		} else if(isset($_GET['type'])) {
-			location("{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition);
+			location($ref);
 		}
 	}
 	
@@ -924,7 +947,14 @@ class KernelArcher {
 				$sType = (strpos($type, "file")!==false ? "file" : "image");
 				for($i=0;$i<sizeof($enum);$i++) {
 					$uid = rand();
-					$retType .= "<div class='row array' data-show='".$uid."'>".(sizeof($enum)>1 ? "<div class='col-sm-1'>#".($i+1)."</div><div class='col-sm-9'>" : "<div class='col-sm-10'>")."<input class=\"form-control ".$sType."Access ".$sType."AccessArray\" id=\"".$uid."\" type=\"text\"".(sizeof($enum)==1 ? " multiple=\"multiple\"" : "")."".($block ? " disabled=\"disabled\"" : "")." name=\"".$name.(sizeof($enum)>1 ? "[".$i."]" : "[]")."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\"".($block ? " disabled=\"disabled\"" : "").($type=="imageArrayAccess" ? " accept=\"image/*\" data-accept=\"image\"" : "")." value=\"".htmlspecialchars($enum[$i])."\"".(empty($val) && $required ? " required=\"required\"" : "")." style='position:fixed;top:-99999px;left:-99999px;z-index:-1000;'>".'<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/assets/tinymce/filemanager/dialog.php?type='.($type=="imageAccess" ? "1" : "2").'&field_id='.$uid.'&relative_url=0" class="btn btn-icon btn-success iframe-btn btn-block"><i class="fa-plus"></i></a>'.(!empty($val) ? "<a href=\"{C_default_http_local}".$enum[$i]."\" data-link=\"{C_default_http_local}".$enum[$i]."\" class=\"showPreview new\" id=\"img".$uid."\" target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "").'</div>'."</a>" : "")."<div class='col-sm-2'><a class='btn btn-red btn-block fa-remove' onclick='removeInputFile(this,\"".$name."\",\"".$i."\")'></a></div></div>";
+					$retType .= "<div class='row array' data-show='".$uid."'><div class='col-sm-12'>";
+						$retType .= (sizeof($enum)>1 ? "<div class='col-sm-1'>#".($i+1)."</div><div class='col-sm-9'>" : "<div class='col-sm-10'>");
+						$retType .= "<input class=\"form-control ".$sType."Access ".$sType."AccessArray\" id=\"".$uid."\" type=\"text\"".(sizeof($enum)==1 ? " multiple=\"multiple\"" : "")."".($block ? " disabled=\"disabled\"" : "")." name=\"".$name.(sizeof($enum)>1 ? "[".$i."]" : "[]")."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\"".($block ? " disabled=\"disabled\"" : "").($type=="imageArrayAccess" ? " accept=\"image/*\" data-accept=\"image\"" : "")." value=\"".htmlspecialchars($enum[$i])."\"".(empty($val) && $required ? " required=\"required\"" : "")." style='position:fixed;top:-99999px;left:-99999px;z-index:-1000;'>";
+						$retType .= '<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/assets/tinymce/filemanager/dialog.php?type='.($type=="imageAccess" ? "1" : "2").'&field_id='.$uid.'&relative_url=0" class="btn btn-icon btn-success iframe-btn btn-block"><i class="fa-plus"></i></a>';
+						$retType .= (!empty($val) ? "<a href=\"{C_default_http_local}".$enum[$i]."\" data-link=\"{C_default_http_local}".$enum[$i]."\" class=\"showPreview new\" id=\"img".$uid."\" target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "");
+						$retType .= "</div>";
+						$retType .= "<div class='col-sm-2'><a class='btn btn-red btn-block fa-remove' onclick='removeInputFile(this,\"".$name."\",\"".$i."\")'></a></div>";
+					$retType .= "</div></div>";
 				}
 				$retType .= "</div><br><a href=\"#\" onclick=\"addInputFileAccess(this, '".$name."', '".($type=="imageAccess" ? "1" : "2")."');return false;\" class=\"btn btn-white btn-block btn-icon btn-icon-standalone\"><i class=\"fa-upload\"></i><span>".($open ? "{L_'" : "")."Добавить".($open ? "'}" : "")."</span></a>";
 			break;
@@ -961,7 +991,7 @@ class KernelArcher {
 				if(!is_array($default)) {
 					$default = array($default, $default);
 				}
-				$retType = "<div class=\"col-sm-12\"><div class=\"date-and-time\"><input type=\"text\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "")." name=\"".$name."[]\" class=\"form-control datepicker\" data-format=\"dd/mm/yyyy\" value=\"".($val!=="" && $val!==0 ? date("d/m/Y", $val) : ($default[0]!=="" ? $default[0] : date("d/m/Y")))."\" style=\"width:50%;float:left;\"><input type=\"text\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "")." name=\"".$name."[]\" class=\"form-control timepicker col-sm-6\" data-template=\"dropdown\" data-show-seconds=\"true\" value=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : ($default[1]!=="" ? $default[1] : date("H:i:s")))."\" data-default-time=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : ($default!=="" ? $default : date("H:i:s")))."\" data-show-meridian=\"false\" data-minute-step=\"5\" data-second-step=\"5\" style=\"width:50%;float:left;\" /></div></div>";
+				$retType = "<div class=\"col-sm-12\"><div class=\"date-and-time\"><input type=\"text\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "")." name=\"".$name."[]\" class=\"form-control datepicker\" data-format=\"dd/mm/yyyy\" value=\"".($val!=="" && $val!==0 ? date("d/m/Y", $val) : ($default[0]!=="" ? $default[0] : date("d/m/Y")))."\" style=\"width:50%\"><input type=\"text\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "")." name=\"".$name."[]\" class=\"form-control timepicker\" data-template=\"dropdown\" data-show-seconds=\"true\" value=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : ($default[1]!=="" ? $default[1] : date("H:i:s")))."\" data-default-time=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : ($default!=="" ? $default : date("H:i:s")))."\" data-show-meridian=\"false\" data-minute-step=\"5\" data-second-step=\"5\" style=\"width:50%\" /></div></div>";
 			break;
 		}
 		if(is_array($val) && !isset($val['type'])) {

@@ -172,6 +172,40 @@ if(file_exists(ROOT_PATH."core".DS."modules".DS)) {
 		define("PATH_CRON_FILES", ROOT_PATH."application".DS."cron".DS);
 	}
 }
+if(defined("PATH_CACHE_USERDATA") && file_exists(PATH_CACHE_USERDATA."userlevels.txt")) {
+	$f = file_get_contents(PATH_CACHE_USERDATA."userlevels.txt");
+	if(is_serialized($f)) {
+		$usersFile = unserialize($f);
+		$users = array_merge($users, $usersFile);
+	} else if(is_json($f)) {
+		$usersFile = json_decode($f, true);
+		$users = array_merge($users, $usersFile);
+	}
+	$path = dirname(PATH_CACHE_USERDATA."userlevels.txt");
+	if(!is_writable($path)) {
+		@chmod($path, 0777);
+	}
+	$d = safeSave(PATH_CACHE_USERDATA."userlevels.php", "<?php die(); ?>".normalizerJSON(jsonEncode($usersFile)));
+	if($d) {
+		unlink(PATH_CACHE_USERDATA."userlevels.txt");
+	}
+}
+if(defined("PATH_CACHE_USERDATA") && file_exists(PATH_CACHE_USERDATA."userlevels.php")) {
+	$file = file_get_contents(PATH_CACHE_USERDATA."userlevels.php");
+	$file = preg_replace("#\<\?(.*?)\?\>#is", "", $file);
+	if(is_serialized($file)) {
+		$usersFile = unserialize($file);
+		$path = dirname(PATH_CACHE_USERDATA."userlevels.php");
+		if(!is_writable($path)) {
+			@chmod($path, 0777);
+		}
+		$d = safeSave(PATH_CACHE_USERDATA."userlevels.php", "<?php die(); ?>".normalizerJSON(jsonEncode($usersFile)));
+		if($d && file_exists(PATH_CACHE_USERDATA."userlevels.txt")) {
+			unlink($txt);
+		}
+		$users = array_merge($users, $usersFile);
+	}
+}
 if(defined("PATH_CACHE_USERDATA") && file_exists(PATH_CACHE_USERDATA."userList.txt")) {
 	$f = file_get_contents(PATH_CACHE_USERDATA."userList.txt");
 	if(is_serialized($f)) {
@@ -275,6 +309,33 @@ if(defined("ADMINCP_DIRECTORY") && file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."p
 if(file_exists(PATH_MEDIA."config.settings.".ROOT_EX) && !file_exists(PATH_MEDIA."config.init.".ROOT_EX)) {
 	@rename(PATH_MEDIA."config.settings.".ROOT_EX, PATH_MEDIA."config.init.".ROOT_EX);
 }
+if(file_exists(PATH_CACHE_USERDATA."trashBin.lock") && file_exists(PATH_MEDIA."db.php")) {
+	function cardinalAutoload($class) {
+	    if(stripos(ini_get('include_path'), $class)!==false && class_exists($class, false)) {
+	        return false;
+	    }
+	    $class = str_replace("\\", DIRECTORY_SEPARATOR, $class);
+	    if(file_exists(PATH_AUTOLOADS.$class.".".ROOT_EX)) {
+	        include_once(PATH_AUTOLOADS.$class.".".ROOT_EX);
+	    } elseif(file_exists(PATH_CLASS.$class.".".ROOT_EX)) {
+	        include_once(PATH_CLASS.$class.".".ROOT_EX);
+	    } elseif(file_exists(PATH_SYSTEM.$class.".".ROOT_EX)) {
+	        include_once(PATH_SYSTEM.$class.".".ROOT_EX);
+	    } elseif(file_exists(PATH_DB_DRIVERS.$class.".".ROOT_EX)) {
+	        include_once(PATH_DB_DRIVERS.$class.".".ROOT_EX);
+	    }
+	}
+	if(version_compare(PHP_VERSION, '5.1.2', '>=')) {
+		include(dirname(__FILE__).DIRECTORY_SEPARATOR."register70.php");
+	} else {
+		include(dirname(__FILE__).DIRECTORY_SEPARATOR."register53.php");
+	}
+	$config = array();
+	include(PATH_MEDIA."db.php");
+	db::config($config);
+	new db();
+	db::query("ALTER TABLE {{trashBin}} RENAME TO {{trashbin}}");
+}//
 echo file_get_contents(PATH_SKINS."core".DS."updater.html");
 @unlink(__FILE__);
 die();

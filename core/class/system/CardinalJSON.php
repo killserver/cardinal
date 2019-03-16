@@ -12,7 +12,11 @@ class CardinalJSON {
 
 	final public static function json_encode_unicode($arr, $params) {
 		if(defined('JSON_UNESCAPED_UNICODE')) {
-			return json_encode($arr, $params | JSON_UNESCAPED_UNICODE);
+			if($params !== "") {
+				return json_encode($arr, $params | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
+			} else {
+				return json_encode($arr, JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
+			}
 		} else {
 			return preg_replace_callback('/(?<!\\\\)\\\\u([0-9a-f]{4})/i', "CardinalJSON::json_encode_unicode_fn", json_encode($arr, $params));
 		}

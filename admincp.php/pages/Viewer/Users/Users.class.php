@@ -119,7 +119,7 @@ class Users extends Core {
 			}
 		}
 		templates::assign_var("search_ip", $searchIP);
-		$load = User::All($searchIP);
+		$load = User::All();
 		$i = 1;
 		foreach($load as $k => $row) {
 			if(!isset($row['id'])) {

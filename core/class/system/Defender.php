@@ -2,6 +2,50 @@
 
 class Defender {
 
+	private static $tryRead = 0;
+	private static $tryWrite = 0;
+
+	final public static function readFile($files) {
+		chmod($files, 0400);
+		if(($fp1 = fopen($files, "r"))!==false) {
+			$file = fread($fp1, filesize($files));
+			fclose($fp1);
+		} else if(self::$tryRead>5) {
+			throw new Exception("Error reading user list", 1);
+			die();
+		} else {
+			usleep(300);
+			self::$tryRead++;
+			return self::readFile($files);
+		}
+		self::$tryRead = 0;
+		chmod($files, 0644);
+		return $file;
+	}
+
+	final public static function safeSave($file, $d) {
+		if(!file_exists($file)) {
+			file_put_contents($file, "");
+		}
+		chmod($file, 0200);
+		$ret = false;
+		if(($fp = fopen($file, "w"))!==false) {
+			fwrite($fp, $d);
+			fclose($fp);
+			$ret = true;
+		} else if(self::$tryWrite>5) {
+			throw new Exception("Error writing user list", 1);
+			die();
+		} else {
+			usleep(300);
+			self::$tryWrite++;
+			return self::safeSave($file, $d);
+		}
+		self::$tryWrite = 0;
+		chmod($file, 0644);
+		return $ret;
+	}
+
 	public static function read($file, $default = false) {
 		$def = $default;
 		if(file_exists($file) && is_readable($file)) {

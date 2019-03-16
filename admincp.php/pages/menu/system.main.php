@@ -13,13 +13,6 @@ $links['System']["cat"][] = array(
 'access' => (userlevel::get("antivirus") && is_writable(PATH_CACHE_SYSTEM.DS)) || ($active && userlevel::get("editor")) || userlevel::get("loginadmin") || userlevel::get("logs") || userlevel::get("phpinfo") || (userlevel::get("recyclebin") && file_exists(PATH_CACHE_USERDATA."trashBin.lock")) || (userlevel::get("users") && !defined("WITHOUT_DB")) || userlevel::get("userlevels") || userlevel::get("yui_admin") || userlevel::get("importexport") || userlevel::get("skins") || ((!defined("WITHOUT_DB") || db::connected()) && userlevel::get("atextadmin")),
 'icon' => 'fa-dashboard',
 );
-$links['System']["item"][] = array(
-'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Antivirus",
-'title' => "{L_\"Антивирус\"}",
-'type' => "item",
-'access' => userlevel::get("antivirus") && is_writable(PATH_CACHE_SYSTEM.DS),
-'icon' => 'fa-shield',
-);
 if($active) {
 	$links['System']["item"][] = array(
 		'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Editor",

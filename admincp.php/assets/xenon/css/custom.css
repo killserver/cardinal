@@ -11,3 +11,13 @@
 .chart-item-bg {
 	margin-bottom: 0px;
 }
+
+.fancybox-skin,.fancybox-type-iframe .fancybox-inner {
+    min-height: 80vh;
+}
+
+.fancybox-opened .fancybox-skin {
+    box-shadow: none;
+    border-radius: 0;
+    padding: 1em !important;
+}

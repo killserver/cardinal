@@ -25,20 +25,6 @@
 				
 				</span>
 				
-				<span id="CachePages" class="col-md-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-sm-12" style="[if {clearCacheAll}==0]display:none;[/if {clearCacheAll}==0][if {clearCacheTmp}==1]display:block;[/if {clearCacheTmp}==1][if {clearCacheTmp}==0]display:none;[/if {clearCacheTmp}==0]">
-					
-					<div class="xe-widget xe-counter xe-counter-purple" data-count=".num" data-from="0" data-to="{CachePagesSize}" data-suffix="{CachePagesSizeS}" data-duration="3" data-easing="false">
-						<div class="xe-icon">
-							<i class="linecons-inbox"></i>
-						</div>
-						<div class="xe-label">
-							<strong class="num">{CachePages}</strong>
-							<span>{L_"Cache Pages"}</span>
-						</div>
-					</div>
-				
-				</span>
-				
 				<a href="{C_default_http_host}admincp.php/?pages=Users" class="col-md-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-sm-12"[if {isUsers}==1] style="display:none;"[/if {isUsers}==1]>
 					
 					<div class="xe-widget xe-counter xe-counter-blue" data-count=".num" data-from="0" data-to="{users}" data-duration="3" data-easing="false">
@@ -114,11 +100,6 @@ jQuery(document).ready(function() {
 	jQuery("#cache").click(function() {
 		jQuery.post("./?pages=Main&clear&cache", function(data) {
 			toastr.info(data, "{L_"Clear Cache Data"}");
-		});
-	});
-	jQuery("#CachePages").click(function() {
-		jQuery.post("./?pages=Main&clear&tmp", function(data) {
-			toastr.info(data, "{L_"Clear Cache Templates"}");
 		});
 	});
 	if({debugPanel}==1) {

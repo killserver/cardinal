@@ -9,7 +9,7 @@ class RecycleBin extends Core {
 		}
 		if(isset($_GET['recover']) && is_numeric($_GET['recover']) && $_GET['recover']>0) {
 			$id = intval($_GET['recover']);
-			db::doquery("SELECT * FROM {{trashBin}} WHERE `tId` = ".$id, true);
+			db::doquery("SELECT * FROM {{trashbin}} WHERE `tId` = ".$id, true);
 			if(db::num_rows()==0) {
 				new Errors();
 				return false;
@@ -24,12 +24,12 @@ class RecycleBin extends Core {
 			}
 			$query = "INSERT INTO `".$table."` SET ".implode(", ", array_map(array($this, "build"), array_keys($arr), array_values($arr)));
 			db::doquery($query);
-			db::doquery("DELETE FROM {{trashBin}} WHERE `tId` = ".$id);
+			db::doquery("DELETE FROM {{trashbin}} WHERE `tId` = ".$id);
 			cardinal::RegAction("Восстановление данных из корзины. Таблица \"".$table."\". ИД: \"".$id."\"");
 			location("./?pages=RecycleBin");
 			return false;
 		}
-		db::doquery("SELECT * FROM {{trashBin}} ORDER BY `tId` DESC", true);
+		db::doquery("SELECT * FROM {{trashbin}} ORDER BY `tId` DESC", true);
 		while($row = db::fetch_assoc()) {
 			templates::assign_vars($row, "trash", $row['tId']);
 		}

@@ -17,9 +17,6 @@ if(!defined("PATH_DB_DRIVERS")) {
 if(!defined("PATH_CACHE")) {
 	define("PATH_CACHE", ROOT_PATH."core".DS."cache".DS);
 }
-if(!defined("PATH_CACHE_PAGE")) {
-	define("PATH_CACHE_PAGE", ROOT_PATH."core".DS."cache".DS."page".DS);
-}
 if(!defined("PATH_CACHE_SYSTEM")) {
 	define("PATH_CACHE_SYSTEM", ROOT_PATH.'core'.DS.'cache'.DS.'system'.DS);
 }

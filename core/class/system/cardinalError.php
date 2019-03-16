@@ -154,27 +154,8 @@ class cardinalError {
 				'_POST' => $_POST,
 				'_SERVER' => array("HTTP_REFERER" => getenv("HTTP_REFERER"), "HTTP_USER_AGENT" => getenv("HTTP_USER_AGENT")),
 			);
-/*
-CREATE TABLE `error_log` (
-`id` int(11) auto_increment not null,
-`times` int(11) not null,
-`ip` varchar(255) not null,
-`exception_type` varchar(255) not null,
-`message` varchar(255) not null,
-`filename` varchar(255) not null,
-`line` int(11) not null,
-`trace_string` longtext not null,
-`request_state` longtext not null,
-primary key `id`(`id`)
-) ENGINE=MyISAM;
-*/
-			if(defined("WITHOUT_DB") || config::Select('logs')==ERROR_FILE) {
-				if(is_writable(PATH_LOGS)) {
-					file_put_contents(PATH_LOGS."php_log.txt", json_encode(array("times" => time(), "ip" => self::getip(), "exception_type" => self::FriendlyErrorType($e->getCode()), "message" => self::saves($messagePrefix . $e->getMessage()), "filename" => self::saves($file), "line" => $e->getLine(), "trace_string" => self::saves(self::getExceptionTraceAsString($e)), "request_state" => self::saves(serialize($request), true)))."\n", FILE_APPEND);
-				}
-			} else {
-				$db = modules::init_db();
-				$db->doquery("INSERT INTO {{error_log}} (`times`, `ip`, `exception_type`, `message`, `filename`, `line`, `trace_string`, `request_state`) VALUES(UNIX_TIMESTAMP(), \"".self::getip()."\", \"".self::FriendlyErrorType($e->getCode())."\", \"".self::saves($messagePrefix . $e->getMessage())."\", \"".self::saves($file)."\", \"".$e->getLine()."\", \"".self::saves(self::getExceptionTraceAsString($e))."\", \"".self::saves(serialize($request), true)."\")");
+			if(config::Select('logs')==ERROR_FILE && is_writable(PATH_LOGS)) {
+				file_put_contents(PATH_LOGS."php_log.txt", json_encode(array("times" => time(), "ip" => self::getip(), "exception_type" => self::FriendlyErrorType($e->getCode()), "message" => self::saves($messagePrefix . $e->getMessage()), "filename" => self::saves($file), "line" => $e->getLine(), "trace_string" => self::saves(self::getExceptionTraceAsString($e)), "request_state" => self::saves(serialize($request), true)))."\n", FILE_APPEND);
 			}
 			if(self::$_echo) {
 				self::$_isCli = self::is_cli();
@@ -215,32 +196,7 @@ primary key `id`(`id`)
 		}
 		catch (Exception $e) {}
 	}
-	/*
-	final private static function NextId($db = false) {
-		if(defined("WITHOUT_DB") || config::Select('logs')==ERROR_FILE) {
-			if(!file_exists(PATH_LOGS."php_log.txt") || !is_readable(PATH_LOGS."php_log.txt")) {
-				return 0;
-			}
-			$handle = fopen(PATH_LOGS."php_log.txt", "rb");
-			$id = 1;
-			while(($c = fgetc($handle))!==false) {
-				if($c==="\n") {
-					$id++;
-				}
-			}
-			fclose($handle);
-			$id = $id-1;
-		} else {
-			try {
-				$id = $db->last_id("error_log");
-				$id = $id-1;
-			} catch(Exception $ex) {
-				$id = 0;
-			}
-		}
-		return $id;
-	}
-	*/
+	
 	final private static function getExceptionTraceAsString($exception) {
 		$rtn = "";
 		$count = 0;

@@ -553,10 +553,10 @@ class Debug {
 			if(function_exists("addEvent")) { addEvent("shutdownCardinal", function() { echo "</body></html>"; }, "", 999999999); }
 		}
 		if(!defined("IS_CLI")) {
-			echo '<div class="container"><div class="info">'. (isset($backtrace[0]) ? "<b>Called:</b><span> ".(defined("ROOT_PATH") ? str_replace(ROOT_PATH, DS, $backtrace[0]['file']) : $backtrace[0]['file'])." [".$backtrace[0]['line']."]&nbsp;<i>".date("d-m-Y H:i:s", fileatime($backtrace[0]['file']))."</i>" : "")."</span>".(isset($backtrace[0]) ? "<br>" : "")."</div>";
+			echo '<div class="container"><div class="info">'. (isset($backtrace[2]) ? "<b>Called:</b><span> ".(defined("ROOT_PATH") ? str_replace(ROOT_PATH, DS, $backtrace[2]['file']) : $backtrace[2]['file'])." [".$backtrace[2]['line']."]&nbsp;<i>".date("d-m-Y H:i:s", fileatime($backtrace[2]['file']))."</i>" : "")."</span>".(isset($backtrace[2]) ? "<br>" : "")."</div>";
 			echo '<pre>';
 		} else {
-			echo (isset($backtrace[0]) ? "Called: ".$backtrace[0]['file']." [".$backtrace[0]['line']."] ".date("d-m-Y H:i:s", fileatime($backtrace[0]['file'])) : "")." ".(isset($backtrace[0]) ? PHP_EOL.PHP_EOL : "");
+			echo (isset($backtrace[0]) ? "Called: ".$backtrace[2]['file']." [".$backtrace[2]['line']."] ".date("d-m-Y H:i:s", fileatime($backtrace[2]['file'])) : "")." ".(isset($backtrace[2]) ? PHP_EOL.PHP_EOL : "");
 		}
 		if(sizeof($list)>0) {
 			ob_start();
