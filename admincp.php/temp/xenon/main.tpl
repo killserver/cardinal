@@ -333,31 +333,6 @@
 						</a>
 					</li>[/if {count_Yui}==true]
 					
-					///***<li class="dropdown hover-line">
-						<a href="#" data-toggle="dropdown">
-							<i class="fa-bell-o"></i>
-							[if {count_unmoder}>=1]<span class="badge badge-purple">{count_unmoder}</span>[/if {count_unmoder}>=1]
-						</a>
-							
-						[if {count_unmoder}>=1]<ul class="dropdown-menu notifications">
-							<li>
-								<ul class="dropdown-menu-list list-unstyled ps-scrollbar">
-									[foreach block=unmoders]<li class="active
-									[foreachif {unmoders.errors}==0]notification-success[/foreachif]
-									[foreachif {unmoders.errors}>=1]notification-danger[/foreachif]">
-										[foreachif {unmoders.errors}==0]<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}?pages=Videos&mod=edit&edit={unmoders.name_id}">[/foreachif]
-										[foreachif {unmoders.errors}>=1]<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}?pages=Videos&mod=errors">[/foreachif]
-											[foreachif {unmoders.errors}>=1]<i class="fa-trash"></i>[/foreachif]
-											[foreachif {unmoders.errors}==0]<i class="fa-play-circle-o"></i>[/foreachif]
-											<span class="line"><strong>{unmoders.name}</strong></span>
-											<span class="line small time">{unmoders.ago}</span>
-										</a>
-									</li>[/foreach]
-								</ul>
-							</li>
-						</ul>[/if {count_unmoder}>=1]
-					</li>***///
-					
 				</ul>
 				
 				<div class="versionCardinal">{L_"Версия"}: {D_VERSION}</div>
@@ -375,7 +350,7 @@
 						
 						<ul class="dropdown-menu user-profile-menu list-unstyled">
 							[if {UL_settings}==true]<li>
-								<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Settings">
+								<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=SettingUser">
 									<i class="fa-wrench"></i>
 									{L_"Settings"}
 								</a>
@@ -566,11 +541,12 @@
 		var pas = $(par).find("a[href*='file']").parent();
 		$(par).find("br").remove();
 		$(par).find("a[data-link]").remove();
-		pas.append('<a data-link="'+field_id+'" id="img'+field_id+'" href="'+http_link+'"'+(type.indexOf("image")>-1 || type.indexOf("imageAccess")>-1 || type.indexOf("imageArrayAccess")>-1 ? " class=\"showPreview new\"" : "")+' target="_blank">Просмотреть</a>');
+		$("body").trigger("change_filemanager", {"data-link": field_id, "http_link": http_link, "type": type, "parent": pas});
+		/*pas.append('<a data-link="'+field_id+'" id="img'+field_id+'" href="'+http_link+'"'+(type.indexOf("image")>-1 || type.indexOf("imageAccess")>-1 || type.indexOf("imageArrayAccess")>-1 ? " class=\"showPreview new\"" : "")+' target="_blank">Просмотреть</a>');
 		jQuery(".showPreview.new").each(function(i, elem) {
 			jQuery(elem).parent().find("img").remove();
 			jQuery(elem).after("<br><img src='"+jQuery(elem).attr("href")+"' data-link='"+jQuery(elem).attr("data-link")+"' width='200'>");
-		});
+		});*/
 	}
 	</script>
 

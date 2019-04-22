@@ -461,8 +461,9 @@ class cardinal {
 			return false;
 		}
 		$ip = HTTP::getip();
-		if(file_exists($file) && is_readable($file) && is_writable($file)) {
+		if(file_exists($file) && is_readable($file) && is_writable($dir)) {
 			$read = file($file);
+			$read = array_filter($read);
 			$read = array_map("trim", $read);
 			$size = sizeof($read);
 			$nowTime = (time()-($maxDaysForLog*24*60*60));
@@ -471,8 +472,10 @@ class cardinal {
 					unset($read[$i]);
 				}
 			}
+			$read = array_filter($read);
 			file_put_contents($file, implode("\n", $read)."\n");
-		} else if(is_writable($dir)) {
+		}
+		if(is_writable($dir)) {
 			file_put_contents($file, serialize(array("lIp" => $ip, "lTime" => time(), "lAction" => Saves::SaveOld($action, true)))."\n", FILE_APPEND);
 		}
 	}

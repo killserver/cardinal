@@ -102,11 +102,11 @@ class Headers {
 	private static $activeAdmin = false;
 
 	function __construct() {
-		if(config::Select("deactive_site_adminbar")===false && isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && userlevel::get("admin") && Arr::get($_GET, "noShowAdmin", false)===false && !defined("IS_NOSHOWADMIN")) {
-			modules::regCssJs("{C_default_http_local}".get_site_path(PATH_SKINS)."core/admin.min.js", "js", true, "admin-bar-js");
+		if(config::Select("deactive_site_adminbar")===false && isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && userlevel::get("admin") && Arr::get($_GET, "noShowAdmin", false)===false && !defined("IS_NOSHOWADMIN") && self::$activeAdmin===false) {
+			modules::regCssJs(get_site_path(PATH_SKINS)."core/admin.min.js", "js", true, "admin-bar-js");
 			modules::regCssJs(array(
 				"fontawesome-font" => "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css",
-				"admin-bar-css" => "{C_default_http_local}".get_site_path(PATH_SKINS)."core/admin.min.css",
+				"admin-bar-css" => get_site_path(PATH_SKINS)."core/admin.min.css",
 			), "css", true);
 			self::$activeAdmin = true;
 		}
@@ -343,7 +343,21 @@ class Headers {
 			if($editor!==false && Arr::get($editor, "class", false)) {
 				$editPage = "{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=".$editor['class'].(isset($editor['page']) ? "&".$editor['page'] : "").(defined("ROUTE_GET_URL") ? "&ref=".urlencode(HTTP::getServer(ROUTE_GET_URL)) : "");
 			}
-			$menu = "<div class=\"adminCoreCardinal\"><a href=\"{C_default_http_local}\" class=\"logo\"></a>".(config::Select("deactiveMainMenu")!="1" ? "<a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/{C_mainPageAdmin}\" class=\"linkToAdmin\">{L_'adminpanel'}</a>" : "")."<div class=\"elems\">".(!empty($editPage) ? "<div class=\"items\"><a href=\"".$editPage."\"><i class=\"fa-edit\"></i><span>{L_'Редактировать'}</span></a></div>":"").$this->menuAdminHeader($newMenu)."<div class=\"user\"><span>{U_username}</span><div class=\"dropped\"><a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Login&out\"><i class=\"fa-user-times\"></i>{L_'logout'}</a></div></div></div></div>";
+			$menu = "<div class=\"adminCoreCardinal\">";
+				$menu .= "<a href=\"{C_default_http_local}\" class=\"logo\"></a>";
+				$menu .= (config::Select("deactiveMainMenu")!="1" ? "<a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/{C_mainPageAdmin}\" class=\"linkToAdmin\">{L_'adminpanel'}</a>" : "");
+				$menu .= "<div class=\"show_more\"></div>";
+				$menu .= "<div class=\"elems\">";
+					$menu .= (!empty($editPage) ? "<div class=\"items\"><a href=\"".$editPage."\"><i class=\"fa-edit\"></i><span>{L_'Редактировать'}</span></a></div>":"");
+					$menu .= $this->menuAdminHeader($newMenu, false, true);
+					$menu .= "<div class=\"user\">";
+						$menu .= "<span>{U_username}</span>";
+						$menu .= "<div class=\"dropped\">";
+							$menu .= "<a href=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Login&out\"><i class=\"fa-user-times\"></i>{L_'logout'}</a>";
+						$menu .= "</div>";
+					$menu .= "</div>";
+				$menu .= "</div>";
+			$menu .= "</div>";
 			cardinalEvent::addListener("templates::display", array($this, "addAdminPanelToPage"), $menu);
 		}
 		unset($array);
@@ -377,7 +391,7 @@ class Headers {
 		execEventRef("admin_menu_loaded", $links, $now);
 	}
 
-	private function menuAdminHeader($arr, $isCat = false) {
+	private function menuAdminHeader($arr, $isCat = false, $isSite = false, $id = 0) {
 		$menu = "";
 		foreach($arr as $v) {
 			if(isset($v['items']) && sizeof($v['items'])==1) {
@@ -389,12 +403,19 @@ class Headers {
 			if(isset($v['items'])) {
 				$cat = true;
 			}
+			if($id==5) {
+				$menu .= "<div class='more'><div class=\"elems\">";
+			}
 			$menu .= (!$isCat ? "<div class=\"items".($cat ? " hasDropped" : "")."\">" : "")."<a href=\"".$v['link']."\" class=\"".($cat ? "subItem": "")."".(isset($v['class']) ? " ".$v['class']: "")."\">".(isset($v['icon']) && !empty($v['icon']) ? "<i class=\"".$v['icon']."\"></i>" : "")."<span>".$v['title']."</span></a>";
 			$menu .= ($cat ? "<div class=\"dropped\">" : "");
 			if($cat) {
-				$menu .= $this->menuAdminHeader($v['items'], true);
+				$menu .= $this->menuAdminHeader($v['items'], true, $isSite, PHP_INT_MIN);
 			}
 			$menu .= ($cat ? "</div>" : "").(!$isCat ? "</div>\n" : "");
+			$id++;
+		}
+		if($id>=5) {
+			$menu .= "</div></div>";
 		}
 		return $menu;
 	}

@@ -133,6 +133,10 @@
 	-webkit-transform: scale(0);
 	transform: scale(0);
 }
+.sidebar-menu .main-menu a > i + span {
+    padding-right: 0px;
+    max-width: 100%;
+}
 .sidebar-menu.collapsed .devices .hideDev {
 	text-align: center;
 	display: table;

@@ -368,7 +368,7 @@ class DBObject implements ArrayAccess {
 	}
 	
 	final public function setAttribute($field, $attr, $value) {
-		if(empty($field) || empty($attr) || empty($value)) {
+		if(empty($field) || empty($attr)) {
 			errorHeader();
 			throw new Exception("Data for attribute not set or empty");
 			die();

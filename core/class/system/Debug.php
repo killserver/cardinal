@@ -8,7 +8,6 @@ class Debug {
 	
 	private static $charset = "utf-8";
 	private static $echoDebug = false;
-	private static $limitOnView = 1024;
 	private static $disableShow = false;
 
 	final public static function activShow($show = true) {
@@ -133,6 +132,17 @@ class Debug {
 			), "events", "events".$i);
 			$i++;
 		}
+
+		$time = microtime(true);
+		$i = 0;
+		$work = $arr['time_work'];
+		foreach(self::$breakpoint as $name => $v) {
+            $left = round($v['start'] / $v['duration'], 2);
+            $width = min(round($work / $v['duration'], 2), 100 - $left);
+			templates::assign_vars(array("width" => $width, "left" => $left, "label" => $name), "timeline", "timeline".$i);
+			$i++;
+		}
+
 		templates::dir_skins("skins");
 		templates::set_skins("");
 		$tpl = templates::completed_assign_vars("debug_panel", "core");
@@ -355,58 +365,6 @@ class Debug {
 		}
 	}
 	
-	final public static function limitOnView($limit = "") {
-		if($limit!=="") {
-			self::$limitOnView = $limit;
-		} else {
-			return self::$limitOnView;
-		}
-	}
-	
-	final public static function vars() {
-		if(func_num_args() === 0) {
-			if(self::$echoDebug) {
-				self::viewOnPage("");
-			} else {
-				return false;
-			}
-		}
-		// Get all passed variables
-		$variables = func_get_args();
-		$output = array();
-		foreach($variables as $var) {
-			$output[] = self::_dump($var, self::$limitOnView);
-		}
-		if(self::$echoDebug) {
-			self::viewOnPage('<pre class="debug">'.implode("\n", $output).'</pre>');
-		} else {
-			return '<pre class="debug">'.implode("\n", $output).'</pre>';
-		}
-	}
-	
-	final private static function nstrlen($text) {
-		if(function_exists("mb_strlen") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING) {
-			return mb_strlen($text, self::$charset);
-		} elseif(function_exists("iconv_strlen")) {
-			return iconv_strlen($text, self::$charset);
-		} else {
-			return strlen($text);
-		}
-	}
-	
-	final private static function nsubstr($text, $start, $end = "") {
-		if(empty($end)) {
-			$end = self::nstrlen($text);
-		}
-		if(function_exists("mb_substr") && defined('MB_OVERLOAD_STRING') && ini_get('mbstring.func_overload') & MB_OVERLOAD_STRING) {
-			return mb_substr($text, $start, $end, self::$charset);
-		} elseif(function_exists("iconv_substr")) {
-			return iconv_substr($text, $start, $end, self::$charset);
-		} else {
-			return substr($text, $start, $end);
-		}
-	}
-	
 	final private static function strip_ascii_ctrl($str) {
 		return preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]+/S', '', $str);
 	}
@@ -444,104 +402,6 @@ class Debug {
 		}
 		return $var;
 	}
-	
-	final public static function _dump(&$var, $length = 128, $limit = 10, $level = 0) {
-		if($var===NULL) {
-			return '<small style="color:green;font-weight:bold;">NULL</small>';
-		} elseif(is_bool($var)) {
-			return '<small style="color:green;font-weight:bold;">bool</small> '.($var ? 'TRUE' : 'FALSE');
-		} elseif(is_float($var)) {
-			return '<small style="color:green;font-weight:bold;">float</small> '.$var;
-		} elseif(is_resource($var)) {
-			if(($type = get_resource_type($var)) === 'stream' AND $meta = stream_get_meta_data($var)) {
-				$meta = stream_get_meta_data($var);
-				if(isset($meta['uri'])) {
-					$file = $meta['uri'];
-					return '<small style="color:green;font-weight:bold;">resource</small><span style="color:green;font-weight:bold;">('.$type.')</span> '.htmlspecialchars($file, ENT_NOQUOTES, self::$charset);
-				}
-			} else {
-				return '<small style="color:green;font-weight:bold;">resource</small><span style="color:green;font-weight:bold;">('.$type.')</span>';
-			}
-		} elseif(is_string($var)) {
-			// Clean invalid multibyte characters. iconv is only invoked
-			// if there are non ASCII characters in the string, so this
-			// isn't too much of a hit.
-			$var = self::clean($var, self::$charset);
-			if($length!=0 && self::nstrlen($var)>$length) {
-				// Encode the truncated string
-				$str = htmlspecialchars(self::nsubstr($var, 0, $length), ENT_NOQUOTES, self::$charset).'&nbsp;&hellip;';
-			} else {
-				// Encode the string
-				$str = htmlspecialchars($var, ENT_NOQUOTES, self::$charset);
-			}
-			return '<small style="color:green;font-weight:bold;">string</small><span style="color:green;font-weight:bold;">('.self::nstrlen($var).')</span> "'.$str.'"';
-		} elseif(is_array($var)) {
-			$output = array();
-			// Indentation for this variable
-			$space = str_repeat($s = '    ', $level);
-			// Make a unique marker - force it to be alphanumeric so that it is always treated as a string array key
-			$marker = uniqid("\x00")."x";
-			if(empty($var)) {
-				// Do nothing
-			} elseif(isset($var[$marker])) {
-				$output[] = "(\n".$space.$s."*RECURSION*\n".$space.")";
-			} elseif($level < $limit) {
-				$output[] = "<span>(";
-				$var[$marker] = TRUE;
-				foreach($var as $key => & $val) {
-					if($key === $marker) {
-						continue;
-					}
-					if(!is_int($key)) {
-						$key = '"'.htmlspecialchars($key, ENT_NOQUOTES, self::$charset).'"';
-					}
-					$output[] = $space.$s.$key." => ".self::_dump($val, $length, $limit, $level + 1);
-				}
-				unset($var[$marker]);
-				$output[] = $space.")</span>";
-			} else {
-				// Depth too great
-				$output[] = "(\n".$space.$s."...\n".$space.")";
-			}
-			return '<small style="color:green;font-weight:bold;">array</small><span style="color:green;font-weight:bold;">('.count($var).')</span> '.implode("\n", $output);
-		} elseif(is_object($var)) {
-			// Copy the object as an array
-			$array = (array) $var;
-			$output = array();
-			// Indentation for this variable
-			$space = str_repeat($s = '    ', $level);
-			$hash = spl_object_hash($var);
-			// Objects that are being dumped
-			$objects = array();
-			if(empty($var)) {
-				// Do nothing
-			} elseif(isset($objects[$hash])) {
-				$output[] = "{\n".$space.$s."*RECURSION*\n".$space."}";
-			} elseif($level < $limit) {
-				$output[] = "<code>{";
-				$objects[$hash] = true;
-				foreach($array as $key => & $val) {
-					if(isset($key[0]) && $key[0] === "\x00") {
-						// Determine if the access is protected or protected
-						$access = '<small style="color:purple;font-weight:bold;">'.(($key[1] === '*') ? 'protected' : 'private').'</small>';
-						// Remove the access level from the variable name
-						$key = substr($key, strrpos($key, "\x00") + 1);
-					} else {
-						$access = '<small style="color:purple;font-weight:bold;">public</small>';
-					}
-					$output[] = $space.$s.$access." \$".$key." => ".self::_dump($val, $length, $limit, $level + 1);
-				}
-				unset($objects[$hash]);
-				$output[] = $space."}</code>";
-			} else {
-				// Depth too great
-				$output[] = "{\n".$space.$s."...\n".$space."}";
-			}
-			return '<small>object</small> <span>'.get_class($var).'('.count($array).')</span> '.implode("\n", $output);
-		} else {
-			return '<small style="color:green;font-weight:bold;">'.gettype($var).'</small> '.htmlspecialchars(print_r($var, TRUE), ENT_NOQUOTES, self::$charset);
-		}
-	}
 
 	final public static function vdump() {
 		global $printedVdump;
@@ -577,39 +437,34 @@ class Debug {
 	}
 	
 	
-	private static $breakpoint;
-	private static $breakpoint_start;
-	private static $start_time;
-	private static $stop_time;
+	private static $breakpoint = array();
 	
-	final private static function GetPartTime() {
-		$part_time = explode(' ', microtime());
-		return $part_time[1].substr($part_time[0], 1);
-	}
-
-	final private static function StartTime() {
-		self::$start_time = self::GetPartTime();
-	}
-
-	final private static function EndTime() {
-		self::$stop_time = self::GetPartTime();
-	}
-	
-	final public static function StartBreakPoint() {
+	final public static function StartBreakPoint($name) {
 		$back = debug_backtrace();
-		self::$breakpoint_start = array("time" => self::GetPartTime(), "start" => isset($back[0]) ? $back[0] : array());
+		$time = microtime(true);
+		self::$breakpoint[$name] = array("relative_start" => $time, "start" => $time-SYSTEM_MICROTIME, "duration" => $time, "file" => isset($back[0]) ? $back[0] : array());
 	}
 	
-	final public static function StopBreakPoint($data = "") {
-		$breakpoint_stop = self::GetPartTime();
-		$back = debug_backtrace();
-		$arr = array();
-		$arr = array_merge($arr, self::$breakpoint_start);
-		$arr = array_merge($arr, array("time" => bcsub($breakpoint_stop, self::$breakpoint_start["time"], 4), "data" => isset($back[0]) ? $back[0] : array()));
-		if($data!=="") {
-			$arr['dataSend'] = $data;
+	final public static function StopBreakPoint($name, $data = "") {
+		if(!isset(self::$breakpoint[$name])) {
+			return;
 		}
-		self::$breakpoint[] = $arr;
+		$back = debug_backtrace();
+		$time = microtime(true);
+		self::$breakpoint[$name]["duration"] = $time-self::$breakpoint[$name]["duration"];
+		self::$breakpoint[$name]["end"] = $time-SYSTEM_MICROTIME;
+		self::$breakpoint[$name]["relative_end"] = $time;
+		if($data!=="") {
+			self::$breakpoint[$name]['dataSend'] = $data;
+		}
+	}
+
+	final public static function breakpoint($name, $data = "") {
+		if(!isset(self::$breakpoint[$name])) {
+			return self::StartBreakPoint($name);
+		} else {
+			return self::StopBreakPoint($name, $data);
+		}
 	}
 
 	const LOG_LEVEL_NONE = 0;
@@ -644,23 +499,5 @@ class Debug {
 			file_put_contents(PATH_LOGS.$file, $mess.PHP_EOL, FILE_APPEND);
 		}
 	}
-	
-	public function __destruct() {
-		self::EndTime();
-		$time = bcsub(self::$stop_time, self::$start_time, 4);
-		print("<div class=\"debug\" style=\"display: table; margin: 0px auto; padding: 1em; border: 0.1em dashed #333;\">");
-		print("<p>Generation script - ". $time. " second</p>");
-		if(sizeof(self::$breakpoint)>0) {
-			for($i=0;$i<sizeof(self::$breakpoint);$i++) {
-				$value = self::$breakpoint[$i];
-				$file = str_replace(ROOT_PATH, "", $value['start']['file']);
-				$endFile = str_replace(ROOT_PATH, "", $value['data']['file']);
-				print("<p>".$file." [".$value['start']['line']."] ".($file!=$endFile ? "- ".$endFile : "~ "). " [".$value['data']['line']."] block - ". $value['time']. " second</p>");
-				if(isset($value['dataSend'])) {
-					print("<p>Data send:<pre>".self::_dump($value['dataSend'])."</pre></p>");
-				}
-			}
-		}
-		print("</div>");
-	}
+
 }

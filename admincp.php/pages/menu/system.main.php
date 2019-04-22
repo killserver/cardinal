@@ -10,7 +10,7 @@ $links['System']["cat"][] = array(
 'link' => "#",
 'title' => "{L_\"Системное\"}",
 'type' => "cat",
-'access' => (userlevel::get("antivirus") && is_writable(PATH_CACHE_SYSTEM.DS)) || ($active && userlevel::get("editor")) || userlevel::get("loginadmin") || userlevel::get("logs") || userlevel::get("phpinfo") || (userlevel::get("recyclebin") && file_exists(PATH_CACHE_USERDATA."trashBin.lock")) || (userlevel::get("users") && !defined("WITHOUT_DB")) || userlevel::get("userlevels") || userlevel::get("yui_admin") || userlevel::get("importexport") || userlevel::get("skins") || ((!defined("WITHOUT_DB") || db::connected()) && userlevel::get("atextadmin")),
+'access' => (userlevel::get("antivirus") && is_writable(PATH_CACHE_SYSTEM.DS)) || ($active && userlevel::get("editor")) || userlevel::get("loginadmin") || userlevel::get("logs") || userlevel::get("phpinfo") || (userlevel::get("recyclebin") && file_exists(PATH_CACHE_USERDATA."trashBin.lock")) || userlevel::get("users") || userlevel::get("userlevels") || userlevel::get("yui_admin") || userlevel::get("importexport") || userlevel::get("skins") || (db::connected() && userlevel::get("atextadmin")),
 'icon' => 'fa-dashboard',
 );
 if($active) {
@@ -28,6 +28,13 @@ $links['System']["item"][] = array(
 'type' => "item",
 'access' => userlevel::get("loginadmin"),
 'icon' => 'fa-life-saver',
+);
+$links['System']["item"][] = array(
+'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Customize",
+'title' => "{L_\"Кастомизация\"}",
+'type' => "item",
+'access' => userlevel::get("customize"),
+'icon' => 'fa-building',
 );
 $links['System']["item"][] = array(
 'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Logs",

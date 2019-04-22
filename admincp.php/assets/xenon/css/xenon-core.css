@@ -834,6 +834,7 @@ body {
   margin-top: 20px;
   margin-bottom: 20px;
   list-style: none;
+  overflow-x: hidden;
 }
 @media screen and (max-width: 768px) {
   .sidebar-menu .main-menu {
@@ -854,7 +855,10 @@ body {
 }
 .sidebar-menu .main-menu a > i + span {
   padding-right: 10px;
-  max-width: 78%;
+  max-width: 88%;
+}
+.sidebar-menu .main-menu > li > a > i + span {
+    max-width: 78%;
 }
 .sidebar-menu .main-menu a > span {
   display: inline-block;

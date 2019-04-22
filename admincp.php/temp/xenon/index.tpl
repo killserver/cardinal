@@ -53,7 +53,7 @@
 				
 				</span>
 				
-				<span id="debug" class="col-md-[if {C_FullMenu}==1]5[/if {C_FullMenu}==1][if {C_FullMenu}!=1]4[/if {C_FullMenu}!=1] col-sm-12"[if {debugpanelshow}==0] style="display:none;"[/if {debugpanelshow}==0]>
+				<span id="debug" class="col-md-[if {C_FullMenu}==1]4[/if {C_FullMenu}==1][if {C_FullMenu}!=1]3[/if {C_FullMenu}!=1] col-sm-12"[if {debugpanelshow}==0] style="display:none;"[/if {debugpanelshow}==0]>
 					
 					<div class="xe-widget xe-counter xe-counter-orange">
 						<div class="xe-icon">

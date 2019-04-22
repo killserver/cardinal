@@ -102,9 +102,9 @@ class Users extends Core {
 			templates::assign_vars(array(
 				"is_edit" => "1",
 				"name" => $row['username'],
-				"light" => $row['light'],
+				"light" => (isset($row['light']) ? $row['light'] : ""),
 				"level" => $row['level'],
-				"email" => $row['email'],
+				"email" => (isset($row['email']) ? $row['email'] : ""),
 				"activ" => (isset($row['activ']) ? $row['activ'] : "yes"),
 			));
 			$this->Prints("Users");

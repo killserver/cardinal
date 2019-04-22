@@ -143,6 +143,9 @@ class pager {
 						} else {
 							$nav_prefix = "...";
 						}
+						if($start<=0) {
+							$start = 1;
+						}
 					}
 				}
 				if($start>=2) {

@@ -87,7 +87,7 @@
 							<td>{zip.$id}</td>
 							<td>{zip.time}</td>
 							<td>{zip.size}</td>
-							<td><a href="../{zip.path}">Скачать</a></td>
+							<td><a href="{zip.path}">Скачать</a></td>
 						</tr>[/foreach]
 					</tbody>
 				</table>

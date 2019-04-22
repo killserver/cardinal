@@ -65,6 +65,9 @@
 	.centred.false > div {
 		margin-top: 17.25em;
 	}
+	.centred > div > div {
+		margin-bottom: 1em;
+	}
 	.centred > div > img {
 		height: 80px;
 		margin: 0px auto 2em;
@@ -83,6 +86,7 @@
 		text-shadow: none;
 		letter-spacing: 0.01em;
 		transition: all 300ms ease-in-out;
+		text-decoration: none;
 	}
 	.centred > div > a:hover {
 		background: #0054b5;
@@ -92,6 +96,7 @@
 		text-align: right;
 		margin-right: 1em;
 		min-width: 75px;
+		display: inline-block;
 	}
 	.centred input {
 		border: 1px solid #fff;
@@ -99,6 +104,7 @@
 		padding: 0.4em;
 		color: #fff;
 		width: 220px;
+		background: transparent;
 	}
 </style>
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="0" style="display:none;">

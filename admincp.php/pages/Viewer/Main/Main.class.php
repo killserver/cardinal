@@ -22,9 +22,6 @@ class Main extends Core {
 		if(file_exists(ROOT_PATH."install.".ROOT_EX) && userlevel::is(LEVEL_CREATOR)) {
 			$message .= "<div><div class=\"label label-warning\">{L_\"Обратите внимание\"}</div>&nbsp;{L_\"Файл\"}&nbsp;<b>".DS."install.php</b>&nbsp;{L_\"присутствует на сервере\"}.&nbsp;{L_\"Рекомендуется удалить его для повышения безопасности.\"}</div>";
 		}
-		if(!is_writable(PATH_CACHE_SYSTEM) && userlevel::is(LEVEL_CREATOR)) {
-			$message .= "<div><div class=\"label label-warning\">{L_\"Обратите внимание\"}</div>&nbsp;{L_\"Каталог\"}&nbsp;<b>".DS."".str_replace(array(ROOT_PATH, DS), array("", DS_DB), PATH_CACHE_SYSTEM)."</b>&nbsp;{L_\"не разрешен для записи\"}&nbsp;{L_\"Рекомендуется установить права 0777 для активации антивируса.\"}</div>";
-		}
 		if(file_exists(PATH_MEDIA."error.lock") && userlevel::is(LEVEL_CREATOR)) {
 			$message .= "<div><div class=\"label label-warning\">{L_\"Обратите внимание\"}</div>&nbsp;{L_\"Файл\"}&nbsp;<b>".DS."".str_replace(array(ROOT_PATH, DS), array("", DS_DB), PATH_MEDIA)."error.lock</b>&nbsp;{L_\"присутствует на сервере\"}.&nbsp;{L_\"Рекомендуется удалить его прежде чем сдать проект.\"}</div>";
 		}

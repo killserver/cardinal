@@ -38,6 +38,10 @@ function DebugPanel_ShowHidePanel() {
 			<a href="javascript:DebugPanel_Toggle('i-databasa-log')">sql <span class="small">({db_count})</span></a>
 		</li>
 		<li>
+			<span class="icon db"></span>
+			<a href="javascript:DebugPanel_Toggle('i-timeline')">timeline</a>
+		</li>
+		<li>
 			<span class="icon vars"></span>
 			<a href="javascript:DebugPanel_Toggle('i-vars-log')">vars <span class="small">(G: {count_get} / P: {count_post} / C: {count_cookie} / R: {count_router})</span></a>
 		</li>
@@ -254,6 +258,15 @@ function DebugPanel_ShowHidePanel() {
 					<td>{total_includeline}</td>
 				</tr>
 			</table>
+		</div>
+
+		<div id="i-timeline" class="panel" style="display: none">
+			[foreach block=timeline]
+				<div class="measure">
+					<span class="value" style="left:{timeline.left}%;width:{timeline.width}%;"></span>
+					<span class="label">{timeline.label}</span>
+				</div>
+			[/foreach]
 		</div>
 	</div>
 

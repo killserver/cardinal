@@ -652,7 +652,7 @@ class modules {
 		$arr = array();
 		if(file_exists(PATH_CACHE_USERDATA."modules.json") && is_readable(PATH_CACHE_USERDATA."modules.json")) {
 			$file = file_get_contents(PATH_CACHE_USERDATA."modules.json");
-			if(!empty($files)) {
+			if(!empty($file)) {
 				$arrs = json_decode($file, true);
 				$arr = array_merge($arr, $arrs);
 			}

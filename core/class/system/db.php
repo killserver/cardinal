@@ -203,25 +203,27 @@ class db {
      * @param string $port Port for connection
      */
     final public static function connect($host, $user, $pass, $db, $charset, $port) {
-//mysql_query ("set character_set_client='utf8'"); 
-//mysql_query ("set character_set_results='utf8'"); 
-//mysql_query ("set collation_connection='utf8_general_ci'");
+		//mysql_query ("set character_set_client='utf8'"); 
+		//mysql_query ("set character_set_results='utf8'"); 
+		//mysql_query ("set collation_connection='utf8_general_ci'");
 		$open = self::OpenDriver();
 		if($open) {
 			self::$driver->connect($host, $user, $pass, $db, $charset, $port);
 			if(self::connected()) {
-				if(defined("ROOT_PATH") && !file_exists(PATH_CACHE_SYSTEM."db_charset.lock") && is_writable(PATH_CACHE_SYSTEM)) {
+				if(defined("ROOT_PATH") && defined("PATH_CACHE_SYSTEM") && !file_exists(PATH_CACHE_SYSTEM."db_charset.lock") && is_writable(PATH_CACHE_SYSTEM)) {
 					self::query("ALTER DATABASE `".$db."` DEFAULT CHARSET=".$charset." COLLATE ".$charset."_general_ci;");
 					file_put_contents(PATH_CACHE_SYSTEM."db_charset.lock", "");
 				}
 				if(self::$driverGen && !empty(self::$driver_name)) {
-					if(defined("ROOT_PATH") && !file_exists(PATH_CACHE_SYSTEM."db_lock.lock") && is_writable(PATH_CACHE_SYSTEM)) {
+					if(defined("ROOT_PATH") && defined("PATH_CACHE_SYSTEM") && !file_exists(PATH_CACHE_SYSTEM."db_lock.lock") && is_writable(PATH_CACHE_SYSTEM)) {
 						file_put_contents(PATH_CACHE_SYSTEM."db_lock.lock", self::$driver_name);
 					}
-					if(!defined("ROOT_PATH") && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock") && is_writable(dirname(__FILE__).DIRECTORY_SEPARATOR)) {
+					if((!defined("ROOT_PATH") || !defined("PATH_CACHE_SYSTEM")) && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock") && is_writable(dirname(__FILE__).DIRECTORY_SEPARATOR)) {
 						file_put_contents(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock", self::$driver_name);
 					}
 				}
+				// MySQL 5.7 Group by FIX
+				self::query("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))");
 			}
 		}
 	}
@@ -236,21 +238,14 @@ class db {
 			(
 				!$withoutInit
 				&&
-				(!defined("INSTALLER")
+				(
+					(defined("PATH_MEDIA") && file_exists(PATH_MEDIA."db.".ROOT_EX))
 					||
-					(
-						(
-							(defined("PATH_MEDIA") && file_exists(PATH_MEDIA."db.".ROOT_EX))
-							||
-							(!defined("PATH_MEDIA") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.config.".ROOT_EX))
-							||
-							(defined("PATH_MEDIA") && file_exists(PATH_MEDIA."db.".str_replace("www.", "", $host).".".ROOT_EX))
-							||
-							(!defined("PATH_MEDIA") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.config.".str_replace("www.", "", $host).".".ROOT_EX))
-						)
-						&&
-						defined("WITHOUT_DB")
-					)
+					(!defined("PATH_MEDIA") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.config.".ROOT_EX))
+					||
+					(defined("PATH_MEDIA") && file_exists(PATH_MEDIA."db.".str_replace("www.", "", $host).".".ROOT_EX))
+					||
+					(!defined("PATH_MEDIA") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.config.".str_replace("www.", "", $host).".".ROOT_EX))
 				)
 			)
 		) {

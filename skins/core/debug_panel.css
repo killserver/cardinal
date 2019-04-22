@@ -25,7 +25,29 @@
 @media(max-width:900px) {
 	#i-debug-panel {
 		max-width: 100%;
+		top: auto;
+		bottom: 0;
 	}
+}
+
+#i-debug-panel .measure {
+    position: relative;
+    display: table;
+    width: 100%;
+    padding: 0.4em 0;
+    background: #242424;
+}
+#i-debug-panel .measure > .label {
+    display: block;
+    margin-left: 0.4em;
+}
+#i-debug-panel .measure > .value {
+    display: block;
+    position: absolute;
+    top: 25%;
+    background: #3b903b;
+    height: 12px;
+    border-radius: 6px;
 }
 
 #i-debug-panel ul,
@@ -35,6 +57,11 @@
 	margin: 0;
 	line-height: 2;
 	list-style: none;
+}
+#i-debug-panel #i-debug-panel-list {
+    position: sticky;
+    top: 0;
+    background: #181818 url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAAAAACMmsGiAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABdJREFUCB1jUlGRkWH6CQRMf//y8oJZAFUaCmUwcfODAAAAAElFTkSuQmCC);
 }
 
 #i-debug-panel-list li:first-child {
