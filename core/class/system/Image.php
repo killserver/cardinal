@@ -21,6 +21,8 @@ class Image {
 	private $transparent = 127;
 	private $compress = 75;
 	private $mime = '';
+	private static $imgUrl = '';
+	private static $newName = false;
 	private $imageWidth = 0;
 	private $imageHeight = 0;
 	private $cropWidth = 0;
@@ -35,12 +37,15 @@ class Image {
 	private $resizePositionX = 0;
 	private $flip = array();
 	private $rotate = 0;
+	private $scaleWidth = 0;
+	private $scaleHeight = 0;
 	private $toSize = true;
 	private $headers = false;
 	private $filter = false;
 
 	function __construct($imgUrl) {
 		$what = getimagesize($imgUrl);
+        self::$newName = self::$imgUrl = $imgUrl;
 		$this->imageWidth = $what[0];
 		$this->imageHeight = $what[1];
 		switch(strtolower($what['mime'])) {
@@ -64,6 +69,11 @@ class Image {
 		$imgUrl = file_get_contents($imgUrl);
 		$this->source_image = imagecreatefromstring($imgUrl);
 		return $this;
+	}
+    
+    final public function __call($name, array $params) {
+		$new = __METHOD__;
+		return self::$new($name, $params);
 	}
 
 	private function nimageflip($image, $mode) {
@@ -183,6 +193,20 @@ class Image {
 		$this->resizePositionY = intval(($height - $new_height) / 2);
 		return $this;
 	}
+    
+    function resizeToHeight($height) {
+		$this->resizeHeight = $height;
+        $ratio = $height / $this->imageHeight;
+        $this->resizeWidth = $this->imageWidth * $ratio;
+        return $this;
+    }
+    
+    function resizeToWidth($width) {
+		$this->resizeWidth = $width;
+        $ratio = $width / $this->imageWidth;
+        $this->resizeHeight = $this->imageHeight * $ratio;
+        return $this;
+    }
 
 	function resizePersent($persent = 50) {
 		if(!is_numeric($persent)) {
@@ -194,6 +218,20 @@ class Image {
 		}
 		$this->resizeWidth = round($this->imageWidth/100*$persent);
 		$this->resizeHeight = round($this->imageHeight/100*$persent);
+		return $this;
+	}
+
+	function scale($scale = 0) {
+		if(!is_numeric($scale)) {
+			throw new Exception("On scale must be set as integer", 1);
+			die();
+		}
+		$width = $this->imageWidth + ($this->imageWidth * $scale / 10);
+		$height = $this->imageHeight + ($this->imageHeight * $scale / 10);
+        
+        $new_image = imagecreatetruecolor($width, $height);
+        imagecopyresampled($new_image, $this->source_image, 0, 0, 0, 0, $width, $height, $this->imageWidth, $this->imageHeight);
+        $this->source_image = $new_image;
 		return $this;
 	}
 
@@ -216,8 +254,38 @@ class Image {
 		$this->filter = $class;
 		return $this;
 	}
+    
+    public static function setNewName($file = false, $type = false, $append = "") {
+        if($file===false && $type===false && $append!=="") {
+            $file = self::$imgUrl;
+            $fileEXT = explode(".", $file);
+            $fileEXT = end($fileEXT);
+            $fileEXTLength = strlen($fileEXT);
+            $file = substr($file, 0, 0-1-$fileEXTLength);
+            self::$newName = $file.$append.".".$fileEXT;
+        } else if($file!==false && $type===false && $append==="") {
+            self::$newName = $file;
+		} else if($file!==false && $type===false && $append!=="") {
+            $fileEXT = explode(".", $file);
+            $fileEXT = end($fileEXT);
+            $fileEXTLength = strlen($fileEXT);
+            $file = substr($file, 0, 0-1-$fileEXTLength);
+            self::$newName = $file.$append.".".$fileEXT;
+		} else if($file!==false && $type!==false) {
+            self::$newName = $file.$append.".".$type;
+		} else {
+            self::$newName = null;
+		}
+    }
+    
+    public static function getNewName() {
+        return self::$newName;
+    }
 
-	function save($file = false, $type = false) {
+	function save($file = false, $type = false, $append = "") {
+        if(self::$newName===false) {
+            self::setNewName($file, $type, $append);
+        }
 		$width = ($this->resizeWidth===false ? $this->imageWidth : $this->resizeWidth);
 		$height = ($this->resizeHeight===false ? $this->imageHeight : $this->resizeHeight);
 
@@ -241,6 +309,7 @@ class Image {
 		} else {
 			$new_image = $this->source_image;
 		}
+        
 		if(sizeof($this->flip)>0) {
 			for($i=0;$i<sizeof($this->flip);$i++) {
 				$this->nimageflip($new_image, $this->flip[$i]);
@@ -298,13 +367,11 @@ class Image {
         if(!is_callable($imgt)) {
             return false;
         }
-		if($file!==false && $type===false) {
-			return call_user_func_array($imgt, array($rotated_image, $file, $this->compress));
-		} else if($file!==false && $type!==false) {
-			return call_user_func_array($imgt, array($rotated_image, $file.".".$type, $this->compress));
-		} else {
+        if(!empty(self::$newName)) {
+            return call_user_func_array($imgt, array($rotated_image, self::$newName, $this->compress));
+        } else {
             return call_user_func_array($imgt, array($rotated_image, null, $this->compress));
-		}
+        }
 	}
 
 }

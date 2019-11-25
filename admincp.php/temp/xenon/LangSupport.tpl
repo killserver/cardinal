@@ -33,7 +33,7 @@
 						<tr><th>{L_"Язык"}</th><th width="10%">{L_"Операции"}</th></tr>
 					</thead>
 					<tbody>
-						[foreach block=supportLang]<tr><td>{supportLang.lang}</td><td>[foreachif {supportLang.mainLang}=="no"]<a href="./?pages=Languages&mainLang={supportLang.clearLang}" class="btn btn-block btn-purple main-lang" data-lang="{supportLang.clearLang}">{L_"Сделать языком по-умолчанию"}</a>[/foreachif {supportLang.mainLang}=="no"]<a href="./?pages=Languages&lang={supportLang.clearLang}" class="btn btn-block btn-success">{L_edit}</a><a href="#" class="btn btn-block btn-red remove-lang" data-lang="{supportLang.clearLang}">{L_delete}</a></td></tr>[/foreach]
+						[foreach block=supportLang]<tr><td>{supportLang.lang}</td><td>[foreachif {supportLang.mainLang}=="no"]<a href="./?pages=Languages&mainLang={supportLang.clearLang}" class="btn btn-block btn-purple main-lang" data-lang="{supportLang.clearLang}">{L_"Сделать языком по-умолчанию"}</a><a href="./?pages=Languages&mainLang={supportLang.clearLang}" class="btn btn-block btn-blue main-lang" data-lang="{supportLang.clearLang}&onlyLang=true">{L_"Сделать единственным языком"}</a>[/foreachif {supportLang.mainLang}=="no"]<a href="./?pages=Languages&lang={supportLang.clearLang}" class="btn btn-block btn-success">{L_edit}</a><a href="#" class="btn btn-block btn-red remove-lang" data-lang="{supportLang.clearLang}">{L_delete}</a></td></tr>[/foreach]
 					</tbody>
 				</table>
 			</div>

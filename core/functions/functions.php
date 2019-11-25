@@ -84,6 +84,88 @@ function json_encode_unicode($arr, $params) {
 	return CardinalJSON::json_encode_unicode($arr, $params);
 }
 
+function parseArgs() {
+	$argv = (isset($_SERVER['argv']) ? $_SERVER['argv'] : array());
+	array_shift($argv);
+	$out = array();
+	foreach($argv as $arg) {
+		if(substr($arg, 0, 2) == '--') { // --foo --bar=baz
+			$eqPos = strpos($arg, '=');
+			if($eqPos === false) { // --foo
+				$key = substr($arg, 2);
+				$value = isset($out[$key]) ? $out[$key] : true;
+				$out[$key] = $value;
+			} else { // --bar=baz
+				$key = substr($arg, 2, $eqPos-2);
+				$value = substr($arg, $eqPos+1);
+				$out[$key] = (empty($value) ? true : $value);
+			}
+		} else if(substr($arg, 0, 1) == '-') { // -k=value -abc
+			if(substr($arg, 2, 1) == '=') { // -k=value
+				$key = substr($arg, 1, 1);
+				$value = substr($arg, 3);
+				$out[$key] = (empty($value) ? true : $value);
+			} else { // -abc
+				$chars = str_split(substr($arg, 1));
+				foreach($chars as $char) {
+					$key = $char;
+					$value = isset($out[$key]) ? $out[$key] : true;
+					$out[$key] = $value;
+				}
+			}
+		} else { // plain-arg
+			$value = $arg;
+			$out[$value] = true;
+		}
+	}
+	$GLOBALS['parsedArgv'] = $out;
+	return $out;
+}
+
+function getArgv($name, $default = "") {
+	if(!isset($GLOBALS['parsedArgv'])) {
+		$list = parseArgs();
+	} else {
+		$list = $GLOBALS['parsedArgv'];
+	}
+	return (isset($list[$name]) ? $list[$name] : $default);
+}
+
+function parseConfigs(&$message = null) {
+    if(is_string($message)) {
+        $argv = explode(' ', $message);
+    } else if(is_array($message)) {
+        $argv = $message;
+    } else {
+        global $argv;
+        if(isset($argv) && sizeof($argv) > 1) {
+            array_shift($argv);
+        }
+    }
+    $MAX_ARGV = 1000;
+    $index = 0;
+    $configs = array();
+    while($index < $MAX_ARGV && isset($argv[$index])) {
+        if (preg_match('/^([^-\=]+.*)$/', $argv[$index], $matches) === 1) {
+            // not have ant -= prefix
+            $configs[$matches[1]] = true;
+        } else if (preg_match('/^-+(.+)$/', $argv[$index], $matches) === 1) {
+            // match prefix - with next parameter
+            if (preg_match('/^-+(.+)\=(.+)$/', $argv[$index], $subMatches) === 1) {
+                $configs[$subMatches[1]] = $subMatches[2];
+            } else if (isset($argv[$index + 1]) && preg_match('/^[^-\=]+$/', $argv[$index + 1]) === 1) {
+                // have sub parameter
+                $configs[$matches[1]] = $argv[$index + 1];
+                $index++;
+            } else {
+                $configs[$matches[1]] = true;
+            }
+        }
+        $index++;
+    }
+    return $configs;
+}
+
 function loadConfig($file = "") {
 	global $config;
 	if($file==='' && !defined("ROOT_PATH")) {
@@ -128,32 +210,6 @@ function loadConfig($file = "") {
 			config::Set($exp[0], $exp[1]);
 		}
 	}
-}	
-
-if(!function_exists('getallheaders')) {
-	function getallheaders() {
-		$headers = array();
-		foreach($_SERVER as $name => $value) {
-			if(substr($name, 0, 5) == 'HTTP_') {
-				$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
-			} else {
-				$headers[$name] = $value;
-			}
-		}
-		return $headers; 
-	} 
-}
-
-if(!function_exists("RandomCompat_strlen")) {
-	function RandomCompat_strlen($binary_string) {
-		if(!is_string($binary_string)) {
-			throw new TypeError('RandomCompat_strlen() expects a string');
-		}
-		if(function_exists('mb_strlen')) {
-			return mb_strlen($binary_string, '8bit');
-		}
-		return strlen($binary_string);
-	}
 }
 
 // nmail() -> new PHPMailer
@@ -186,8 +242,8 @@ function or_nmail() {
 	$mail->CharSet = (class_exists("config") && method_exists("config", "Select") && config::Select("charset") ? config::Select("charset") : "UTF-8");
 	$mail->ContentType = 'text/html';
 	$mail->Priority = 1;
-	$mail->From = execEvent("mail_sender", "info")."@".$server;
-	$mail->FromName = execEvent("mail_sender_name", "info");
+	$mail->From = (function_exists("execEvent") ? execEvent("mail_sender", "info") : "info")."@".$server;
+	$mail->FromName = (function_exists("execEvent") ? execEvent("mail_sender_name", "info") : "info");
 	if(!is_array($for)) {
 		$for = array($for => "".$for);
 	}
@@ -196,7 +252,14 @@ function or_nmail() {
 	}
 	$mail->isHTML(true);
 	$mail->Subject = $head;
-	$mail->AltBody = $mail->Body = $body;
+	$mail->addCustomHeader("List-Unsubscribe", "http://".$server);
+	$mail->addCustomHeader("Precedence", "bulk");
+	$mail->Body = $body;
+	$mailer = strip_tags($body);
+	if(strlen($mailer)!=strlen($body)) {
+		$mailer = str_pad($mailer, strlen($body)).":)";
+	}
+	$mail->AltBody = $mailer;
 	try {
 		$er = $mail->Send();
 	} catch(Exception $ex) {
@@ -249,32 +312,6 @@ function or_nround($value, $precision = 0, $mode = ROUND_HALF_UP, $native = TRUE
 			break;
 		}
 	}
-}
-
-if(!function_exists('random_bytes')) {
-    function random_bytes($bytes) {
-		if(!function_exists("mcrypt_create_iv")) {
-			throw new Exception('Mcrypt is not installed');
-		}
-        try {
-			if(is_numeric($bytes)) {
-				$bytes += 0;
-			}
-			if(is_float($bytes) && $bytes > ~PHP_INT_MAX && $bytes < PHP_INT_MAX) {
-				$bytes = (int) $bytes;
-			}
-        } catch(Exception $ex) {
-            throw new Exception('random_bytes(): $bytes must be an integer');
-        }
-        if($bytes < 1) {
-            throw new Exception('Length must be greater than 0');
-        }
-        $buf = mcrypt_create_iv($bytes, MCRYPT_DEV_URANDOM);
-        if($buf !== false && RandomCompat_strlen($buf) === $bytes) {
-            return $buf;
-        }
-        throw new Exception('Could not gather sufficient random data');
-    }
 }
 
 function cardinal_version($check = "", $old = "") {
@@ -451,41 +488,6 @@ function list_files($dir, $level = 1, $exclusions = array()) {
 return $files;
 }
 
-if(!function_exists("boolval")) {
-	function boolval($val) {
-		return (bool) $val;
-	}
-}
-
-if(!function_exists('iterable_to_array')) {
-	/**
-	 * Copy the iterable into an array. If the iterable is already an array, return it.
-	 *
-	 * @param  array|\Traversable $iterable
-	 * @return array
-	 */
-	function iterable_to_array($iterable) {
-		return (is_array($iterable) ? $iterable : iterator_to_array($iterable));
-	}
-}
-if(!function_exists('iterable_to_traversable')) {
-	/**
-	 * If the iterable is not intance of \Traversable, it is an array => convert it to an ArrayIterator.
-	 *
-	 * @param  $iterable
-	 * @return \Traversable
-	 */
-	function iterable_to_traversable($iterable) {
-		if($iterable instanceof Traversable) {
-			return $iterable;
-		} elseif(is_array($iterable)) {
-			return new ArrayIterator($iterable);
-		} else {
-			throw new \InvalidArgumentException(sprintf('Expected array or \\Traversable, got %s', (is_object($iterable) ? get_class($iterable) : gettype($iterable))));
-		}
-	}
-}
-
 function removeBOM($string) {
 	if(substr($string, 0, 3) == pack('CCC', 0xef, 0xbb, 0xbf)) {
 		$string=substr($string, 3);
@@ -504,25 +506,6 @@ function sortByKey(&$arr) {
 function sortByValue(&$arr) {
 	uasort($arr, 'strnatcmp');
 	return $arr;
-}
-
-if(!function_exists("hex2bin")) {
-	function hex2bin($hexstr) {
-		$n = strlen($hexstr);
-		$sbin = "";
-		$i = 0;
-		while($i<$n) {
-			$a = substr($hexstr, $i, 2);
-			$c = pack("H*",$a);
-			if($i==0) {
-				$sbin = $c;
-			} else {
-				$sbin .= $c;
-			}
-			$i+=2;
-		}
-		return $sbin;
-	}
 }
 
 function nocache_headers() {
@@ -596,17 +579,15 @@ function cdie() {
 	echo "<code>";
 	if(sizeof($list)>0) {
 		foreach($list as $v) {
-			echo call_user_func_array("var_debug_prepare", array($v));
+			echo call_user_func_array("var_debug", array($v));
 		}
 	}
 	echo "</code>";
 	echo '</pre>';
-	echo '<link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/vs2015.min.css" /><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script><script>hljs.initHighlightingOnLoad();</script>';
     die();
 }
 
-function buildBacktrace($backtrace = array(), $withoutFirst = false) {
+/*function buildBacktrace($backtrace = array(), $withoutFirst = false) {
 	if(sizeof($backtrace)===0) {
 		$backtrace = debug_backtrace();
 	}
@@ -618,7 +599,7 @@ function buildBacktrace($backtrace = array(), $withoutFirst = false) {
 	foreach($backtrace as $v) {
 		echo "<b style=\"color:#d11;\">Called:</b> ".$v['file']." [".$v['line']."]\n";
 	}
-}
+}*/
 
 function check_smartphone() {
 global $mobileDetect;
@@ -676,24 +657,6 @@ function parser_video($content, $start, $end = "") {
 	$content = substr($content, 0, $pos);
 	$content = str_replace($start, "", $content);
 return $content;
-}
-
-if(!function_exists('is_countable')) {
-    function is_countable($var) {
-    	return Validate::is_countable($var);
-    }
-}
-
-if(!function_exists('array_key_first')) {
-    function array_key_first(array $array) {
-    	return key($array);
-    }
-}
-if(!function_exists('array_key_last')) {
-    function array_key_last(array $array) {
-    	end($array);
-    	return key($array);
-    }
 }
 
 ?>

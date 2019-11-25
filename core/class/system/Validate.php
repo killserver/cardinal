@@ -182,7 +182,7 @@ class Validate {
 	 * @return bool Result checking
 	 */
 	final public static function phone($number, $lengths = array()) {
-		if(!is_array($lengths) && sizeof($lengths)==0) {
+		if(!is_array($lengths) || sizeof($lengths)==0) {
 			$lengths = array(7, 10, 11);
 		}
 		$number = preg_replace('/\D+/', '', $number);
@@ -660,6 +660,36 @@ class Validate {
 	        $encoding = array_pop($encodings);
 	        mb_internal_encoding($encoding);
 	    }
+	}
+
+	final public static function check_invalid_utf8($string, $default = "") {
+		if(!is_string($string) || strlen($string)===0) {
+			return $default;
+		}
+		global $charset;
+		static $is_utf8 = null;
+		if(!isset($is_utf8) && class_exists("config", false)) {
+			$is_utf8 = in_array(config::Select("charset"), array('utf8', 'utf-8', 'UTF8', 'UTF-8'));
+		} else if(empty($charset)) {
+			throw new Exception("Enter charset in global variable", 1);
+			die();
+		} else if(!empty($charset)) {
+			$is_utf8 = $charset;
+		}
+		if(!$is_utf8) {
+			return $string;
+		}
+		static $utf8_pcre = null;
+		if(!isset($utf8_pcre)) {
+			$utf8_pcre = @preg_match('/^./u', 'a');
+		}
+		if(!$utf8_pcre) {
+			return $string;
+		}
+		if(1 === @preg_match('/^./us', $string)) {
+			return $string;
+		}
+		return $default;
 	}
 
 	final public static function is_utf8($str) {

@@ -375,6 +375,19 @@ register_shutdown_function("shutdownCardinal");
 execEvent("core_ready");
 if(cardinal::is_cli()) {
 	ob_end_clean();
+	if(function_exists("header_remove")) {
+		$list = headers_list();
+		foreach($list as $header) {
+			list($key, $val) = explode(":", $header, 2);
+			header_remove($key);
+		}
+	} else {
+		$list = headers_list();
+		foreach($list as $header) {
+			list($key, $val) = explode(":", $header, 2);
+			header($key.":");
+		}
+	}
 	if(!defined("IS_CLI")) {
 		define("IS_CLI", true);
 	}
@@ -385,27 +398,29 @@ if(cardinal::is_cli()) {
 		ob_end_clean();
 		return $var;
 	}
-	$cols = getCmd("tput cols");
-	system("clear");
-	system("clear");
-	system("clear");
-	system("clear");
-	system("clear");
-	system("clear");
-	system("clear");
-	$file = file(PATH_SKINS."core".DS."logo-ascii.txt");
-	$cols /= 2;
-	$cols -= 25;
-	$cols = ceil($cols);
-	$mess = "-= System Cardinal Engine =-";
-	$messP = "-= System \e[0;31mCardinal Engine\e[0m =-";
-	$echo = chr(27).chr(91).'H'.chr(27).chr(91).'J'.PHP_EOL;
-	$echo .= str_pad(" ", $cols+ceil((strlen($mess)-7.5)/2), " ", STR_PAD_LEFT).$messP." ".PHP_EOL.PHP_EOL;
-	for($i=0;$i<sizeof($file);$i++) {
-		$echo .= str_pad(" ", $cols, " ", STR_PAD_LEFT)."\e[0;36m".$file[$i]."\e[0m";
+	if(!getArgv("clear", false)) {
+		$cols = getCmd("tput cols");
+		system("clear");
+		system("clear");
+		system("clear");
+		system("clear");
+		system("clear");
+		system("clear");
+		system("clear");
+		$file = file(PATH_SKINS."core".DS."logo-ascii.txt");
+		$cols /= 2;
+		$cols -= 25;
+		$cols = ceil($cols);
+		$mess = "-= System Cardinal Engine =-";
+		$messP = "-= System \e[0;31mCardinal Engine\e[0m =-";
+		$echo = chr(27).chr(91).'H'.chr(27).chr(91).'J'.PHP_EOL;
+		$echo .= str_pad(" ", $cols+ceil((strlen($mess)-7.5)/2), " ", STR_PAD_LEFT).$messP." ".PHP_EOL.PHP_EOL;
+		for($i=0;$i<sizeof($file);$i++) {
+			$echo .= str_pad(" ", $cols, " ", STR_PAD_LEFT)."\e[0;36m".$file[$i]."\e[0m";
+		}
+		$echo .= PHP_EOL.PHP_EOL.PHP_EOL;
+		echo $echo;
 	}
-	$echo .= PHP_EOL.PHP_EOL.PHP_EOL;
-	echo $echo;
 	execEvent("cli_ready");
 }
 ?>

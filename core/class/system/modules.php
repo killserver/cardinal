@@ -427,7 +427,7 @@ class modules {
 			$manifest['log'][$select] = array();
 		}
 		$manifest['log'][$select][] = ($set);
-	return $manifest;
+		return $manifest;
 	}
 
 	final public static function manifest_getlog($select) {
@@ -437,7 +437,7 @@ class modules {
 		} else {
 			return false;
 		}
-	return $manifest;
+		return $manifest;
 	}
 
 	final public static function manifest_set($select, $set, $args = array()) {
@@ -468,7 +468,7 @@ class modules {
 		} else {
 			$manifest[$select] = ($isArr ? array_merge($manifest[$select], $set) : $set);
 		}
-	return $manifest;
+		return $manifest;
 	}
 
 	final public static function manifest_get($get) {
@@ -606,7 +606,7 @@ class modules {
 					$comment = $v['comment'];
 					$v = $v['value'];
 				}
-				$db->query("ALTER TABLE {{".$table_name."}} ADD `".$k."` ".(strpos($v, "COLLATE")!==false ? $v : $v." COLLATE ".self::get_config("db", "charset")."_general_ci").(!empty($comment) ? " COMMENT ".db::escape($comment) : ""));
+				$db->query("ALTER TABLE {{".$table_name."}} ADD `".$k."` ".(strpos($v, "COLLATE")!==false ? $v : $v." COLLATE ".self::get_config("db", "charset")."_general_ci").(!empty($comment) ? " COMMENT ".db::escape($comment) : "").(strpos($v, 'auto_increment')!==false ? ', ADD PRIMARY KEY `id`(`'.$k.'`)' : ''));
 			}
 		}
 		$db->flushCacheTables();
@@ -641,7 +641,7 @@ class modules {
 					$comment = $v['comment'];
 					$v = $v['value'];
 				}
-				$db->query("ALTER TABLE {{".$table_name."}} CHANGE `".$or."` `".$k."` ".(strpos($v, "COLLATE")!==false ? $v : $v." COLLATE ".self::get_config("db", "charset")."_general_ci").(!empty($comment) ? " COMMENT ".db::escape($comment) : ""));
+				$db->query("ALTER TABLE {{".$table_name."}} CHANGE `".$or."` `".$k."` ".(strpos($v, "COLLATE")!==false ? $v : $v." COLLATE ".self::get_config("db", "charset")."_general_ci").(!empty($comment) ? " COMMENT ".db::escape($comment) : "").(strpos($v, 'auto_increment')!==false ? ', ADD PRIMARY KEY `id`(`'.$k.'`)' : ''));
 			}
 		}
 		$db->flushCacheTables();

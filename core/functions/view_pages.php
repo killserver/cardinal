@@ -175,6 +175,12 @@ global $manifest;
 		case "login":
 			include_once(PATH_PAGES."login.".ROOT_EX);
 		break;
+		case "reg":
+			include_once(PATH_PAGES."reg.".ROOT_EX);
+		break;
+		case "recovery":
+			include_once(PATH_PAGES."recovery.".ROOT_EX);
+		break;
 		case "pong":
 			include_once(PATH_PAGES."pong.".ROOT_EX);
 		break;

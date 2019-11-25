@@ -175,17 +175,11 @@ function get_chmod($path) {
 	return substr(sprintf('%o', fileperms($path)), -4);
 }
 
-function isoTOint($data) {
-	$datetime = new DateTime('@0');
-	$datetime->add(new DateInterval($data));
-	return $datetime->format('U');
-}
-
 /**
  * Substring text in charset engine
  * @param string $text Needed text
  * @param int $start Start cut
- * @param int $end End cut
+ * @param bool|false|string $end End cut
  * @return string Part text
  */
 function nsubstr($text, $start, $end = "") {
@@ -229,20 +223,6 @@ function or_nstr_pad($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT) {
    return str_pad($str, strlen($str)-nstrlen($str)+$pad_len, $pad_str, $dir); 
 }
 
-function nstr_padv2($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT){return function_call('nstr_pad', array($str, $pad_len, $pad_str, $dir));}
-function or_nstr_padv2($str, $pad_len, $pad_str = ' ', $dir = STR_PAD_RIGHT) {
-    $padBefore = $dir === STR_PAD_BOTH || $dir === STR_PAD_LEFT;
-    $padAfter = $dir === STR_PAD_BOTH || $dir === STR_PAD_RIGHT;
-    $pad_len -= nstrlen($str);
-    $targetLen = $padBefore && $padAfter ? $pad_len / 2 : $pad_len;
-    $strToRepeatLen = nstrlen($pad_str);
-    $repeatTimes = ceil($targetLen / $strToRepeatLen);
-    $repeatedString = str_repeat($pad_str, max(0, $repeatTimes)); // safe if used with valid utf-8 strings
-    $before = $padBefore ? nsubstr($repeatedString, 0, floor($targetLen)) : '';
-    $after = $padAfter ? nsubstr($repeatedString, 0, ceil($targetLen)) : '';
-    return $before . $str . $after;
-}
-
 function is_infinites($val){ return function_call('is_infinites', array($val)); }
 function or_is_infinites($val) {
 	return (is_float($val) && (defined("INF") ? ($val==INF || $val==(-(INF))) : (strval($val)=='INF' || strval($val)=='-INF')));
@@ -252,22 +232,6 @@ function int_pad($str, $pad_len, $pad_str = 0, $dir = STR_PAD_RIGHT){ return fun
 function or_int_pad($str, $pad_len, $pad_str = 0, $dir = STR_PAD_RIGHT) {
 	$str = str_pad($str, $pad_len, $pad_str, $dir);
 	return intval($str);
-}
-
-
-function del_in_file($file, $row_number){return function_call('del_in_file', array($file, $row_number));}
-function or_del_in_file($file, $row_number) {
-	if(file_exists($file)) {
-		$file_out = file($file);
-		if(isset($file_out[$row_number])) {
-			unset($file_out[$row_number]);
-		}
-		unlink($file);
-		file_put_contents($file, implode("", $file_out));
-		return true;
-	} else {
-		return false;
-	}
 }
 
 function nstrpos($text, $search, $pos = 0) {
@@ -350,37 +314,6 @@ function strtolowers($text) {
 		return mb_strtolower($text, config::Select('charset'));
 	} else {
 		return strtolower($text);
-	}
-}
-
-function comp_search($text = "", $finds = array()){return function_call('comp_search', array($text, $finds));}
-function or_comp_search($text = "", $finds = array()) {
-	if(empty($text)) {
-		return "";
-	}
-	$find = $finds['find'];
-	if(strpos($text, $find) !== false) {
-		$total_length = strlen($text);
-		$length_before = strlen($text) - strlen(strstr($text, $find));
-		$length_after = strlen(strstr(strstr($text, $find), "\n"));
-		$before = substr($text, 0, $length_before);
-		$after = strstr(strstr($text, $find), "\n");
-		$match = substr($text, $length_before+strlen($find), $total_length-$length_before-$length_after-strlen($find));
-
-		$matches = explode(",", $match);
-		$return = ($before)."\n";
-		$i = 0;
-		$return .= $finds['bbview'];
-		$actors = array();
-		foreach($matches as $s) {
-			$actors[] = ($i ? ' ' : '').'[b][url="'.$finds['link'].trim($s).'"]'.trim($s).'[/url][/b]';
-			$i++;
-		}
-		$return .= implode(",", $actors);
-		$return .= "\n".($after)."\n";
-	return $return;
-	} else {
-		return ($text);
 	}
 }
 
@@ -487,29 +420,9 @@ function or__e() {
 	return $ret;
 }
 
-function check_invalid_utf8($string){return function_call('check_invalid_utf8', array($string));}
-function or_check_invalid_utf8($string) {
-	if(!is_string($string) || strlen($string)===0) {
-		return '';
-	}
-	static $is_utf8 = null;
-	if(!isset($is_utf8)) {
-		$is_utf8 = in_array(config::Select("charset"), array('utf8', 'utf-8', 'UTF8', 'UTF-8'));
-	}
-	if(!$is_utf8) {
-		return $string;
-	}
-	static $utf8_pcre = null;
-	if(!isset($utf8_pcre)) {
-		$utf8_pcre = @preg_match('/^./u', 'a');
-	}
-	if(!$utf8_pcre) {
-		return $string;
-	}
-	if(1 === @preg_match('/^./us', $string)) {
-		return $string;
-	}
-	return '';
+function check_invalid_utf8($string, $default=""){return function_call('check_invalid_utf8', array($string, $default));}
+function or_check_invalid_utf8($string, $default="") {
+	return Validate::check_invalid_utf8($string, $default);
 }
 
 function sanitize_callback($matches) {

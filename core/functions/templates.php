@@ -28,24 +28,6 @@ echo "403 ERROR";
 die();
 }
 
-/*function meta($array = array()) {
-	templates::assign_vars(array(
-		"url" => "{C_default_http_host}",
-		"title" => "{L_sitename}",
-	), "meta", "1");
-	if(sizeof($array)>0) {
-		for($i=0;$i<sizeof($array);$i++) {
-			templates::assign_vars(array(
-				"url" => $array[$i]['url'],
-				"title" => $array[$i]['title'],
-			), "meta", ($i+3));
-		}
-	}
-	unset($array);
-	$te = templates::lcud(templates::completed_assign_vars("meta", "core"));
-return $te;
-}*/
-
 // <meta type="og:image" content="http://site.ru/image.jpg">
 // addSeo("image", "http://site.ru/image.jpg");
 function addSeo($name, $val, $type = "main") {

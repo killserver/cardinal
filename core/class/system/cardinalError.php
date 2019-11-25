@@ -182,10 +182,10 @@ class cardinalError {
 					self::viewOnPage($file);
 				} else if(file_exists(PATH_SKINS."core".DS."503.tpl")) {
 					$tpl = file_get_contents(PATH_SKINS."core".DS."503.tpl");
-					$show = "";
+					$show = "\n";
 					$show .= "<span class=\"info\"><b>[" . self::FriendlyErrorType($e->getCode()) . "]</b> " . $e->getMessage() . " - " . self::saves($file) . " (" . $e->getLine() . ")</span>";
 					$error = str_replace(ROOT_PATH, DS, nl2br(self::saves(self::getExceptionTraceAsString($e))));
-					$show .= $error;
+					$show .= "\n".$error;
 					$tpl = str_replace("{error}", $show, $tpl);
 					self::viewOnPage($tpl);
 				} else {

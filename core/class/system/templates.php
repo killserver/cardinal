@@ -271,6 +271,7 @@ class templates {
 	 * @param string $name Name data for template
 	 * @param string $value Value data for template
 	 * @param string $block Block data for create array
+	 * @param string $id Id data for create array
      */
 	final public static function assign_var($name, $value, $block = "", $id = "") {
 		if($block!=="" && $id==="") {
@@ -609,7 +610,7 @@ class templates {
 		if(isset($arr[1]) && !empty($arr[1]) && isset($list[$arr[1]])) {
 			return $list[$arr[1]];
 		} else {
-			return $arr[0];
+			return "";
 		}
 	}
 
@@ -667,6 +668,9 @@ class templates {
 			case "dirSkins":
 				$ret = self::$dir_skins;
 			break;
+			case "referer":
+				$ret = HTTP::getServer("HTTP_REFERER");
+			break;
 			default:
 				$ret = $array[0];
 			break;
@@ -696,9 +700,11 @@ class templates {
 				}
 			}
 		}
-		if(function_exists("random_int")) {
-			return random_int($min, $max);
-		}
+		try {
+			if(function_exists("random_int")) {
+				return random_int($min, $max);
+			}
+		} catch(Exception $ex) {}
 		if(function_exists("mt_rand")) {
 			return mt_rand($min, $max);
 		} else {
@@ -735,6 +741,39 @@ class templates {
 			return $isset;
 		} else {
 			return (self::$accessEmpty ? $isset : $array[0]);
+		}
+	}
+
+	final private static function empty_config($array) {
+		$else = "";
+		if(class_exists("config") && method_exists("config", "Select")) {
+			if(isset($array[4])) {
+				$isset = config::Select($array[1], $array[2], $array[3]);
+				$else = $array[4];
+			} else if(isset($array[3])) {
+				$isset = config::Select($array[1], $array[2]);
+				$else = $array[3];
+			} else {
+				$isset = config::Select($array[1]);
+				$else = $array[2];
+			}
+		} else {
+			global $config;
+			if(isset($array[4])) {
+				$isset = (isset($config[$array[1]]) && isset($config[$array[1]][$array[2]]) && isset($config[$array[1]][$array[2]][$array[3]]) ? $config[$array[1]][$array[2]][$array[3]] : false);
+				$else = $array[4];
+			} else if(isset($array[3])) {
+				$isset = (isset($config[$array[1]]) && isset($config[$array[1]][$array[2]]) ? $config[$array[1]][$array[2]] : false);
+				$else = $array[3];
+			} else {
+				$isset = (isset($config[$array[1]]) ? $config[$array[1]] : false);
+				$else = $array[2];
+			}
+		}
+		if(!empty($isset)) {
+			return $isset;
+		} else {
+			return (self::$accessEmpty ? $isset : $else);
 		}
 	}
 
@@ -820,6 +859,7 @@ class templates {
     /**
      * Check equals mobile
      * @param string $type Type equals type if mobile, tablet or desktop
+	 * @throws Exception If is not desktop, tablet, mobile, iOS, androidOS
      * @return int Result checking
      */
     final private static function checkMobileExec($type) {
@@ -848,6 +888,7 @@ class templates {
     /**
      * Check equals mobile
      * @param array $array Matches checking
+	 * @throws Exception If is not desktop, tablet, mobile, iOS, androidOS
      * @return string Return checking
      */
     final private static function checkMobile($array) {
@@ -938,7 +979,7 @@ class templates {
 				return "";
 			}
 		}
-	return $block;
+		return $block;
 	}
 
 	/**
@@ -989,6 +1030,7 @@ class templates {
 	 * Get utensils user to group and hath access to part template
 	 * @access private
 	 * @param array $array Array data
+	 * @throws Exception error access level
 	 * @return string Return "true" or "false"
      */
 	final private static function level($array) {
@@ -1272,6 +1314,8 @@ class templates {
 	final private static function countforeach($array) {
 		if(isset(self::$foreach["all"][$array[1]])) {
 			$data = self::$foreach["all"][$array[1]]+1;
+		} else if(isset(self::$blocks[$array[1]])) {
+			$data = sizeof(self::$blocks[$array[1]]);
 		} else {
 			$data = 0;
 		}
@@ -1703,7 +1747,7 @@ class templates {
 		imagecopyresampled($dest_img, $dest_imgs, 0, 0, 0, 0, $resizerWidth, $resizerHeight, $resizeWidth, $resizeHeight);
 
 		$thumb = imagecreatetruecolor($trimWidth, $trimHeight);
-		if(isset($arr['width'])) {
+		/*if(isset($arr['width'])) {
 			if(isset($arr['posX']) && $arr['posX']>=0 && $arr['posX']<=100) {
 				$posX = round(($arr['width'] - $trimWidth) * $arr['posX'] / 100);
 			} else {
@@ -1714,11 +1758,11 @@ class templates {
 			$posY = round(($resizeHeight - $trimHeight) * $arr['posY'] / 100);
 		} else {
 			$posY = round(($resizeHeight - $trimHeight) / 2);
-		}
+		}*/
 		imagealphablending( $thumb, false );
 		imagesavealpha( $thumb, true );
 		imagecopyresampled($thumb, $dest_img, 0, 0, 0, 0, $trimWidth, $trimHeight, $trimWidth, $trimHeight);
-		$compression = (isset($arr['compress']) && $arr['compress']>0 && $arr['compress']<=100  ? intval($arr['compress']) : 60);
+		$compression = (isset($arr['compress']) && $arr['compress']>0 && $arr['compress']<=100  ? intval($arr['compress']) : 80);
 
 		$exp = explode(".", $filename_ROOT_PATH);
 		$type = end($exp);
@@ -1895,7 +1939,7 @@ class templates {
 	 * Prepare template for viewing
 	 * @access public
 	 * @param string $tmp Completed template
-	 * @param array|string $header List headers or title
+	 * @param array|string $headerSet List headers or title
      */
 	final public static function completed($tmp, $headerSet = "") {
 	global $manifest;
@@ -1986,20 +2030,20 @@ class templates {
 	}
 
 	final private static function langdate($arr) {
-		if(isset($arr[3]) && !empty($arr[3])) {
-			$temp = $arr[3];
+		if(isset($arr[4]) && !empty($arr[4])) {
+			$temp = $arr[4];
 		} else {
 			$temp = ", H:i";
 		}
 		$only_date = false;
-		if(isset($arr[4]) && !empty($arr[4])) {
+		if(isset($arr[5]) && !empty($arr[5])) {
 			$only_date = true;
 		}
-		if(isset($arr[1])) {
-			$date = $arr[1];
+		if(isset($arr[2])) {
+			$date = $arr[2];
 		}
 		if(!is_numeric($date)) {
-			if(!isset($arr[3]) || empty($arr[3])) {
+			if(!isset($arr[4]) || empty($arr[4])) {
 				$temp = $date;
 				$date = "";
 				$only_date = true;
@@ -2025,6 +2069,9 @@ class templates {
      */
 	public static function comp_datas($tpl, $file = "null", $type = "all") {
 		$tpl = preg_replace("/\/\/\/\*\*\*(.+?)\*\*\*\/\/\//is", "", $tpl);
+
+		$tpl = self::callback_array("#\{\% (.+?) \%\}#is", "templates::execEval", $tpl);
+		
 		if(function_exists("execEvent")) {
 			$tpl = execEvent("compileTPL", $tpl, $file, $type);
 			$tpl = execEvent("templates::compile::before", $tpl, $file, $type);
@@ -2057,11 +2104,8 @@ class templates {
 			$tpl = self::callback_array("#\{RP\[([a-zA-Z0-9\-_]+)\]\}#", ("templates::routeparam"), $tpl);
 			$tpl = self::callback_array("#\{R_\[(.+?)\]\[(.+?)\]\}#", ("templates::route"), $tpl);
 			$tpl = self::callback_array("#\{R_\[(.+?)\]\}#", ("templates::route"), $tpl);
-			if(preg_match("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true|false)\}#i", $tpl)) {
-				$tpl = self::callback_array("#\{S_langdata=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,(true|false))\}#i", "templates::langdate", $tpl);
-			}
-			if(preg_match("#\{S_langdate=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true|false)\}#i", $tpl)) {
-				$tpl = self::callback_array("#\{S_langdate=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,(true|false))\}#i", "templates::langdate", $tpl);
+			if(preg_match("#\{S_(langdata|langdate)=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,true|false)\}#i", $tpl)) {
+				$tpl = self::callback_array("#\{S_(langdata|langdate)=['\"](.+?)['\"](|,['\"](.*?)['\"])(|,(true|false))\}#i", "templates::langdate", $tpl);
 			}
 			$tpl = self::callback_array("#\{F_['\"](.+?)['\"],['\"](.+?)['\"],['\"](.+?)['\"]\}#", "templates::declension", $tpl);
 		}
@@ -2072,6 +2116,9 @@ class templates {
 			$tpl = self::callback_array("#\{L_()([a-zA-Z0-9\-_]+)()\[(.*?)\]\}#", ("templates::lang"), $tpl);
 			$tpl = self::callback_array("#\{L_([\"|']|)(.+?)(\\1)\}#", ("templates::lang"), $tpl);
 			$tpl = self::callback_array("#\{L_()(.+?)()\}#", ("templates::lang"), $tpl);
+			$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_\.]+)\[([a-zA-Z0-9\-_]*?)\]\[([a-zA-Z0-9\-_]*?)\]=\[(.*?)\]\}#", ("templates::empty_config"), $tpl);
+			$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_\.]+)\[([a-zA-Z0-9\-_]*?)\]=\[(.*?)\]\}#", ("templates::empty_config"), $tpl);
+			$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_\.]+)=\[(.*?)\]\}#", ("templates::empty_config"), $tpl);
 			$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_\.]+)\[([a-zA-Z0-9\-_]*?)\]\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tpl);
 			$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_\.]+)\[([a-zA-Z0-9\-_]*?)\]\}#", ("templates::config"), $tpl);
 			$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_\.]+)\}#", ("templates::config"), $tpl);
@@ -2152,6 +2199,12 @@ class templates {
 		return $tpl;
 	}
 
+	private static function execEval($arr) {
+		extract(self::$blocks);
+		eval('$t = '.$arr[1]);
+		return (isset($t) ? $t : "");
+	}
+
 	private static function execEvent($arr) {
 		$args = array($arr[1], "");
 		if(isset($arr[3])) {
@@ -2181,7 +2234,7 @@ class templates {
      */
 	final public static function lcud($tmp) {
 		$tmp = self::comp_datas($tmp, "null", "lcud");
-	return $tmp;
+		return $tmp;
 	}
 
 	/**
@@ -2292,10 +2345,10 @@ class templates {
 				$i++;
 			}
 		}
-	return $html;
+		return $html;
 	}
+
 	// Gorlum's minifier EOF
-	
 	final public static function error($mess) {
 		if(self::check_exists(self::$mainTpl, self::$skins)) {
 			self::assign_var("message", $mess);
@@ -2310,8 +2363,9 @@ class templates {
 	/**
 	 * Style error template
 	 * @param string $msg Error message
+	 * @param string $file Error in file
      */
-	final private static function ErrorTemplate($msg, $file) {
+	final private static function ErrorTemplate($msg, $file = "") {
 		errorHeader();
 		$type = "main";
 		$orFile = $file;
@@ -2430,7 +2484,7 @@ class templates {
 			$head .= self::$module['head']['after'];
 		}
 		if(strpos($head, '<meta name="theme-color"')===false) {
-			$head .= '<meta name="theme-color" content="#AC1F1F">';
+			$head .= '<meta name="theme-color" content="'.execEvent("titleColor", "#AC1F1F").'">';
 		}
 		$h = str_replace("{headers}", $head, $h);
 

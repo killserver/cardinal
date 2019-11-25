@@ -28,9 +28,16 @@ function getDescr(tt) {
 	jQuery('#modal-4').modal('show', {backdrop: 'static'});
 	jQuery("#modal-4 .modal-dialog").css("width", "90%");
 	var descr = jQuery(tt).parent().children('.spoiler-body').html();
+	if(descr.indexOf("\n")>-1) {
+		descr = descr.replace(/\n/g, "NEW_LINE_ON_SYSTEM");
+	}
 	descr = JSON.parse(descr);
+	console.log(descr);
 	var data = "<table width=\"100%\" class=\"table table-bordered table-striped\">";
 	Object.keys(descr).forEach(function(k) {
+		if((descr[k]+"").indexOf("NEW_LINE_ON_SYSTEM")>-1) {
+			descr[k] = descr[k].replace(/NEW_LINE_ON_SYSTEM/g, "\n");
+		}
 		data += "<tr><td>"+k+"</td><td>"+descr[k]+"</td></tr>";
 	});
 	data += "</table>";

@@ -32,7 +32,7 @@ class Archer extends Core {
 		$page = execEvent("change-page", $page, $typeUni);
 		$viewId = $request->get->get('viewId', false);
 		$viewId = execEvent("change-view-id", $viewId, $typeUni);
-		$viewId = intval($viewId);
+		$viewId = (config::Select("db", "driver")==="db_mongo" ? $viewId : intval($viewId));
 		$andWhere = $request->get->get("Where", false);
 		$andWhere = execEvent("change-Where", $andWhere, $typeUni);
 		$typeWhere = $request->get->get("WhereType", false);
@@ -53,7 +53,7 @@ class Archer extends Core {
 		}
 		switch($page) {
 			case "sleep":
-
+				execEvent("ArcherSleep", $this);
 			break;
 			/*
 			Quick save data in database
@@ -68,7 +68,6 @@ class Archer extends Core {
 					$model->SetLimit(1);
 					$model->Where("", $id);
 					$mod = $model->Select();
-					$mod = $mod->getArray();
 					$model = $model->getInstance();
 					foreach($mod as $k => $v) {
 						$model->{$k} = $v;
@@ -116,9 +115,44 @@ class Archer extends Core {
 				$modelData = $model->Select();
 				$firstId = $model->getFirst();
 				$modelData = $modelData->getArray();
+				$creator = strtolowers($upFirst);
+				$uniq = "";
+				if(file_exists(PATH_CACHE_USERDATA."struct".DS."file_".$creator.".txt")) {
+					$m = file_get_contents(PATH_CACHE_USERDATA."struct".DS."file_".$creator.".txt");
+					if(Validate::json($m)) {
+						$m = json_decode($m, true);
+						if(isset($m['data']) && is_array($m['data'])) {
+							$m = $m['data'];
+							$notIgnoreType = array(
+								'varchar',
+								'email',
+								'link',
+								'password',
+								'onlytextareatext',
+								'longtext',
+							);
+							for($i=0;$i<sizeof($m);$i++) {
+								if(isset($m[$i]['alttitle']) && in_array($m[$i]['type'], $notIgnoreType)) {
+									$uniq = $m[$i]['alttitle'];
+									break;
+								}
+							}
+						}
+					}
+				}
 				unset($modelData[$firstId]);
 				$models = $model->getInstance(true);
+				$iterable = 1;
 				foreach($modelData as $k => $v) {
+					if(!empty($uniq) && $k==$uniq) {
+						//$v .= "_-_1";
+						preg_match("#_-_(.*?)$#is", $v, $find);
+						if($find) {
+							$v = str_replace($find[0], "", $v);
+							$iterable += floatval($find[1]);
+						}
+						$v .= "_-_".$iterable;
+					}
 					$models->{$k} = $v;
 				}
 				$models->Insert();
@@ -157,9 +191,9 @@ class Archer extends Core {
 							if(!is_writeable(PATH_CACHE_USERDATA)) {
 								@chmod(PATH_CACHE_USERDATA, 0777);
 							}
-							if(!file_exists(PATH_CACHE_USERDATA."trashBin.lock")) {
-								db::query("CREATE TABLE IF NOT EXISTS {{trashBin}} ( `tId` int not null auto_increment, `tTable` varchar(255) not null, `tData` longtext not null, `tTime` int(11) not null, `tIp` varchar(255) not null, primary key `id`(`tId`) ) ENGINE=MyISAM;");
-								file_put_contents(PATH_CACHE_USERDATA."trashBin.lock", "");
+							if(!file_exists(PATH_CACHE_USERDATA."trash_bin.lock")) {
+								db::query("CREATE TABLE IF NOT EXISTS {{trash_bin}} ( `tId` int not null auto_increment, `tTable` varchar(255) not null, `tData` longtext not null, `tTime` int(11) not null, `tIp` varchar(255) not null, primary key `id`(`tId`) ) ENGINE=MyISAM;");
+								file_put_contents(PATH_CACHE_USERDATA."trash_bin.lock", "");
 							}
 							$trash = true;
 						}
@@ -185,7 +219,7 @@ class Archer extends Core {
 							$model->multiple();
 							$data = $model->Select();
 							for($i=0;$i<sizeof($data);$i++) {
-								db::doquery("INSERT INTO {{trashBin}} SET `tTable` = ".db::escape($typeUni).", `tData` = ".db::escape(json_encode($data[$i])).", `tTime`= UNIX_TIMESTAMP(), `tIp` = '".HTTP::getip()."'");
+								db::doquery("INSERT INTO {{trash_bin}} SET `tTable` = ".db::escape($typeUni).", `tData` = ".db::escape(json_encode($data[$i])).", `tTime`= UNIX_TIMESTAMP(), `tIp` = '".HTTP::getip()."'");
 								cardinal::RegAction("Перемещение данных в Арчере в корзину. Модель \"".$typeUni."\". ИД: \"".current($data[$i])."\"");
 							}
 							$model->Deletes();
@@ -204,36 +238,45 @@ class Archer extends Core {
 				$model->multiple(true);
 				$model->SetLimit(-1);
 				$model = execEvent("loadModel", $model, $typeUni);
-				if($request->get->get("ShowPages", false)) {
+				if(($get = Arr::get($_GET, "quickViewId", false))!==false) {
+					if($get>0) {
+						$model->Where($model->getFirst(), $get);
+					} else if($get==-1) {
+						$model->SetLimit(1);
+						$model->OrderBy($model->getFirst(), "DESC");
+					}
+				} else {
+					if($request->get->get("ShowPages", false)) {
+						if($andWhere!==false && $typeWhere!==false && $dataWhere!==false) {
+							$model->Where($andWhere, $typeWhere, $dataWhere);
+						} else if($andWhere!==false && $dataWhere!==false) {
+							$model->Where($andWhere, $dataWhere);
+						}
+						if(strpos($_SERVER['REQUEST_URI'], "page=")!==false) {
+							$now = substr($_SERVER['REQUEST_URI'], 0, strpos($_SERVER['REQUEST_URI'], "&page="));
+						} else {
+							$now = $_SERVER['REQUEST_URI'];
+						}
+						$pager = new pager($request->get->get("page", 1)-1, $model->getMax(), 10, $now, "&page=", 3);
+						$get = $pager->get();
+						$get = array_values($get);
+						for($i=0;$i<sizeof($get);$i++) {
+							templates::assign_vars($get[$i], "pager", "page".$i);
+						}
+						templates::assign_var("prevLinkPager", $pager->prevLink());
+						templates::assign_var("nextLinkPager", $pager->nextLink());
+						$limit = $pager->getLimit();
+						$model->SetLimit($limit[1], $limit[0]);
+						$model->OrderByTo((empty($orderBy) ? $model->getFirst() : $orderBy), ($orderTo ? $orderTo : "ASC"));
+					}
+					if(isset($_GET['catid'])) {
+						$model->WhereTo("catId", intval($_GET['catid']));
+					}
 					if($andWhere!==false && $typeWhere!==false && $dataWhere!==false) {
 						$model->Where($andWhere, $typeWhere, $dataWhere);
 					} else if($andWhere!==false && $dataWhere!==false) {
 						$model->Where($andWhere, $dataWhere);
 					}
-					if(strpos($_SERVER['REQUEST_URI'], "page=")!==false) {
-						$now = substr($_SERVER['REQUEST_URI'], 0, strpos($_SERVER['REQUEST_URI'], "&page="));
-					} else {
-						$now = $_SERVER['REQUEST_URI'];
-					}
-					$pager = new pager($request->get->get("page", 1)-1, $model->getMax(), 10, $now, "&page=", 3);
-					$get = $pager->get();
-					$get = array_values($get);
-					for($i=0;$i<sizeof($get);$i++) {
-						templates::assign_vars($get[$i], "pager", "page".$i);
-					}
-					templates::assign_var("prevLinkPager", $pager->prevLink());
-					templates::assign_var("nextLinkPager", $pager->nextLink());
-					$limit = $pager->getLimit();
-					$model->SetLimit($limit[1], $limit[0]);
-					$model->OrderByTo((empty($orderBy) ? $model->getFirst() : $orderBy), ($orderTo ? $orderTo : "ASC"));
-				}
-				if(isset($_GET['catid'])) {
-					$model->WhereTo("catId", intval($_GET['catid']));
-				}
-				if($andWhere!==false && $typeWhere!==false && $dataWhere!==false) {
-					$model->Where($andWhere, $typeWhere, $dataWhere);
-				} else if($andWhere!==false && $dataWhere!==false) {
-					$model->Where($andWhere, $dataWhere);
 				}
 				templates::assign_var("LinkOrderBy", (empty($orderBy) ? $model->getFirst() : $orderBy));
 				templates::assign_var("LinkorderTo", $orderTo);
@@ -247,6 +290,7 @@ class Archer extends Core {
 				if($request->get->get("tmp", false)) {
 					$tmps = $request->get->get("tmp");
 				}
+				execEventRef("change_archer_shield_template", $tmps, $typeUni);
 				$tpl = $univ->TraceOn("Shield", $tmps);
 				$univ->Shield($model, array(&$this, "View"), $tpl, false);
 			break;

@@ -1,29 +1,14 @@
-[!ajax]<form method="post" role="form" action="./?pages=Archer&type={ArcherPath}&pageType=Take{ArcherPage}{addition}{ref}" class="form-horizontal" enctype="multipart/form-data">
+<form method="post" role="form" action="./?pages=ProfileSettings&{typeForm}" class="form-horizontal" enctype="multipart/form-data">
 	<div class="row">
 		<div class="col-sm-12">
 			<div class="panel panel-default">
 				<div class="panel-heading">
-					<h3 class="panel-title">{ArcherMind}</h3>
+					<h3 class="panel-title">{L_"{typeForm}"} {L_"пользователя"}</h3>
 				</div>
-				<div class="panel-body">[/!ajax]
-						[if {count[supportedLang]}>=1]
-							</div></div>
-							<div class="panel panel-default panel-tabs" data-panel-lang="true">
-								<div class="panel-body">
-									<ul class="nav nav-tabs nav-tabs-justified" data-support="lang">
-										[foreach block=supportedLang]<li>
-											<a href="#home-3" data-toggle="tab" data-lang="{supportedLang.lang}">{supportedLang.lang}</a>
-										</li>[/foreach]
-									</ul>
-								</div>
-							</div>
-							<div class="panel panel-default">
-								<div class="panel-body">
-						[/if {count[supportedLang]}>=1]
-						<br><br>
-						<input type="hidden" name="removeImg" class="removeImages" value="">
-						{ArcherData}
-						[!ajax]
+				<div class="panel-body">
+					<br><br>
+					<input type="hidden" name="removeImg" class="removeImages" value="">
+					{data}
 				</div>
 			</div>
 			<div class="panel panel-default panel-tabs" data-panel-submit="true">
@@ -35,9 +20,9 @@
 				</div>
 			</div>
 		</div>
-	</div>[/!ajax]
-	{E_[KernalArcher::AfterForm][type={ArcherPath};data={addition}]}
-[!ajax]</form>[/!ajax]
+	</div>
+	{E_[ProfileSettingsAdd][type={typeForm}]}
+</form>
 <style>
 	#inputForFile .array {
 		padding-bottom: 2.5em;
@@ -52,13 +37,6 @@
 	.panel-body .nav.nav-tabs > li > a {
 		border: 1px solid #ddd;
 	}
-	input + .btn {
-	    margin: 0;
-	}
-	input + .btn + a {
-	    margin-bottom: 20px;
-	    display: table;
-	}
 </style>
 <script type="text/javascript">
 	function ucfirst(text) {
@@ -68,6 +46,20 @@
 		return textNew;
 	}
 	var removeImg = {};
+	$("body").off("click").on("click", ".removeImg", function() {
+		var id = $(this).attr("id");
+		id = id.replace("remove_", "");
+		$("input[id='"+id+"']").parent().find(".tmpImage,img").remove();
+		removeImg[id] = true;
+		var get = $("#"+id+"").parent().html();
+		$("#"+id+"").parent().html(get);
+		$(".removeImages").val(Object.keys(removeImg).join(","));
+		$("input[id='"+id+"']").change(function() {
+			delete removeImg[id];
+			$(".removeImages").val(Object.keys(removeImg).join(","));
+		});
+		return false;
+	});
 	function reinitLang() {
 		var selectLangForm = ucfirst(selectLang);
 		$(".form-horizontal ul li a[data-lang='"+selectLangForm+"']").parent().addClass("active");
@@ -99,20 +91,6 @@
 	reinitLang();
 	var onInteractive = {};
 	var editorReady = function() {
-		$("body").off("click").on("click", ".removeImg", function() {
-			var id = $(this).attr("id");
-			id = id.replace("remove_", "");
-			$("input[id='"+id+"']").parent().find(".tmpImage,img").remove();
-			removeImg[id] = true;
-			var get = $("#"+id+"").parent().html();
-			$("#"+id+"").parent().html(get);
-			$(".removeImages").val(Object.keys(removeImg).join(","));
-			$("input[id='"+id+"']").change(function() {
-				delete removeImg[id];
-				$(".removeImages").val(Object.keys(removeImg).join(","));
-			});
-			return false;
-		});
 		setTimeout(function() {
 			$("form > div").each(function(i, elem) {
 				var block = $(elem).attr("class").replace("form-group block-", "");
@@ -184,15 +162,6 @@
 	}
 	jQuery(document).ready(function() {
 		editorReady();
-		$("body").off("click", ".showPreview.new").on("click", ".showPreview.new", function(e) {
-			if($(e.target).is(".showPreview.new") || e.target.closest(".showPreview.new")) {
-				var item = $(e.target).is(".showPreview.new") ? e.target : e.target.closest(".showPreview.new");
-				if($(item).parent().children("a.btn-success").hasClass("iframe-btn")) {
-		e.preventDefault()
-					$(item).parent().children("a.btn-success")[0].click()
-		        }
-		    }
-		})
 	});
 	jQuery(window).load(function() {
 		console.log("test");
@@ -213,7 +182,7 @@
 			jQuery(elem).html("<img src='"+jQuery(elem).attr("href")+"' data-link='"+jQuery(elem).attr("data-link")+"' style='max-width:100%; background:#333; display: table;max-height:400px'>");
 		});
 		jQuery(".showPreview:not(.new)").each(function(i, elem) {
-			jQuery(elem).after("<img src='"+jQuery(elem).attr("href")+"' width='200' style='background:#333; display: table;'>");
+			jQuery(elem).after("<br><img src='"+jQuery(elem).attr("href")+"' width='200' style='background:#333; display: table;'>");
 		});
 	}
 	function addInputFile(th, name) {
@@ -225,51 +194,15 @@
 		i++;
 	}
 	function rand(min, max) { if(min===undefined) min=-9999999; if(max===undefined) max=9999999; if(max) return Math.floor(Math.random()*(max-min+1))+min; else return Math.floor(Math.random()*(min+1)); }
-	function addInputFileAccess(th, name, type, val, multiple) {
-		if(typeof(val)==="undefined") {
-			val = "";
-		}
-		if(typeof(multiple)==="undefined") {
-			multiple = "";
-		} else {
-			name = name.split("[");
-			name = name[0];
-			multiple = "&multiple=1";
-		}
+	function addInputFileAccess(th, name, type) {
 		var elem = jQuery(th).parent().find("div#inputForFiles");
-				console.warn(elem)
 		var field_id = rand();
-		elem.append('<div class="row array" data-show="'+field_id+'"><div class="col-sm-10"><input class="form-control" id="'+field_id+'" type="text"'+(elem.attr("data-accept") ? 'accept="'+elem.attr("data-accept")+'" data-accept="'+elem.attr("data-accept")+'"' : "")+' name="'+name+'[]" placeholder="Выберите файл" style="position:fixed;top:-99999px;left:-99999px;z-index:-1000;" value="'+val+'"><a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/assets/tinymce/filemanager/dialog.php?type='+type+'&field_id='+field_id+'&relative_url=0'+multiple+'" class="btn btn-icon btn-success iframe-btn btn-block"><i class="fa-plus"></i></a></div><div class=\'col-sm-2\'><a class=\'btn btn-red btn-block fa-remove\' onclick=\'jQuery(this).parent().parent().remove();\'></a></div></div>');
+		elem.append('<div class="row array" data-show="'+field_id+'"><div class="col-sm-10"><input class="form-control" id="'+field_id+'" type="text"'+(elem.attr("data-accept") ? 'accept="'+elem.attr("data-accept")+'" data-accept="'+elem.attr("data-accept")+'"' : "")+' name="'+name+'[]" placeholder="Выберите файл" style="position:fixed;top:-99999px;left:-99999px;z-index:-1000;"><a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/assets/tinymce/filemanager/dialog.php?type='+type+'&field_id='+field_id+'&relative_url=0" class="btn btn-icon btn-success iframe-btn btn-block"><i class="fa-plus"></i></a></div><div class=\'col-sm-2\'><a class=\'btn btn-red btn-block fa-remove\' onclick=\'jQuery(this).parent().parent().remove();\'></a></div></div>');
 		i++;
-		return field_id;
-	}
-	function applyAmp(val) {
-		return val.indexOf("&")>-1 ? "&" : "?"
 	}
 	jQuery("body").on("change_filemanager", function(e, data) {
-		console.log(e, data);
-		var cat = function(data) {
-			var link_now = data.http_link+applyAmp(data.http_link)+(new Date().getTime()/1000);
-			data.parent.append('<a data-link="'+data.field_id+'" id="img'+data.field_id+'" href="'+link_now+'"'+(data.type.indexOf("image")>-1 || data.type.indexOf("imageAccess")>-1 || data.type.indexOf("imageArrayAccess")>-1 ? " class=\"showPreview new\"" : "")+' target="_blank">Просмотреть</a>');
-			$("#"+data.field_id).val(link_now.replace(default_link, ""))
-		}
-		try {
-			data.http_link = JSON.parse(data.http_link)
-			if(typeof(data.http_link)==="object") {
-				var parent = data.parent.parents(".form-group");
-				var name = $("#"+data.field_id).attr("name");
-				for(var z=0;z<data.http_link.length;z++) {
-					var link_now = data.http_link[z]+applyAmp(data.http_link[z])+(new Date().getTime()/1000);
-					var id = addInputFileAccess(parent, name, "1", link_now.replace(default_link, ""), true)
-					$("input#"+id).parent().append('<a data-link="'+data.field_id+'" id="img'+data.field_id+'" href="'+link_now+'"'+(data.type.indexOf("image")>-1 || data.type.indexOf("imageAccess")>-1 || data.type.indexOf("imageArrayAccess")>-1 ? " class=\"showPreview new\"" : "")+' target="_blank">Просмотреть</a>');
-				}
-				data.parent.parent().remove()
-			} else {
-				cat(data)
-			}
-		} catch(e) {
-			cat(data)
-		}
+		console.log(data);
+		data.parent.append('<a data-link="'+data.field_id+'" id="img'+data.field_id+'" href="'+data.http_link+'"'+(data.type.indexOf("image")>-1 || data.type.indexOf("imageAccess")>-1 || data.type.indexOf("imageArrayAccess")>-1 ? " class=\"showPreview new\"" : "")+' target="_blank">Просмотреть</a>');
 		jQuery(".showPreview.new").each(function(i, elem) {
 			jQuery(elem).parent().find("img").remove();
 			jQuery(elem).html("<img src='"+jQuery(elem).attr("href")+"' data-link='"+jQuery(elem).attr("data-link")+"' style='max-width:100%; background:#333; display: table;max-height:400px'>");

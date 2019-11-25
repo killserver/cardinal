@@ -119,11 +119,11 @@ class Archer_Shield {
 				}
 			}
 			if($type=="date") {
-				$val = "{S_langdata=\"{".$modelName.".".$d[$i]."}\",\"d F Y\"}";
+				$val = "{S_langdata=\"{".$modelName.".".$d[$i]."}\",\"d F Y\",true}";
 			} else if($type=="time") {
-				$val = "{S_langdata=\"{".$modelName.".".$d[$i]."}\",\"H:i:s\"}";
+				$val = "{S_langdata=\"{".$modelName.".".$d[$i]."}\",\"H:i:s\",true}";
 			} else if($type=="datetime") {
-				$val = "{S_langdata=\"{".$modelName.".".$d[$i]."}\",\"d F Y H:i:s\"}{".$modelName.".".$d[$i]."}";
+				$val = "{S_langdata=\"{".$modelName.".".$d[$i]."}\",\"d F Y H:i:s\",true}";
 			} else {
 				$val = "{L_\"{".$modelName.".".$d[$i]."}\"}";
 			}
@@ -159,10 +159,16 @@ class Archer_Shield {
 		}
 		$addition = "";
 		if(Arr::get($_GET, "Where", false)) {
-			$addition .= "&Where=".Arr::get($_GET, "Where");
+			$where = Arr::get($_GET, "Where");
+			$addition .= "&Where=".$where;
 		}
 		if(Arr::get($_GET, "WhereData", false)) {
-			$addition .= "&WhereData=".Arr::get($_GET, "WhereData");
+			$whereData = Arr::get($_GET, "WhereData");
+			$addition .= "&WhereData=".$whereData;
+		}
+		if(Arr::get($_GET, "WhereType", false)) {
+			$WhereType = Arr::get($_GET, "WhereType");
+			$addition .= "&WhereType=".$WhereType;
 		}
 		if(Arr::get($_GET, "ShowPages", false)) {
 			$addition .= "&ShowPages=".Arr::get($_GET, "ShowPages");
@@ -173,6 +179,64 @@ class Archer_Shield {
 		if(Arr::get($_GET, "orderTo", false)) {
 			$addition .= "&orderTo=".Arr::get($_GET, "orderTo");
 		}
+		if(Arr::get($_GET, "tmp", false)) {
+			$addition .= "&tmp=".Arr::get($_GET, "tmp");
+		}
+		$tpl = $this->replaceField($tpl, $orderById, $orderBySort, $addition, $first, $head, $data, $modelName, $sortBy, $table);
+		$countAll = $counts+1;
+		if(config::Select("disableMassAction")!==false) {
+			$countAll++;
+		}
+		$tpl = str_replace("{ArcherAll}", ($countAll+1), $tpl);
+		$tpl = str_replace("{ArcherNotTouch}", ($countAll), $tpl);
+		if(($get = Arr::get($_GET, "quickViewId", false))!==false) {
+			$archerCore = new KernelArcher();
+			$objName = get_class($model);
+			$model = execEvent("KernelArcher-Shield-Before-Data", $model, $objName);
+			$list = $model->Select();
+			$list = execEvent("KernelArcher-Shield-Data", $list, $objName);
+			if(is_object($list)) {
+				$list = $list->getArray();
+				$firsts = current($list);
+				if(!is_null($firsts)) {
+					$list = $archerCore->callArr($list, "ShieldFunc", array($list, $objName), array());
+					call_user_func_array("templates::assign_vars", array($list, $objName, $objName."-".current($list)));
+				}
+			} elseif(is_array($list)) {
+				for($i=0;$i<sizeof($list);$i++) {
+					$subList = $list[$i]->getArray();
+					$firsts = current($subList);
+					if(is_null($firsts)) {
+						continue;
+					}
+					$subList = $archerCore->callArr($subList, "ShieldFunc", array($subList, $objName), array());
+					call_user_func_array("templates::assign_vars", array($subList, $objName, $objName."-".current($subList)));
+				}
+			}
+			$isQuick = Arr::get($_GET, "quick", false);
+			if($isQuick) {
+				$add = '<td>
+				[if {C_disableCopy}!=1&&{'.$modelName.'.DisableCopy}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Copy&viewId={'.$modelName.'.'.$first.'}{addition}" class="btn btn-turquoise btn-block">{L_"Клонировать"}</a>[/if {C_disableCopy}!=1&&{'.$modelName.'.DisableCopy}!="yes"]
+		[if {'.$modelName.'.DisableEdit}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Edit&viewId={'.$modelName.'.'.$first.'}{addition}" class="btn btn-purple btn-block quickView">{L_quickEdit}</a>[/if {'.$modelName.'.DisableEdit}!="yes"]
+		[if {'.$modelName.'.DisableRemove}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Delete&viewId={'.$modelName.'.'.$first.'}{addition}" onclick="return confirmDelete();" class="btn btn-red btn-block">{L_delete}</a>[/if {'.$modelName.'.DisableRemove}!="yes"]
+			</td>';
+			} else {
+				$add = '<td>
+				[if {C_disableCopy}!=1&&{'.$modelName.'.DisableCopy}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Copy&viewId={'.$modelName.'.'.$first.'}{addition}" class="btn btn-turquoise btn-block">{L_"Клонировать"}</a>[/if {C_disableCopy}!=1&&{'.$modelName.'.DisableCopy}!="yes"]
+				[if {C_disableEdit}!=1&&{'.$modelName.'.DisableEdit}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Edit&viewId={'.$modelName.'.'.$first.'}{addition}" class="btn btn-edit btn-block">{L_"Редактировать"}</a>[/if {C_disableEdit}!=1&&{'.$modelName.'.DisableEdit}!="yes"]
+				[if {C_disableDelete}!=1&&{'.$modelName.'.DisableRemove}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Delete&viewId={'.$modelName.'.'.$first.'}{addition}" onclick="return confirmDelete();" class="btn btn-red btn-block">{L_"Удалить"}</a>[/if {C_disableDelete}!=1&&{'.$modelName.'.DisableRemove}!="yes"]
+				{E_[customOptions][type={ArcherTable};id={'.$modelName.'.'.$first.'}]}
+			</td>';
+			}
+			$datas = templates::view(templates::comp_datas("[foreach block=".$modelName."]".$data.$add."[/foreach]"));
+			$datas = $this->replaceField($datas, $orderById, $orderBySort, $addition, $first, $head, $data, $modelName, $sortBy, $table);
+			HTTP::ajax(array("tpl" => $datas));
+			die();
+		}
+		return $tpl;
+	}
+
+	private function replaceField($tpl, $orderById, $orderBySort, $addition, $first, $head, $data, $modelName, $sortBy, $table) {
 		$tpl = str_replace("{orderById}", ($orderById+1), $tpl);
 		$tpl = str_replace("{orderBySort}", $orderBySort, $tpl);
 		$tpl = str_replace("{addition}", $addition, $tpl);
@@ -182,12 +246,6 @@ class Archer_Shield {
 		$tpl = str_replace("{ArcherPage}", $modelName, $tpl);
 		$tpl = str_replace("{ArcherSort}", implode(",", $sortBy), $tpl);
 		$tpl = str_replace("{ArcherTable}", str_replace(PREFIX_DB, "", $table), $tpl);
-		$countAll = $counts+1;
-		if(config::Select("disableMassAction")!==false) {
-			$countAll++;
-		}
-		$tpl = str_replace("{ArcherAll}", ($countAll+1), $tpl);
-		$tpl = str_replace("{ArcherNotTouch}", ($countAll), $tpl);
 		return $tpl;
 	}
 	

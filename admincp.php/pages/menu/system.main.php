@@ -72,6 +72,13 @@ $links['System']["item"][] = array(
 'icon' => '',
 );
 $links['System']["item"][] = array(
+'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=ProfileSettings",
+'title' => "{L_Users} NEW",
+'type' => "item",
+'access' => userlevel::get("profilesettings"),
+'icon' => '',
+);
+$links['System']["item"][] = array(
 'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=UserLevels",
 'title' => "{L_\"Уровни доступа\"}",
 'type' => "item",

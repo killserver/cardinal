@@ -72,6 +72,7 @@
             placeClass      : '{prefix}-nestable-placeholder',
             noDragClass     : '{prefix}-nestable-nodrag',
             emptyClass      : '{prefix}-nestable-empty',
+            noChildrenClass : '{prefix}-nestable-nochildren',
             group           : 0,
             maxDepth        : 10,
             threshold       : 20
@@ -439,7 +440,7 @@
                 mouse.distAxX = 0;
                 prev = this.placeEl.prev(opt.itemNodeName);
                 // increase horizontal level if previous sibling exists and is not collapsed
-                if (mouse.distX > 0 && prev.length && !prev.hasClass(opt.collapsedClass)) {
+                if (mouse.distX > 0 && prev.length && !prev.hasClass(opt.collapsedClass) && !prev.children("."+opt.itemClass).hasClass(opt.noChildrenClass)) {
                     // cannot increase level when item above is collapsed
                     list = prev.find(opt.listNodeName).last();
                     // check if depth limit has reached

@@ -23,7 +23,7 @@ class Request {
 	
 }
 
-class RequestMethod implements Countable {
+class RequestMethod implements Countable, ArrayAccess {
 	
 	private $data = array();
 	private $type = "";
@@ -199,6 +199,27 @@ class RequestMethod implements Countable {
 	final public function Gets() {
 		$arr = array($this->data, func_get_args());
 		return call_user_func_array("Arr::GetAll", $arr);
+	}
+	
+	public function offsetSet($offset, $value) {
+		return $this->add($offset, $value);
+    }
+	
+	public function offsetExists($offset) {
+		return (bool) $this->get($offset);
+	}
+	
+	public function offsetUnset($offset) {
+		if(isset($this->data[$offset])) {
+			unset($this->data[$offset]);
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public function offsetGet($offset) {
+		return $this->get($offset);
 	}
 	
 }

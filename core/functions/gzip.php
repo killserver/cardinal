@@ -4,10 +4,6 @@ echo "403 ERROR";
 die();
 }
 
-function CheckCanGzip() {
-	return BrowserSupport::gzip();
-}
-
 // ToDo: Языковую панель на это дело надо вешать!
 function GzipOut() {
 global $config, $manifest, $session;

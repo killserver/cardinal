@@ -276,22 +276,22 @@ class db {
 			die();
 		} else if(defined("PATH_MEDIA") && file_exists(PATH_MEDIA."db.".$host.".".ROOT_EX)) {
 			include_once(PATH_MEDIA."db.".$host.".".ROOT_EX);
-			if(isset($config['db'])) {
+			if(isset($config['db']) && isset($config['db']['db'])) {
 				$config = $config['db'];
 			}
 		} else if(!defined("PATH_MEDIA") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.config.".$host.".".ROOT_EX)) {
 			include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."db.config.".$host.".".ROOT_EX);
-			if(isset($config['db'])) {
+			if(isset($config['db']) && isset($config['db']['db'])) {
 				$config = $config['db'];
 			}
 		} else if(defined("PATH_MEDIA") && file_exists(PATH_MEDIA."db.".ROOT_EX)) {
 			include_once(PATH_MEDIA."db.".ROOT_EX);
-			if(isset($config['db'])) {
+			if(isset($config['db']) && isset($config['db']['db'])) {
 				$config = $config['db'];
 			}
 		} else if(!defined("PATH_MEDIA") && file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db.config.".ROOT_EX)) {
 			include_once(dirname(__FILE__).DIRECTORY_SEPARATOR."db.config.".ROOT_EX);
-			if(isset($config['db'])) {
+			if(isset($config['db']) && isset($config['db']['db'])) {
 				$config = $config['db'];
 			}
 		}
@@ -510,7 +510,6 @@ class db {
      * Saved executor query's
      * @param string $query Needed query
      * @param string $only Only execute without try return array
-     * @param bool $check Only execute query and return object
      * @return $this|bool This object or query or associative array
      */
     final public static function doquery($query, $only = "") {
@@ -580,7 +579,8 @@ class db {
 
     /**
      * Return last int auto_increment in table
-     * @param string $table Needed table
+	 * @param string $table Needed table
+	 * @param boolean $withoutPrefix Prefix if needed
      * @return string Int value last id element in table
      */
     final public static function last_id($table, $withoutPrefix = false) {
@@ -690,7 +690,7 @@ class db {
 		$arr = array("time" => $etime, "query" => htmlspecialchars($query));
 		$arr = array_merge($arr, $caller);
 		self::$querys[] = $arr;
-	return $return;
+		return $return;
 	}
 
     /**
@@ -851,7 +851,7 @@ class db {
 		}
 
 		if(!defined("DEBUG_DB")) {
-			return "";
+			die();
 		}
 
 		if($query) {

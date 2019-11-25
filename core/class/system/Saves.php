@@ -58,6 +58,7 @@ class Saves {
 		} else {
 			$text = str_replace("&quot;", "\\\"", $text);
 		}
+		$text = self::remove_invisible_characters($text);
 		$text = preg_replace('#<script[^>]*>.*?</script>#is', "", $text);
 		$text = strip_tags($text);
 		$text = htmlspecialchars($text);

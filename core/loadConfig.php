@@ -36,9 +36,13 @@ function addEventRef() {
 	return call_user_func_array("cardinalEvent::addListenerRef", func_get_args());
 }
 function removeEvent() {
+	$loader = debug_backtrace();
+	cardinalEvent::loader($loader[0]);
 	return call_user_func_array("cardinalEvent::removeListener", func_get_args());
 }
 function removeEventRef() {
+	$loader = debug_backtrace();
+	cardinalEvent::loader($loader[0]);
 	return call_user_func_array("cardinalEvent::removeListenerRef", func_get_args());
 }
 function execEvent() {
@@ -52,9 +56,13 @@ function execEventRef($action, &$args1 = "", &$args2 = "", &$args3 = "", &$args4
 	return call_user_func_array("cardinalEvent::executeRef", array($action, &$args1, &$args2, &$args3, &$args4, &$args5, &$args6, &$args7, &$args8, &$args9, &$args10));
 }
 function didEvent() {
+	$loader = debug_backtrace();
+	cardinalEvent::loader($loader[0]);
 	return call_user_func_array("cardinalEvent::did", func_get_args());
 }
 function existsEvent() {
+	$loader = debug_backtrace();
+	cardinalEvent::loader($loader[0]);
 	return call_user_func_array("cardinalEvent::exists", func_get_args());
 }
 
@@ -86,12 +94,13 @@ if(
 $hostMD5 = substr(md5($host), 0, 6);
 if(isset($_SERVER['SCRIPT_NAME'])) {
 	$link = str_replace(array("index.".ROOT_EX, "install.".ROOT_EX, ADMINCP_DIRECTORY."/"), "", $_SERVER['SCRIPT_NAME']);
+	$link = str_replace(DS, "/", $link);
+	$link = explode("/", $link);
+	array_pop($link);
+	$link = implode("/", $link)."/";
 } else {
 	$link = "/";
 }
-
-
-
 
 $config = array(
 	"charset" => "utf-8",

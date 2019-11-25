@@ -54,11 +54,56 @@ class Login extends Core {
 		}
 	}
 
+	function headers($echo) {
+		$header = "";
+		$h = new Headers();
+		$header .= $h->getFavicon(DS."favicon", array(
+			"32x32",
+			"64x64",
+			"128x128",
+		));
+		$header .= $h->getFavicon(DS."uploads".DS."icon".DS."favicon-", array(
+			"32x32",
+			"64x64",
+			"128x128",
+		));
+		$imageCheck = file_exists(ROOT_PATH."logo.gif") || file_exists(ROOT_PATH."logo.jpg") || file_exists(ROOT_PATH."logo.jpeg") || file_exists(ROOT_PATH."logo.png") || file_exists(ROOT_PATH."uploads".DS."logo-for-site.gif") || file_exists(ROOT_PATH."uploads".DS."logo-for-site.jpg") || file_exists(ROOT_PATH."uploads".DS."logo-for-site.jpeg") || file_exists(ROOT_PATH."uploads".DS."logo-for-site.png");
+		if($imageCheck) {
+			if(file_exists(ROOT_PATH."logo.gif")) {
+				$imageLink = config::Select("default_http_host")."logo.gif";
+			} else if(file_exists(ROOT_PATH."logo.jpg")) {
+				$imageLink = config::Select("default_http_host")."logo.jpg";
+			} else if(file_exists(ROOT_PATH."logo.png")) {
+				$imageLink = config::Select("default_http_host")."logo.png";
+			} else if(file_exists(ROOT_PATH."uploads".DS."logo-for-site.gif")) {
+				$imageLink = config::Select("default_http_host")."uploads/logo-for-site.gif";
+			} else if(file_exists(ROOT_PATH."uploads".DS."logo-for-site.jpg")) {
+				$imageLink = config::Select("default_http_host")."uploads/logo-for-site.jpg";
+			} else if(file_exists(ROOT_PATH."uploads".DS."logo-for-site.jpeg")) {
+				$imageLink = config::Select("default_http_host")."uploads/logo-for-site.jpeg";
+			} else if(file_exists(ROOT_PATH."uploads".DS."logo-for-site.png")) {
+				$imageLink = config::Select("default_http_host")."uploads/logo-for-site.png";
+			} else {
+				$imageCheck = false;
+			}
+		}
+		if($imageCheck && !empty($imageLink)) {
+			$header .= "<meta property=\"og:image\" content=\"".$imageLink."?".time()."\" />\n";
+			$header .= "<meta itemprop=\"image\" content=\"".$imageLink."?".time()."\" />\n";
+			$header .= "<link rel=\"apple-touch-startup-image\" href=\"".$imageLink."?".time()."\">\n";
+		}
+		$header .= "<meta name=\"apple-mobile-web-app-title\" content=\"".(!empty($headTitle) ? $headTitle." &rsaquo; " : "")."Admin Panel for ".lang::get_lang("sitename")."\">\n";
+		$header .= "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">\n";
+		return str_replace("{header}", $header, $echo);
+	}
+
 	function __construct() {
-	global $user;
+		global $user;
 		if(isset($_GET['out'])) {
 			HTTP::set_cookie(COOK_ADMIN_USER, "", true);
 			HTTP::set_cookie(COOK_ADMIN_PASS, "", true);
+			User::logout();
+			location("./?pages=Login");
 		}
 		if(Route::param("lang")!="") {
 			$lang = Route::param("lang");
@@ -84,7 +129,7 @@ class Login extends Core {
 					$is_admin = true;
 				} else {
 					$given_username = Saves::SaveOld($given_username);
-					$check = User::login($given_username, $given_password);
+					$check = User::login($given_username, $given_password) && userlevel::get("admin");
 				}
 			}
 			if($check===true) {
@@ -96,6 +141,7 @@ class Login extends Core {
 				HTTP::set_cookie(COOK_ADMIN_PASS, $sendPass);
 				$resp['ref'] = Arr::get($_POST, 'ref', "./?pages=main");
 			} else {
+				User::logout();
 				cardinal::RegAction("Провальная попытка авторизации в админ-панели. Пользователь \"".$given_username."\"");
 				// Failed Attempts
 				$fa = Arr::get($_COOKIE, 'failed-attempts', 0);
@@ -117,8 +163,13 @@ class Login extends Core {
 		}
 		$echos = "";
 		$link = config::Select("mainPageAdmin");
-		templates::assign_var("ref", (isset($_GET['ref']) && !empty($_GET['ref']) && strpos($_GET['ref'], "http")===false ? urldecode($_GET['ref']) : ($link!==false ? $link : "?pages=main")));
-		if(isset($_COOKIE['is_admin_login']) && !empty($user['username'])) {
+		$ref = (isset($_GET['ref']) && !empty($_GET['ref']) && strpos($_GET['ref'], "http")===false ? urldecode($_GET['ref']) : ($link!==false ? $link : "?pages=main"));
+		templates::assign_var("ref", $ref);
+		if(User::checkLogin()) {
+			location("{C_default_http_host}{D_ADMINCP_DIRECTORY}/".$ref);
+			return;
+		}
+		if(!config::Select("again_login_admin") && isset($_COOKIE['is_admin_login']) && !empty($user['username'])) {
 			$echos = templates::view(templates::completed_assign_vars("again_login", null));
 		} else {
 			$echos = templates::view(templates::completed_assign_vars("login", null));
@@ -141,6 +192,7 @@ class Login extends Core {
 			}
 		}
 		$echos = str_replace("{css_list}", $css_echo, $echos);
+		$echos = $this->headers($echos);
 		echo $echos;
 	}
 

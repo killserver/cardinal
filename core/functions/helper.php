@@ -367,10 +367,29 @@ function or_create_pass($pass) {
 	return User::create_pass($pass);
 }
 
+$tmpHTML = $tmpName = array();
 function add_setting_tab($html, $name = "") {
-	if(class_exists("SettingUser", false)) {
-		SettingUser::add($html, $name);
+	global $tmpHTML, $tmpName;
+	$file = $filename = "";
+	$trace = debug_backtrace();
+	if(isset($trace[0]) && isset($trace[0]['file'])) {
+		$files = pathinfo($trace[0]['file']);
+		$file = (isset($files['filename']) ? $files['filename'] : "");
+		$filename = (isset($files['filename']) ? $files['filename'] : "");
 	}
+	if(empty($filename)) {
+		$filename = uniqid();
+	}
+	$filename = str_Replace(".", "-", $filename);
+	$tmpName[$filename] = '<li><a href="#'.$filename.'" data-toggle="tab"><span>'.(empty($name) ? "{L_'Настройки'}".(!empty($file) ? "&nbsp;{L_'".$file."'}" : "") : $name).'</span></a></li>';
+	$tmpHTML[$filename] = '<div class="tab-pane" id="'.$filename.'">'.$html.'</div>';
+	addEventRef("SettingUser_page", function(&$head, &$html) {
+		global $tmpHTML, $tmpName;
+		foreach($tmpName as $k => $v) {
+			$head[$k] = $v;
+			$html[$k] = $tmpHTML[$k];
+		}
+	});
 }
 
 $settingUserMainTpl = array();

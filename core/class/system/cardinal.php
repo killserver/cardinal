@@ -222,6 +222,9 @@ class cardinal {
 
 	final public static function StartSession($timeout = 0, $probability = 100) {
 	global $session, $sessionOnline;
+		if(defined("IS_CLI")) {
+			return;
+		}
 		if(is_bool($session) && $session===false) {
 			if($timeout===0) {
 				$timeout = time()+(120*24*60*60);
@@ -324,36 +327,7 @@ class cardinal {
 	}
 	
 	final public static function callbacks($module, $callback = "", $type = "add") {
-		throw trigger_error("Warning! This function well be removed in new version");
-		if(!is_callable($callback) && $type == "add") {
-			errorHeader();
-			throw new Exception("Callback return error in called method");
-			die();
-		}
-		if($type=="add") {
-			if(!isset(self::$backToView[$module])) {
-				self::$backToView[$module] = array();
-			}
-			$size = sizeof(self::$backToView[$module]);
-			self::$backToView[$module][$size] = $callback;
-			return true;
-		} else if($type=="remove") {
-			if(!isset(self::$backToView[$module])) {
-				return false;
-			} else {
-				unset(self::$backToView[$module]);
-				return true;
-			}
-		} else if($type=="call") {
-			if(!isset(self::$backToView[$module]) || !is_Array(self::$backToView[$module])) {
-				return $callback;
-			}
-			$arr = array_keys(self::$backToView[$module]);
-			for($i=0;$i<sizeof($arr);$i++) {
-				$callback = call_user_func_array(self::$backToView[$module][$i], array($callback));
-			}
-			return $callback;
-		}
+		throw new Exception("Warning! This function well be removed in new version");
 	}
 	
 	final public static function randomPassword($length, $count, $characters) {  

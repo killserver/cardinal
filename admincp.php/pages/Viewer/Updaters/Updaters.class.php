@@ -68,12 +68,12 @@ class Updaters extends Core {
 		callAjax();
 		$this->ParseLang();
 		if(isset($_GET['download'])) {
-			if(file_exists(PATH_CACHE_SYSTEM."lastest.tar.gz")) {
-				unlink(PATH_CACHE_SYSTEM."lastest.tar.gz");
+			if(file_exists(PATH_CACHE_SYSTEM."lastest.zip")) {
+				unlink(PATH_CACHE_SYSTEM."lastest.zip");
 			}
-			$prs = new Parser("https://codeload.github.com/killserver/cardinal/tar.gz/trunk?".time());
+			$prs = new Parser("https://codeload.github.com/killserver/cardinal/zip/trunk?".time());
 			$prs->timeout(30);
-			file_put_contents(PATH_CACHE_SYSTEM."lastest.tar.gz", $prs->get());
+			file_put_contents(PATH_CACHE_SYSTEM."lastest.zip", $prs->get());
 			cardinal::RegAction("Скачивание свежей версии движка");
 			HTTP::echos("1");
 			return;
@@ -84,21 +84,30 @@ class Updaters extends Core {
 				HTTP::echos(lang::get_lang("install_update_fail_localhost"));
 				die();
 			}
-			if(!file_exists(PATH_CACHE_SYSTEM."lastest.tar.gz")) {
+			if(!file_exists(PATH_CACHE_SYSTEM."lastest.zip")) {
 				header("HTTP/1.0 404 Not Found");
 				HTTP::echos(lang::get_lang("install_update_fail_file"));
 				die();
 			}
-			$tar_object = new Archive_Tar(PATH_CACHE_SYSTEM."lastest.tar.gz", "gz");
-			$list = $tar_object->listContent();
-			if(!is_array($list) || sizeof($list)==0) {
+			$tar_object = new ZipArchive();
+			$list = $tar_object->open(PATH_CACHE_SYSTEM."lastest.zip");
+			if(!$list || $tar_object->numFiles==0) {
 				header("HTTP/1.0 404 Not Found");
 			}
+			for($i=0;$i<$tar_object->numFiles;$i++) {
+				$oldName = $tar_object->getNameIndex($i);
+				$newName = str_replace("cardinal-trunk/", "", $oldName);
+				if(empty($newName)) {
+					$tar_object->deleteIndex($i);
+				} else {
+					$tar_object->renameIndex($i, $newName);
+				}
+			}
 			cardinal::RegAction("Обновление движка");
-			$tr = $tar_object->extractModify(ROOT_PATH, "cardinal-trunk/");
+			$tr = $tar_object->extractTo(ROOT_PATH);
 			if($tr === true) {
-				unlink(PATH_CACHE_SYSTEM."lastest.tar.gz");
-				echo "1";
+				@unlink(PATH_CACHE_SYSTEM."lastest.zip");
+				HTTP::echos("1");
 			} else {
 				header("HTTP/1.1 406 Not Acceptable");
 			}
@@ -109,7 +118,7 @@ class Updaters extends Core {
 		} else {
 			templates::assign_var("is_locked", "0");
 		}
-		if(file_exists(PATH_CACHE_SYSTEM."lastest.tar.gz")) {
+		if(file_exists(PATH_CACHE_SYSTEM."lastest.zip")) {
 			templates::assign_var("is_download", "1");
 		} else {
 			templates::assign_var("is_download", "0");

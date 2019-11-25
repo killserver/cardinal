@@ -1,5 +1,4 @@
 <?php
-
 $time = time();
 
 $config = include 'config/config.php';
@@ -655,7 +654,6 @@ $sorted=array();
 //$prev_folder=array();
 $current_files_number = 0;
 $current_folders_number = 0;
-
 foreach($files as $k=>$file){
 	if($ftp){
 		$date = strtotime($file['day']." ".$file['month']." ".date('Y')." ".$file['time']);
@@ -824,7 +822,7 @@ $files=$sorted;
 				<div id="multiple-selection" style="display:none;">
 				<?php if($config['multiple_selection']){ ?>
 				<?php if($config['delete_files']){ ?>
-				<button class="tip btn multiple-delete-btn" title="<?php echo trans('Erase');?>" data-confirm="<?php echo trans('Confirm_del');?>"><i class="icon-trash"></i></button>
+				<button class="tip btn multiple-delete-btn" title="<?php echo trans('Erase');?>"<?php if(!isset($config['alert']) || !isset($config['alert']['remove_multiple']) || $config['alert']['remove_multiple']) { echo " data-confirm=\"".trans('Confirm_del')."\""; } ?>><i class="icon-trash"></i></button>
 				<?php } ?>
 				<button class="tip btn multiple-select-btn" title="<?php echo trans('Select_All');?>"><i class="icon-check"></i></button>
 				<button class="tip btn multiple-deselect-btn" title="<?php echo trans('Deselect_All');?>"><i class="icon-ban-circle"></i></button>
@@ -1037,7 +1035,7 @@ $files=$sorted;
 					<figcaption>
 						<a href="javascript:void('')" class="tip-left edit-button rename-file-paths <?php if($config['rename_folders'] && !$file_prevent_rename) echo "rename-folder";?>" title="<?php echo trans('Rename')?>" data-folder="1" data-permissions="<?php echo $file_array['permissions']; ?>">
 						<i class="icon-pencil <?php if(!$config['rename_folders'] || $file_prevent_rename) echo 'icon-white';?>"></i></a>
-						<a href="javascript:void('')" class="tip-left erase-button <?php if($config['delete_folders'] && !$file_prevent_delete) echo "delete-folder";?>" title="<?php echo trans('Erase')?>" data-confirm="<?php echo trans('Confirm_Folder_del');?>" >
+						<a href="javascript:void('')" class="tip-left erase-button <?php if($config['delete_folders'] && !$file_prevent_delete) echo "delete-folder";?>" title="<?php echo trans('Erase')?>"<?php if(!isset($config['alert']) || !isset($config['alert']['remove_dir']) || $config['alert']['remove_dir']) { echo " data-confirm=\"".trans('Confirm_Folder_del')."\""; } ?> >
 						<i class="icon-trash <?php if(!$config['delete_folders'] || $file_prevent_delete) echo 'icon-white';?>"></i>
 						</a>
 					</figcaption>
@@ -1046,7 +1044,6 @@ $files=$sorted;
 			</li>
 			<?php
 			}
-
 
 			$files_prevent_duplicate = array();
 			foreach ($files as $nu=>$file_array) {
@@ -1088,8 +1085,12 @@ $files=$sorted;
 						$file_array['extension']=fix_filename($file_array['extension'],$config);
 						$file_path=$file_path1;
 					}
+					$file_paths = $file_path;
+					$file_path .= "?".fileatime($file_paths);
 				}else{
 					$file_path = $config['ftp_base_url'].$config['upload_dir'].$rfm_subfolder.$subdir.$file;
+					$file_paths = $file_path;
+					$file_path .= "?".time();
 				}
 
 				$is_img=false;
@@ -1100,7 +1101,7 @@ $files=$sorted;
 				$mini_src="";
 				$src_thumb="";
 				if(in_array($file_array['extension'], $config['ext_img'])){
-					$src = $file_path;
+					$src = $file_paths;
 					$is_img=true;
 
 					$img_width = $img_height = "";
@@ -1112,14 +1113,14 @@ $files=$sorted;
 						$creation_thumb_path = $mini_src = $src_thumb = $thumbs_path.$subdir. $file;
 
 						if(!file_exists($src_thumb) ){
-							if(!create_img($file_path, $creation_thumb_path, 122, 91,'crop',$config)){
+							if(!create_img($file_paths, $creation_thumb_path, 122, 91,'crop',$config)){
 								$src_thumb=$mini_src="";
 							}
 						}
 						//check if is smaller than thumb
-						list($img_width, $img_height, $img_type, $attr)=@getimagesize($file_path);
+						list($img_width, $img_height, $img_type, $attr)=@getimagesize($file_paths);
 						if($img_width<122 && $img_height<91){
-							$src_thumb=$file_path;
+							$src_thumb=$file_paths;
 							$show_original=true;
 						}
 
@@ -1144,6 +1145,8 @@ $files=$sorted;
 				if($mini_src==""){
 				$is_icon_thumb_mini=false;
 				}
+				$src_thumb .= "?".time();
+				$mini_src .= "?".time();
 
 				$class_ext=0;
 				if (in_array($file_array['extension'], $config['ext_video'])) {
@@ -1245,7 +1248,7 @@ $files=$sorted;
 					<a href="javascript:void('')" class="tip-left edit-button rename-file-paths <?php if($config['rename_files'] && !$file_prevent_rename) echo "rename-file";?>" title="<?php echo trans('Rename')?>" data-folder="0" data-permissions="<?php echo $file_array['permissions']; ?>">
 					<i class="icon-pencil <?php if(!$config['rename_files'] || $file_prevent_rename) echo 'icon-white';?>"></i></a>
 
-					<a href="javascript:void('')" class="tip-left erase-button <?php if($config['delete_files'] && !$file_prevent_delete) echo "delete-file";?>" title="<?php echo trans('Erase')?>" data-confirm="<?php echo trans('Confirm_del');?>">
+					<a href="javascript:void('')" class="tip-left erase-button <?php if($config['delete_files'] && !$file_prevent_delete) echo "delete-file";?>" title="<?php echo trans('Erase')?>"<?php if(!isset($config['alert']) || !isset($config['alert']['remove_file']) || $config['alert']['remove_file']) { echo " data-confirm=\"".trans('Confirm_del')."\""; } ?>>
 					<i class="icon-trash <?php if(!$config['delete_files'] || $file_prevent_delete) echo 'icon-white';?>"></i>
 					</a>
 					</form>
@@ -1306,6 +1309,35 @@ $files=$sorted;
 		if(isAndroid) {
 			$('li').draggable({ disabled: true });
 		}
+	</script>
+	<script type="text/javascript">
+		var ActionRemoveFile = false, ActionRemoveDir = false;
+		var observer = new MutationObserver(function(mutations) {
+			if(ActionRemoveFile) {
+				$(".modal-scrollable").find('[data-handler="1"]').click()
+				ActionRemoveFile = false;
+			}
+			if(ActionRemoveDir) {
+				$(".modal-scrollable").find('[data-handler="1"]').click()
+				ActionRemoveDir = false;
+			}
+		});
+		observer.observe(document, {attributes: false, childList: true, characterData: false, subtree:true});
+		<?php if(isset($config['alert']) && isset($config['alert']['remove_file']) && $config['alert']['remove_file']===false) { ?>
+			$("body").on("click", ".delete-file", function(e) {
+				console.warn(e.target.closest(".delete-file"))
+				if(e.target.closest(".delete-file") || $(e.target).is(".delete-file")) {
+					ActionRemoveFile = true
+			    }
+			});
+		<?php } ?>
+		<?php if(isset($config['alert']) && isset($config['alert']['remove_dir']) && $config['alert']['remove_dir']===false) { ?>
+		$("body").on("click", ".delete-folder", function(e) {
+			if(e.target.closest(".delete-folder") || $(e.target).is(".delete-folder")) {
+				ActionRemoveDir = true
+		    }
+		});
+		<?php } ?>
 	</script>
 </body>
 </html>

@@ -22,22 +22,44 @@ function or_get_date($date, $array) {
 	}
 }
 
+function isoTOint($data) {
+	$datetime = new DateTime('@0');
+	$datetime->add(new DateInterval($data));
+	return $datetime->format('U');
+}
+
+function selectLangDate($lang, $temp, $date = false) {
+	if(!$date) {
+		$temp = "d F Y H:i:s";
+		$date = time();
+	}
+	return or_langdate($date, $temp, true, $lang);
+}
+
+$selectLangLoad = false;
+
 function langdate($date, $temp, $only_date){return function_call('langdate', array($date, $temp, $only_date));}
-function or_langdate($date, $temp = "d F Y H:i:s", $only_date = false) {
-	if(class_exists("lang")) {
+function or_langdate($date, $temp = "d F Y H:i:s", $only_date = false, $selectLang = false) {
+	global $selectLangLoad;
+	if($selectLang) {
+		if(!$selectLangLoad) {
+			$lang = lang::getSelectLang($selectLang);
+			$selectLangLoad = $lang;
+		} else {
+			$lang = $selectLangLoad;
+		}
+		$lang = $lang['langdate'];
+	} else if(class_exists("lang")) {
 		$lang = lang::get_lang("langdate");
 	} else {
 		$lang = array();
 	}
 	$temp = str_replace(array("<br>", "<br/>", "<br />"), "\n", $temp);
-	if(!is_array($lang)) {
-		return date($temp, $date);
-	}
 	if(empty($date) || $date==0 || !is_numeric($date)) {
 		if($only_date) {
 			$local = new DateTime('@'.time());
 			$local->setTimeZone(new DateTimeZone(config::Select("date_timezone")));
-			if(sizeof($lang)>0) {
+			if(is_array($lang) && sizeof($lang)>0) {
 				$date = strtr($local->format($temp), $lang);
 			} else {
 				$date = $local->format($temp);
@@ -45,6 +67,9 @@ function or_langdate($date, $temp = "d F Y H:i:s", $only_date = false) {
 			return nl2br($date);
 		}
 		return "";
+	}
+	if(!is_array($lang)) {
+		return date($temp, $date);
 	}
 	if(date('Ymd', $date) == date('Ymd', time())) {
 		$local = new DateTime('@'.$date);
@@ -156,20 +181,6 @@ function or_timespan($seconds = 1, $time = 0) {
 		$result[] = $seconds.' '.get_date($seconds, $lang);
 	}
 	return implode(" ", $result);
-}
-if(!function_exists("hrtime")) {
-	$startAt = 1533462603;
-	function hrtime($asNum = false) {
-		global $startAt;
-		$ns = microtime(false);
-		$s = substr($ns, 11) - $startAt;
-		$ns = 1E9 * (float) $ns;
-		if($asNum) {
-			$ns += $s * 1E9;
-			return \PHP_INT_SIZE === 4 ? $ns : (int) $ns;
-		}
-		return array($s, (int) $ns);
-	}
 }
 
 ?>

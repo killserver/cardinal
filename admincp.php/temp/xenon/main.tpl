@@ -266,29 +266,29 @@
 				<ul id="main-menu" class="main-menu">
 					<!-- add class "multiple-expanded" to allow multiple submenus to open -->
 					<!-- class "auto-inherit-active-class" will automatically add "active" class for parent elements who are marked already with class "active" -->
-						<li[if {C_deactiveMainMenu}==1] style="display:none;"[/if {C_deactiveMainMenu}==1]>
-							<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/{C_mainPageAdmin}">
-								<i class="linecons-cog"></i>
-								<span class="title">{L_"Консоль"}</span>
+						<li style="[if {C_deactiveMainMenu}==1]display:none;[/if {C_deactiveMainMenu}==1]{E_[admin_console_styleLi]}">
+							<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/{C_consolePageAdmin}" style="{E_[admin_console_styleA]}">
+								<i class="icon-cash-console" style="{E_[admin_console_styleI]}"></i>
+								<span class="title" style="{E_[admin_console_styleSpan]}">{L_"Консоль"}</span>
 							</a>
 						</li>
 						[foreach block=menu]
-						[foreachif {menu.type_st}=="start"&&{menu.existSub}==false]<li>
-							<a href="{menu.link}">
-								<i class="{menu.icon}"></i>
-								<span class="title">{menu.value}</span>
+						[foreachif {menu.type_st}=="start"&&{menu.existSub}==false]<li style="{menu.styleLi}">
+							<a href="{menu.link}" style="{menu.styleA}">
+								<i class="{menu.icon}" style="{menu.styleI}"></i>
+								<span class="title" style="{menu.styleSpan}">{menu.value}</span>
 							</a>
 							<ul>[/foreachif {menu.type_st}=="start"&&{menu.existSub}==false]
-						[foreachif {menu.type_st}=="start"&&{menu.existSub}==true]<li class="hasSubmenu">
-							<a href="{menu.link}">
-								<i class="{menu.icon}"></i>
-								<span class="title">{menu.value}</span>
+						[foreachif {menu.type_st}=="start"&&{menu.existSub}==true]<li class="hasSubmenu" style="{menu.styleLi}">
+							<a href="{menu.link}" style="{menu.styleA}">
+								<i class="{menu.icon}" style="{menu.styleI}"></i>
+								<span class="title" style="{menu.styleSpan}">{menu.value}</span>
 							</a>
 							<ul>[/foreachif {menu.type_st}=="start"&&{menu.existSub}==true]
-								<li[foreachif {menu.is_now}==1] class="active"[/foreachif][foreachif {menu.type_st}=="start"] style="display:none;"[/foreachif {menu.type_st}=="start"]>
-									<a href="{menu.link}">
-										<i class="{menu.icon}"></i>
-										<span class="title">{menu.value}</span>
+								<li [foreachif {menu.is_now}==1] class="active"[/foreachif]style="[foreachif {menu.type_st}=="start"]display:none;[/foreachif {menu.type_st}=="start"] {menu.styleLi}">
+									<a href="{menu.link}" style="{menu.styleA}">
+										<i class="{menu.icon}" style="{menu.styleI}"></i>
+										<span class="title" style="{menu.styleSpan}">{menu.value}</span>
 									</a>
 								</li>
 						[foreachif {menu.type_end}=="end"]	</ul>
@@ -519,16 +519,29 @@
 			jQuery(th).parent().parent().hide(500, function() {jQuery(th).parent().parent().remove();});
 		});
 	});
-	if(typeof(disableAllEditors)==="undefined") {
-		$(document).ready(function(){
-			if(typeof(editorTextarea)!=="object") {
-				editorTextarea = {configTinymce};
-			}
-			tinymce.init(editorTextarea);
-			jQuery("body").on("click", '.iframe-btn', function() {
-				jQuery.fancybox.open({'href': jQuery(this).attr("href"), 'width': (jQuery("body").width()/1.5), 'height': (jQuery("body").height()/1.5), 'type': 'iframe', 'autoScale': false});
+	function mainTemplateEdit() {
+		if(typeof(editorTextarea)!=="object") {
+			editorTextarea = {configTinymce};
+		}
+        editorTextarea.init_instance_callback = function(editor) {
+            $("body").trigger("ready_tinymce", {id: editor.id, editor: editor});
+            $("body").trigger("ready_tinymce_"+editor.id, {editor: editor});
+        }
+		tinymce.init(editorTextarea);
+		function iframeBtn(e) {
+			if(!($(e.target).is('.iframe-btn') || e.target.closest('.iframe-btn'))) {
 				return false;
-			});
+			}
+			e.preventDefault();
+			var elem = ($(e.target).is('.iframe-btn') ? e.target : e.target.closest('.iframe-btn'));
+			jQuery.fancybox.open({'href': jQuery(elem).attr("href"), 'width': (jQuery("body").width()/1.5), 'height': (jQuery("body").height()/1.5), 'type': 'iframe', 'autoScale': false});
+		}
+		document.body.removeEventListener("click", iframeBtn);
+		document.body.addEventListener("click", iframeBtn);
+	}
+	if(typeof(disableAllEditors)==="undefined") {
+		$(document).ready(function() {
+			mainTemplateEdit()
 		});
 	}
 	function responsive_filemanager_callback(field_id) {
@@ -541,7 +554,7 @@
 		var pas = $(par).find("a[href*='file']").parent();
 		$(par).find("br").remove();
 		$(par).find("a[data-link]").remove();
-		$("body").trigger("change_filemanager", {"data-link": field_id, "http_link": http_link, "type": type, "parent": pas});
+		$("body").trigger("change_filemanager", {"data-link": field_id, "http_link": http_link, "type": type, "parent": pas, "field_id": field_id});
 		/*pas.append('<a data-link="'+field_id+'" id="img'+field_id+'" href="'+http_link+'"'+(type.indexOf("image")>-1 || type.indexOf("imageAccess")>-1 || type.indexOf("imageArrayAccess")>-1 ? " class=\"showPreview new\"" : "")+' target="_blank">Просмотреть</a>');
 		jQuery(".showPreview.new").each(function(i, elem) {
 			jQuery(elem).parent().find("img").remove();

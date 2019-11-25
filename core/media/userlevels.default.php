@@ -29,6 +29,7 @@ $userlevels = array_replace($userlevels, array(
 		"access_updaters" => "yes", // Доступ к возможности обновлять движок из админ-панели
 		"access_userlevels" => "yes", // Доступ к редактору уровней доступа сайта
 		"access_users" => "yes", // Доступ к списку пользователей
+		"access_profilesettings" => "yes", // Доступ к новому списку пользователей
 		"access_yui" => "yes", // Доступ к настройке системы YUI
 		"access_site" => "yes", // Доступ к сайту
 	),

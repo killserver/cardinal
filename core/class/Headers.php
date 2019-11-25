@@ -157,12 +157,35 @@ class Headers {
 
 
 		$imageCheck = file_exists(ROOT_PATH."logo.gif") || file_exists(ROOT_PATH."logo.jpg") || file_exists(ROOT_PATH."logo.jpeg") || file_exists(ROOT_PATH."logo.png") || file_exists(ROOT_PATH."uploads".DS."logo-for-site.gif") || file_exists(ROOT_PATH."uploads".DS."logo-for-site.jpg") || file_exists(ROOT_PATH."uploads".DS."logo-for-site.jpeg") || file_exists(ROOT_PATH."uploads".DS."logo-for-site.png");
-		global $seoBlock;$metaCheck = (isset($seoBlock['ogp']['image']) && (file_exists(ROOT_PATH.$seoBlock['ogp']['image']) || file_exists($seoBlock['ogp']['image']) || file_exists(config::Select("default_http_host").$seoBlock['ogp']['image'])))
-				||
-				(isset($seoBlock['main']['image_src']) && ($seoBlock['main']['image_src'] = ltrim($seoBlock['main']['image_src'], "/"))!==false && (file_exists(ROOT_PATH.$seoBlock['main']['image_src']) || file_exists($seoBlock['main']['image_src']) || file_exists(config::Select("default_http_host").$seoBlock['main']['image_src'])))
-				||
-				(isset($seoBlock['main']['image']) && ($seoBlock['main']['image'] = ltrim($seoBlock['main']['image'], "/"))!==false && (file_exists(ROOT_PATH.$seoBlock['main']['image']) || file_exists($seoBlock['main']['image']) || file_exists(config::Select("default_http_host").$seoBlock['main']['image'])));
-		if($imageCheck) {
+		global $seoBlock;
+		$metaCheck = false;
+		if(isset($seoBlock['ogp']['image'])) {
+			$host = config::Select("default_http_host");
+			$seoBlock['ogp']['image'] = str_replace($host, "", $seoBlock['ogp']['image']);
+			$seoBlock['ogp']['image'] = ltrim($seoBlock['ogp']['image'], "/");
+			$metaCheck = (file_exists(ROOT_PATH.$seoBlock['ogp']['image']) || file_exists($seoBlock['ogp']['image']) || file_exists($host.$seoBlock['ogp']['image']));
+			$imageLink = ($findHost || strpos($seoBlock['ogp']['image'], "http")===false ? $host : "").$seoBlock['ogp']['image'];
+		} else if(isset($seoBlock['og']['image'])) {
+			$host = config::Select("default_http_host");
+			$seoBlock['og']['image'] = str_replace($host, "", $seoBlock['og']['image']);
+			$seoBlock['og']['image'] = ltrim($seoBlock['og']['image'], "/");
+			$metaCheck = (file_exists(ROOT_PATH.$seoBlock['og']['image']) || file_exists($seoBlock['og']['image']) || file_exists($host.$seoBlock['og']['image']));
+			$imageLink = ($findHost || strpos($seoBlock['og']['image'], "http")===false ? $host : "").$seoBlock['og']['image'];
+		} else if(isset($seoBlock['main']['image_src'])) {
+			$host = config::Select("default_http_host");
+			$seoBlock['main']['image_src'] = str_replace($host, "", $seoBlock['main']['image_src']);
+			$seoBlock['main']['image_src'] = ltrim($seoBlock['main']['image_src'], "/");
+			$metaCheck = (file_exists(ROOT_PATH.$seoBlock['main']['image_src']) || file_exists($seoBlock['main']['image_src']) || file_exists($host.$seoBlock['main']['image_src']));
+			$imageLink = ($findHost || strpos($seoBlock['main']['image_src'], "http")===false ? $host : "").$seoBlock['main']['image_src'];
+		} else if(isset($seoBlock['main']['image'])) {
+			$host = config::Select("default_http_host");
+			$findHost = (strpos($seoBlock['main']['image'], $host)!==false);
+			$seoBlock['main']['image'] = str_replace($host, "", $seoBlock['main']['image']);
+			$seoBlock['main']['image'] = ltrim($seoBlock['main']['image'], "/");
+			$metaCheck = (file_exists(ROOT_PATH.$seoBlock['main']['image']) || file_exists($seoBlock['main']['image']) || file_exists($host.$seoBlock['main']['image']));
+			$imageLink = ($findHost || strpos($seoBlock['main']['image'], "http")===false ? $host : "").$seoBlock['main']['image'];
+		}
+		if($imageCheck && !$metaCheck) {
 			if(file_exists(ROOT_PATH."logo.gif")) {
 				$imageLink = "{C_default_http_host}logo.gif";
 			} else if(file_exists(ROOT_PATH."logo.jpg")) {
@@ -224,7 +247,7 @@ class Headers {
 				$param[] = "\"".$k."\": \"".$v."\"";
 			}
 			unset($dprm);
-			$header .= "<script type=\"text/javascript\">\n".
+			$header .= "<script type=\"text/javascript\" id=\"cardinalParams\">\n".
 				"	var username = \"{U_username}\";\n".
 				"	var default_link = \"{C_default_http_host}\";\n".
 				"	var tskins = \"".templates::get_skins()."\";\n".
@@ -257,7 +280,7 @@ class Headers {
 		}
 		if($rss && !empty($link_rss)) {
 			$header .= "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"".$sitename."\" href=\"{C_default_http_host}".$link_rss."\" />\n";
-			$header .= "<meta name=\"msapplication-TileColor\" content=\"#e0161d\"/>\n".
+			$header .= "<meta name=\"msapplication-TileColor\" content=\"".execEvent("titleColor", "#AC1F1F")."\"/>\n".
 				"<meta name=\"msapplication-notification\" content=\"frequency=30;polling-uri=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=1;polling-uri2=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=2;polling-uri3=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=3;polling-uri4=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=4;polling-uri5=http://notifications.buildmypinnedsite.com/?feed={C_default_http_host}".$link_rss."&amp;id=5; cycle=1\"/>\n\n";
 		}
 		if($getMeta) {
@@ -367,16 +390,27 @@ class Headers {
 	function loadMenuAdmin(&$links, &$now = "") {
 		$loadMenu = true;
 		execEventRef("admin_menu_ready", $links, $loadMenu);
+		$ignore = array();
+		execEventRef("admin_menu_ready_for_ignore", $ignore);
 		if($loadMenu) {
+			$menu = array();
 			if($dh = dir(ADMIN_MENU)) {
 				$i=1;
 				while(($file = $dh->read()) !== false) {
 					if($file != "index.".ROOT_EX && $file != "index.html" && $file != ".htaccess" && $file != "." && $file != "..") {
-						include(ADMIN_MENU.$file);
+						$menu[] = ($file);
 					}
 				}
 				$dh->close();
 			}
+			sortByValue($menu);
+			for($i=0;$i<sizeof($menu);$i++) {
+				if(array_key_exists($menu[$i], $ignore) || in_array($menu[$i], $ignore)) {
+					continue;
+				}
+				include_once(ADMIN_MENU.$menu[$i]);
+			}
+			unset($menu);
 		}
 		$this->adminPanelVsort($links);
 		$page_v = HTTP::getServer("REQUEST_URI");
@@ -406,7 +440,10 @@ class Headers {
 			if($id==5) {
 				$menu .= "<div class='more'><div class=\"elems\">";
 			}
-			$menu .= (!$isCat ? "<div class=\"items".($cat ? " hasDropped" : "")."\">" : "")."<a href=\"".$v['link']."\" class=\"".($cat ? "subItem": "")."".(isset($v['class']) ? " ".$v['class']: "")."\">".(isset($v['icon']) && !empty($v['icon']) ? "<i class=\"".$v['icon']."\"></i>" : "")."<span>".$v['title']."</span></a>";
+			$menu .= (!$isCat ? "<div class=\"items".($cat ? " hasDropped" : "")."\">" : "").
+					"<a href=\"".$v['link']."\" class=\"".($cat ? "subItem": "")."".(isset($v['class']) ? " ".$v['class']: "")."\">".
+						(isset($v['icon']) && !empty($v['icon']) ? "<i class=\"".$v['icon']."\"></i>" : "")."<span>".$v['title']."</span>".
+					"</a>";
 			$menu .= ($cat ? "<div class=\"dropped\">" : "");
 			if($cat) {
 				$menu .= $this->menuAdminHeader($v['items'], true, $isSite, PHP_INT_MIN);
@@ -414,7 +451,7 @@ class Headers {
 			$menu .= ($cat ? "</div>" : "").(!$isCat ? "</div>\n" : "");
 			$id++;
 		}
-		if($id>=5) {
+		if($id>=6) {
 			$menu .= "</div></div>";
 		}
 		return $menu;

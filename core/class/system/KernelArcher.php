@@ -109,9 +109,9 @@ class KernelArcher {
 		$model->SetTable($this->selectTable);
 		$firstId = $model->getFirst();
 		$selectId = $model->{$firstId};
-		$model = $this->callArr($model, "TakeAddModel", array($model, $firstId, "countCall" => ""));
 		$model = execEvent("KernelArcher-TakeAddModel-Before", $model, $firstId);
 		$model = execEvent("KernelArcher-TakeAddModel", $model, $firstId);
+		$model = $this->callArr($model, "TakeAddModel", array($model, $firstId, "countCall" => ""));
 		unset($model->{$firstId});
 		$request = new Request();
 		if(sizeof($request->post)==0) {
@@ -119,7 +119,7 @@ class KernelArcher {
 			throw new Exception("Error post data to kernal");
 			die();
 		}
-		$list = $model->getArray();
+		$list = $model->getArray(false);
 		if(isset($model->pathForUpload)) {
 			$uploads = $model->pathForUpload;
 			unset($model->pathForUpload);
@@ -131,6 +131,8 @@ class KernelArcher {
 			$post = $request->post->get($k, "");
 			$post = $this->rebuildData($post);
 			$files = $this->rebuildData($files);
+			if($k == 'createdTime') { $model->{'createdTime'} = time(); continue; }
+			if($k == 'editedTime') { continue; }
 			execEventRef("KernelArcher-TakeAddModel-Data-Before", $k, $v, $post, $files, $models);
 			if(!empty($files) && ($model->getAttribute($k, "type")=="imageAccess" || $model->getAttribute($k, "type")=="fileAccess" || $model->getAttribute($k, "type")=="file" || $model->getAttribute($k, "type")=="fileArray" || $model->getAttribute($k, "type")=="image" || $model->getAttribute($k, "type")=="imageArray")) {
 				$type = $files;
@@ -140,6 +142,9 @@ class KernelArcher {
 					$types = array();
 					if(is_serialized($v)) {
 						$v = unserialize($v);
+					}
+					if(!is_Array($v)) {
+						$v = array($v);
 					}
 					$counter = 0;
 					foreach($type as $ks => $vs) {
@@ -167,12 +172,12 @@ class KernelArcher {
 				$type = str_replace(DS, "/", $type);
 			} else if($model->getAttribute($k, "type")=="date") {
                 $post = str_replace("/", "-", $post);
-				$type = strtotime((isset($post) && !empty($post) ? $post : date("d/m/Y"))." ".date("H:i:s"));
+				$type = strtotime((isset($post) && !empty($post) ? $post : date("Y/m/d"))." ".date("H:i:s"));
 			} else if($model->getAttribute($k, "type")=="time") {
-				$type = strtotime(date("d/m/Y")." ".(isset($post) && !empty($post) ? $post : date("H:i:s")));
+				$type = strtotime(date("Y/m/d")." ".(isset($post) && !empty($post) ? $post : date("H:i:s")));
 			} else if($model->getAttribute($k, "type")=="datetime") {
                 $post[0] = str_replace("/", "-", $post[0]);
-				$type = strtotime((isset($post[0]) && !empty($post[0]) ? $post[0] : date("d/m/Y"))." ".(isset($post[1]) && !empty($post[1]) ? $post[1] : date("H:i:s")));
+				$type = strtotime((isset($post[0]) && !empty($post[0]) ? $post[0] : date("Y/m/d"))." ".(isset($post[1]) && !empty($post[1]) ? $post[1] : date("H:i:s")));
 			} else if(!is_bool($post) && $post != $v) {
 				$type = $post;
 			} else {
@@ -185,8 +190,8 @@ class KernelArcher {
 			$type = trim($type);
 			$model->{$k} = $type;
 		}
-		$model = $this->callArr($model, "TakeAddModel", array($model, $firstId, "countCall" => ""));
 		$model = execEvent("KernelArcher-TakeAddModel-After", $model, $firstId);
+		$model = $this->callArr($model, "TakeAddModel", array($model, $firstId, "countCall" => ""));
 		$getExclude = KernelArcher::excludeField("get", "Edit");
 		for($i=0;$i<sizeof($getExclude);$i++) {
 			if(isset($model->{$getExclude[$i]})) {
@@ -200,6 +205,7 @@ class KernelArcher {
 		}
 		cardinal::RegAction("Добавление данных в Арчере. Модель \"".$modelName."\"");
 		$model->Insert();
+		execEvent("KernelArcher-TakeAddModel-Completed", $model);
 		$addition = "";
 		if(Arr::get($_GET, "ShowPages", false)) {
 			$addition .= "&ShowPages=".Arr::get($_GET, "ShowPages");
@@ -209,6 +215,12 @@ class KernelArcher {
 		}
 		if(Arr::get($_GET, "orderTo", false)) {
 			$addition .= "&orderTo=".Arr::get($_GET, "orderTo");
+		}
+		if(Arr::get($_GET, "Where", false)) {
+			$addition .= "&Where=".Arr::get($_GET, "Where");
+		}
+		if(Arr::get($_GET, "WhereData", false)) {
+			$addition .= "&WhereData=".Arr::get($_GET, "WhereData");
 		}
 		$ref = Arr::get($_GET, "ref", false);
 		if($ref===false) {
@@ -243,6 +255,8 @@ class KernelArcher {
 			}
 		}
 		$exc = array();
+		if(isset($model->{'createdTime'})) unset($model->{'createdTime'});
+		if(isset($model->{'editedTime'})) unset($model->{'editedTime'});
 		$model = $this->callArr($model, "AddModel", array($model, &$exc));
 		$exc = array_values($exc);
 		for($i=0;$i<sizeof($exc);$i++) {
@@ -250,7 +264,7 @@ class KernelArcher {
 				unset($model->{$exc[$i]});
 			}
 		}
-		$list = $model->getArray();
+		$list = $model->getArray(false);
 		$list = execEvent("KernelArcher-AddModel", $list, $this->selectTable);
 		$this->AddBlocks("AddData", $list);
 		$tpl = $this->TraceOn("Add", $model, "ArcherAdd");
@@ -339,11 +353,11 @@ class KernelArcher {
 		$models->SetTable($this->selectTable);
 		$firstId = $models->getFirst();
 		$selectId = $models->{$firstId};
-		$models = $this->callArr($models, "TakeEditModel", array($models, $firstId, "countCall" => ""));
 		$model = execEvent("KernelArcher-TakeEditModel-Before", $model, $firstId);
 		$model = execEvent("KernelArcher-TakeEditModel", $model, $firstId);
+		$models = $this->callArr($models, "TakeEditModel", array($models, $firstId, "countCall" => ""));
 		unset($model->{$firstId});
-		$list = $models->getArray();
+		$list = $models->getArray(false);
 		$request = new Request();
 		if(sizeof($request->post)==0) {
 			errorHeader();
@@ -368,8 +382,10 @@ class KernelArcher {
 			$emptyFiles = array();
 		}
 		$delArray = $request->post->get("deleteArray", array());
-		$delArray = array_map(function($v) { return explode(",", $v); }, ($delArray));
+		$delArray = array_map(function($v) { $arr = explode(",", $v); return array_filter($arr, 'strlen'); }, ($delArray));
 		foreach($list as $k => $v) {
+			if($k == 'createdTime') { continue; }
+			if($k == 'editedTime') { $model->{'editedTime'} = time(); continue; }
 			$files = $request->files->get($k, "");
 			$post = $request->post->get($k, "");
 			
@@ -381,8 +397,11 @@ class KernelArcher {
 				if(is_serialized($v)) {
 					$v = unserialize($v);
 				}
+				if(!is_Array($v)) {
+					$v = array($v);
+				}
 				for($countFilesArray=0;$countFilesArray<sizeof($delArray[$k]);$countFilesArray++) {
-					if(!empty($delArray[$k][$countFilesArray]) && isset($v[$delArray[$k][$countFilesArray]])) {
+					if(isset($v[$delArray[$k][$countFilesArray]])) {
 						unset($v[$delArray[$k][$countFilesArray]]);
 					}
 				}
@@ -392,7 +411,7 @@ class KernelArcher {
 			execEventRef("KernelArcher-TakeEditModel-Data-Before", $k, $v, $post, $files, $models);
 			///
 			/////////
-			if(!empty($files) && ($models->getAttribute($k, "type")=="imageAccess" || $models->getAttribute($k, "type")=="fileAccess" || $models->getAttribute($k, "type")=="file" || $models->getAttribute($k, "type")=="fileArray" || $models->getAttribute($k, "type")=="image" || $models->getAttribute($k, "type")=="imageArray")) {
+			if(!empty($files) && ($models->getAttribute($k, "Type")=="imageAccess" || $models->getAttribute($k, "Type")=="fileAccess" || $models->getAttribute($k, "Type")=="file" || $models->getAttribute($k, "Type")=="fileArray" || $models->getAttribute($k, "Type")=="image" || $models->getAttribute($k, "Type")=="imageArray")) {
 				$type = $files;
 				if((!isset($type['error']) || is_array($type['error'])) && (!isset($type['name']) || is_array($type['name']))) {
 					$viewI = 1;
@@ -417,21 +436,21 @@ class KernelArcher {
 					$type = (isset($emptyFiles[$k]) ? "" : (!$upload ? $v : $upload."?".time()));
 					$type = str_replace(DS, "/", $type);
 				}
-			} else if($model->getAttribute($k, "type")=="imageAccess" || $model->getAttribute($k, "type")=="fileAccess" || $model->getAttribute($k, "type")=="file" || $model->getAttribute($k, "type")=="fileArray" || $model->getAttribute($k, "type")=="image" || $model->getAttribute($k, "type")=="imageArray" || $model->getAttribute($k, "type")=="fileArrayAccess" || $model->getAttribute($k, "type")=="imageArrayAccess") {
+			} else if($models->getAttribute($k, "Type")=="imageAccess" || $models->getAttribute($k, "Type")=="fileAccess" || $models->getAttribute($k, "Type")=="file" || $models->getAttribute($k, "Type")=="fileArray" || $models->getAttribute($k, "Type")=="image" || $models->getAttribute($k, "Type")=="imageArray" || $models->getAttribute($k, "Type")=="fileArrayAccess" || $models->getAttribute($k, "Type")=="imageArrayAccess") {
 				if(!empty($post)) {
 					$type = $post;
 				} else {
 					$type = $v;
 				}
 				$type = str_replace(DS, "/", $type);
-			} else if($models->getAttribute($k, "type")=="date") {
+			} else if($models->getAttribute($k, "Type")=="date") {
                 $post = str_replace("/", "-", $post);
-				$type = strtotime((isset($post) && !empty($post) ? $post : date("d/m/Y"))." ".date("H:i:s"));
-			} else if($models->getAttribute($k, "type")=="time") {
-				$type = strtotime(date("d/m/Y")." ".(isset($post) && !empty($post) ? $post : date("H:i:s")));
-			} else if($models->getAttribute($k, "type")=="datetime") {
+				$type = strtotime((isset($post) && !empty($post) ? $post : date("Y/m/d"))." ".date("H:i:s"));
+			} else if($models->getAttribute($k, "Type")=="time") {
+				$type = strtotime(date("Y/m/d")." ".(isset($post) && !empty($post) ? $post : date("H:i:s")));
+			} else if($models->getAttribute($k, "Type")=="datetime") {
                 $post[0] = str_replace("/", "-", $post[0]);
-				$type = strtotime((isset($post[0]) && !empty($post[0]) ? $post[0] : date("d/m/Y"))." ".(isset($post[1]) && !empty($post[1]) ? $post[1] : date("H:i:s")));
+				$type = strtotime((isset($post[0]) && !empty($post[0]) ? $post[0] : date("Y/m/d"))." ".(isset($post[1]) && !empty($post[1]) ? $post[1] : date("H:i:s")));
 			} else if(!is_bool($post)) {
 				$type = $post;
 			} else {
@@ -444,8 +463,8 @@ class KernelArcher {
 			$type = trim($type);
 			$model->{$k} = $type;
 		}
-		$model = $this->callArr($model, "TakeEditModel", array($model, $firstId, "countCall" => ""));
 		$model = execEvent("KernelArcher-TakeEditModel-After", $model, $firstId);
+		$model = $this->callArr($model, "TakeEditModel", array($model, $firstId, "countCall" => ""));
 		$getExclude = KernelArcher::excludeField("get", "Edit");
 		for($i=0;$i<sizeof($getExclude);$i++) {
 			if(isset($model->{$getExclude[$i]})) {
@@ -459,6 +478,7 @@ class KernelArcher {
 		}
 		cardinal::RegAction("Обновление данных в Арчере. Модель \"".$modelName."\". ИД: \"".$selectId."\"");
 		$model->Update();
+		execEvent("KernelArcher-TakeEditModel-Completed", $model);
 		$addition = "";
 		if(Arr::get($_GET, "ShowPages", false)) {
 			$addition .= "&ShowPages=".Arr::get($_GET, "ShowPages");
@@ -468,6 +488,12 @@ class KernelArcher {
 		}
 		if(Arr::get($_GET, "orderTo", false)) {
 			$addition .= "&orderTo=".Arr::get($_GET, "orderTo");
+		}
+		if(Arr::get($_GET, "Where", false)) {
+			$addition .= "&Where=".Arr::get($_GET, "Where");
+		}
+		if(Arr::get($_GET, "WhereData", false)) {
+			$addition .= "&WhereData=".Arr::get($_GET, "WhereData");
 		}
 		$ref = Arr::get($_GET, "ref", false);
 		if($ref===false) {
@@ -495,6 +521,8 @@ class KernelArcher {
 		}
 		$model = $model->Select();
 		$model->SetTable($this->selectTable);
+		if(isset($model->{'createdTime'})) unset($model->{'createdTime'});
+		if(isset($model->{'editedTime'})) unset($model->{'editedTime'});
 		$exc = array();
 		$model = $this->callArr($model, "EditModel", array($model, &$exc), array(), true);
 		$exc = array_values($exc);
@@ -503,7 +531,7 @@ class KernelArcher {
 				unset($model->{$exc[$i]});
 			}
 		}
-		$list = $model->getArray();
+		$list = $model->getArray(false);
 		foreach($list as $k => $v) {
 			if($model->getAttribute($k, "type")=="fileArray" || $model->getAttribute($k, "type")=="imageArray" || $model->getAttribute($k, "type")=="fileArrayAccess" || $model->getAttribute($k, "type")=="imageArrayAccess") {
 				if(Validate::is_serialized($v)) {
@@ -517,7 +545,7 @@ class KernelArcher {
 				$model->{$k} = $list[$k] = implode(",", $t);
 			}
 		}
-		$list = $model->getArray();
+		$list = $model->getArray(false);
 		$firstId = current($list);
 		if(empty($firstId)) {
 			errorHeader();
@@ -555,7 +583,7 @@ class KernelArcher {
 		/*if(is_object($del)) {
 			$models = $del;
 		}*/
-		$models = $models->getArray();
+		$models = $models->getArray(false);
 		$trash = false;
 		if(defined("PATH_CACHE_USERDATA")) {
 			if(!is_writeable(PATH_CACHE_USERDATA)) {
@@ -614,6 +642,7 @@ class KernelArcher {
 		}
 		$del = execEvent("KernelArcher-TakeDelete-After", $model);
 		$list = $model->Deletes();
+		execEvent("KernelArcher-TakeDelete-Completed", $model);
 		$addition = "";
 		if(Arr::get($_GET, "ShowPages", false)) {
 			$addition .= "&ShowPages=".Arr::get($_GET, "ShowPages");
@@ -630,7 +659,7 @@ class KernelArcher {
 		} else {
 			$ref = htmlspecialchars_decode($ref);
 		}
-		call_user_func_array("Core::addInfo", array("<b>Запись успешно удалена</b> ID записи: ".$selectId, "info", false, (60), true));
+		call_user_func_array("Core::addInfo", array("<b>Запись успешно удалена</b> ID записи: ".$first, "info", false, (60), true));
 		if(!empty($objTemplate)) {
 			if(isset($_GET['type'])) {
 				//location($ref, 3, false);
@@ -650,7 +679,7 @@ class KernelArcher {
 		}
 		$model->SetTable($this->selectTable);
 		$lists = $model->Select();
-		$list = $lists->getArray();
+		$list = $lists->getArray(false);
 		$firstId = current($list);
 		if(empty($firstId)) {
 			errorHeader();
@@ -694,7 +723,7 @@ class KernelArcher {
 		$list = $model->Select();
 		$list = execEvent("KernelArcher-Shield-Data", $list, $objName);
 		if(is_object($list)) {
-			$list = $list->getArray();
+			$list = $list->getArray(false);
 			$first = current($list);
 			if(!is_null($first)) {
 				$list = $this->callArr($list, "ShieldFunc", array($list, $this->selectTable));
@@ -702,7 +731,7 @@ class KernelArcher {
 			}
 		} elseif(is_array($list)) {
 			for($i=0;$i<sizeof($list);$i++) {
-				$subList = $list[$i]->getArray();
+				$subList = $list[$i]->getArray(false);
 				$first = current($subList);
 				if(is_null($first)) {
 					continue;
@@ -716,7 +745,7 @@ class KernelArcher {
 		}
 	}
 	
-	private function callArr($return, $page, $func, $params = array(), $single = true) {
+	public function callArr($return, $page, $func, $params = array(), $single = true) {
 		if(!isset($this->countCall[$page]) || !is_numeric($this->countCall[$page])) {
 			$this->countCall[$page] = 0;
 		}
@@ -832,84 +861,82 @@ class KernelArcher {
 			case "mediumint":
 			case "int":
 			case "bigint":
-				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"number\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "").">";
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"number\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "").">";
 			break;
 			case "float":
 			case "double":
 			case "decimal":
 			case "real":
-				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"number\" step=\"0.01\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "").">";
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"number\" step=\"0.01\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "").">";
 			break;
 			case "radio":
 				$radio = explode(",", $val);
 				$radio = array_map("trim", $radio);
 				for($i=0;$i<sizeof($radio);$i++) {
-					$retType .= "<label for=\"".$name."-".$i."\"><input type=\"radio\" id=\"".$name."-".$i."\" name=\"".$name."\" class=\"cbr cbr-blue\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "")."".(!empty($default) && $default==$radio[$i] ? " checked=\"checked\"" : "")." value=\"".htmlspecialchars($radio[$i])."\">".($open ? "{L_'" : "").htmlspecialchars($radio[$i]).($open ? "'}" : "")."</label><br>";
+					$retType .= "<label for=\"".$name."-".$i."\"><input type=\"radio\" id=\"".$name."-".$i."\" name=\"".$name."\" class=\"cbr cbr-blue\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "")."".(!empty($default) && $default==$radio[$i] ? " checked=\"checked\"" : "")." value=\"".htmlspecialchars($radio[$i])."\">".($open ? "{L_'" : "").htmlspecialchars($radio[$i]).($open ? "'}" : "")."</label><br>";
 				}
 			break;
 			case "multiple-array":
+                $comp = array();
+                for($i=0;$i<sizeof($val);$i++) {
+                	if(!isset($val[$i]) || !is_array($val[$i])) continue;
+                    $k = key($val[$i]);
+                    $v = current($val[$i]);
+                    $comp[$k] = $v;
+                }
+                $val = $comp;
 				$enum = array_map("trim", $val);
-				$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."[]\" class=\"form-control multiple-select\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "")." multiple=\"multiple\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\">";
-				for($i=0;$i<sizeof($enum);$i++) {
-					$type = "o";
-					if(is_array($enum[$i])) {
-						if(isset($enum[$i]['type']) && $enum[$i]['type']=="opt") {
-							$type = "opt";
-						}
-						if(isset($enum[$i]['name'])) {
-							$enum[$i] = $enum[$i]['name'];
-						} else {
-							$enum[$i] = end($enum[$i]);
-						}
-					}
-					$enum[$i] = trim($enum[$i]);
-					if($type=="opt") {
-						$retType .= "<option class='bold' value=\"".htmlspecialchars($enum[$i])."\"".(!empty($default) && in_array($enum[$i], $default) ? " selected=\"selected\"" : "").">".($open ? "{L_'" : "").htmlspecialchars($enum[$i])."".($open ? "'}" : "")."</option>\n";
-					} else {
-						$retType .= "<option value=\"".htmlspecialchars($enum[$i])."\"".(!empty($default) && in_array($enum[$i], $default) ? " selected=\"selected\"" : "").">".($open ? "{L_'" : "").htmlspecialchars($enum[$i])."".($open ? "'}" : "")."</option>\n";
-					}
+				$data = $selected = array();
+				foreach($enum as $k => $v) {
+					$data[] = array("id" => $k, "text" => $v);
+					$selected[] = (!empty($default) && in_array($k, $default) ? $v : "");
 				}
-				$retType .= "</select>";
+				$selected = array_filter($selected);
+				$selectedBy = ($models instanceof DBOBject ? $models->getAttribute($name, "selectedBy") : (isset($args['selectedBy']) ? $args['selectedBy'] : ""));
+				$id = microtime(true);
+				$retType = "<input id=\"".$name."\" class=\"form-control multiple-select\" type=\"text\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" data-options='options_".$id."' value=\"".htmlspecialchars(implode(",", $selected))."\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "")." data-selectedBy=\"".$selectedBy."\"><script type='text/template' id='options_".$id."'>".json_encode($data)."</script>";
 				$val = "";
 			break;
 			case "enum":
 				$enum = explode(",", $val);
 				$enum = array_map("trim", $enum);
-				$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "").">".(!defined("WITHOUT_NULL") ? "<option value=\"\">".($loadPlaceHolder ? ($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."</option>" : "");
+				$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "").">".(!defined("WITHOUT_NULL") ? "<option value=\"\">".($loadPlaceHolder ? ($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."</option>" : "");
 				for($i=0;$i<sizeof($enum);$i++) {
 					$retType .= "<option value=\"".htmlspecialchars($enum[$i])."\"".(!empty($default) && $default==$enum[$i] ? " selected=\"selected\"" : "").">".($open ? "{L_'" : "").htmlspecialchars($enum[$i]).($open ? "'}" : "")."</option>";
 				}
 				$retType .= "</select>";
 			break;
 			case "array":
-				$enum = array_map("trim", $val);
-				$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "").">".(!defined("WITHOUT_NULL") ? "<option value=\"\">".($loadPlaceHolder ? ($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."</option>" : "");
-				for($i=0;$i<sizeof($enum);$i++) {
+				$enum = array_map(function($item) {
+					return (is_array($item) ? $item : trim($item));
+				}, $val);
+				$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "").">".(!defined("WITHOUT_NULL") ? "<option value=\"\">".($loadPlaceHolder ? ($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."</option>" : "");
+				foreach($enum as $v) {
 					$type = "o";
-					if(is_array($enum[$i])) {
-						if(isset($enum[$i]['type']) && $enum[$i]['type']=="opt") {
+					if(is_array($v)) {
+						if(isset($v['type']) && $v['type']=="opt") {
 							$type = "opt";
 						}
-						if(isset($enum[$i]['name'])) {
-							$enum[$i] = $enum[$i]['name'];
+						if(isset($v['name'])) {
+							$v = $v['name'];
 						} else {
-							$enum[$i] = end($enum[$i]);
+							$v = end($v);
 						}
 					}
-					$enum[$i] = trim($enum[$i]);
+					$v = trim($v);
 					if($type=="opt") {
-						$retType .= "<option class='bold' value=\"".htmlspecialchars($enum[$i])."\"".(!empty($default) && $default==$enum[$i] ? " selected=\"selected\"" : "").">".($open ? "{L_'" : "").htmlspecialchars($enum[$i])."".($open ? "'}" : "")."</option>\n";
+						$retType .= "<option class='bold' value=\"".htmlspecialchars($v)."\"".(!empty($default) && $default==$v ? " selected=\"selected\"" : "").">".($open ? "{L_'" : "").htmlspecialchars($v)."".($open ? "'}" : "")."</option>\n";
 					} else {
-						$retType .= "<option value=\"".htmlspecialchars($enum[$i])."\"".(!empty($default) && $default==$enum[$i] ? " selected=\"selected\"" : "").">".($open ? "{L_'" : "").htmlspecialchars($enum[$i])."".($open ? "'}" : "")."</option>\n";
+						$retType .= "<option value=\"".htmlspecialchars($v)."\"".(!empty($default) && $default==$v ? " selected=\"selected\"" : "").">".($open ? "{L_'" : "").htmlspecialchars($v)."".($open ? "'}" : "")."</option>\n";
 					}
 				}
 				$retType .= "</select>";
 			break;
 			case "varchar":
-				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"text\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "").">";
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"text\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "").">";
 			break;
 			case "price":
-				$retType = "<div class=\"input-group\"><span class=\"input-group-addon\">$</span><input id=\"".$name."\" type=\"number\" step=\"0.01\" class=\"form-control\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "")."></div>";
+				$retType = "<div class=\"input-group\"><span class=\"input-group-addon\">$</span><input id=\"".$name."\" type=\"number\" step=\"0.01\" class=\"form-control\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "")."></div>";
 			break;
 			case "image":
 			case "file":
@@ -919,7 +946,7 @@ class KernelArcher {
 					$vals = $val;
 				}
 				$empted = true;
-				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"file\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\"".(empty($vals) && $required ? " required=\"required\"" : "")."".($block ? " disabled=\"disabled\"" : "").($type=="image" ? " accept=\"image/*\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"".$vals."\"".($type=="image" ? " class=\"showPreview\"" : "")." target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "")."<br>";
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"file\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\"".(empty($vals) && $required ? " required=\"required\"" : "")."".($block ? " readonly=\"readonly\"" : "").($type=="image" ? " accept=\"image/*\"" : "").">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"".$vals."\"".($type=="image" ? " class=\"showPreview\"" : "")." target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "")."<br>";
 			break;
 			case "imageAccess":
 			case "fileAccess":
@@ -931,7 +958,7 @@ class KernelArcher {
 				$parent = uniqid();
 				$sType = (strpos($type, "file")!==false ? "file" : "image");
 				$uid = rand();
-				$datas = '<div class="row" data-show="'.$uid.'"><div class="col-sm-12"><a href="#" class="btn btn-icon btn-red accessRemove pull-right" data-parent="'.$parent.'"><i class="fa-remove"></i></a><input class="form-control '.$sType.'Access" id="'.$name.'" name="'.$name.'" type="text" value="'.$val.'" placeholder="'.($loadPlaceHolder ? ($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "").'"'.($block ? " disabled=\"disabled\"" : "").($type=="imageAccess" ? " data-accept=\"image\"" : "").' value="'.htmlspecialchars($val).'"'.(empty($val) && $required ? " required=\"required\"" : "").' style="position:fixed;top:-99999px;left:-99999px;z-index:-1000;"><a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/assets/tinymce/filemanager/dialog.php?type='.($type=="imageAccess" ? "1" : "2").'&field_id='.$name.'&relative_url=0" class="btn btn-icon btn-success iframe-btn"><i class="fa-plus"></i></a><br>'.(!empty($val) ? '&nbsp;&nbsp;<a data-link="'.$vals.'" href="'.$vals.'"'.($type=="imageAccess" ? " class=\"showPreview new\"" : "").' target="_blank">'.($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "").'</div></div>';
+				$datas = '<div class="row" data-show="'.$uid.'"><div class="col-sm-12"><a href="#" class="btn btn-icon btn-red accessRemove pull-right" data-parent="'.$parent.'"><i class="fa-remove"></i></a><input class="form-control '.$sType.'Access" id="'.$name.'" name="'.$name.'" type="text" value="'.$val.'" placeholder="'.($loadPlaceHolder ? ($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "").'"'.($block ? " readonly=\"readonly\"" : "").($type=="imageAccess" ? " data-accept=\"image\"" : "").' value="'.htmlspecialchars($val).'"'.(empty($val) && $required ? " required=\"required\"" : "").' style="position:fixed;top:-99999px;left:-99999px;z-index:-1000;"><a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/assets/tinymce/filemanager/dialog.php?type='.($type=="imageAccess" ? "1" : "2").'&field_id='.$name.'&relative_url=0" class="btn btn-icon btn-success iframe-btn"><i class="fa-plus"></i></a><br>'.(!empty($val) ? '&nbsp;&nbsp;<a data-link="'.$vals.'" href="'.$vals.'"'.($type=="imageAccess" ? " class=\"showPreview new\"" : "").' target="_blank">'.($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "").'</div></div>';
 				$container = "<div class=\"containerFiles container-".$type."\" data-parent=\"".$parent."\">".$datas."</div>";
 				$retType = $container;
 			break;
@@ -942,7 +969,7 @@ class KernelArcher {
 				$enum = array_map("trim", $enum);
 				$retType .= "<div id=\"inputForFile\" class=\"row\" data-accept=\"".($type=="imageArray" ? "image/*" : "")."\">";
 				for($i=0;$i<sizeof($enum);$i++) {
-					$retType .= "<div class='array'>".(sizeof($enum)>1 ? "<div class='col-sm-1'>#".($i+1)."</div><div class='col-sm-9'>" : "<div class='col-sm-10'>")."<input class=\"form-control\" type=\"file\"".(sizeof($enum)==1 ? " multiple=\"multiple\"" : "")." name=\"".$name.(sizeof($enum)>1 ? "[".$i."]" : "[]")."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\"".($block ? " disabled=\"disabled\"" : "").($type=="imageArray" ? " accept=\"image/*\"" : "")."".(empty($val) && $required ? " required=\"required\"" : "")."></div><div class='col-sm-2'><a class='btn btn-red btn-block fa-remove' onclick='removeInputFile(this,\"".$name."\",\"".$i."\")'></a></div>".(!empty($val) ? "<div class='col-sm-12'><a href=\"{C_default_http_local}".$enum[$i]."\" class=\"showPreview new\" target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a></div>" : "")."</div>";
+					$retType .= "<div class='array'>".(sizeof($enum)>1 ? "<div class='col-sm-1'>#".($i+1)."</div><div class='col-sm-9'>" : "<div class='col-sm-10'>")."<input class=\"form-control\" type=\"file\"".(sizeof($enum)==1 ? " multiple=\"multiple\"" : "")." name=\"".$name.(sizeof($enum)>1 ? "[".$i."]" : "[]")."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\"".($block ? " readonly=\"readonly\"" : "").($type=="imageArray" ? " accept=\"image/*\"" : "")."".(empty($val) && $required ? " required=\"required\"" : "")."></div><div class='col-sm-2'><a class='btn btn-red btn-block fa-remove' onclick='removeInputFile(this,\"".$name."\",\"".$i."\")'></a></div>".(!empty($val) ? "<div class='col-sm-12'><a href=\"{C_default_http_local}".$enum[$i]."\" class=\"showPreview new\" target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a></div>" : "")."</div>";
 				}
 				$retType .= "</div><br><a href=\"#\" onclick=\"addInputFile(this, '".$name."');return false;\" class=\"btn btn-white btn-block btn-icon btn-icon-standalone\"><i class=\"fa-upload\"></i><span>".($open ? "{L_'" : "")."Добавить".($open ? "'}" : "")."</span></a>";
 			break;
@@ -953,61 +980,86 @@ class KernelArcher {
 				$enum = array_map("trim", $enum);
 				$retType .= "<div id=\"inputForFiles\" class=\"row\" data-accept=\"".($type=="imageArrayAccess" ? "image/*" : "")."\">";
 				$sType = (strpos($type, "file")!==false ? "file" : "image");
-				for($i=0;$i<sizeof($enum);$i++) {
+				$size = sizeof($enum);
+				$count = ($size>1 ? "{i}" : "");
+				$blocker = ($block ? " readonly=\"readonly\"" : "");
+				$placeholders = ($loadPlaceHolder ? "{L_'Выберите'}&nbsp;"."{L_'".$name."'}" : "");
+				$requirer = (empty($val) && $required ? " required=\"required\"" : "");
+				$tmp = "";
+				$tmp .= "<div class='row array' data-show='{uid}' data-ass='{__*__}'><div class='col-sm-12'>";
+					$tmp .= ($size>1 ? "<div class='col-sm-1'>#{id}</div><div class='col-sm-9'>" : "<div class='col-sm-10'>");
+
+					$tmp .= "<input class=\"form-control {sType}Access {sType}AccessArray\" id=\"{uid}\" type=\"text\""
+					.($size==1 ? " multiple=\"multiple\"" : "").""
+					.$blocker
+					." name=\"{name}\" placeholder=\"{placeholder}\""
+					.($type=="imageArrayAccess" ? " accept=\"image/*\" data-accept=\"image\"" : "")
+					." value=\"{value}\"{required} style='position:fixed;top:-99999px;left:-99999px;z-index:-1000;'>";
+
+					$tmp .= '<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/assets/tinymce/filemanager/dialog.php?type='.($type=="imageAccess" ? "1" : "2").'&field_id={uid}&relative_url=0&multiple=1" class="btn btn-icon btn-success iframe-btn btn-block"><i class="fa-plus"></i></a>';
+					$tmp .= (!empty($val) ? "<a href=\"{C_default_http_local}{enum}\" data-link=\"{C_default_http_local}{enum}\" class=\"showPreview new\" id=\"img{uid}\" target=\"_blank\">"."{L_'Просмотреть'}</a>" : "");
+
+					$tmp .= "</div>";
+
+					$tmp .= "<div class='col-sm-2'><a class='btn btn-red btn-block fa-remove' onclick='removeInputFile(this,\"{name}\",\"{__*__}\")'></a></div>";
+				$tmp .= "</div></div>";
+				for($i=0;$i<$size;$i++) {
 					$uid = rand();
-					$retType .= "<div class='row array' data-show='".$uid."'><div class='col-sm-12'>";
-						$retType .= (sizeof($enum)>1 ? "<div class='col-sm-1'>#".($i+1)."</div><div class='col-sm-9'>" : "<div class='col-sm-10'>");
-
-						$retType .= "<input class=\"form-control ".$sType."Access ".$sType."AccessArray\" id=\"".$uid."\" type=\"text\"".(sizeof($enum)==1 ? " multiple=\"multiple\"" : "")."".($block ? " disabled=\"disabled\"" : "")." name=\"".$name.(sizeof($enum)>1 ? "[".$i."]" : "[]")."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\"".($block ? " disabled=\"disabled\"" : "").($type=="imageArrayAccess" ? " accept=\"image/*\" data-accept=\"image\"" : "")." value=\"".htmlspecialchars($enum[$i])."\"".(empty($val) && $required ? " required=\"required\"" : "")." style='position:fixed;top:-99999px;left:-99999px;z-index:-1000;'>";
-						$retType .= '<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/assets/tinymce/filemanager/dialog.php?type='.($type=="imageAccess" ? "1" : "2").'&field_id='.$uid.'&relative_url=0" class="btn btn-icon btn-success iframe-btn btn-block"><i class="fa-plus"></i></a>';
-						$retType .= (!empty($val) ? "<a href=\"{C_default_http_local}".$enum[$i]."\" data-link=\"{C_default_http_local}".$enum[$i]."\" class=\"showPreview new\" id=\"img".$uid."\" target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "");
-						$retType .= "</div>";
-
-						$retType .= "<div class='col-sm-2'><a class='btn btn-red btn-block fa-remove' onclick='removeInputFile(this,\"".$name."\",\"".$i."\")'></a></div>";
-					$retType .= "</div></div>";
+					$tpl = $tmp;
+					$tpl = str_replace("{__*__}", $i, $tpl);
+					$tpl = str_replace("{sType}", $sType, $tpl);
+					$tpl = str_replace("{placeholder}", $placeholders, $tpl);
+					$tpl = str_replace("{name}", $name, $tpl);
+					$tpl = str_replace("{uid}", $uid, $tpl);
+					$tpl = str_replace("{id}", ($i+1), $tpl);
+					$tpl = str_replace("{value}", htmlspecialchars($enum[$i]), $tpl);
+					$tpl = str_replace("{enum}", $enum[$i], $tpl);
+					$tpl = str_replace("{required}", $requirer, $tpl);
+					$tpl = str_replace("_subname_count_", $i, $tpl);
+					$retType .= $tpl;
 				}
-				$retType .= "</div><br><a href=\"#\" onclick=\"addInputFileAccess(this, '".$name."', '".($type=="imageAccess" ? "1" : "2")."');return false;\" class=\"btn btn-white btn-block btn-icon btn-icon-standalone\"><i class=\"fa-upload\"></i><span>".($open ? "{L_'" : "")."Добавить".($open ? "'}" : "")."</span></a>";
+				$retType .= "</div><br><a href=\"#\" onclick=\"addInputFileAccess(this, '".$name."', '".($type=="imageAccess" ? "1" : "2")."', '', true);return false;\" class=\"btn btn-white btn-block btn-icon btn-icon-standalone\"><i class=\"fa-upload\"></i><span>"."{L_'Добавить'}</span></a>";
 			break;
 			case "shorttext":
 			case "mediumtext":
 			case "text":
 			case "longtext":
-				$retType = "<textarea id=\"".$name."\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" class=\"form-control ckeditor\" rows=\"10\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "").">".htmlspecialchars($val)."</textarea>";
+				$retType = "<textarea id=\"".$name."\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" class=\"form-control ckeditor\" rows=\"10\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "").">".htmlspecialchars($val)."</textarea>";
 			break;
 			case "onlytextareatext":
-				$retType = "<textarea class=\"onlyText form-control\" id=\"".$name."\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" rows=\"10\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "").">".htmlspecialchars($val)."</textarea>";
+				$retType = "<textarea class=\"onlyText form-control\" id=\"".$name."\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" rows=\"10\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "").">".htmlspecialchars($val)."</textarea>";
 			break;
 			case "email":
-				$retType = "<div class=\"input-group\"><span class=\"input-group-addon\">@</span><input id=\"".$name."\" class=\"form-control\" type=\"email\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "")."></div>";
+				$retType = "<div class=\"input-group\"><span class=\"input-group-addon\">@</span><input id=\"".$name."\" class=\"form-control\" type=\"email\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "")."></div>";
 			break;
 			case "link":
-				$retType = "<div class=\"input-group\"><span class=\"input-group-addon\"><i class=\"fa fa-link\"></i></span><input id=\"".$name."\" class=\"form-control\" type=\"text\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "")."></div>";
+				$retType = "<div class=\"input-group\"><span class=\"input-group-addon\"><i class=\"fa fa-link\"></i></span><input id=\"".$name."\" class=\"form-control\" type=\"text\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "")."></div>";
 			break;
 			case "password":
-				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"password\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "").">";
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"password\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "").">";
 			break;
 			case "hidden":
 			case "hide":
 				$hide = true;
-				$retType = "<input id=\"".$name."\" type=\"hidden\" name=\"".$name."\" value=\"".htmlspecialchars($val)."\"".($block ? " disabled=\"disabled\"" : "").">";
+				$retType = "<input id=\"".$name."\" type=\"hidden\" name=\"".$name."\" value=\"".htmlspecialchars($val)."\"".($block ? " readonly=\"readonly\"" : "").">";
 			break;
 			case "date":
-				$retType = "<div class=\"date-and-time\"><input id=\"".$name."\" type=\"text\" class=\"form-control datepicker\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".($val!=="" && $val!==0 ? date("d/m/Y", $val) : ($default!=="" ? $default : date("d/m/Y")))."\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "")." data-format=\"dd/mm/yyyy\" style=\"width:100%\"></div>";
+				$retType = "<div class=\"date-and-time\"><input id=\"".$name."\" type=\"text\" class=\"form-control datepicker\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".($val!=="" && $val!==0 ? date("d/m/Y", $val) : ($default!=="" ? $default : date("d/m/Y")))."\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "")." data-format=\"dd/mm/yyyy\" style=\"width:100%\"></div>";
 			break;
 			case "time":
-				$retType = "<div class=\"date-and-time\"><input id=\"".$name."\" type=\"text\" class=\"form-control timepicker\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : ($default!=="" ? $default : date("H:i:s")))."\"".($block ? " disabled=\"disabled\"" : "")." data-template=\"dropdown\" data-show-seconds=\"true\" data-default-time=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : ($default!=="" ? $default : date("H:i:s")))."\"".($required ? " required=\"required\"" : "")." data-show-meridian=\"false\" data-minute-step=\"5\" data-second-step=\"5\" style=\"width:100%\"></div>";
+				$retType = "<div class=\"date-and-time\"><input id=\"".$name."\" type=\"text\" class=\"form-control timepicker\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : ($default!=="" ? $default : date("H:i:s")))."\"".($block ? " readonly=\"readonly\"" : "")." data-template=\"dropdown\" data-show-seconds=\"true\" data-default-time=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : ($default!=="" ? $default : date("H:i:s")))."\"".($required ? " required=\"required\"" : "")." data-show-meridian=\"false\" data-minute-step=\"5\" data-second-step=\"5\" style=\"width:100%\"></div>";
 			break;
 			case "datetime":
 				if(!is_array($default)) {
 					$default = array($default, $default);
 				}
-				$retType = "<div class=\"col-sm-12\"><div class=\"date-and-time\"><input type=\"text\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "")." name=\"".$name."[]\" class=\"form-control datepicker\" data-format=\"dd/mm/yyyy\" value=\"".($val!=="" && $val!==0 ? date("d/m/Y", $val) : ($default[0]!=="" ? $default[0] : date("d/m/Y")))."\" style=\"width:50%\"><input type=\"text\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "")." name=\"".$name."[]\" class=\"form-control timepicker\" data-template=\"dropdown\" data-show-seconds=\"true\" value=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : ($default[1]!=="" ? $default[1] : date("H:i:s")))."\" data-default-time=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : ($default!=="" ? $default : date("H:i:s")))."\" data-show-meridian=\"false\" data-minute-step=\"5\" data-second-step=\"5\" style=\"width:50%\" /></div></div>";
+				$retType = "<div class=\"col-sm-12\"><div class=\"date-and-time\"><input type=\"text\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "")." name=\"".$name."[]\" class=\"form-control datepicker\" data-format=\"dd/mm/yyyy\" value=\"".($val!=="" && $val!==0 ? date("d/m/Y", $val) : ($default[0]!=="" ? $default[0] : date("d/m/Y")))."\" style=\"width:50%\"><input type=\"text\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "")." name=\"".$name."[]\" class=\"form-control timepicker\" data-template=\"dropdown\" data-show-seconds=\"true\" value=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : ($default[1]!=="" ? $default[1] : date("H:i:s")))."\" data-default-time=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : ($default!=="" ? $default : date("H:i:s")))."\" data-show-meridian=\"false\" data-minute-step=\"5\" data-second-step=\"5\" style=\"width:50%\" /></div></div>";
 			break;
 		}
 		if(is_array($val) && !isset($val['type'])) {
 			$enum = array_values($val);
 			//$enum = array_map("trim", $enum);
-			$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " disabled=\"disabled\"" : "")."".($required ? " required=\"required\"" : "")."><option value=\"\">".($loadPlaceHolder ? ($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."</option>";
+			$retType = "<select id=\"".$name."\" data-select=\"true\" name=\"".$name."\" class=\"form-control\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "").">".(!defined("WITHOUT_NULL") ? "<option value=\"\">".($loadPlaceHolder ? ($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."</option>" : (defined("WITHOUT_PLACEHOLDER_".$name) ? "<option value=\"\">".constant("WITHOUT_PLACEHOLDER_".$name)."</option>" : ""));
 			for($i=0;$i<sizeof($enum);$i++) {
 				$type = "o";
 				if(is_array($enum[$i])) {

@@ -86,20 +86,33 @@ Route::Load($page);
 execEventRef("route_completed");
 extract(Route::param());
 $pages = Route::param('page');
-if(!(!$pages)) {
+if(isset($GLOBALS['parsedArgv']) && isset($GLOBALS['parsedArgv']['page'])) {
+	$page = $GLOBALS['parsedArgv']['page'];
+} elseif(!(!$pages)) {
 	$page = $pages;
 }
 $classes = Route::param('class');
-if(!(!$classes)) {
+if(isset($GLOBALS['parsedArgv']) && isset($GLOBALS['parsedArgv']['class'])) {
+	$class = $GLOBALS['parsedArgv']['class'];
+} else if(!(!$classes)) {
 	$class = $classes;
-} else {
+} else{
 	$class = "page";
 }
 $method = Route::param('method');
-if(!(!$method)) {
+if(isset($GLOBALS['parsedArgv']) && isset($GLOBALS['parsedArgv']['method'])) {
+	$method = $GLOBALS['parsedArgv']['method'];
+} else if(!(!$method)) {
 	$method = $method;
-} else {
+} else{
 	$method = '';
+}
+if(($get = Arr::get($_GET, "route", false))!==false || (isset($GLOBALS['parsedArgv']) && ($get = Arr::get($GLOBALS['parsedArgv'], "route", false))!==false)) {
+	if(strpos($get, "/")===false) {
+		throw new Exception("Error parse method. Used in format \"class/method\"", 1);
+		die();
+	}
+	list($class, $method) = explode("/", $get);
 }
 unset($classes);
 $callback = Route::param('callback');
@@ -161,4 +174,7 @@ for($i=0;$i<sizeof($list);$i++) {
 	unset($GLOBALS[$list[$i]]);
 }
 HTTP::echos();
+if(defined("IS_CLI")) {
+	print("");
+}
 ?>

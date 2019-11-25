@@ -6950,3 +6950,7 @@
 .page-body.user-info-navbar-skin-lemonade .user-info-navbar .user-info-menu > li .dropdown-menu.user-profile-menu li.last > a {
   border-bottom: 0;
 }
+option.bold {
+  font-size: 1.5em;
+  font-weight: 500;
+}

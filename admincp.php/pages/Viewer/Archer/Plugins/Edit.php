@@ -9,7 +9,7 @@ class Archer_Edit {
 	
 	public function Headers($table, $page, $models, $tpl) {
 		$getExclude = KernelArcher::excludeField("get", "Edit");
-		$list = $models->getArray();
+		$list = $models->getArray(false);
 		$list = execEvent("archer_list_ready", $list);
 		$first = $models->getFirst();
 		$isId = $list[$first];
@@ -39,6 +39,10 @@ class Archer_Edit {
 			$whereData = Arr::get($_GET, "WhereData");
 			$addition .= "&WhereData=".$whereData;
 		}
+		if(Arr::get($_GET, "WhereType", false)) {
+			$WhereType = Arr::get($_GET, "WhereType");
+			$addition .= "&WhereType=".$WhereType;
+		}
 		if(Arr::get($_GET, "ShowPages", false)) {
 			$addition .= "&ShowPages=".Arr::get($_GET, "ShowPages");
 		}
@@ -47,6 +51,9 @@ class Archer_Edit {
 		}
 		if(Arr::get($_GET, "orderTo", false)) {
 			$addition .= "&orderTo=".Arr::get($_GET, "orderTo");
+		}
+		if(Arr::get($_GET, "tmp", false)) {
+			$addition .= "&tmp=".Arr::get($_GET, "tmp");
 		}
 		$isAjax = false;
 		if(ajax_check()=="ajax") {
@@ -71,7 +78,23 @@ class Archer_Edit {
 			$typeData = $models->getAttribute($k, "typeData");
 			$r = $models->getAttribute($k, 'required');
 			if(is_array($v) && (!empty($where) && !empty($whereData) && $where==$k && isset($v[$whereData]) || isset($v['default']))) {
-				$default = (!empty($where) && !empty($whereData) && $where==$k && isset($v[$whereData]) ? $v[$whereData] : $v['default']);
+                if($page=="Add" && !empty($where) && !empty($whereData) && $where==$k && isset($v[$whereData])) {
+                    if(!is_array($v[$whereData])) {
+                        $default = $v[$whereData];
+                    } else {
+                        $keys = array_keys($v);
+                        for($i=0;$i<sizeof($keys);$i++) {
+                            $data = $v[$keys[$i]];
+                            $key = key($data);
+                            if($key == $default) {
+                                $default = $data;
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    $default = $v['default'];
+                }
 				if(isset($v['default'])) {
 					unset($v['default']);
 				}

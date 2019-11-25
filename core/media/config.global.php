@@ -90,13 +90,13 @@ if(!defined("DEBUG_ALL")) {
 }
 
 if(!defined("VERSION")) {
-	define("VERSION", "11.2");
+	define("VERSION", "12.0");
 }
 if(!defined("VERSION_ADMIN_STYLE")) {
 	define("VERSION_ADMIN_STYLE", "1.10");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "110235");
+	define("INTVERSION", "120001");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "6.5");
@@ -190,6 +190,7 @@ $config = array_merge($config, array(
 	"defaultAdminSkin" => " ",
 	"accessChangeSkin" => "true",
 	"mainPageAdmin" => "?pages=main",
+	"consolePageAdmin" => "?pages=main",
 	"pluginsForEditor" => array(
 		"advlist",
 		"anchor",

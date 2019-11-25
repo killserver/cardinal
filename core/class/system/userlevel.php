@@ -40,11 +40,11 @@ class userlevel {
 			$file = preg_replace("#\<\?(.*?)\?\>#is", "", $file);
 			if(Validate::json($file)) {
 				$usersFile = json_decode($file, true);
-				$userlevels = array_merge($userlevels, $usersFile);
+				$userlevels = array_replace_recursive($userlevels, $usersFile);
 			}
 		}
 		foreach(self::$setData as $level => $data) {
-			$userlevels[$level] = array_merge($userlevels[$level], $data);
+			$userlevels[$level] = array_replace($userlevels[$level], $data);
 		}
 		ksort($userlevels);
 		self::$cacheAll = $userlevels;
@@ -54,6 +54,7 @@ class userlevel {
 	/**
 	 * Check if exists access in section
 	 * @param string $get Checking access
+	 * @throws Exception error access level
 	 * @return bool Result access
      */
 	final public static function get($get = "") {
@@ -128,15 +129,7 @@ class userlevel {
 	 * @param string|bool $data Value access
      */
 	final public static function set($id, $set, $data) {
-		$userlevels = array();
-		if(file_exists(PATH_CACHE_SYSTEM."userlevels.php")) {
-			$levels = file_get_contents(PATH_CACHE_SYSTEM."userlevels.php");
-			if(Validate::json($levels)) {
-				$levels = json_decode($levels, true);
-				$userlevels = array_merge($userlevels, $levels);
-			}
-			unlink(PATH_CACHE_SYSTEM."userlevels.php");
-		}
+		$userlevels = self::all();
 		if(!isset($userlevels[$id])) {
 			$userlevels[$id] = array();
 		}

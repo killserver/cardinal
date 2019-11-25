@@ -246,7 +246,7 @@ $config = array(
 	| default language file name
 	|--------------------------------------------------------------------------
 	*/
-	'default_language' => "en_EN",
+	'default_language' => "ru_RU",
 
 	/*
 	|--------------------------------------------------------------------------
@@ -280,7 +280,7 @@ $config = array(
 	'lower_case'							=> false,
 
 	//Add ?484899493349 (time value) to returned images to prevent cache
-	'add_time_to_img'                       => false,
+	'add_time_to_img'                       => true,
 
 
 	//*******************************************
@@ -429,7 +429,7 @@ $config = array(
 	/******************
 	* AVIARY config
 	*******************/
-	'aviary_active'                           => true,
+	'aviary_active'                           => false,
 	'aviary_apiKey'                           => "2444282ef4344e3dacdedc7a78f8877d",
 	'aviary_language'                         => "en",
 	'aviary_theme'                            => "light",
@@ -449,7 +449,7 @@ $config = array(
 	'hidden_folders'                          => array( 'manifest', "_thumbs" ),
 	// set the names of any files you want hidden. Remember these names will be hidden in all folders (eg "this_document.pdf", "that_image.jpg" )
 	'hidden_files'                            => array( '.htaccess', 'config.php', 'index.php', 'index.html', 'robots.txt' ),
-	'hidden_mask'                            => array( '.min' ),
+	'hidden_mask'                            => array( '\.min' ),
 
 	/*******************
 	* URL upload
@@ -508,6 +508,11 @@ $config = array(
 
 	// Remember text filter after close filemanager for future session
 	'remember_text_filter'                    => false,
+	'alert' => array(
+		'remove_multiple' => false,
+		'remove_file' => false,
+		'remove_dir' => false,
+	),
 
 );
 

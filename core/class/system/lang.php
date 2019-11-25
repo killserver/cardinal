@@ -98,7 +98,7 @@ class lang implements ArrayAccess {
 	}
 	
 	final public static function support($clear = false) {
-		global $mainLangSite;
+		global $mainLangSite, $onlyLang;
 		$arr = array();
 		$mainLang = (modules::manifest_get("mainLang")!==false ? modules::manifest_get("mainLang") : (!is_null($mainLangSite) ? $mainLangSite : "ru"));
 		$arr["lang".$mainLang.".db"] = "lang".$mainLang.".db";
@@ -127,6 +127,16 @@ class lang implements ArrayAccess {
 			for($i=0;$i<sizeof($arr);$i++) {
 				$arr[$i] = self::nsubstr($arr[$i], 4, -3);
 			}
+		} else if($onlyLang) {
+			$show = array();
+			$id = 0;
+			for($i=0;$i<sizeof($arr);$i++) {
+				if(strpos($arr[$i], "lang".$onlyLang)!==false) {
+					$show[$id] = $arr[$i];
+					$id++;
+				}
+			}
+			$arr = $show;
 		}
 		return $arr;
 	}
@@ -244,7 +254,7 @@ class lang implements ArrayAccess {
 			}
 			return array_replace_recursive($fileLang, $lang);
 		} else if($type=="check") {
-			return (file_exists($dirLangs."lang".$langSelect.".db") && is_readable($dirLangs."lang".$langSelect.".db")) || $langSelect==self::$defaultLang;
+			return file_exists($dirLangs."lang".$langSelect.".db") && is_readable($dirLangs."lang".$langSelect.".db");
 		} else if($type=="merge") {
 			$fileLang = array();
 			if(file_exists($dirLangs."lang".$langSelect.".db") && is_readable($dirLangs."lang".$langSelect.".db")) {
@@ -402,6 +412,11 @@ class lang implements ArrayAccess {
 		}
 	}
 
+	final public static function get_if_translated($name) {
+    	$get = self::get_lang($name);
+    	return ($get ? $get : $name);
+    }
+
     /**
      * Try get language in language panel
      * @param string $name Needed language
@@ -410,9 +425,10 @@ class lang implements ArrayAccess {
      */
     final public static function get_lang($name, $sub = "") {
 		global $lang;
-		if(is_string($name) && is_string($sub) && !empty($sub) && isset($lang[$name][$sub])) {
+		if(is_string($name) && is_string($sub) && $sub!=="" && isset($lang[$name][$sub])) {
 			return $lang[$name][$sub];
-		} else if(is_string($name) && isset($lang[$name])) {
+		}
+		if(is_string($name) && isset($lang[$name]) && (!is_string($sub) || $sub==="")) {
 			return $lang[$name];
 		} else {
 			return "";
@@ -431,7 +447,7 @@ class lang implements ArrayAccess {
 		if(!isset($lang) || !is_Array($lang)) {
 			$lang = array();
 		}
-		if(!empty($sub)) {
+		if($sub!=="") {
 			if(!isset($lang[$name])) {
 				$lang[$name] = array();
 			}

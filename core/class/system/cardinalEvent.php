@@ -90,29 +90,61 @@ class cardinalEvent {
 		self::$loader = array();
 	}
 	
-	public static function removeListener($action) {
+	public static function removeListener($action, $loader = "") {
 		if(is_array($action)) {
 			for($i=0;$i<sizeof($action);$i++) {
-				if(isset(self::$collection['standart']) && isset(self::$collection['standart'][$action[$i]])) {
+				if(!empty($loader) && isset(self::$collection['standart']) && isset(self::$collection['standart'][$action[$i]])) {
+					$actionElem = self::$collection['standart'][$action[$i]];
+					$keys = array_keys($actionElem);
+					for($z=0;$z<sizeof($keys);$z++) {
+						if(isset($actionElem[$keys[$z]][$keys[$z]]['loader']) && isset($actionElem[$keys[$z]]['loader']['file']) && strpos($actionElem[$keys[$z]]['loader']['file'], $loader)) {
+							unset(self::$collection['standart'][$action[$i]][$keys[$z]]);
+						}
+					}
+				} else if(empty($loader) && isset(self::$collection['standart']) && isset(self::$collection['standart'][$action[$i]])) {
 					unset(self::$collection['standart'][$action[$i]]);
 				}
 			}
 		} else {
-			if(isset(self::$collection['standart']) && isset(self::$collection['standart'][$action])) {
+			if(!empty($loader) && isset(self::$collection['standart']) && isset(self::$collection['standart'][$action])) {
+				$actionElem = self::$collection['standart'][$action];
+				$keys = array_keys($actionElem);
+				for($z=0;$z<sizeof($keys);$z++) {
+					if(isset($actionElem[$keys[$z]]['loader']) && isset($actionElem[$keys[$z]]['loader']['file']) && strpos($actionElem[$keys[$z]]['loader']['file'], $loader)) {
+						unset(self::$collection['standart'][$action][$keys[$z]]);
+					}
+				}
+			} else if(empty($loader) && isset(self::$collection['standart']) && isset(self::$collection['standart'][$action])) {
 				unset(self::$collection['standart'][$action]);
 			}
 		}
 	}
 	
-	public static function removeListenerRef($action) {
+	public static function removeListenerRef($action, $loader = "") {
 		if(is_array($action)) {
 			for($i=0;$i<sizeof($action);$i++) {
-				if(isset(self::$collection['ref']) && isset(self::$collection['ref'][$action[$i]])) {
+				if(!empty($loader) && isset(self::$collection['ref']) && isset(self::$collection['ref'][$action[$i]])) {
+					$actionElem = self::$collection['ref'][$action[$i]];
+					$keys = array_keys($actionElem);
+					for($z=0;$z<sizeof($keys);$z++) {
+						if(isset($actionElem[$keys[$z]][$keys[$z]]['loader']) && isset($actionElem[$keys[$z]]['loader']['file']) && strpos($actionElem[$keys[$z]]['loader']['file'], $loader)) {
+							unset(self::$collection['ref'][$action[$i]][$keys[$z]]);
+						}
+					}
+				} else if(empty($loader) && isset(self::$collection['ref']) && isset(self::$collection['ref'][$action[$i]])) {
 					unset(self::$collection['ref'][$action[$i]]);
 				}
 			}
 		} else {
-			if(isset(self::$collection['ref']) && isset(self::$collection['ref'][$action])) {
+			if(!empty($loader) && isset(self::$collection['ref']) && isset(self::$collection['ref'][$action])) {
+				$actionElem = self::$collection['ref'][$action];
+				$keys = array_keys($actionElem);
+				for($z=0;$z<sizeof($keys);$z++) {
+					if(isset($actionElem[$keys[$z]]['loader']) && isset($actionElem[$keys[$z]]['loader']['file']) && strpos($actionElem[$keys[$z]]['loader']['file'], $loader)) {
+						unset(self::$collection['ref'][$action][$keys[$z]]);
+					}
+				}
+			} else if(empty($loader) && isset(self::$collection['ref']) && isset(self::$collection['ref'][$action])) {
 				unset(self::$collection['ref'][$action]);
 			}
 		}

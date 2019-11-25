@@ -132,8 +132,6 @@ class Debug {
 			), "events", "events".$i);
 			$i++;
 		}
-
-		$time = microtime(true);
 		$i = 0;
 		$work = $arr['time_work'];
 		foreach(self::$breakpoint as $name => $v) {
@@ -407,14 +405,14 @@ class Debug {
 		global $printedVdump;
 		$list = func_get_args();
 		$backtrace = debug_backtrace();
-		if(!defined("IS_CLI") && $printedVdump===false) {
+		if(!defined("IS_CLI") && (!isset($printedVdump) || $printedVdump===false)) {
 			if(function_exists("nocache_headers")) { nocache_headers(); }
 			echo '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><meta name="viewport" content="width=device-width"><title>Cardinal &rsaquo; Debug</title><meta name="robots" content="noindex,follow"></head><style>html { background: #f1f1f1; } body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; } div.container { background: #fff; color: #444; margin: 2em auto; padding: 0em 2em 1em; max-width: 700px; -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.13); box-shadow: 0 1px 3px rgba(0,0,0,0.13); } div.info { border-bottom: 1px solid #dadada; clear: both; color: #666; background: #fff; word-break: break-all; max-width: 100%; font-size: 19px; padding: 1em 0px 7px; font-family: \'Roboto\'; margin-bottom: 1.5rem; } pre { text-align: left; margin: 0px 0px 1em; font-family: Consolas, Monaco, monospace; font-size: 12px; word-break: break-word; max-width: 100%; white-space: pre-wrap; line-height: 20px; }</style><body>';
 			if(function_exists("addEvent")) { addEvent("shutdownCardinal", function() { echo "</body></html>"; }, "", 999999999); }
 		}
 		if(!defined("IS_CLI")) {
-			echo '<div class="container"><div class="info">'. (isset($backtrace[2]) ? "<b>Called:</b><span> ".(defined("ROOT_PATH") ? str_replace(ROOT_PATH, DS, $backtrace[2]['file']) : $backtrace[2]['file'])." [".$backtrace[2]['line']."]&nbsp;<i>".date("d-m-Y H:i:s", fileatime($backtrace[2]['file']))."</i>" : "")."</span>".(isset($backtrace[2]) ? "<br>" : "")."</div>";
-			echo '<pre>';
+			echo PHP_EOL.'<div class="container"><div class="info">'. (isset($backtrace[2]) ? "<b>Called:</b><span> ".(defined("ROOT_PATH") ? str_replace(ROOT_PATH, DS, $backtrace[2]['file']) : $backtrace[2]['file'])." [".$backtrace[2]['line']."]&nbsp;<i>".date("d-m-Y H:i:s", fileatime($backtrace[2]['file']))."</i>" : "")."</span>".(isset($backtrace[2]) ? "<br>" : "")."</div>";
+			echo PHP_EOL.'<pre>';
 		} else {
 			echo (isset($backtrace[0]) ? "Called: ".$backtrace[2]['file']." [".$backtrace[2]['line']."] ".date("d-m-Y H:i:s", fileatime($backtrace[2]['file'])) : "")." ".(isset($backtrace[2]) ? PHP_EOL.PHP_EOL : "");
 		}
@@ -449,7 +447,6 @@ class Debug {
 		if(!isset(self::$breakpoint[$name])) {
 			return;
 		}
-		$back = debug_backtrace();
 		$time = microtime(true);
 		self::$breakpoint[$name]["duration"] = $time-self::$breakpoint[$name]["duration"];
 		self::$breakpoint[$name]["end"] = $time-SYSTEM_MICROTIME;

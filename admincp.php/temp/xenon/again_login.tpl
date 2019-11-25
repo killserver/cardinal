@@ -9,6 +9,7 @@
 	<meta name="author" content="KilleR" />
 	
 	<title>Admin Panel for {L_sitename}</title>
+	{header}
 
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Arimo:400,700,400italic">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/fonts/linecons/css/linecons.css?1">
@@ -32,7 +33,8 @@
 	
 </head>
 <body class="page-body lockscreen-page bgFon">
-	<span class="imgHere"></span>
+	[if {C_login_random_img}!=false]<span class="imgHere"></span>[/if {C_login_random_img}!=false]
+	{E_[admin_login]}
 	<div class="login-container">
 	
 		<div class="row">

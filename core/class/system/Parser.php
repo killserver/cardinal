@@ -148,8 +148,11 @@ class Parser {
      */
 	private $headerList = array();
 
+	private $addCookie = array();
+
 	private $parseCookie = false;
 	private $ch = null;
+	private $base_url = "";
 
 	/**
 	 * Parser constructor.
@@ -160,7 +163,16 @@ class Parser {
 		if(!empty($url)) {
 			$this->url = $url;
 		}
+		$this->ch = curl_init();
 		return $this;
+	}
+
+	final public function getCurl() {
+		return $this->ch;
+	}
+
+	final public function addCookie($k, $v) {
+		$this->addCookie[] = $k."=".$v;
 	}
 
 	final public function base($url) {
@@ -384,7 +396,7 @@ class Parser {
 	/**
 	 * Get response code
 	 * @param $header Full request
-	 * @return $this Code response
+	 * @return integer Code response
      */
 	final private function getResponseCode($header) {
 		return (int) substr($header, 9, 3);
@@ -408,16 +420,15 @@ class Parser {
 		if(empty($url)) {
 			$url = $this->base_url;
 		}
-		$this->ch = curl_init();
 		curl_setopt($this->ch, CURLOPT_URL, $url);
 		if(!empty($this->agent)) {
 			curl_setopt($this->ch, CURLOPT_USERAGENT, $this->agent);
 		} else {
 			curl_setopt($this->ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 6.1; rv:14.0) Gecko/20100101 Firefox/14.0.1");
 		}
-//Установите эту опцию в ненулевое значение, если вы хотите, чтобы PHP завершал работу скрыто, если возвращаемый HTTP-код имеет значение выше 300. По умолчанию страница возвращается нормально с игнорированием кода.
-	//curl_setopt($this->ch, CURLOPT_FAILONERROR, 1);
-	//Устанавливаем значение referer - адрес последней активной страницы
+		//Установите эту опцию в ненулевое значение, если вы хотите, чтобы PHP завершал работу скрыто, если возвращаемый HTTP-код имеет значение выше 300. По умолчанию страница возвращается нормально с игнорированием кода.
+		//curl_setopt($this->ch, CURLOPT_FAILONERROR, 1);
+		//Устанавливаем значение referer - адрес последней активной страницы
 		if(!is_bool($this->cookie) && !empty($this->cookie)) {
 			if(is_array($this->cookie)) {
 				$nam = array_keys($this->cookie);
@@ -434,6 +445,10 @@ class Parser {
 			curl_setopt($this->ch, CURLOPT_COOKIEJAR, (defined("PATH_CACHE") ? PATH_CACHE.$this->cookie_path.".txt" : $this->cookie_path));
 			curl_setopt($this->ch, CURLOPT_COOKIEFILE, (defined("PATH_CACHE") ? PATH_CACHE.$this->cookie_path.".txt" : $this->cookie_path));
 		}
+		if(sizeof($this->addCookie)>0) {
+			curl_setopt($this->ch, CURLOPT_COOKIE, implode("&", $this->addCookie));
+			$this->addCookie = array();
+		}
 		if(!empty($this->referrer)) {
 			curl_setopt($this->ch, CURLOPT_REFERER, $this->referrer);
 			$this->referrer = "";
@@ -447,7 +462,15 @@ class Parser {
 			curl_setopt($this->ch, CURLOPT_HEADER, 1);
 		}
 		if(isset($this->headerList) && is_array($this->headerList) && sizeof($this->headerList)) {
-			curl_setopt($this->ch, CURLOPT_HTTPHEADER, $this->headerList);
+			$headers = array();
+			foreach($this->headerList as $k => $v) {
+				if(!is_numeric($k)) {
+					$headers[] = $k.": ".$v;
+				} else {
+					$headers[] = $v;
+				}
+			}
+			curl_setopt($this->ch, CURLOPT_HTTPHEADER, $headers);
 		}
 		if(is_array($this->post) && sizeof($this->post)>0) {
 			$post = array();

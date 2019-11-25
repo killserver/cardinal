@@ -289,6 +289,10 @@ class Core {
 						"type_st" => ($type=="cat"&&$datas[$i][$is]['type']=="cat" ? "start" : ""),
 						"type_end" => ($type=="cat"&&$count==$is&&$datas[$i][$is]['type']=="item" ? "end" : ""),
 						"icon" => (isset($datas[$i][$is]['icon']) ? $datas[$i][$is]['icon'] : " "),
+						"styleLi" => (isset($datas[$i][$is]['styleLi']) ? $datas[$i][$is]['styleLi'] : ""),
+						"styleA" => (isset($datas[$i][$is]['styleA']) ? $datas[$i][$is]['styleA'] : ""),
+						"styleI" => (isset($datas[$i][$is]['styleI']) ? $datas[$i][$is]['styleI'] : ""),
+						"styleSpan" => (isset($datas[$i][$is]['styleSpan']) ? $datas[$i][$is]['styleSpan'] : ""),
 					), "menu", "m".$all.$i.$is);
 				}
 			}
@@ -479,9 +483,19 @@ class Core {
 		$uriNow = HTTP::getServer("REQUEST_URI");
 		$link = config::Select("default_http_local").ADMINCP_DIRECTORY."/";
 		$uriNow = substr($uriNow, strlen($link));
+		$consolePage = config::Select("consolePageAdmin");
 		$mainPage = config::Select("mainPageAdmin");
-		if($mainPage!="?pages=main" && (empty($uriNow) || $uriNow=="?pages=main")) {
-			location($link.$mainPage);die();
+
+		$linkRedirect = "";
+		if(empty($uriNow) && ($mainPage!=$consolePage || $uriNow!=$consolePage)) {
+			$linkRedirect = $mainPage;
+		} else if(empty($uriNow) && $mainPage==$consolePage && ($uriNow!="?pages=main" || stripos($uriNow, "pages=login")!==false)) {
+			$linkRedirect = $mainPage;
+		} else if(empty($uriNow) && $mainPage==$consolePage) {
+			$linkRedirect = $mainPage;
+		}
+		if(!empty($linkRedirect)) {
+			location($link.$linkRedirect);die();
 		}
 		$routeLang = HTTP::getServer(ROUTE_GET_URL);
 		preg_match("#^/([a-zA-Z]+)/#", $routeLang, $arr);

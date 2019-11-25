@@ -34,14 +34,14 @@ class User {
 	}
 
 	final private static function defend($users) {
+		$usersFile = false;
 		$php = self::PathUsers()."userList.php";
 		if(file_exists($php)) {
-			$file = Defender::readFile($php);
-			$file = preg_replace("#\<\?(.*?)\?\>#is", "", $file);
-			if(Validate::json($file)) {
-				$usersFile = json_decode($file, true);
-				$users = array_merge($users, $usersFile);
-			}
+			$usersFile = Defender::readFile($php, true);
+			$users = array_merge($users, $usersFile);
+		}
+		if($usersFile===false && sizeof($users)<=0) {
+			throw new Exception("error user", 1);
 		}
 		return $users;
 	}
@@ -81,19 +81,22 @@ class User {
 			include(PATH_MEDIA."users.default.".ROOT_EX);
 			$userLoad = true;
 		}
+        $userTypeInSystem = array();
+        foreach($users as $k => $v) {
+            if(!isset($v['typeUserInSystem'])) {
+                $userTypeInSystem[$k] = "file";
+            }
+        }
 		$users = self::defend($users);
+        foreach($userTypeInSystem as $k => $v) {
+            $users[$k]['typeUserInSystem'] = "file";
+        }
 		$id = 1;
-		$arr = array_values($users);
-		for($i=0;$i<sizeof($arr);$i++) {
-			if(isset($arr['id'])) {
-				$id = max($id, $arr['id']);
-			}
-		}
 		foreach($users as $k => $v) {
 			if(!isset($v['id'])) {
 				$users[$k]['id'] = $id;
-				$id++;
 			}
+            $id++;
 		}
 		if($onlyUsers) {
 			return $users;
@@ -263,11 +266,9 @@ class User {
 		if(!isset($users[$list['username']])) {
 			$users[$list['username']] = array();
 		}
-		$update = array();
 		foreach($list as $k => $v) {
-			$update[$k] = $v;
+			$users[$list['username']][$k] = $v;
 		}
-		$users[$list['username']] = array_merge($users[$list['username']], $update);
 		if(!isset($users[$list['username']]['level']) || empty($users[$list['username']]['level'])) {
 			$users[$list['username']]['level'] = LEVEL_USER;
 		}
@@ -275,7 +276,7 @@ class User {
 		if(!is_writable($path)) {
 			@chmod($path, 0777);
 		}
-		Defender::safeSave($path."userList.php", "<?php die(); ?>".CardinalJSON::save($users));
+		Defender::safeSave($path."userList.php", ($users), true);
 		return true;
 	}
 	
@@ -314,7 +315,7 @@ class User {
 		if(!is_writable($path)) {
 			@chmod($path, 0777);
 		}
-		Defender::safeSave($path."userList.php", "<?php die(); ?>".CardinalJSON::save($users));
+		Defender::safeSave($path."userList.php", CardinalJSON::save($users), true);
 		return true;
 	}
 
@@ -328,7 +329,7 @@ class User {
 		if(!is_writable($path)) {
 			@chmod($path, 0777);
 		}
-		Defender::safeSave($path."userList.php", "<?php die(); ?>".CardinalJSON::save($users));
+		Defender::safeSave($path."userList.php", CardinalJSON::save($users), true);
 		return true;
 	}
 
@@ -338,6 +339,22 @@ class User {
 		$pass = sha1($pass);
 		$pass = bin2hex($pass);
 		return md5(md5($pass).$pass);
+	}
+
+	final public static function getUserById($id) {
+		if(!is_numeric($id) || $id<=0) {
+			throw new Exception("Error in user id", 1);
+			die();
+		}
+		$users = self::All(true);
+		$find = array();
+		foreach($users as $v) {
+			if(isset($v['id']) && $v['id']==$id) {
+				$find = $v;
+				break;
+			}
+		}
+		return $find;
 	}
 	
 }

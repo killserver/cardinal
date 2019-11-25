@@ -412,8 +412,10 @@ class HTTP {
 	}
 
 	final public static function ajax($arr) {
-		self::setContentType("application/json", config::Select("charset"));
-		callAjax();
+		if(!defined("IS_CLI")) {
+			self::setContentType("application/json", config::Select("charset"));
+		}
+		if(function_exists("callAjax")) { callAjax(); }
 		self::echos(json_encode($arr), true);
 	}
 	

@@ -222,7 +222,7 @@ class DBObject implements ArrayAccess {
 		return $this->addPrefixTable($query, true, $force);
 	}
 
-	final public function getArray() {
+	final public function getArray($clear = true) {
 		$ret = get_object_vars($this);
 		$this->UnSetAll($ret);
 		$arr = array_keys($ret);
@@ -236,7 +236,7 @@ class DBObject implements ArrayAccess {
 					$newArr[$name] = $val;
 				}
 			}
-			$newArr[$arr[$i]] = $this->ToType($ret[$arr[$i]]);
+			$newArr[$arr[$i]] = ($clear ? $this->ToType($ret[$arr[$i]]) : $ret[$arr[$i]]);
 			if(isset($this->pseudoPosition[$arr[$i]]) && isset($this->pseudoPosition[$arr[$i]]['after'])) {
 				for($z=0;$z<sizeof($this->pseudoPosition[$arr[$i]]['after']);$z++) {
 					$name = $this->pseudoPosition[$arr[$i]]['after'][$z]['name'];
@@ -465,16 +465,22 @@ class DBObject implements ArrayAccess {
 		$this->offset = $offset;
 	}
 	
-	final public function OrderByTo($name, $type = "DESC") {
+	final public function OrderByTo($name = "", $type = "DESC") {
+		if(empty($name)) {
+			$name = $this->getFirst();
+		}
 		$this->orderBy[][$name] = $type;
 	}
 	
-	final public function OrderBy($name, $type = "DESC") {
+	final public function OrderBy($name = "", $type = "DESC") {
+		if(empty($name)) {
+			$name = $this->getFirst();
+		}
 		return self::OrderByTo($name, $type);
 	}
 	
-	final public function Where($name, $to = false, $val = false, $type = "AND") {
-		return $this->WhereTo($name, $to, $val, $type);
+	final public function Where($name, $to = false, $val = false, $type = "AND", $save = true) {
+		return $this->WhereTo($name, $to, $val, $type, $save);
 	}
 	
 	final public function WhereTo($name, $to = false, $val = false, $type = "AND", $save = true) {
@@ -485,6 +491,12 @@ class DBObject implements ArrayAccess {
 		if(empty($name)) {
 			$name = get_object_vars($this);
 			$name = key($name);
+			global $config;
+			if(isset($config['db']['driver']) && $config['db']['driver']==="db_mongo") {
+				$name = "_id";
+			} else if(isset($config['driver']) && $config['driver']==="db_mongo") {
+				$name = "_id";
+			}
 		}
 		if($val===false) {
 			$val = $to;
@@ -494,7 +506,27 @@ class DBObject implements ArrayAccess {
 				$to = "LIKE";
 			}
 		}
-		$this->where[][$type] = "`".$name."` ".$to." ".($save ? db::escape($val) : $val)."";
+		if($to=="IN") {
+			$this->where[][$type] = "`".$name."` IN(".($val).")";
+		} else if($to=="REGEXP") {
+			$this->where[][$type] = "`".$name."` REGEXP '[[:<:]](".($val).")[[:>:]]'";
+		} else {
+			$this->where[][$type] = "`".$name."` ".$to." ".($save ? db::escape($val) : $val)."";
+		}
+	}
+
+	final public function ClearWhere($name = "") {
+		if(!empty($name)) {
+			for($i=0;$i<sizeof($this->where);$i++) {
+				foreach($this->where[$i] as $k => $v) {
+					if(strpos($v, "`".$name."`")!==false) {
+						unset($this->where[$i][$k]);
+						break;
+					}
+				}
+			}
+		}
+		$this->where = array();
 	}
 	
 	final private function ReleaseWhere($where = "") {
@@ -571,10 +603,16 @@ class DBObject implements ArrayAccess {
 	}
 	
 	final public function getFirst() {
+		global $config;
 		$ret = get_object_vars($this);
 		$this->UnSetAll($ret);
 		$ret = array_keys($ret);
 		$first = current($ret);
+		if(isset($config['db']['driver']) && $config['db']['driver']==="db_mongo") {
+			$first = "_id";
+		} else if(isset($config['driver']) && $config['driver']==="db_mongo") {
+			$first = "_id";
+		}
 		return $first;
 	}
 	

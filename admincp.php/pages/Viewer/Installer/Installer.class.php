@@ -74,9 +74,11 @@ class Installer extends Core {
 	global $manifest;
 		callAjax();
 
-		$owner = posix_getpwuid(fileowner(__FILE__));
-		if($owner['name']!=get_current_user()) {
-			self::addInfo("Установка не может быть выполнена успешно из-за того, что Вы не являетесь владельцем. Владелец <b>".$owner['name']."</b>. Обратитесь в тех.поддержку для решения данного вопроса", "error", false, 1);
+		if(function_exists("posix_getpwuid")) {
+			$owner = posix_getpwuid(fileowner(__FILE__));
+			if($owner['name']!=get_current_user()) {
+				self::addInfo("Установка не может быть выполнена успешно из-за того, что Вы не являетесь владельцем. Владелец <b>".$owner['name']."</b>. Обратитесь в тех.поддержку для решения данного вопроса", "error", false, 1);
+			}
 		}
 
 		if(isset($_GET['remove'])) {

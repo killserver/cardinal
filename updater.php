@@ -309,6 +309,18 @@ if(defined("ADMINCP_DIRECTORY") && file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."p
 if(file_exists(PATH_MEDIA."config.settings.".ROOT_EX) && !file_exists(PATH_MEDIA."config.init.".ROOT_EX)) {
 	@rename(PATH_MEDIA."config.settings.".ROOT_EX, PATH_MEDIA."config.init.".ROOT_EX);
 }
+if(defined("WITHOUT_DB")) {
+	if(!defined("PREFIX_DB")) {
+		$file = "cardinal_";
+		if(file_exists(PATH_MEDIA."prefix_db.lock") && is_readable(PATH_MEDIA."prefix_db.lock")) {
+			$file = file_get_contents(PATH_MEDIA."prefix_db.lock");
+		} elseif(is_writable(PATH_MEDIA."prefix_db.lock")) {
+			$file = "cd".uniqid();
+			@file_put_contents(PATH_MEDIA."prefix_db.lock", $file);
+		}
+		define("PREFIX_DB", $file);
+	}
+}
 if(file_exists(PATH_CACHE_USERDATA."trashBin.lock") && file_exists(PATH_MEDIA."db.php")) {
 	function cardinalAutoload($class) {
 	    if(stripos(ini_get('include_path'), $class)!==false && class_exists($class, false)) {
@@ -326,15 +338,18 @@ if(file_exists(PATH_CACHE_USERDATA."trashBin.lock") && file_exists(PATH_MEDIA."d
 	    }
 	}
 	if(version_compare(PHP_VERSION, '5.1.2', '>=')) {
-		include(dirname(__FILE__).DIRECTORY_SEPARATOR."register70.php");
+		include(dirname(__FILE__).DIRECTORY_SEPARATOR."core".DIRECTORY_SEPARATOR."register70.php");
 	} else {
-		include(dirname(__FILE__).DIRECTORY_SEPARATOR."register53.php");
+		include(dirname(__FILE__).DIRECTORY_SEPARATOR."core".DIRECTORY_SEPARATOR."register53.php");
 	}
 	$config = array();
 	include(PATH_MEDIA."db.php");
 	db::config($config);
 	new db();
-	db::query("ALTER TABLE {{trashBin}} RENAME TO {{trashbin}}");
+	$row = db::doquery("SELECT * FROM `information_schema`.`tables` WHERE table_schema = '".$config['db']['db']."' AND table_name = '".(defined("PREFIX_DB") ? PREFIX_DB : "")."trashBin' LIMIT 1");
+	if(!is_null($row)) {
+		db::query("ALTER TABLE {{trashBin}} RENAME TO {{trashbin}}");
+	}
 }//
 echo file_get_contents(PATH_SKINS."core".DS."updater.html");
 @unlink(__FILE__);

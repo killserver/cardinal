@@ -61,6 +61,7 @@ class SettingUser extends Core {
 		if(file_exists(PATH_MEDIA."config.init.".ROOT_EX)) {
 			include(PATH_MEDIA."config.init.".ROOT_EX);
 		}
+		$_POST = execEvent("pre_save_settings", $_POST);
 		$_POST = array_merge($config, $_POST);
 		$config = '<?php
 		if(!defined("IS_CORE")) {
@@ -106,6 +107,7 @@ class SettingUser extends Core {
 			$this->Save();
 			return;
 		}
+		execEventRef("SettingUser_page", self::$head, self::$html);
 		$tmp = templates::load_templates("SettingUser");
 		foreach(self::$exclude as $v) {
 			if(isset(self::$head[$v])) {
