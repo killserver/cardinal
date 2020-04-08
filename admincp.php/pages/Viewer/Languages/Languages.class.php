@@ -12,7 +12,7 @@ class Languages extends Core {
 			return $text;
 		}
 		$isArr = false;
-		$orText = $text;
+        $orText = $text;
 		if(is_array($text)) {
 			foreach($text as $k => $v) {
 				if(is_array($v)) {
@@ -46,6 +46,16 @@ class Languages extends Core {
 		} else {
 			return $ret;
 		}
+	}
+
+	function fixLanguage($lang) {
+		$lang = rawurldecode($lang);
+		// $lang = str_replace("\n", "<br>", $lang);
+		// $lang = htmlspecialchars($lang);
+		// $lang = str_replace("\t", " ", $lang);
+		// $lang = str_replace("<br>", " ", $lang);
+		// $lang = preg_replace('/\s{2,}/', " ", $lang);
+		return $lang;
 	}
 	
 	function __construct() {
@@ -161,7 +171,7 @@ class Languages extends Core {
 		}
 		if(Arr::get($_GET, 'saveLang', false)) {
 			callAjax();
-			if(Arr::get($_POST, 'orLang', false) && Arr::get($_POST, 'translate', false) && lang::Update($langs, rawurldecode(Arr::get($_POST, 'orLang')), rawurldecode(Arr::get($_POST, 'translate')))) {
+			if(Arr::get($_POST, 'orLang', false) && Arr::get($_POST, 'translate', false) && lang::Update($langs, $this->fixLanguage(Arr::get($_POST, 'orLang')), $this->fixLanguage(Arr::get($_POST, 'translate')))) {
 				cardinal::RegAction("Сохранён перевод для языка \"".Arr::get($_GET, 'lang', $orLang)."\" в разделе языковой панели");
 				$ret = "1";
 			} else {
@@ -197,7 +207,7 @@ class Languages extends Core {
 			if(!is_writeable(PATH_MEDIA)) {
 				chmod(PATH_MEDIA, 0777);
 			}
-			@file_put_contents(PATH_MEDIA."config.langSettings.".ROOT_EX, '<?php'.PHP_EOL.'lang::set_lang("'.$lang.'");Route::SetLang("'.$lang.'", true);$mainLangSite = "'.$lang.'";'.(Arr::get($_GET, "onlyLang", false) ? '$onlyLang = "'.$lang.'";' : ""));
+			@file_put_contents(PATH_MEDIA."config.langSettings.".ROOT_EX, '<?php'.PHP_EOL.'lang::set_lang("'.$lang.'");Route::SetLang("'.$lang.'", true);$mainLangSite = "'.$lang.'";');
 			$ret = "1";
 			HTTP::echos($ret);
 			cardinal::RegAction("Установлен язык по-умолчанию \"".$lang."\" в разделе языковой панели");
@@ -206,7 +216,12 @@ class Languages extends Core {
 		}
 		if(Arr::get($_GET, 'resetLang', false)) {
 			callAjax();
-			if(Arr::get($_POST, 'orLang', false) && lang::LangReset($langs, rawurldecode(Arr::get($_POST, 'orLang')))) {
+			$langs = Arr::get($_GET, 'lang');
+			$lang = Arr::get($_POST, 'orLang');
+			$lang = htmlspecialchars_decode($lang);
+			$lang = $this->fixLanguage($lang);
+			$reset = lang::LangReset($langs, $lang);
+			if(Arr::get($_POST, 'orLang', false) && $reset) {
 				cardinal::RegAction("Сброшен перевод для языка \"".Arr::get($_GET, 'lang', $orLang)."\" в разделе языковой панели");
 				$ret = "1";
 			} else {
@@ -217,6 +232,7 @@ class Languages extends Core {
 		}
 		templates::assign_var("initLang", $langs);
 		$lang = lang::init_lang(true);
+		// var_dump($lang);die();
 		if(!is_array($lang)) {
 			die();
 		}
@@ -225,7 +241,7 @@ class Languages extends Core {
 			if(!is_string($v)) {
 				continue;
 			}
-			templates::assign_vars(array("or" => $k, "lang" => str_replace(array("{"), array("&#123;"), $v)), "langList", "lang".$i);
+			templates::assign_vars(array("or" => str_replace(array("{", "\t"), array("&#123;", "&#9;"), htmlspecialchars($k)), "lang" => str_replace(array("{"), array("&#123;"), $v)), "langList", "lang".$i);
 			$i++;
 		}
 		$this->Prints("Lang");

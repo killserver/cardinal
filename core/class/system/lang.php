@@ -229,6 +229,8 @@ class lang implements ArrayAccess {
 		}
 		return $sbin;
 	}
+
+	private static $fileLang = array();
 	
 	final private static function merge($langSelect, $orig = "", $tr = "", $type = "get") {
 		global $lang;
@@ -247,21 +249,37 @@ class lang implements ArrayAccess {
 				return false;
 			}
 		} else if($type=="get") {
-			$fileLang = array();
-			if(file_exists($dirLangs."lang".$langSelect.".db") && is_readable($dirLangs."lang".$langSelect.".db")) {
-				$file = file_get_contents($dirLangs."lang".$langSelect.".db");
-				$fileLang = unserialize(self::hex2bin($file));
+			if(!isset(self::$fileLang[$langSelect]) || sizeof(self::$fileLang[$langSelect])==0) {
+				$fileLang = array();
+				if(file_exists($dirLangs."lang".$langSelect.".db") && is_readable($dirLangs."lang".$langSelect.".db")) {
+					$file = file_get_contents($dirLangs."lang".$langSelect.".db");
+					$fileLang = unserialize(self::hex2bin($file));
+				}
+				if(!isset(self::$fileLang[$langSelect])) {
+					self::$fileLang[$langSelect] = array();
+				}
+				self::$fileLang[$langSelect] = $fileLang;
+			} else {
+				$fileLang = self::$fileLang[$langSelect];
 			}
-			return array_replace_recursive($fileLang, $lang);
+			return array_replace_recursive($lang, $fileLang);
 		} else if($type=="check") {
 			return file_exists($dirLangs."lang".$langSelect.".db") && is_readable($dirLangs."lang".$langSelect.".db");
 		} else if($type=="merge") {
-			$fileLang = array();
-			if(file_exists($dirLangs."lang".$langSelect.".db") && is_readable($dirLangs."lang".$langSelect.".db")) {
-				$file = file_get_contents($dirLangs."lang".$langSelect.".db");
-				$fileLang = unserialize(self::hex2bin($file));
+			if(!isset(self::$fileLang[$langSelect]) || sizeof(self::$fileLang[$langSelect])==0) {
+				$fileLang = array();
+				if(file_exists($dirLangs."lang".$langSelect.".db") && is_readable($dirLangs."lang".$langSelect.".db")) {
+					$file = file_get_contents($dirLangs."lang".$langSelect.".db");
+					$fileLang = unserialize(self::hex2bin($file));
+				}
+				if(!isset(self::$fileLang[$langSelect])) {
+					self::$fileLang[$langSelect] = array();
+				}
+				self::$fileLang[$langSelect] = $fileLang;
+			} else {
+				$fileLang = self::$fileLang[$langSelect];
 			}
-			return array_replace_recursive($fileLang, $orig);
+			return array_replace_recursive($orig, $fileLang);
 		} else if($type=="del") {
 			$fileLang = array();
 			if(file_exists($dirLangs."lang".$langSelect.".db") && is_readable($dirLangs."lang".$langSelect.".db")) {
@@ -277,7 +295,7 @@ class lang implements ArrayAccess {
 					return false;
 				}
 			} else {
-				return false;
+				return "false";
 			}
 		} else if($type=="remove") {
 			if(file_exists($dirLangs."lang".$langSelect.".db") && is_readable($dirLangs."lang".$langSelect.".db")) {
@@ -288,8 +306,8 @@ class lang implements ArrayAccess {
 		}
 	}
 
-	final public static function Remove($lang) {
-		if(file_exists(PATH_LANGS.$lang.DS)) {
+	final public static function Remove($lang, $andFiles = true) {
+		if($andFiles && file_exists(PATH_LANGS.$lang.DS)) {
 			$files = scandir(PATH_LANGS.$lang.DS);
 			for($i=0;$i<sizeof($files);$i++) {
 				if($files[$i]!="." && $files[$i]!=".." && file_exists(PATH_LANGS.$lang.DS.$files[$i])) {
@@ -338,7 +356,7 @@ class lang implements ArrayAccess {
 			} else {
 				$lang = self::merge(self::$lang, $lang, "", "merge");
 			}
-			$lang = array_replace_recursive($lang, $saveLang);
+			$lang = array_replace_recursive($saveLang, $lang);
 			if(file_exists(PATH_MEDIA."config.lang.".ROOT_EX)) {
 				include(PATH_MEDIA."config.lang.".ROOT_EX);
 			}
@@ -354,7 +372,7 @@ class lang implements ArrayAccess {
 			} else {
 				$lang = self::merge(self::$lang, $saveLang, "", "merge");
 			}
-			$lang = array_replace_recursive($lang, $saveLang);
+			$lang = array_replace_recursive($saveLang, $lang);
 			if(file_exists(PATH_MEDIA."config.lang.".ROOT_EX)) {
 				include(PATH_MEDIA."config.lang.".ROOT_EX);
 			}
@@ -417,6 +435,11 @@ class lang implements ArrayAccess {
     	return ($get ? $get : $name);
     }
 
+	final public static function translate($name) {
+    	$get = self::get_lang($name);
+    	return ($get ? $get : $name);
+    }
+
     /**
      * Try get language in language panel
      * @param string $name Needed language
@@ -451,9 +474,14 @@ class lang implements ArrayAccess {
 			if(!isset($lang[$name])) {
 				$lang[$name] = array();
 			}
+			if(!isset(self::$fileLang[self::$lang][$name])) {
+				self::$fileLang[self::$lang][$name] = array();
+			}
+			self::$fileLang[self::$lang][$name][$sub] = $val;
 			$lang[$name][$sub] = $val;
 			return true;
 		} else {
+			self::$fileLang[self::$lang][$name] = $val;
 			$lang[$name] = $val;
 			return true;
 		}

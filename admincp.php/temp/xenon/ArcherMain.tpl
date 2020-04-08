@@ -10,6 +10,7 @@ if (myParam !="products") {
 }
 jQuery('.btn-for-search').on('click', function() {window.location.href = '?pages=Archer&type=products&tmp=ArcherMainEdit&ShowPages=true&Where=pName&WhereType=LIKE&WhereData=%25'+document.getElementById('text-search').value+'%25'})
 </script>[/if {activate_pager}==yes]
+{E_[KernalArcher::AfterAddBtn][table={ArcherTable};type=main;data={addition}]}
 </center>[/if {C_disableAdd}!=1]
 {E_[customHeaders][type={ArcherTable}]}
 <form method="post" action="./?pages=Archer&type={ArcherTable}&pageType=MultiAction">
@@ -32,6 +33,7 @@ jQuery('.btn-for-search').on('click', function() {window.location.href = '?pages
 			[if {C_disableMassAction}!=1]<td><label class="checkbox"><input type="checkbox" class="cbr" name="delete[]" value="{{ArcherPage}.{ArcherFirst}}"></label></td>[/if {C_disableMassAction}!=1]
 			{ArcherData}
 			<td>
+				[if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=CopyEdit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-turquoise btn-block">{L_"Клонировать и редактировать"}</a>[/if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]
 				[if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Copy&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-turquoise btn-block">{L_"Клонировать"}</a>[/if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]
 				[if {C_disableEdit}!=1&&{{ArcherPage}.DisableEdit}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Edit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-edit btn-block">{L_"Редактировать"}</a>[/if {C_disableEdit}!=1&&{{ArcherPage}.DisableEdit}!="yes"]
 				[if {C_disableDelete}!=1&&{{ArcherPage}.DisableRemove}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Delete&viewId={{ArcherPage}.{ArcherFirst}}{addition}" onclick="return confirmDelete();" class="btn btn-red btn-block">{L_"Удалить"}</a>[/if {C_disableDelete}!=1&&{{ArcherPage}.DisableRemove}!="yes"]

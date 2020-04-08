@@ -120,8 +120,8 @@ class cardinal {
 			$hours = 1;
 		}
 		$otime = config::Select("cardinal_time");
-		if($otime >= time()-$hours*60*60) {
-			include_dir(PATH_CRON_FILES, ".".ROOT_EX);
+		if(!$otime || $otime >= time()-$hours*60*60) {
+			include_dir(PATH_CRON_FILES, ".".ROOT_EX, true);
 			config::Update("cardinal_time", time());
 		}
 	}

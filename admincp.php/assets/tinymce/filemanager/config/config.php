@@ -1,5 +1,10 @@
 <?php
 define("IS_CORE", true);
+@ini_set("upload_max_filesize","200M");
+@ini_set("post_max_size","200M");
+
+error_reporting(E_ALL);
+ini_set("display_errors", 1);
 require_once(dirname(__FILE__).DIRECTORY_SEPARATOR."..".DIRECTORY_SEPARATOR."..".DIRECTORY_SEPARATOR."..".DIRECTORY_SEPARATOR."..".DIRECTORY_SEPARATOR."..".DIRECTORY_SEPARATOR."core.php");
 if(!userlevel::get("admin")) {
 	die();
@@ -246,7 +251,9 @@ $config = array(
 	| default language file name
 	|--------------------------------------------------------------------------
 	*/
-	'default_language' => "ru_RU",
+	'default_language' => "ru",
+
+	'language' => 'ru',
 
 	/*
 	|--------------------------------------------------------------------------
@@ -410,7 +417,7 @@ $config = array(
 	//  If you insert an extensions blacklist array the filemanager don't check any extensions but simply block the extensions in the list
 	//  otherwise check Allowed extensions configuration
 	//*********************
-	'ext_blacklist'							  => array("php", "php5", "php7", "cgi", "sh", "bat"),//['exe','bat','jpg'],
+	'ext_blacklist'							  => array("php", "php5", "php7", "cgi", "sh", "bat", "exe"),//['exe','bat','jpg'],
 
 
 	//Empty filename permits like .htaccess, .env, ...
@@ -513,7 +520,8 @@ $config = array(
 		'remove_file' => false,
 		'remove_dir' => false,
 	),
-
+	'sort_by' => config::Select("filemanager_sort_by"),
+	'custom_folder_header' => config::Select("filemanager_custom_folder_header"),
 );
 
 return array_merge(

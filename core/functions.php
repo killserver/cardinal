@@ -146,6 +146,9 @@ if(defined("PATH_MYFUNCTIONS") && file_exists(PATH_MYFUNCTIONS)) {
 if(file_exists(ROOT_PATH.".env")) {
 	loadConfig(".env");
 }
+if(file_exists(ROOT_PATH."vendor".DS."autoload.php")) {
+	require_once(ROOT_PATH."vendor".DS."autoload.php");
+}
 
 if(file_exists(ROOT_PATH.".htaccess") && defined("DEVELOPER_MODE")) {
 	$file = file_get_contents(ROOT_PATH.".htaccess");

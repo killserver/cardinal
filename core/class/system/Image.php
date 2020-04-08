@@ -42,6 +42,8 @@ class Image {
 	private $toSize = true;
 	private $headers = false;
 	private $filter = false;
+	private $coefficientX = 0;
+	private $coefficientY = 0;
 
 	function __construct($imgUrl) {
 		$what = getimagesize($imgUrl);
@@ -194,21 +196,29 @@ class Image {
 		return $this;
 	}
     
-    function resizeToHeight($height) {
+    function resizeToHeight($height, $center = false) {
 		$this->resizeHeight = $height;
         $ratio = $height / $this->imageHeight;
         $this->resizeWidth = $this->imageWidth * $ratio;
+		if($center) {
+			$this->coefficientX = ($this->resizeWidth-$this->imageWidth)/2;
+			$this->coefficientY = ($height-$this->imageHeight)/2;
+		}
         return $this;
     }
     
-    function resizeToWidth($width) {
+    function resizeToWidth($width, $center = false) {
 		$this->resizeWidth = $width;
         $ratio = $width / $this->imageWidth;
         $this->resizeHeight = $this->imageHeight * $ratio;
+		if($center) {
+			$this->coefficientX = ($width-$this->imageWidth)/2;
+			$this->coefficientY = ($this->resizeHeight-$this->imageHeight)/2;
+		}
         return $this;
     }
 
-	function resizePersent($persent = 50) {
+	function resizePersent($persent = 50, $center = false) {
 		if(!is_numeric($persent)) {
 			throw new Exception("On resize persent must be set as integer", 1);
 			die();
@@ -218,10 +228,14 @@ class Image {
 		}
 		$this->resizeWidth = round($this->imageWidth/100*$persent);
 		$this->resizeHeight = round($this->imageHeight/100*$persent);
+		if($center) {
+			$this->coefficientX = ($width-$this->imageWidth)/2;
+			$this->coefficientY = ($height-$this->imageHeight)/2;
+		}
 		return $this;
 	}
 
-	function scale($scale = 0) {
+	function scale($scale = 0, $center = false) {
 		if(!is_numeric($scale)) {
 			throw new Exception("On scale must be set as integer", 1);
 			die();
@@ -230,7 +244,7 @@ class Image {
 		$height = $this->imageHeight + ($this->imageHeight * $scale / 10);
         
         $new_image = imagecreatetruecolor($width, $height);
-        imagecopyresampled($new_image, $this->source_image, 0, 0, 0, 0, $width, $height, $this->imageWidth, $this->imageHeight);
+        imagecopyresampled($new_image, $this->source_image, 0, 0, $this->coefficientX, $this->coefficientY, $width, $height, $this->imageWidth, $this->imageHeight);
         $this->source_image = $new_image;
 		return $this;
 	}

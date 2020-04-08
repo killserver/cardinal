@@ -90,13 +90,13 @@ if(!defined("DEBUG_ALL")) {
 }
 
 if(!defined("VERSION")) {
-	define("VERSION", "12.0");
+	define("VERSION", "12.1");
 }
 if(!defined("VERSION_ADMIN_STYLE")) {
 	define("VERSION_ADMIN_STYLE", "1.10");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "120001");
+	define("INTVERSION", "120101");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "6.5");
@@ -209,6 +209,8 @@ $config = array_merge($config, array(
 		"responsivefilemanager",
 		"visualblocks",
 	),
+	"filemanager_sort_by" => "date",
+	"filemanager_custom_folder_header" => array(),
 ));
 
 ?>

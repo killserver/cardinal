@@ -15,7 +15,7 @@
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/fonts/linecons/css/linecons.css?1">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/fonts/fontawesome/css/font-awesome.min.css?1">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/bootstrap.css?1">
-	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-core.css?5">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-core.css?10">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-forms.css?1">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-components.css?10">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-skins.css?1">
@@ -37,7 +37,7 @@
 
 	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 </head>
-<body class="page-body {C_defaultAdminSkin}">
+<body class="page-body {C_defaultAdminSkin} level_{U_level}">
 
 	[if {C_accessChangeSkin}==true]<div class="settings-pane accessChangeSkin">
 			
@@ -375,8 +375,10 @@
 				</div>
 			</div>
 			<span class="content_admin">
+				{E_[print_before_admin]}
 				{info}
 				{main_admin}
+				{E_[print_after_admin]}
 			</span>
 			<!-- Main Footer -->
 			<!-- Choose between footer styles: "footer-type-1" or "footer-type-2" -->
@@ -550,7 +552,7 @@
 		var http_link = link;
 		link = link.replace(default_link, "");
 		jQuery("#"+field_id).val(link).change();
-		var par = jQuery("#"+field_id)[0].closest(".row");
+		var par = jQuery("#"+field_id)[0].closest("[data-show]");
 		var pas = $(par).find("a[href*='file']").parent();
 		$(par).find("br").remove();
 		$(par).find("a[data-link]").remove();

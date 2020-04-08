@@ -1,4 +1,5 @@
-<center><a href="./?pages=Archer&type={ArcherTable}&pageType=Add{addition}" class="btn btn-secondary quickAdd">{L_add}</a>
+<center>
+<a href="./?pages=Archer&type={ArcherTable}&pageType=Add{addition}" class="btn btn-secondary quickAdd">{L_add}</a>
 [if {activate_pager}==yes]<div class="search-block-input" style="display: inline-flex;width: 31%;justify-content: space-around;margin: 0px auto;float: right;position: absolute;right: 2.8em;">
 	<input type="text" name="search" id="text-search" value="" class="form-control input-sm" placeholder="Поиск"><button style="padding: 0.35em;width: 16%;" class="btn btn-edit btn-block btn-for-search">Поиск</button>
 </div>
@@ -10,6 +11,7 @@ if (myParam !="products") {
 }
 jQuery('.btn-for-search').on('click', function() {window.location.href = '?pages=Archer&type=products&tmp=ArcherMainEdit&ShowPages=true&Where=pName&WhereType=LIKE&WhereData=%25'+document.getElementById('text-search').value+'%25'})
 </script>[/if {activate_pager}==yes]
+{E_[KernalArcher::AfterAddBtn][table={ArcherTable};type=quickMain;data={addition}]}
 </center>
 <table id="example-1" class="table table-striped table-bordered" cellspacing="0" width="100%">
 <thead>
@@ -26,6 +28,7 @@ jQuery('.btn-for-search').on('click', function() {window.location.href = '?pages
 [foreach block={ArcherPage}]<tr>
 	{ArcherData}
 	<td>
+		[if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=CopyEdit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-turquoise btn-block">{L_"Клонировать и редактировать"}</a>[/if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]
 		[if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Copy&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-turquoise btn-block">{L_"Клонировать"}</a>[/if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]
 		[if {{ArcherPage}.DisableEdit}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Edit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-purple btn-block quickView">{L_quickEdit}</a>[/if {{ArcherPage}.DisableEdit}!="yes"]
 		[if {{ArcherPage}.DisableRemove}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Delete&viewId={{ArcherPage}.{ArcherFirst}}{addition}" onclick="return confirmDelete();" class="btn btn-red btn-block">{L_delete}</a>[/if {{ArcherPage}.DisableRemove}!="yes"]
@@ -451,6 +454,7 @@ jQuery(document).ready(function() {
 			select2Init();
 			reinitLang();
 			cbr_replace();
+			$('img').loadScroll(500, "#content_video");
 			jQuery("body").trigger("quickAdd");
 		});
 	}
@@ -554,6 +558,7 @@ jQuery(document).ready(function() {
 			select2Init();
 			reinitLang();
 			cbr_replace();
+			$('img').loadScroll(500, "#content_video");
 			jQuery("body").trigger("quickView");
 		});
 	}

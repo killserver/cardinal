@@ -223,7 +223,9 @@ class cardinalEvent {
 				$data[] = $return;
 				$data = array_merge($data, $args);
 				$ret = call_user_func_array($v['fn'], $data);
-				$return = $ret;
+				if($ret!==null) {
+					$return = $ret;
+				}
 			}
 			if(!empty($action) && isset(self::$events[$action])) {
 				self::$events[$action]['time'] = (self::$events[$action]['time']);

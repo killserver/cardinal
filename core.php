@@ -398,7 +398,7 @@ if(cardinal::is_cli()) {
 		ob_end_clean();
 		return $var;
 	}
-	if(!getArgv("clear", false)) {
+	if(!defined("CLEAR_CLI") && !getArgv("clear", false)) {
 		$cols = getCmd("tput cols");
 		system("clear");
 		system("clear");

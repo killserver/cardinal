@@ -630,6 +630,11 @@ class modules {
 		$exists = $db->getTable($table_name);
 		foreach($fields as $k => $v) {
 			$or = $k;
+			if(is_array($v) && isset($v['comment'])) {
+				$comment = $v['comment'];
+				unset($v['comment']);
+				//$v = $v['value'];
+			}
 			if(isset($v['orName'])) {
 				$or = $v['orName'];
 				unset($v['orName']);
@@ -637,10 +642,6 @@ class modules {
 			}
 			if($exists && in_array($or, $exists)) {
 				$comment = "";
-				if(is_array($v) && isset($v['comment'])) {
-					$comment = $v['comment'];
-					$v = $v['value'];
-				}
 				$db->query("ALTER TABLE {{".$table_name."}} CHANGE `".$or."` `".$k."` ".(strpos($v, "COLLATE")!==false ? $v : $v." COLLATE ".self::get_config("db", "charset")."_general_ci").(!empty($comment) ? " COMMENT ".db::escape($comment) : "").(strpos($v, 'auto_increment')!==false ? ', ADD PRIMARY KEY `id`(`'.$k.'`)' : ''));
 			}
 		}
@@ -786,6 +787,66 @@ class modules {
 			}
 		}
 		return $arr;
+	}
+
+	private static $loadedLanguages = array();
+	private static $gettedLanguages = "";
+
+	public static function getDataByRouteLang($data, $test = false) {
+		if(sizeof(self::$loadedLanguages)==0) {
+			$slang = self::init_lang();
+			$slang = $slang->support(true);
+			$slang = array_map("ucfirst", $slang);
+			self::$loadedLanguages = $slang;
+		} else {
+			$slang = self::$loadedLanguages;
+		}
+		if(empty(self::$gettedLanguages)) {
+			$lang = Route::param("lang");
+			if(empty($lang)) {
+				$lang = "ru";
+			}
+			$lang = nucfirst($lang);
+			self::$gettedLanguages = $lang;
+		} else {
+			$lang = self::$gettedLanguages;
+		}
+		if(isset($data[0])) {
+			for($i=0;$i<sizeof($data);$i++) {
+				$data[$i] = self::getDataByRouteLang($data[$i]);
+			}
+		} else if($data instanceof DBObject) {
+			$data = clone $data;
+			foreach($data as $k => $v) {
+				$key = substr($k, -2);
+				if(!in_array($key, $slang)) {
+					$data->{$k} = $v;
+				} else if($key===$lang) {
+					unset($data->{$k});
+					$k = substr($k, 0, -2);
+					$data->{$k} = $v;
+				} else {
+					unset($data->{$k});
+				}
+			}
+			$keys = $data->getPseudoField();
+			foreach($keys as $k => $v) {
+				$data->{$k} = $v;
+			}
+		} else {
+			$d = array();
+			foreach($data as $k => $v) {
+				$key = substr($k, -2);
+				if(!in_array($key, $slang)) {
+					$d[$k] = $v;
+				} else if($key===$lang) {
+					$k = substr($k, 0, -2);
+					$d[$k] = $v;
+				}
+			}
+			$data = $d;
+		}
+		return $data;
 	}
 
 }

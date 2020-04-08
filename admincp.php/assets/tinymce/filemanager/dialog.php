@@ -37,6 +37,9 @@ if(isset($_POST['submit'])){
 	{
 		$_SESSION['RF']['language'] = $config['default_language'];
 	}
+	if(!empty($config['language'])) {
+		$_SESSION['RF']['language'] = $config['default_language'];
+	}
 }
 include 'include/utils.php';
 
@@ -215,7 +218,7 @@ if(isset($_GET["filter"]))
 
 if (!isset($_SESSION['RF']['sort_by']))
 {
-	$_SESSION['RF']['sort_by'] = 'name';
+	$_SESSION['RF']['sort_by'] = $config["sort_by"];
 }
 
 if (isset($_GET["sort_by"]))
@@ -391,7 +394,7 @@ $get_params = http_build_query($get_params);
 	});
 		}
 	</script>
-	<script src="js/include.js?v=<?php echo $version; ?>"></script>
+	<script src="js/include.js?v=<?php echo $version; ?>&subVersion=3"></script>
 </head>
 <body>
 <!-- The Templates plugin is included to render the upload/download listings -->
@@ -728,9 +731,7 @@ function filenameSort($x, $y) {
 	if($x['is_dir'] !== $y['is_dir']){
 		return $y['is_dir'];
 	} else {
-		return ($descending)
-			? $x['file_lcase'] < $y['file_lcase']
-			: $x['file_lcase'] >= $y['file_lcase'];
+		return $descending ? strnatcmp($x['file_lcase'], $y['file_lcase']) : strnatcmp($y['file_lcase'], $x['file_lcase']);
 	}
 }
 
@@ -925,6 +926,9 @@ $files=$sorted;
 	<li><small class="hidden-phone"><span title="<?php echo trans('total size').$config['MaxSizeTotal'];?>"><?php echo trans('total size').": ".makeSize($sizeCurrentFolder).(($config['MaxSizeTotal'] !== false && is_int($config['MaxSizeTotal']))? '/'.$config['MaxSizeTotal'].' '.trans('MB'):'');?></span></small>
 	</li>
 	<?php } ?>
+	<?php $customFolder = 0; foreach($config['custom_folder_header'] as $folder => $name) { ?>
+		<li style="<?php if($customFolder==0) { echo 'margin-left:5%;'; } ?>margin-right:15px;"><a href="dialog.php?<?php echo $get_params.rawurlencode($folder."/")."&".($callback?'callback='.$callback."&":'').uniqid() ?>"><?php echo $name; ?></a></li>
+	<?php $customFolder++; } ?>
 	</ul>
 	</div>
 	<!-- breadcrumb div end -->
@@ -1311,33 +1315,18 @@ $files=$sorted;
 		}
 	</script>
 	<script type="text/javascript">
-		var ActionRemoveFile = false, ActionRemoveDir = false;
-		var observer = new MutationObserver(function(mutations) {
-			if(ActionRemoveFile) {
-				$(".modal-scrollable").find('[data-handler="1"]').click()
-				ActionRemoveFile = false;
-			}
-			if(ActionRemoveDir) {
-				$(".modal-scrollable").find('[data-handler="1"]').click()
-				ActionRemoveDir = false;
-			}
+		jQuery(document).ready(function($) {
+			<?php if(isset($config['alert']) && isset($config['alert']['remove_dir']) && $config['alert']['remove_dir']===false) { ?>
+				jQuery("body").on("wants-remove-folder", function() {
+					$(".modal-scrollable").find('[data-handler="1"]').click()
+				});
+			<?php } ?>
+			<?php if(isset($config['alert']) && isset($config['alert']['remove_file']) && $config['alert']['remove_file']===false) { ?>
+				jQuery("body").on("wants-remove-file", function() {
+					$(".modal-scrollable").find('[data-handler="1"]').click()
+				});
+			<?php } ?>
 		});
-		observer.observe(document, {attributes: false, childList: true, characterData: false, subtree:true});
-		<?php if(isset($config['alert']) && isset($config['alert']['remove_file']) && $config['alert']['remove_file']===false) { ?>
-			$("body").on("click", ".delete-file", function(e) {
-				console.warn(e.target.closest(".delete-file"))
-				if(e.target.closest(".delete-file") || $(e.target).is(".delete-file")) {
-					ActionRemoveFile = true
-			    }
-			});
-		<?php } ?>
-		<?php if(isset($config['alert']) && isset($config['alert']['remove_dir']) && $config['alert']['remove_dir']===false) { ?>
-		$("body").on("click", ".delete-folder", function(e) {
-			if(e.target.closest(".delete-folder") || $(e.target).is(".delete-folder")) {
-				ActionRemoveDir = true
-		    }
-		});
-		<?php } ?>
 	</script>
 </body>
 </html>

@@ -376,7 +376,7 @@ class UploadHandler
 			$file->error = $this->get_error_message('post_max_size');
 			return false;
 		}
-		if (!preg_match($this->options['accept_file_types'], $file->name)) {
+		if (preg_match($this->options['accept_file_types'], $file->name)) {
 			$file->error = $this->get_error_message('accept_file_types');
 			return false;
 		}
@@ -1503,7 +1503,15 @@ class UploadHandler
 					}
 
 					if ($resize){ create_img($targetFile, $targetFile, $srcWidth, $srcHeight, $this->options['config']['image_max_mode']); }
+
+					if(function_exists("execEvent")) {
+						execEvent("upload_image_uploader", $targetFile, $is_img, $srcWidth, $srcHeight);
+					}
 				}
+			}
+		} else {
+			if(function_exists("execEvent")) {
+				execEvent("upload_file_uploader", $targetFile, $is_img);
 			}
 		}
 

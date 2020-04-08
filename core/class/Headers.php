@@ -113,15 +113,17 @@ class Headers {
 	}
 
 	function builder($array = array(), $clear = false, $no_js = false, $no_css = false) {
+		global $mainLangSite;
 		$header = "";
 		$getMeta = Arr::get($array, 'meta', false);
+		$getMeta = cardinalEvent::execute("loaded_meta_collection", $getMeta);
 		$sitename = htmlspecialchars(lang::get_lang("sitename"));
 		$sitename = cardinalEvent::execute("before_show_sitename", $sitename);
 		if(!Arr::get($array, 'title', false) && empty($array['title'])) {
 			$array['title'] = $sitename;
 		}
 		$array['title'] = cardinalEvent::execute("before_show_title", $array['title']);
-		$header .= "\t<title>".$array['title']."</title>\n";
+		$header .= "\t<title>".(isset($getMeta['title_page']) ? $getMeta['title_page'] : $array['title'])."</title>\n";
 		
 		$header .= "<meta name=\"generator\" content=\"Cardinal ".VERSION."\" />\n";
 		
@@ -205,6 +207,15 @@ class Headers {
 			}
 		}
 		if($imageCheck && !empty($imageLink)) {
+			$width = $height = 0;
+			try {
+				$fileGet = str_replace("{C_default_http_host}", ROOT_PATH, $imageLink);
+				list($width, $height) = getimagesize($fileGet);
+			} catch(Exception $ex) {}
+			if(!empty($width) && !empty($height)) {
+				$header .= "<meta property=\"og:image:width\" content=\"".$width."\" />\n";
+				$header .= "<meta property=\"og:image:height\" content=\"".$height."\" />\n";
+			}
 			$header .= "<meta property=\"og:image\" content=\"".$imageLink."?".time()."\" />\n";
 			$header .= "<meta itemprop=\"image\" content=\"".$imageLink."?".time()."\" />\n";
 			$header .= "<link rel=\"apple-touch-startup-image\" href=\"".$imageLink."?".time()."\">\n";
@@ -234,9 +245,11 @@ class Headers {
 			$header .= '<meta name="rating" content="General">'."\n";
 			$support = lang::support();
 			$support = cardinalEvent::execute("before_show_support_lang", $support);
-			for($i=1;$i<sizeof($support);$i++) {
-				$clearLang = nsubstr($support[$i], 4, -3);
-				$header .= '<link rel="alternate" href="{C_default_http_host}'.$clearLang.'/" hreflang="'.$clearLang.'">'."\n";
+			if(sizeof($support)>1) {
+				for($i=0;$i<sizeof($support);$i++) {
+					$clearLang = nsubstr($support[$i], 4, -3);
+					$header .= '<link rel="alternate" href="{C_default_http_host}'.$clearLang.'/" hreflang="'.((!empty($mainLangSite) && $mainLangSite==$clearLang) || (empty($mainLangSite) && $clearLang=="ru") ? "x-default" : $clearLang).'">'."\n";
+				}
 			}
 			$param = array();
 			$dprm = Route::param();
@@ -286,6 +299,7 @@ class Headers {
 		if($getMeta) {
 			$getMeta = cardinalEvent::execute("before_show_meta", $getMeta);
 		}
+		$getMeta = cardinalEvent::execute("before_print_meta_collection", $getMeta);
 		if(($type = Arr::get($getMeta, 'type_meta', false))!==false) {
 			$is_use = true;
 			$header .= "<span itemscope itemtype=\"".$type."\">\n";

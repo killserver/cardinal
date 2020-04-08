@@ -1,10 +1,10 @@
 <?php
 
-class Archer_Edit {
+class Archer_CustomEdit {
 	
 	public function __construct() {
-		KernelArcher::callback("Add", "TraceOn", array(&$this, "Headers"));
-		KernelArcher::callback("Edit", "TraceOn", array(&$this, "Headers"));
+		KernelArcher::callback("CustomAdd", "TraceOn", array(&$this, "Headers"));
+		KernelArcher::callback("CustomEdit", "TraceOn", array(&$this, "Headers"));
 	}
 	
 	public function Headers($table, $page, $models, $tpl) {
@@ -59,7 +59,7 @@ class Archer_Edit {
 		if(ajax_check()=="ajax") {
 			$isAjax = true;
 		}
-		$body = "";
+		$body = array();
 		$supportedLang = array();
 		$fields = array();
 		foreach($list as $k => $v) {
@@ -107,13 +107,31 @@ class Archer_Edit {
 				$default = (!empty($where) && !empty($whereData) && $where==$k && isset($v[$whereData]) ? $v[$whereData] : (empty($v) ? $default : $v));
 				$v = implode(",", $typeData);
 			}
-			$body .= KernelArcher::Viewing($l, $k, $v, $height, $default, $r, false, $isAjax, $lang, $models);
+			$body[$k] = array(
+				"html" => KernelArcher::Viewing($l, $k, $v, $height, $default, $r, false, $isAjax, $lang, $models, true),
+				"value" => $v,
+				"default" => $default,
+				"height" => $height
+			);
 		}
 		sortByKey($supportedLang);
 		execEvent("archer_data_ready", $fields, $supportedLang);
-		$body = execEvent("archer_body_ready", $body);
-		foreach($supportedLang as $v) {
-			templates::assign_vars($v, "supportedLang");
+		$addition = execEvent("archer_addition", $addition, $page, $table);
+		$ref = execEvent("archer_get_ref", Arr::get($_GET, "ref", false), $page, $table);
+		$body = execEvent("archer_custom_edit", "", array(
+			"fields" => $body,
+			"supportedLang" => $supportedLang,
+			"addition" => $addition,
+			"ArcherPageNow" => $page,
+			"ArcherPage" => $page.($page!="Add" ? "&viewId=".$isId : ""),
+			"table" => str_replace(PREFIX_DB, "", $table),
+			"title" => execEvent("archer_print_head", "{L_".$page."}&nbsp;{L_".str_replace(PREFIX_DB, "", $table)."}", $page, $table),
+			"ref" => ($ref!==false ? "&ref=".urlencode(htmlspecialchars(urldecode($ref))) : ""),
+		));
+		if(!defined("ARCHER_CUSTOM_SUPPORT_LANGUAGES")) {
+			foreach($supportedLang as $v) {
+				templates::assign_vars($v, "supportedLang");
+			}
 		}
 		$tpl = str_replace("{addition}", execEvent("archer_addition", $addition, $page, $table), $tpl);
 		$tpl = str_replace("{ArcherPageNow}", $page, $tpl);

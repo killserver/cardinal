@@ -564,8 +564,8 @@ class templates {
 				$dd = str_replace('{'.$array[1].'.'.$nams[$is].'}', $vals[$is], $new);
 			}
 			$dd = str_replace('{$size_for}', $all+1, $dd);
-			$dd = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $dd);
-			$dd = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $dd);
+			$dd = self::callback_array(self::experementalIFFn(7), ("templates::is"), $dd);
+			$dd = self::callback_array(self::experementalIFFn(8), ("templates::is"), $dd);
 			$dd = self::callback_array('#\[foreachif (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/foreachif \\1\]#i', ("templates::is"), $dd);
 			$dd = self::callback_array('#\[foreachif (.*?)\]([\s\S]*?)\[/foreachif \\1\]#i', ("templates::is"), $dd);
 			$dd = self::callback_array("#\\[foreachif (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/foreachif\\]#i", ("templates::is"), $dd);
@@ -799,6 +799,16 @@ class templates {
 		} else {
 			return "";
 		}
+	}
+
+	final private static function slang($arr) {
+		$sprintf = end($arr);
+		$arr = array_slice($arr, 0, -1);
+		$lang = self::lang($arr);
+		$exp = explode(";", $sprintf);
+		array_unshift($exp, $lang);
+		$lang = call_user_func_array("sprintf", $exp);
+		return $lang;
 	}
 
 	/**
@@ -1641,19 +1651,6 @@ class templates {
 		$exp = explode(".", $filename_ROOT_PATH);
 		$type = end($exp);
 		$checkFile = str_replace(".".$type, "", $filename_ROOT_PATH);
-		if(isset($arr['width'])) {
-			$checkFile .= "_w".round($arr['width']);
-		}
-		if(isset($arr['height'])) {
-			$checkFile .= "_h".round($arr['height']);
-		}
-		if(!isset($arr['width']) && !isset($arr['height'])) {
-			$checkFile .= ".min";
-		}
-		$checkFile .= ".".$type;
-		if(file_exists($checkFile)) {
-			return str_replace(ROOT_PATH, "", $checkFile);
-		}
 
 
 		if(substr(decoct(fileperms($filename_ROOT_PATH)), -4) != 0777) {
@@ -1682,6 +1679,19 @@ class templates {
 		if(isset($arr['persent']) && $arr['persent']>0 && $arr['persent']<100) {
 			$arr['width'] = ($size_img[0]/100*$arr['persent']);
 			$arr['height'] = ($size_img[1]/100*$arr['persent']);
+		}
+		if(isset($arr['width'])) {
+			$checkFile .= "_w".round($arr['width']);
+		}
+		if(isset($arr['height'])) {
+			$checkFile .= "_h".round($arr['height']);
+		}
+		if(!isset($arr['width']) && !isset($arr['height'])) {
+			$checkFile .= ".min";
+		}
+		$checkFile .= ".".$type;
+		if(file_exists($checkFile)) {
+			return str_replace(ROOT_PATH, "", $checkFile);
 		}
 
 		$resizerWidth = $resizeWidth = (isset($arr['width']) ? $arr['width'] : (isset($setWidth) ? $setWidth : $size_img[0]));
@@ -1808,8 +1818,8 @@ class templates {
 			$dd = $tpl;
 			$dd = str_replace('{$id}', $i, $dd);
 			$dd = str_replace('{id}', $i, $dd);
-			$dd = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $dd);
-			$dd = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $dd);
+			$dd = self::callback_array(self::experementalIFFn(7), ("templates::is"), $dd);
+			$dd = self::callback_array(self::experementalIFFn(8), ("templates::is"), $dd);
 			$dd = self::callback_array('#\[forif (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/forif \\1\]#i', ("templates::is"), $dd);
 			$dd = self::callback_array('#\[forif (.*?)\]([\s\S]*?)\[/forif \\1\]#i', ("templates::is"), $dd);
 			$dd = self::callback_array("#\\[forif (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/forif\\]#i", ("templates::is"), $dd);
@@ -2059,6 +2069,28 @@ class templates {
 		return "";
 	}
 
+	private static $experementalIF = false;
+	private static function experementalIFFn($format) {
+		if($format==1) {
+			return self::$experementalIF ? '#\[if (.+?)\]((?:[^[]|\[(?!/?if \\1])|(?R))+)\[else \\1\]((?:[^[]|\[(?!/?if \\1])|(?R))+)\[/if \\1\]#i' : '#\[if (.+?)\](.*?)\[else \\1\](.*?)\[/if \\1\]#i';
+		} else if($format==2) {
+			return self::$experementalIF ? '~\[if (.+?)\]((?:[^[]|\[(?!/?if \\1])|(?R))+)\[/if \\1\]~iU' : '~\[if (.+?)\]([^[]*)\[/if \\1\]~iU';
+		} else if($format==3) {
+			return self::$experementalIF ? "#\\[if (.+?)\\]((?:[^[]|\[(?!/?if])|(?R))+)\\[else\\]((?:[^[]|\[(?!/?if])|(?R))+)\\[/if\\]#i" : "#\\[if (.+?)\\](.*?)\\[else\\](.*?)\\[/if\\]#i";
+		} else if($format==4) {
+			return self::$experementalIF ? '~\[if (.+?)\]((?:[^[]|\[(?!/?if])|(?R))+)\[/if\]~iU' : '~\[if (.+?)\]([^[]*)\[/if\]~iU';
+		} else if($format==5) {
+			return self::$experementalIF ? '#\[if (.*?)\]((?:[^[]|\[(?!/?if \\1])|(?R))+)\[else \\1\]((?:[^[]|\[(?!/?if \\1])|(?R))+)\[/if \\1\]#i' : '#\[if (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/if \\1\]#i';
+		} else if($format==6) {
+			return self::$experementalIF ? '#\[if (.*?)\]((?:[^[]|\[(?!/?if \\1])|(?R))+)\[/if \\1\]#i' : '#\[if (.*?)\]([\s\S]*?)\[/if \\1\]#i';
+		} else if($format==7) {
+			return self::$experementalIF ? "#\\[if (.*?)\\]((?:[^[]|\[(?!/?if])|(?R))+)\\[else\\]((?:[^[]|\[(?!/?if])|(?R))+)\\[/if\\]#i" : "#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i";
+		} else if($format==8) {
+			return self::$experementalIF ? "#\\[if (.*?)\\]((?:[^[]|\[(?!/?if])|(?R))+)\\[/if\\]#i" : "#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i";
+		}
+		throw new Exception("Error in new version if", 1);
+	}
+
 	/**
 	 * Final completed template
 	 * @access public
@@ -2116,6 +2148,7 @@ class templates {
 			$tpl = self::callback_array("#\{L_()([a-zA-Z0-9\-_]+)()\[(.*?)\]\}#", ("templates::lang"), $tpl);
 			$tpl = self::callback_array("#\{L_([\"|']|)(.+?)(\\1)\}#", ("templates::lang"), $tpl);
 			$tpl = self::callback_array("#\{L_()(.+?)()\}#", ("templates::lang"), $tpl);
+
 			$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_\.]+)\[([a-zA-Z0-9\-_]*?)\]\[([a-zA-Z0-9\-_]*?)\]=\[(.*?)\]\}#", ("templates::empty_config"), $tpl);
 			$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_\.]+)\[([a-zA-Z0-9\-_]*?)\]=\[(.*?)\]\}#", ("templates::empty_config"), $tpl);
 			$tpl = self::callback_array("#\{C_([a-zA-Z0-9\-_\.]+)=\[(.*?)\]\}#", ("templates::empty_config"), $tpl);
@@ -2128,17 +2161,20 @@ class templates {
 			$tpl = self::callback_array("#\{S_data=['\"](.+?)['\"](|,['\"](.*?)['\"])\}#", ("templates::sys_date"), $tpl);
 			$tpl = self::callback_array("#\{S_([a-zA-Z0-9\-_]+)\}#", ("templates::systems"), $tpl);
 			$tpl = self::callback_array("#\{M_\[(.+?)\]\}#", ("templates::checkMobile"), $tpl);
+
+			$tpl = self::callback_array("#\{LS_([\"|']|)(.+?)(\\1)\[(.*?)\]\[(.*?)\]\}#", ("templates::slang"), $tpl);
+			$tpl = self::callback_array("#\{LS_([\"|']|)(.+?)(\\1)\[(.*?)\]\}#", ("templates::slang"), $tpl);
 		}
 
 		if($type=="ecomp") {
-			$tpl = self::callback_array('#\[if (.+?)\](.*?)\[else \\1\](.*?)\[/if \\1\]#i', ("templates::is"), $tpl);
-			while(preg_match('~\[if (.+?)\]([^[]*)\[/if \\1\]~iU', $tpl)) {
-				$tpl = self::callback_array('~\[if (.+?)\]([^[]*)\[/if \\1\]~iU', ("templates::is"), $tpl);
+			$tpl = self::callback_array(self::experementalIFFn(1), ("templates::is"), $tpl);
+			while(preg_match(self::experementalIFFn(2), $tpl)) {
+				$tpl = self::callback_array(self::experementalIFFn(2), ("templates::is"), $tpl);
 			}
-			$tpl = self::callback_array("#\\[if (.+?)\\](.*?)\\[else\\](.*?)\\[/if\\]#i", ("templates::is"), $tpl);
-			$tpl = self::callback_array('~\[if (.+?)\]([^[]*)\[/if\]~iU', ("templates::is"), $tpl);
-			while(preg_match('~\[if (.+?)\]([^[]*)\[/if\]~iU', $tpl)) {
-				$tpl = self::callback_array('~\[if (.+?)\]([^[]*)\[/if\]~iU', ("templates::is"), $tpl);
+			$tpl = self::callback_array(self::experementalIFFn(3), ("templates::is"), $tpl);
+			$tpl = self::callback_array(self::experementalIFFn(4), ("templates::is"), $tpl);
+			while(preg_match(self::experementalIFFn(4), $tpl)) {
+				$tpl = self::callback_array(self::experementalIFFn(4), ("templates::is"), $tpl);
 			}
 		}
 
@@ -2170,11 +2206,11 @@ class templates {
 			$tpl = self::callback_array("#\\[!ajax_click\\]([\s\S]*?)\\[/!ajax_click\\]#i", ("templates::ajax_click"), $tpl);
 			$tpl = self::callback_array("#\\[!ajax\\]([\s\S]*?)\\[/!ajax\\]#i", ("templates::ajax"), $tpl);
 
-			$tpl = self::callback_array('#\[if (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/if \\1\]#i', ("templates::is"), $tpl);
-			$tpl = self::callback_array('#\[if (.*?)\]([\s\S]*?)\[/if \\1\]#i', ("templates::is"), $tpl);
+			$tpl = self::callback_array(self::experementalIFFn(5), ("templates::is"), $tpl);
+			$tpl = self::callback_array(self::experementalIFFn(6), ("templates::is"), $tpl);
 
-			$tpl = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $tpl);
-			$tpl = self::callback_array("#\\[if (.*?)\\]([\s\S]*?)\\[/if\\]#i", ("templates::is"), $tpl);
+			$tpl = self::callback_array(self::experementalIFFn(7), ("templates::is"), $tpl);
+			$tpl = self::callback_array(self::experementalIFFn(8), ("templates::is"), $tpl);
 
 			$tpl = self::callback_array("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
 			$tpl = self::callback_array("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
@@ -2201,7 +2237,7 @@ class templates {
 
 	private static function execEval($arr) {
 		extract(self::$blocks);
-		eval('$t = '.$arr[1]);
+		eval('$t = '.$arr[1].';');
 		return (isset($t) ? $t : "");
 	}
 
@@ -2430,7 +2466,7 @@ class templates {
 	 * @access public
      */
 	final public static function display() {
-	global $lang;
+	global $lang, $mainLangSite;
 		$time = self::time();
 		if(!self::check_exists(self::$mainTpl, self::$skins) && !self::check_exists(self::$mainTpl, self::$mainSkins)) {
 			self::ErrorTemplate("error templates", ROOT_PATH."".self::$dir_skins.DS.self::$skins.DS.self::$mainTpl.".".self::$typeTpl);
@@ -2527,6 +2563,8 @@ class templates {
 			$rLang = Route::param('lang');
 			if(!$rLang && !empty($rLang)) {
 				$lang = $rLang;
+			} else if($mainLangSite) {
+				$lang = $mainLangSite;
 			} else {
 				$lang = config::Select("lang");
 			}

@@ -37,69 +37,73 @@ class config implements ArrayAccess {
 		}
 		$filePATH = $dir."configWithoutDB.php";
 		if($action == "read" && file_exists($filePATH)) {
-			$file = Defender::readFile($filePATH);
-			$file = substr($file, strlen('<?php die(); ?>'));
-			$configWDB = unserialize($file);
+			$file = Defender::readFile($filePATH, true);
+			if(!empty($file)) {
+				$configWDB = unserialize($file);
+			}
 		} elseif($action=="edit") {
 			if(!(!empty($name) && (file_exists($filePATH) || is_writable($dir)))) {
 				return false;
 			}
 			if(file_exists($filePATH)) {
-				$file = Defender::readFile($filePATH);
-				$file = substr($file, strlen('<?php die(); ?>'));
-				$configWDB = unserialize($file);
+				$file = Defender::readFile($filePATH, true);
+				if(!empty($file)) {
+					$configWDB = unserialize($file);
+				}
 			}
 			if(!empty($valF)) {
-				if(!isset($configWDB[$name]) || !is_array($configWDB[$name][$val])) {
+				if(!isset($configWDB[$name]) || !is_array($val)) {
 					$configWDB[$name] = array();
 				}
-				if(!isset($configWDB[$name][$val]) || !is_array($configWDB[$name][$val])) {
+				if(!isset($configWDB[$name][$val]) || !is_array($val)) {
 					$configWDB[$name][$val] = array();
 				}
-				if(!isset($configWDB[$name][$val][$valS]) || !is_array($configWDB[$name][$val][$valS])) {
+				if(!isset($configWDB[$name][$val][$valS]) || !is_array($valS)) {
 					$configWDB[$name][$val][$valS] = array();
 				}
-				if(!isset($configWDB[$name][$val][$valS][$valTh]) || !is_array($configWDB[$name][$val][$valS][$valTh])) {
+				if(!isset($configWDB[$name][$val][$valS][$valTh]) || !is_array($valTh)) {
 					$configWDB[$name][$val][$valS][$valTh] = array();
 				}
 				$configWDB[$name][$val][$valS][$valTh] = $valF;
 			} elseif(!empty($valTh)) {
-				if(!isset($configWDB[$name]) || !is_array($configWDB[$name][$val])) {
+				if(!isset($configWDB[$name]) || !is_array($val)) {
 					$configWDB[$name] = array();
 				}
-				if(!isset($configWDB[$name][$val]) || !is_array($configWDB[$name][$val])) {
+				if(!isset($configWDB[$name][$val]) || !is_array($val)) {
 					$configWDB[$name][$val] = array();
 				}
-				if(!isset($configWDB[$name][$val][$valS]) || !is_array($configWDB[$name][$val][$valS])) {
+				if(!isset($configWDB[$name][$val][$valS]) || !is_array($valS)) {
 					$configWDB[$name][$val][$valS] = array();
 				}
 				$configWDB[$name][$val][$valS] = $valTh;
 			} elseif(!empty($valS)) {
-				if(!isset($configWDB[$name]) || !is_array($configWDB[$name])) {
+				if(!isset($configWDB[$name]) || !is_array($name)) {
 					$configWDB[$name] = array();
 				}
-				if(!isset($configWDB[$name][$val]) || !is_array($configWDB[$name][$val])) {
+				if(!isset($configWDB[$name][$val]) || !is_array($val)) {
 					$configWDB[$name][$val] = array();
 				}
 				$configWDB[$name][$val] = $valS;
 			} else {
-				if(!isset($configWDB[$name]) || !is_array($configWDB[$name][$val])) {
+				if(!isset($configWDB[$name]) || !is_array($val)) {
 					$configWDB[$name] = array();
 				}
 				$configWDB[$name] = $val;
 			}
-			if(is_writable($dir)) {
-				Defender::safeSave($filePATH, '<?php die(); ?>'.serialize($configWDB));
+			if(!is_writable($dir)) {
+				@chmod($dir, 0777);
 			}
+			Defender::safeSave($filePATH, serialize($configWDB), true);
 			return true;
 		} elseif($action=="delete") {
 			if(!(!empty($name) && (file_exists($filePATH) || is_writable($dir)))) {
 				return false;
 			}
 			if((!isset($configWDB[$name]) || !isset($configWDB[$name][$val])) && file_exists($filePATH)) {
-				$file = Defender::readFile($filePATH);
-				$file = substr($file, strlen('<?php die(); ?>'));
-				$configWDB = unserialize($file);
+				$file = Defender::readFile($filePATH, true);
+				if(!empty($file)) {
+					$configWDB = unserialize($file);
+				}
 			}
 			$update = false;
 			if(!empty($val) && !empty($valS) && !empty($valTh) && isset($configWDB[$name]) && isset($configWDB[$name][$val]) && isset($configWDB[$name][$valS])) {
@@ -117,7 +121,7 @@ class config implements ArrayAccess {
 			}
 			if($update) {
 				if(is_writable($dir)) {
-					Defender::safeSave($filePATH, '<?php die(); ?>'.serialize($configWDB));
+					Defender::safeSave($filePATH, serialize($configWDB), true);
 				}
 			}
 			return true;

@@ -210,11 +210,8 @@ class HTTP {
 	}
 	
 	final public static function setContentType($type, $charset = "") {
-		if(!self::$pathSaveMime) {
-			return false;
-		}
 		try {
-			if(strpos($type, "/")===false) {
+			if(strpos($type, "/")===false && self::$pathSaveMime) {
 				$json = self::getContentTypes();
 				if(!is_array($json) || !isset($json[$type])) {
 					return false;
@@ -411,12 +408,41 @@ class HTTP {
 		}
 	}
 
-	final public static function ajax($arr) {
+	final public static function ajax($arr, $code = 200) {
 		if(!defined("IS_CLI")) {
+			self::sendHeader($code);
 			self::setContentType("application/json", config::Select("charset"));
 		}
 		if(function_exists("callAjax")) { callAjax(); }
 		self::echos(json_encode($arr), true);
+	}
+
+	final public static function xml($arr, $code = 200) {
+		if(!defined("IS_CLI")) {
+			self::sendHeader($code);
+			self::setContentType("application/xml", config::Select("charset"));
+		}
+		if(function_exists("callAjax")) { callAjax(); }
+		$xml_data = new SimpleXMLElement('<?xml version="1.0"?><response />');
+		// function call to convert array to xml
+		self::array_to_xml($arr, $xml_data);
+		self::echos($xml_data->asXML(), true);
+	}
+
+	private static function array_to_xml($data, &$xml_data) {
+		foreach($data as $key => $value) {
+			if(is_array($value)) {
+				if(is_numeric($key)) {
+					$key = 'item'.$key; //dealing with <0/>..<n/> issues
+				}
+				$subnode = $xml_data->addChild($key);
+				$subnode->addAttribute("type", gettype($value));
+				self::array_to_xml($value, $subnode);
+			} else {
+				$child = $xml_data->addChild($key, htmlspecialchars($value));
+				$child->addAttribute("type", gettype($value));
+			}
+		}
 	}
 	
 }

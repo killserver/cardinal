@@ -27,7 +27,7 @@ class Archer extends Core {
 	
 	function __construct() {
 		$request = new Request();
-		$typeUni = $request->get->get('type', 'posts');
+		$nameTableWithoutPrefix = $typeUni = $request->get->get('type', 'posts');
 		$page = $request->get->get('pageType', false);
 		$page = execEvent("change-page", $page, $typeUni);
 		$viewId = $request->get->get('viewId', false);
@@ -46,6 +46,7 @@ class Archer extends Core {
 		execEventRef("changeInfoArcher", $typeUni, $page, $viewId, $andWhere, $typeWhere, $dataWhere, $orderBy, $orderTo);
 		if(defined("PREFIX_DB") && PREFIX_DB!=="" && strpos($typeUni, PREFIX_DB)!==false) {
 			$typeUni = str_replace(PREFIX_DB, "", $typeUni);
+			$nameTableWithoutPrefix = str_replace(PREFIX_DB, "", $nameTableWithoutPrefix);
 		}
 		$upFirst = (function_exists("nucfirst") ? nucfirst($typeUni) : $this->nucfirst($typeUni));
 		if(defined("PREFIX_DB") && PREFIX_DB!=="") {
@@ -95,6 +96,12 @@ class Archer extends Core {
 				$model->SetTable($typeUni);
 				$univ = new KernelArcher($typeUni, $model);
 				$univ->Add($model, array(&$this, "View"));
+			break;
+			case "CustomAdd":
+				$model = modules::loadModels("Model".$upFirst, $typeUni);
+				$model->SetTable($typeUni);
+				$univ = new KernelArcher($typeUni, $model);
+				$univ->CustomAdd($model, array(&$this, "View"));
 			break;
 			/*
 			Edit data in database
@@ -159,6 +166,59 @@ class Archer extends Core {
 				cardinal::RegAction("Клонирована запись ID:".$viewId." в таблице ".$typeUni);
 				location(html_entity_decode(HTTP::getServer("HTTP_REFERER")));
 			break;
+			case "CopyEdit":
+				$model = modules::loadModels("Model".$upFirst, $typeUni);
+				$model->SetTable($typeUni);
+				$model->SetLimit(1);
+				$model->WhereTo("", $viewId);
+				$modelData = $model->Select();
+				$firstId = $model->getFirst();
+				$modelData = $modelData->getArray();
+				$creator = strtolowers($upFirst);
+				$uniq = "";
+				if(file_exists(PATH_CACHE_USERDATA."struct".DS."file_".$creator.".txt")) {
+					$m = file_get_contents(PATH_CACHE_USERDATA."struct".DS."file_".$creator.".txt");
+					if(Validate::json($m)) {
+						$m = json_decode($m, true);
+						if(isset($m['data']) && is_array($m['data'])) {
+							$m = $m['data'];
+							$notIgnoreType = array(
+								'varchar',
+								'email',
+								'link',
+								'password',
+								'onlytextareatext',
+								'longtext',
+							);
+							for($i=0;$i<sizeof($m);$i++) {
+								if(isset($m[$i]['alttitle']) && in_array($m[$i]['type'], $notIgnoreType)) {
+									$uniq = $m[$i]['alttitle'];
+									break;
+								}
+							}
+						}
+					}
+				}
+				unset($modelData[$firstId]);
+				$models = $model->getInstance(true);
+				$iterable = 1;
+				foreach($modelData as $k => $v) {
+					if(!empty($uniq) && $k==$uniq) {
+						//$v .= "_-_1";
+						preg_match("#_-_(.*?)$#is", $v, $find);
+						if($find) {
+							$v = str_replace($find[0], "", $v);
+							$iterable += floatval($find[1]);
+						}
+						$v .= "_-_".$iterable;
+					}
+					$models->{$k} = $v;
+				}
+				$id = db::last_id($models->loadedTable(), true);
+				$models->Insert();
+				cardinal::RegAction("Клонирована запись ID:".$viewId." в таблице ".$typeUni);
+				location("./?pages=Archer&type=".$nameTableWithoutPrefix."&pageType=Edit&viewId=".$id);
+			break;
 			/*
 			View model for edit data
 			*/
@@ -169,6 +229,14 @@ class Archer extends Core {
 				$model->WhereTo("", $viewId);
 				$univ = new KernelArcher($typeUni, $model);
 				$univ->Edit($model, array(&$this, "View"));
+			break;
+			case "CustomEdit":
+				$model = modules::loadModels("Model".$upFirst, $typeUni);
+				$model->SetTable($typeUni);
+				$model->SetLimit(1);
+				$model->WhereTo("", $viewId);
+				$univ = new KernelArcher($typeUni, $model);
+				$univ->CustomEdit($model, array(&$this, "View"));
 			break;
 			/*
 			Delete data in database

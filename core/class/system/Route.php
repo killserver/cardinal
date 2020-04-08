@@ -312,6 +312,7 @@ class Route {
 			return false;
 		}
 		$routes = $GLOBALS[self::$_secret];
+		// var_dump($routes);die();
 		foreach($routes as $name => $route) {
 			if($params = $route->Matches($uri, $default)) {
 				$newLang = array();
@@ -325,6 +326,7 @@ class Route {
 						$newLang[$clearLang] = $langs[$i];
 					}
 				}
+				$params['now_uri'] = $uri;
 				if(!empty(self::$_langForce) && !isset($params['now_lang'])) {
 					$params['lang'] = self::$_langForce;
 				} else if(isset($params['now_lang']) && !empty($params['now_lang']) && sizeof($newLang)>0 && (empty($params['now_lang']) || isset($newLang[$params['now_lang']]))) {
@@ -334,6 +336,8 @@ class Route {
 					header("Location: ".$v.substr($uri, 3));
 					die();
 				}
+				$params['default_lang'] = (!empty($mainLangSite) && class_exists("lang", false) && method_exists("lang", "get_lg") && $mainLangSite==lang::get_lg() ? $mainLangSite."/" : "");
+				$params['now_lang'] = (isset($params['lang']) && !empty($params['lang']) ? $params['lang']."/" : (class_exists("lang", false) && method_exists("lang", "get_lg") ? lang::get_lg()."/" : ""));
 				self::$_named = $name;
 				self::$_loaded = $uri;
 				self::$_params = array_merge(self::$_params, $params);
@@ -341,6 +345,11 @@ class Route {
 			}
 		}
 		if(class_exists("templates")) {
+			if(class_exists("lang", false) && method_exists("lang", "support")) {
+				preg_match('#^(?:(?P<lang>'.implode("|", lang::support(true)).')/)?(.+?)$#uD', $uri, $lang_templates);
+			} else {
+				$lang_templates = array("lang" => "");
+			}
 			$path = explode("/", $uri);
 			$path = implode("-", $path);
 			$path = str_Replace(array(".".ROOT_EX, ".tpl", ".html"), "", $path);
@@ -381,8 +390,10 @@ class Route {
 								$arr[$find[1][$i]] = trim($find[2][$i]);
 							}
 							if(isset($arr['loaded'])) {
-								$param = array("page" => "loadTemplate", "template" => $path, "only" => isset($arr['only']), "path" => $paths);
+								$param = array("page" => "loadTemplate", "template" => $path, "only" => isset($arr['only']), "lang" => (isset($lang_templates['lang']) ? $lang_templates['lang'] : (class_exists("lang", false) && method_exists("lang", "get_lg") ? lang::get_lg() : "ru")), "path" => str_replace(ROOT_PATH, "", $paths));
+								$param = self::langParams($param);
 								self::$_params = array_merge(self::$_params, $param);
+								self::$_loaded = $uri;
 								return array('params' => $param, 'route' => "");
 							}
 						}
@@ -392,8 +403,10 @@ class Route {
 			if(templates::check_exists($path, "null", ".html")) {
 				$paths = templates::findTemplate($path, "null", ".html");
 				if(is_readable($paths)) {
-					$param = array("page" => "loadTemplate", "template" => $path, "only" => true, "path" => $paths);
+					$param = array("page" => "loadTemplate", "template" => $path, "lang" => (isset($lang_templates['lang']) ? $lang_templates['lang'] : (class_exists("lang", false) && method_exists("lang", "get_lg") ? lang::get_lg() : "ru")), "only" => true, "path" => $paths);
+					$param = self::langParams($param);
 					self::$_params = array_merge(self::$_params, $param);
+					self::$_loaded = $uri;
 					return array('params' => $param, 'route' => "");
 				}
 			}
@@ -410,8 +423,22 @@ class Route {
 			}
 			$param = $notFound;
 		}
+		$param = self::langParams($param);
 		self::$_params = array_merge(self::$_params, $param);
 		return array('params' => $param, 'route' => "");
+	}
+
+	final private static function langParams($params) {
+		global $mainLangSite;
+		$params['default_lang'] = (!empty($mainLangSite) && class_exists("lang", false) && method_exists("lang", "get_lg") && $mainLangSite==lang::get_lg() ? $mainLangSite."/" : "");
+		$params['now_lang'] = (isset($params['lang']) && !empty($params['lang']) ? $params['lang']."/" : "");
+		$params['main_page_lang'] = "";
+		if(class_exists("lang", false) && method_exists("lang", "get_lg") && isset($params['lang'])) {
+			if($mainLangSite!=$params['lang']) {
+				$params['main_page_lang'] = (isset($params['lang']) && !empty($params['lang']) ? $params['lang']."/" : "");
+			}
+		}
+		return $params;
 	}
 	
 	final public static function getLoaded() {
@@ -513,10 +540,14 @@ class Route {
 			$ret = new $class($uri_callback, $regex);
 		}
 		$method = explode("|", strtolower($method));
-		if(isset($_SERVER['REQUEST_METHOD']) && !in_array(strtolower($_SERVER['REQUEST_METHOD']), $method)) {
+		if(isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']) && !in_array(strtolower($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']), $method)) {
+			// var_dump("access", $_SERVER, $method);die();
+			return $ret;
+		} else if(!isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']) && isset($_SERVER['REQUEST_METHOD']) && !in_array(strtolower($_SERVER['REQUEST_METHOD']), $method)) {
+			// var_dump("request", $_SERVER, $method);die();
 			return $ret;
 		}
-		if(!is_array($ret->_defaults['callback'])) {
+		if(!isset($ret->_defaults['callback']) || !is_array($ret->_defaults['callback'])) {
 			$ret->_defaults['callback'] = array();
 		}
 		if(is_callable($callback)) {

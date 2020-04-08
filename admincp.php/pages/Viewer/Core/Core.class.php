@@ -434,9 +434,14 @@ class Core {
 		$header .= "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">\n";
 		return str_replace("{header}", $header, $echo);
 	}
+
+	public static function loadTemplateInSkins($file) {
+		$f = file_get_contents(PATH_TEMPLATE.$file.".".templates::changeTypeTpl());
+		return templates::view($f);
+	}
 	
-	protected function Prints($echo, $print = false, $force = false) {
-	global $lang;
+	public function Prints($echo, $print = false, $force = false) {
+		global $lang;
 		if(!userlevel::get("admin") || !isset($_COOKIE[COOK_ADMIN_USER]) || !isset($_COOKIE[COOK_ADMIN_PASS])) {
 			$ref = urlencode(str_replace(ROOT_PATH, "", cut(getenv("REQUEST_URI"), "/".ADMINCP_DIRECTORY."/")));
 			location("{C_default_http_host}".ADMINCP_DIRECTORY."/?pages=Login".(!empty($ref) ? "&ref=".$ref : ""));

@@ -7535,7 +7535,7 @@ span > img[src='/'] {
 
 [data-panel-lang="true"] {
   position: sticky;
-  top: -20px;
+  top: -30px;
   left: 0;
   z-index: 200;
   background: #fff;
@@ -7544,7 +7544,7 @@ span > img[src='/'] {
 }
 [data-panel-submit="true"] {
   position: sticky;
-  bottom: -25px;
+  bottom: -35px;
   left: 0;
   z-index: 200;
   background: #fff;
@@ -7613,4 +7613,24 @@ span > img[src='/'] {
 }
 .panel .panel-heading > .panel-options a:focus {
     text-decoration: none;
+}
+[data-show] {
+  overflow: hidden;
+}
+[data-show] .btn-add-image-control {
+  opacity: 0;
+  visibility: hidden;
+  transition: all 300ms ease-in-out;
+}
+[data-show]:hover .btn-add-image-control {
+  opacity: 1;
+  visibility: visible;
+}
+[data-show] .minHeight {
+  min-height: 170px;
+  background: rgba(0,0,0,0.75);
+  opacity: 1;
+  visibility: visible;
+  width: 100%;
+  margin: 0 0px;
 }

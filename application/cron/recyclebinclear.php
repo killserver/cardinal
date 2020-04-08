@@ -2,7 +2,7 @@
 class Recyclebinclear {
 	
 	function __construct() {
-		if(file_exists(PATH_CACHE_USERDATA."trashBin.lock")) {
+		if(file_exists(PATH_CACHE_USERDATA."trash_bin.lock")) {
 			$days = 30;
 			if(defined("EMPTY_TRASH_DAYS")) {
 				if(is_numeric(EMPTY_TRASH_DAYS) && EMPTY_TRASH_DAYS>0) {
@@ -11,7 +11,7 @@ class Recyclebinclear {
 					$days = 0;
 				}
 			}
-			db::doquery("DELETE FROM {{trashBin}} WHERE `tTime` < (UNIX_TIMESTAMP()-".$days."*24*60*60)");
+			db::doquery("DELETE FROM {{trashbin}} WHERE `tTime` < (UNIX_TIMESTAMP()-".$days."*24*60*60)");
 		}
 	}
 	

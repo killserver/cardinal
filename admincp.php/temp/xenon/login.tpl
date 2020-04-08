@@ -32,7 +32,7 @@
 	
 	
 </head>
-<body class="page-body login-page bgFon">
+<body class="page-body login-page bgFon level_{U_level}">
 	[if {C_login_random_img}!=false]<span class="imgHere"></span>[/if {C_login_random_img}!=false]
 	{E_[admin_login]}
 	<div class="login-container">

@@ -1,4 +1,4 @@
-<form method="post" role="form" action="./?pages=ProfileSettings&{typeForm}" class="form-horizontal" enctype="multipart/form-data">
+<form method="post" role="form" action="./?pages=ProfileSettings&{typeForm}" class="form-horizontal" enctype="multipart/form-data" autocomplete="false">
 	<div class="row">
 		<div class="col-sm-12">
 			<div class="panel panel-default">
@@ -21,7 +21,7 @@
 			</div>
 		</div>
 	</div>
-	{E_[ProfileSettingsAdd][type={typeForm}]}
+	{E_[ProfileSettingsAdd][type={typeForm};id={id_edit}]}
 </form>
 <style>
 	#inputForFile .array {

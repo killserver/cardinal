@@ -153,6 +153,7 @@ class Parser {
 	private $parseCookie = false;
 	private $ch = null;
 	private $base_url = "";
+	private $customRequestData = array();
 
 	/**
 	 * Parser constructor.
@@ -406,6 +407,10 @@ class Parser {
 		$this->parseCookie = $parse;
 	}
 
+	final public function customRequestData($customRequestData) {
+		$this->customRequestData = $customRequestData;
+	}
+
 	/**
 	 * Initialization parsing
 	 * @param string $url Need link and start, or initialization parsing
@@ -460,6 +465,9 @@ class Parser {
 			curl_setopt($this->ch, CURLOPT_HEADER, 0);
 		} else {
 			curl_setopt($this->ch, CURLOPT_HEADER, 1);
+		}
+		if(sizeof($this->customRequestData)>0) {
+			curl_setopt($this->ch, CURLOPT_POSTFIELDS, $this->customRequestData);
 		}
 		if(isset($this->headerList) && is_array($this->headerList) && sizeof($this->headerList)) {
 			$headers = array();

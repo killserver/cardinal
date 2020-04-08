@@ -9,7 +9,9 @@ function cardinalAutoload($class) {
         return false;
     }
     $class = str_replace("\\", DIRECTORY_SEPARATOR, $class);
-    if(file_exists(PATH_AUTOLOADS.$class.".".ROOT_EX)) {
+    if(file_exists(PATH_MODULES.$class.".".ROOT_EX)) {
+        include_once(PATH_MODULES.$class.".".ROOT_EX);
+    } elseif(file_exists(PATH_AUTOLOADS.$class.".".ROOT_EX)) {
         include_once(PATH_AUTOLOADS.$class.".".ROOT_EX);
     } elseif(file_exists(PATH_CLASS.$class.".".ROOT_EX)) {
         include_once(PATH_CLASS.$class.".".ROOT_EX);
@@ -191,24 +193,16 @@ if(file_exists(ROOT_PATH.ADMINCP_DIRECTORY.DS."paths.".ROOT_EX)) {
 	include_once(ROOT_PATH.ADMINCP_DIRECTORY.DS."paths.default.".ROOT_EX);
 }
 
-if(defined("WITHOUT_DB")) {
-	if(!defined("PREFIX_DB")) {
-		$file = "cardinal_";
-		if(file_exists(PATH_MEDIA."prefix_db.lock") && is_readable(PATH_MEDIA."prefix_db.lock")) {
-			$file = file_get_contents(PATH_MEDIA."prefix_db.lock");
-		} elseif(is_writable(PATH_MEDIA."prefix_db.lock")) {
-			$file = "cd".uniqid();
-			@file_put_contents(PATH_MEDIA."prefix_db.lock", $file);
-		}
-		$file = execEvent("set_prefix_db", $file);
-		define("PREFIX_DB", $file);
-	}
-	$api_key = cardinal::GenApiKey();
-	$api_key = execEvent("set_api_key", $api_key);
-	$config = array_merge($config, array(
-		"api_key" => $api_key,
-	));
+if(!defined("PREFIX_DB")) {
+	$file = "cardinal_";
+	$file = execEvent("set_prefix_db", $file);
+	define("PREFIX_DB", $file);
 }
+$api_key = cardinal::GenApiKey();
+$api_key = execEvent("set_api_key", $api_key);
+$config = array_merge($config, array(
+	"api_key" => $api_key,
+));
 
 set_error_handler(array('cardinalError', 'handlePhpError'));
 set_exception_handler(array('cardinalError', 'handleException'));

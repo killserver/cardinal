@@ -240,7 +240,16 @@ class ProfileSettings extends Core {
 				$value = strtotime((isset($post[0]) && !empty($post[0]) ? $post[0] : date("d/m/Y"))." ".(isset($post[1]) && !empty($post[1]) ? $post[1] : date("H:i:s")));
 			} else if($v['type']=="array" && isset($v['selectedData']) && $v['selectedData']=="dataOnInput") {
 				$field = array_flip($v['field']);
-				$value = $field[$value];
+				if(isset($field[$value])) {
+					$saveVal = $field[$value];
+				} else if(isset($data[$v['altName']])) {
+					$saveVal = $data[$v['altName']];
+				} else if($v['altName']=="level" && empty($value)) {
+					$saveVal = (!empty($v['default']) ? $data[$v['altName']] : 2);
+				} else {
+					$saveVal = (isset($data[$v['altName']]) ? $data[$v['altName']] : $v['default']);
+				}
+				$value = $saveVal;
 			} else if(!is_bool($post)) {
 				$value = $post;
 			}
@@ -298,7 +307,11 @@ class ProfileSettings extends Core {
             }
         }
 		if(isset($_GET['Edit'])) {
-			$users = User::getUserById($_GET['Edit']);
+			$users = execEvent("profile-user-load", array());
+			if(sizeof($users)==0) {
+				$users = User::getUserById($_GET['Edit']);
+			}
+			$users = execEvent("profile-user-loaded", $users);
 			if(sizeof($_POST)>0) {
 				$worker = $this->Worker($f, $d, $users);
 				$worker = execEvent("profile-user-change-compiled", $worker);
@@ -307,8 +320,11 @@ class ProfileSettings extends Core {
 				return;
 			}
 			$tmp = "";
-			execEvent("profile-user-change::before");
+			$users = execEvent("profile-user-change::before", $users);
 			foreach($f['data'] as $v) {
+				if(isset($v['hideAlways'])) {
+					continue;
+				}
 				$value = (isset($users[$v['altName']]) ? $users[$v['altName']] : $v['default']);
 				if(isset($users[$v['altName']]) && $v['altName']=="level") {
 					$value += 1;
@@ -322,8 +338,8 @@ class ProfileSettings extends Core {
 					$link = str_replace("{uid}", $_GET['Edit'], $link);
 					$args = array("linkLink" => $link, "titleLink" => $v['field']['title']);
 				} else if(isset($v['type']) && $v['type']=="array" && isset($v['selectedData']) && isset($v['field'])) {
-					$field = ($v['field']);
-					$v['default'] = $field[$value];
+					$field = array_values($v['field']);
+					$v['default'] = (isset($field[$value]) ? $field[$value] : $v['default']);
 					$value = $v['field'];
 				}
 				$arrViewing = array($v['type'], $v['name'], $value, $v['default'], isset($v['required']), ($v['altName']=="username" && isset($users['typeUserInSystem']) && $users['typeUserInSystem']=="file"), false, "", "", false, $args);
@@ -333,6 +349,7 @@ class ProfileSettings extends Core {
 			}
 			templates::assign_var("data", $tmp);
 			templates::assign_var("typeForm", "Edit=".$_GET['Edit']);
+			templates::assign_var("id_edit", $_GET['Edit']);
 			$this->Prints("ProfileSettingsAdd");
 			return;
 		}
@@ -345,6 +362,9 @@ class ProfileSettings extends Core {
 			}
 			$tmp = "";
 			foreach($f['data'] as $v) {
+				if(isset($v['hideAlways'])) {
+					continue;
+				}
 				$value = "";
 				$args = array();
 				if(isset($v['type']) && $v['type']=="linkToAdmin") {
@@ -362,6 +382,7 @@ class ProfileSettings extends Core {
 			}
 			templates::assign_var("data", $tmp);
 			templates::assign_var("typeForm", "Add");
+			templates::assign_var("id_edit", "");
 			$this->Prints("ProfileSettingsAdd");
 			return;
 		}
@@ -371,12 +392,22 @@ class ProfileSettings extends Core {
 		$head .= "<th>ID</th>";
 		foreach($f['data'] as $v) {
 			if(isset($v['hideOnMain'])) continue;
+			if(isset($v['hideAlways'])) {
+				continue;
+			}
 			$names[] = $v;
 			$head .= "<th>".$v['name']."</th>";
 		}
 		$head .= "<th>options</th>";
-		$users = User::All(true);
+		execEvent("before_load_users");
+		if(!defined("ADMINCP_USERS_NOT_LOAD")) {
+			$users = User::All(true);
+		} else {
+			$users = array();
+		}
+		$users = execEvent("after_load_users", $users);
 		foreach($users as $username => $v) {
+			$v = execEvent("profile-user-show", $v);
 			$body .= "<tr>";
 			$body .= "<td>".$v['id']."</td>";
 			for($i=0;$i<sizeof($names);$i++) {
@@ -397,7 +428,8 @@ class ProfileSettings extends Core {
 		templates::assign_var("orderById", "0");
 		templates::assign_var("orderBySort", "desc");
 		templates::assign_var("ArcherSort", "");
-		templates::assign_var("ArcherNotTouch", sizeof($names));
+		templates::assign_var("ArcherTable", "ProfileSettings");
+		templates::assign_var("ArcherNotTouch", sizeof($names)+1);
 		$this->Prints("ProfileSettingsMain");
 	}
 	

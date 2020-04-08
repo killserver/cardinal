@@ -1,6 +1,7 @@
 var select2Init = function() {
 	$(":input.multiple-select").each(function(i, elem) {
 		var el = $(elem).attr("data-options");
+		el = $("script#"+el).html();
 		el = JSON.parse(el);
 		console.warn(el)
 		$(elem).select2({

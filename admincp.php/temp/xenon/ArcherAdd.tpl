@@ -1,4 +1,5 @@
-[!ajax]<form method="post" role="form" action="./?pages=Archer&type={ArcherPath}&pageType=Take{ArcherPage}{addition}{ref}" class="form-horizontal" enctype="multipart/form-data">
+[!ajax]<form method="post" role="form" action="./?pages=Archer&type={ArcherPath}&pageType=Take{ArcherPage}{addition}{ref}" class="form-horizontal formSubmit" enctype="multipart/form-data">
+	{E_[KernalArcher::BeforeForm][type={ArcherPath};action={ArcherPage};data={addition}]}
 	<div class="row">
 		<div class="col-sm-12">
 			<div class="panel panel-default">
@@ -36,7 +37,7 @@
 			</div>
 		</div>
 	</div>[/!ajax]
-	{E_[KernalArcher::AfterForm][type={ArcherPath};data={addition}]}
+	{E_[KernalArcher::AfterForm][type={ArcherPath};action={ArcherPage};data={addition}]}
 [!ajax]</form>[/!ajax]
 <style>
 	#inputForFile .array {
@@ -60,6 +61,62 @@
 	    display: table;
 	}
 </style>
+<script type="text/javascript">
+	// Dynamically load images while scrolling
+	// Source: github.com/ByNathan/jQuery.loadScroll
+	// Version: 1.0.1
+
+	(function($) {
+	    
+	    $.fn.loadScroll = function(duration, elem) {
+	    
+	        var $window = $(window);
+	    	if(elem) {
+	    		$window = $(elem);
+	    	}
+	        var images = this,
+	            inview,
+	            loaded;
+
+	        images.one('loadScroll', function() {
+	            
+	            if (this.getAttribute('data-src')) {
+	                this.setAttribute('src',
+	                this.getAttribute('data-src'));
+	                this.removeAttribute('data-src');
+	                
+	                if (duration) {
+	                    
+	                    $(this).hide()
+	                           .fadeIn(duration)
+	                           .add('img');
+	                    
+	                } else return false;
+	            }
+	            
+	        });
+	    
+	        $window.scroll(function() {
+	        
+	            inview = images.filter(function() {
+	                
+	                var a = $window.scrollTop(),
+	                    b = $window.height(),
+	                    c = $(this).offset().top,
+	                    d = $(this).height();
+	                    
+	                return c + d >= a && c <= a + b;
+	                
+	            });
+	            
+	            loaded = inview.trigger('loadScroll');
+	            images = images.not(loaded);
+	                    
+	        });
+	    };
+	    
+	})(jQuery);
+</script>
 <script type="text/javascript">
 	function ucfirst(text) {
 		var textNew = "";
@@ -99,6 +156,7 @@
 	reinitLang();
 	var onInteractive = {};
 	var editorReady = function() {
+		jQuery("body").trigger("before_editorReady");
 		$("body").off("click").on("click", ".removeImg", function() {
 			var id = $(this).attr("id");
 			id = id.replace("remove_", "");
@@ -181,14 +239,30 @@
 			var input = $(elem).find("input").attr("name");
 			$(elem).find("input").attr("name", input+"["+name+"]");
 		});
+		jQuery("body").trigger("editorReady");
+	}
+	function minHeightForAdd() {
+		$("[data-for-btn-data] .inputedAccess").each(function(i, elem) {
+		    $(elem).on("change", function() {
+		        if($(elem).val().length==0) {
+		        	$(elem).parents("[data-for-btn-data]").find(".btn-add-image").addClass("minHeight")
+		        } else {
+		            $(elem).parents("[data-for-btn-data]").find(".btn-add-image").removeClass("minHeight");
+		        }
+		    });
+		    if($(elem).val().length==0) {
+		        $(elem).parents("[data-for-btn-data]").find(".btn-add-image").addClass("minHeight")
+		    }
+		});
 	}
 	jQuery(document).ready(function() {
 		editorReady();
+		minHeightForAdd();
 		$("body").off("click", ".showPreview.new").on("click", ".showPreview.new", function(e) {
 			if($(e.target).is(".showPreview.new") || e.target.closest(".showPreview.new")) {
 				var item = $(e.target).is(".showPreview.new") ? e.target : e.target.closest(".showPreview.new");
 				if($(item).parent().children("a.btn-success").hasClass("iframe-btn")) {
-		e.preventDefault()
+					e.preventDefault()
 					$(item).parent().children("a.btn-success")[0].click()
 		        }
 		    }
@@ -205,16 +279,17 @@
 	function removeInputFile(th, name, val) {
 		var bef = jQuery('input[name="deleteArray['+name+']"]').val();
 		jQuery('input[name="deleteArray['+name+']"]').val(val+","+bef);
-		jQuery(th).parent().parent().remove();
+		jQuery(th).parents("[data-show]").remove();
 	}
 	function showPreviewFn() {
 		jQuery(".showPreview.new").each(function(i, elem) {
 			jQuery(elem).parent().find("img").remove();
-			jQuery(elem).html("<img src='"+jQuery(elem).attr("href")+"' data-link='"+jQuery(elem).attr("data-link")+"' style='max-width:100%; background:#333; display: table;max-height:400px'>");
+			jQuery(elem).html("<img src='https://placehold.it/600x350&text=Loading...' data-src='"+jQuery(elem).attr("href")+"' data-link='"+jQuery(elem).attr("data-link")+"' style='max-width:100%; background:#333; display: table;max-height:400px'>");
 		});
 		jQuery(".showPreview:not(.new)").each(function(i, elem) {
-			jQuery(elem).after("<img src='"+jQuery(elem).attr("href")+"' width='200' style='background:#333; display: table;'>");
+			jQuery(elem).after("<img src='https://placehold.it/600x350&text=Loading...' data-src='"+jQuery(elem).attr("href")+"' width='200' style='background:#333; display: table;'>");
 		});
+    	$('img').loadScroll(500);
 	}
 	function addInputFile(th, name) {
 		var elem = jQuery(th).parent().find("div#inputForFile");
@@ -222,6 +297,7 @@
 		jQuery("input[type='file'][accept*='image']").unbind("change").change(function() {
 			readURL(this);
 		});
+		minHeightForAdd();
 		i++;
 	}
 	function rand(min, max) { if(min===undefined) min=-9999999; if(max===undefined) max=9999999; if(max) return Math.floor(Math.random()*(max-min+1))+min; else return Math.floor(Math.random()*(min+1)); }
@@ -237,10 +313,32 @@
 			multiple = "&multiple=1";
 		}
 		var elem = jQuery(th).parent().find("div#inputForFiles");
-				console.warn(elem)
+		console.warn(elem)
 		var field_id = rand();
-		elem.append('<div class="row array" data-show="'+field_id+'"><div class="col-sm-10"><input class="form-control" id="'+field_id+'" type="text"'+(elem.attr("data-accept") ? 'accept="'+elem.attr("data-accept")+'" data-accept="'+elem.attr("data-accept")+'"' : "")+' name="'+name+'[]" placeholder="Выберите файл" style="position:fixed;top:-99999px;left:-99999px;z-index:-1000;" value="'+val+'"><a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/assets/tinymce/filemanager/dialog.php?type='+type+'&field_id='+field_id+'&relative_url=0'+multiple+'" class="btn btn-icon btn-success iframe-btn btn-block"><i class="fa-plus"></i></a></div><div class=\'col-sm-2\'><a class=\'btn btn-red btn-block fa-remove\' onclick=\'jQuery(this).parent().parent().remove();\'></a></div></div>');
+		var tmp = $(".template_array_access[data-template-id='"+name+"']").last().html();
+		if(typeof(tmp)!=="undefined") {
+			tmp = tmp.replace(new RegExp("{template_access_uid}", "ig"), field_id);
+			tmp = tmp.replace(new RegExp("{template_access_id}", "ig"), arrayAccess[name]);
+			tmp = tmp.replace(new RegExp("{template_access_name}", "ig"), name+(multiple.length>0 ? "[]" : ""));
+			tmp = tmp.replace(new RegExp("{template_access_value}", "ig"), val);
+			tmp = tmp.replace(new RegExp("{template_access_btnWithData}", "ig"), "");
+		} else {
+			tmp = '<div class="row array" data-show="'+field_id+'"><div class="col-sm-10"><input class="form-control" id="'+field_id+'" type="text"'+(elem.attr("data-accept") ? 'accept="'+elem.attr("data-accept")+'" data-accept="'+elem.attr("data-accept")+'"' : "")+' name="'+name+(multiple.length>0 ? "[]" : "")+'" placeholder="Выберите файл" style="position:fixed;top:-99999px;left:-99999px;z-index:-1000;" value="'+val+'"><a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/assets/tinymce/filemanager/dialog.php?type='+type+'&field_id='+field_id+'&relative_url=0'+multiple+'" class="btn btn-icon btn-success iframe-btn btn-block"><i class="fa-plus"></i></a></div><div class=\'col-sm-2\'><a class=\'btn btn-red btn-block fa-remove\' onclick=\'jQuery(this).parent().parent().remove();\'></a></div></div>';
+		}
+
+
+		elem.append(tmp);
+		jQuery("body").trigger("addInputFileAccess", {
+			"element": elem,
+			"this": th,
+			"name": name,
+			"type": type,
+			"value": val,
+			"multiple": multiple
+		});
 		i++;
+		arrayAccess[name]++;
+		minHeightForAdd();
 		return field_id;
 	}
 	function applyAmp(val) {
@@ -250,8 +348,18 @@
 		console.log(e, data);
 		var cat = function(data) {
 			var link_now = data.http_link+applyAmp(data.http_link)+(new Date().getTime()/1000);
-			data.parent.append('<a data-link="'+data.field_id+'" id="img'+data.field_id+'" href="'+link_now+'"'+(data.type.indexOf("image")>-1 || data.type.indexOf("imageAccess")>-1 || data.type.indexOf("imageArrayAccess")>-1 ? " class=\"showPreview new\"" : "")+' target="_blank">Просмотреть</a>');
+			var tpl = $(".template_btn_access[data-template-id='"+$("#"+data.field_id).attr("name")+"']").last().html();
+			if(typeof(tpl)!=="undefined") {
+				tpl = tpl.replace(new RegExp("{template_access_uid}", "ig"), data.field_id);
+				tpl = tpl.replace(new RegExp("{template_access_class}", "ig"), (data.type.indexOf("image")>-1 || data.type.indexOf("imageAccess")>-1 || data.type.indexOf("imageArrayAccess")>-1 ? " showPreview new" : ""));
+				tpl = tpl.replace(new RegExp("{template_access_val}", "ig"), link_now);
+
+				$(data.parent).parents("[data-for-btn-data]").find(".btn-add-image").append(tpl);
+			} else {
+				data.parent.append('<a data-link="'+data.field_id+'" id="img'+data.field_id+'" href="'+link_now+'"'+(data.type.indexOf("image")>-1 || data.type.indexOf("imageAccess")>-1 || data.type.indexOf("imageArrayAccess")>-1 ? " class=\"showPreview new\"" : "")+' target="_blank">Просмотреть</a>');
+			}
 			$("#"+data.field_id).val(link_now.replace(default_link, ""))
+			minHeightForAdd();
 		}
 		try {
 			data.http_link = JSON.parse(data.http_link)
@@ -263,7 +371,7 @@
 					var id = addInputFileAccess(parent, name, "1", link_now.replace(default_link, ""), true)
 					$("input#"+id).parent().append('<a data-link="'+data.field_id+'" id="img'+data.field_id+'" href="'+link_now+'"'+(data.type.indexOf("image")>-1 || data.type.indexOf("imageAccess")>-1 || data.type.indexOf("imageArrayAccess")>-1 ? " class=\"showPreview new\"" : "")+' target="_blank">Просмотреть</a>');
 				}
-				data.parent.parent().remove()
+				$(data.parent).parents("[data-for-btn-data]").remove()
 			} else {
 				cat(data)
 			}
@@ -289,4 +397,9 @@
 	jQuery("body").on("change", "input[type='file'][accept*='image']", function() {
 		readURL(this);
 	});
+	jQuery("body").on("keydown", function(e) {
+	    if(e.ctrlKey && e.keyCode==13) {
+	    	$(".formSubmit").submit()
+	    }
+	})
 </script>

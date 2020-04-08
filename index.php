@@ -120,9 +120,7 @@ $manifest['now_page'] = $page;
 $manifest['mod_page'][HTTP::getip()]['page'] = $page;
 $is_file = Route::param('is_file');
 $file = Route::param('file');
-
 execEvent("ready_print_page_before", $class, $method, $page);
-
 $obj = "";
 $langPanel = modules::setLangPanel();
 if(isset($globalClass) && is_array($globalClass) && sizeof($globalClass)>0) {
@@ -142,6 +140,8 @@ if(is_array($callback) && sizeof($callback)>0) {
 			call_user_func_array($call, $langPanel);
 		}
 	}
+} else if(is_callable($callback)) {
+	call_user_func_array($callback, $langPanel);
 } else if(!$is_file && empty($file)) {
 	if($class == "page") {
 		$args = array();
@@ -151,11 +151,20 @@ if(is_array($callback) && sizeof($callback)>0) {
 	}
 	if(is_object($class) || class_exists($class)) {
 		$page = new $class($langPanel);
+		$defaultsCardinalRouterGetParams = Route::param('routerGetParams', array());
+		$defaultsCardinal = Route::param('defaults');
+		foreach($defaultsCardinalRouterGetParams as $k => &$v) {
+			if(($get = Route::param($k))!==false) {
+				$v = $get;
+			} else if(($get = Arr::get($defaultsCardinal, $k))!==false) {
+				$v = $get;
+			}
+		}
 		if(method_exists($page, "start")) {
-			call_user_func_array(array(&$page, "start"), $langPanel);
+			call_user_func_array(array(&$page, "start"), array_merge($langPanel, $defaultsCardinalRouterGetParams));
 		}
 		if(!empty($method) && method_exists($page, $method)) {
-			call_user_func_array(array(&$page, $method), $langPanel);
+			call_user_func_array(array(&$page, $method), array_merge($langPanel, $defaultsCardinalRouterGetParams));
 		}
 	}
 } else if($is_file || !empty($file)) {

@@ -648,6 +648,9 @@ function generate_uuid4() {
 
 function parser_video($content, $start, $end = "") {
 	$pos = strpos($content, $start);
+	if($pos===false) {
+		return "";
+	}
 	$content = substr($content, $pos);
 	if($end!=="") {
 		$pos = strpos($content, $end);
