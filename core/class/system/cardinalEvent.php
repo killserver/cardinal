@@ -163,6 +163,27 @@ class cardinalEvent {
 		}
 	}
 
+	public static function getExecutors($action = "") {
+		$listener = array();
+		foreach(self::$collection as $collection) {
+			if($action!=="" && isset($collection[$action])) {
+				$a = array_keys($collection[$action]);
+				for($z=0;$z<sizeof($a);$z++) {
+					$listener[] = $collection[$action][$a[$z]];
+				}
+			} else if($action==="") {
+				$arr = array_keys($collection);
+				for($i=0;$i<sizeof($arr);$i++) {
+					$a = array_keys($collection[$arr[$i]]);
+					for($z=0;$z<sizeof($a);$z++) {
+						$listener[] = $collection[$arr[$i]][$a[$z]];
+					}
+				}
+			}
+		}
+		return $listener;
+	}
+
 	public static function getListeners($action = "") {
 		$listener = array();
 		foreach(self::$collection as $collection) {

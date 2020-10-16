@@ -20,6 +20,111 @@ echo "403 ERROR";
 die();
 }
 
+if(!class_exists("AcceptHeader", false)) {
+    class AcceptHeader extends \ArrayObject {
+
+        /**
+         * Constructor
+         *
+         * @param string $header Value of the Accept header
+         * @return void
+         */
+        public function __construct($header)
+        {
+            $acceptedTypes = $this->_parse($header);
+            usort($acceptedTypes, array($this, '_compare'));
+            parent::__construct($acceptedTypes);
+        }
+
+        /**
+         * Parse the accept header and return an array containing
+         * all the informations about the Accepted types
+         *
+         * @param string $header Value of the Accept header
+         * @return array
+         */
+        private function _parse($data)
+        {
+            $array = array();
+            $items = explode(',', $data);
+            foreach ($items as $item) {
+                $item = trim($item);
+                $elems = explode(';', $item);
+
+                $mime = current($elems);
+                $types = explode('/', $mime);
+
+                if (!isset($types[1])) {
+                    continue;
+                }
+
+                $acceptElement = array(
+                    'raw'     => $mime,
+                    'type'    => trim($types[0]),
+                    'subtype' => trim($types[1])
+                );
+
+                $acceptElement['params'] = array();
+                while(next($elems)) {
+                    list($name, $value) = explode('=', current($elems));
+                    $acceptElement['params'][trim($name)] = trim($value);
+                }
+
+                $array[] = $acceptElement;
+
+            }
+            return $array;
+        }
+
+        /**
+         * Compare two Accepted types with their parameters to know
+         * if one media type should be used instead of an other
+         *
+         * @param array $a The first media type and its parameters
+         * @param array $b The second media type and its parameters
+         * @return int
+         */
+        private function _compare($a, $b) {
+            $a_q = isset($a['params']['q']) ? floatval($a['params']['q']) : 1.0;
+            $b_q = isset($b['params']['q']) ? floatval($b['params']['q']) : 1.0;
+            if ($a_q === $b_q) {
+                $a_count = count($a['params']);
+                $b_count = count($b['params']);
+                if ($a_count === $b_count) {
+                    if ($r = $this->_compareSubType($a['subtype'], $b['subtype'])) {
+                        return $r;
+                    } else {
+                        return $this->_compareSubType($a['type'], $b['type']);
+                    }
+                } else {
+                    return $a_count < $b_count;
+                }
+            } else {
+                return $a_q < $b_q;
+            }
+        }
+
+        /**
+         * Compare two subtypes
+         *
+         * @param string $a First subtype to compare
+         * @param string $b Second subtype to compare
+         * @return int
+         */
+        private function _compareSubType($a, $b) 
+        {
+            if ($a === '*' && $b !== '*') {
+                return 1;
+            } elseif ($b === '*' && $a !== '*') {
+                return -1;
+            } else {
+                return 0;
+            }
+        }
+
+    }
+}
+
 class HTTP {
 	
 	private static $pathSaveMime = false;
@@ -68,6 +173,51 @@ class HTTP {
 		}
 		return $prefLocales;
 	}
+
+    final public static function getAcceptsRange() {
+        $data = self::getServer("HTTP_ACCEPT", false, "text/html");
+        return new AcceptHeader($data);
+    }
+
+    final public static function getAccepts() {
+        $data = self::getServer("HTTP_ACCEPT", false, "text/html");
+        $arr = new AcceptHeader($data);
+        $list = array();
+        for($i=0;$i<sizeof($arr);$i++) {
+            $list[] = $arr[$i]['raw'];
+        }
+        return $list;
+    }
+
+    final public static function hasAccepts($accepts = array()) {
+        $accepts = array_values($accepts);
+        $data = self::getServer("HTTP_ACCEPT", false, "text/html");
+        $arr = new AcceptHeader($data);
+        $ret = false;
+        for($i=0;$i<sizeof($arr);$i++) {
+            if(in_array($arr[$i]['type'], $accepts)) {
+                $ret = true;
+                break;
+            } else if(in_array($arr[$i]['raw'], $accepts)) {
+                $ret = true;
+                break;
+            }
+        }
+        if(!$ret) {
+            for($i=0;$i<sizeof($arr);$i++) {
+                for($z=0;$z<sizeof($accepts);$z++) {
+                    if(strpos($arr[$i]['raw'], $accepts[$z])) {
+                        $ret = true;
+                        break;
+                    }
+                }
+                if($ret) {
+                    break;
+                }
+            }
+        }
+        return $ret;
+    }
 	
 	final public static function getip() {
 		if(self::getServer('HTTP_CF_CONNECTING_IP', true)) {
@@ -406,6 +556,13 @@ class HTTP {
 		if($die) {
 			die();
 		}
+	}
+
+	final public static function allowFetch($arr = array()) {
+		header("Access-Control-Allow-Methods: ".(isset($arr['allowMethods']) ? $arr['allowMethods'] : "*"), true);
+		header("Access-Control-Allow-Origin: ".(isset($arr['origin']) ? $arr['origin'] : "*"), true);
+		header("Access-Control-Request-Method: ".(isset($arr['requestMethod']) ? $arr['requestMethod'] : "*"), true);
+		header("Access-Control-Allow-Credentials: ".(isset($arr['credentials']) ? $arr['credentials'] : "true"));
 	}
 
 	final public static function ajax($arr, $code = 200) {

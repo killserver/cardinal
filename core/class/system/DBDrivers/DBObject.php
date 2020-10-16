@@ -633,20 +633,30 @@ class DBObject implements ArrayAccess {
 		if(substr($name, 0, 1)==="`") {
 			$name = substr($name, 1, -1);
 		}
-		$row = db::doquery("SELECT EXISTS(SELECT 1 FROM `information_schema`.`tables` WHERE `table_schema` = '".db::$dbName."' AND `table_name` = '".$name."') AS `exists`");
-		if(!isset($row['exists']) || $row['exists'] != 1) {
-			errorHeader();
-			throw new Exception("Table ".$name." is not exists");
-			die();
-		}
-		if(empty($name)) {
-			$name = $this->loadedTable;
-		} else {
-			$this->loadedTable = $name;
-		}
-		$row = db::select_query("SHOW COLUMNS FROM `".db::$dbName."`.".$this->addPrefixTable($name));
-		foreach($row as $k => $v) {
-			$this->{$v['Field']} = "";
+		if(!file_exists(PATH_CACHE_SYSTEM."tables-".db::$dbName."-".$name.".".ROOT_EX) || !is_writable(PATH_CACHE_SYSTEM)) {
+			$row = db::doquery("SELECT EXISTS(SELECT 1 FROM `information_schema`.`tables` WHERE `table_schema` = '".db::$dbName."' AND `table_name` = '".$name."') AS `exists`");
+			if(!isset($row['exists']) || $row['exists'] != 1) {
+				errorHeader();
+				throw new Exception("Table ".$name." is not exists");
+				die();
+			}
+			if(empty($name)) {
+				$name = $this->loadedTable;
+			} else {
+				$this->loadedTable = $name;
+			}
+			$row = db::select_query("SHOW COLUMNS FROM `".db::$dbName."`.".$this->addPrefixTable($name));
+			if(is_writable(PATH_CACHE_SYSTEM)) {
+				file_put_contents(PATH_CACHE_SYSTEM."tables-".db::$dbName."-".$name.".".ROOT_EX, '<?php'.PHP_EOL.'if(!defined("IS_CORE")) die();'.PHP_EOL.'$table = '.var_export($row, true).";");
+			}
+			foreach($row as $k => $v) {
+				$this->{$v['Field']} = "";
+			}
+		} else if(file_exists(PATH_CACHE_SYSTEM."tables-".db::$dbName."-".$name.".".ROOT_EX)) {
+			include(PATH_CACHE_SYSTEM."tables-".db::$dbName."-".$name.".".ROOT_EX);
+			foreach($table as $k => $v) {
+				$this->{$v['Field']} = "";
+			}
 		}
 	}
 	

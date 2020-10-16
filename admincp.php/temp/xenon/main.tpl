@@ -59,6 +59,8 @@
 								<a href="#">{U_username}</a>
 								<span class="user-status is-online"></span>
 							</h3>
+
+							<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Login&out" class="btn btn-warning btn-logout-mobile btn-single visible-xs visible-sm" style="margin-top: 1em;">Logout</a>
 							
 						</div>
 						
@@ -315,7 +317,7 @@
 					</li>
 					
 					<li class="dropdown hover-line">
-						<a href="{C_default_http_host}" class="dropdown-toggle" aria-expanded="true" title="{L_"Перейти на сайт"}" alt="{L_"Перейти на сайт"}">
+						<a href="{C_default_http_host}" target="_blank" class="dropdown-toggle" aria-expanded="true" title="{L_"Перейти на сайт"}" alt="{L_"Перейти на сайт"}">
 							<i class="fa-paper-plane"></i>
 						</a>
 					</li>

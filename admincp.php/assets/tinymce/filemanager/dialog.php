@@ -326,7 +326,7 @@ $get_params = http_build_query($get_params);
 		<noscript><link rel="stylesheet" href="css/jquery.fileupload-noscript.css"></noscript>
 		<noscript><link rel="stylesheet" href="css/jquery.fileupload-ui-noscript.css"></noscript>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jplayer/2.2.0/skin/blue.monday/jplayer.blue.monday.min.css" />
-		<link href="css/style.css?v=<?php echo $version; ?>" rel="stylesheet" type="text/css" />
+		<link href="css/style.css?v=<?php echo $version; ?>&1" rel="stylesheet" type="text/css" />
 	<!--[if lt IE 8]><style>
 	.img-container span, .img-container-mini span {
 		display: inline-block;
@@ -714,11 +714,11 @@ foreach($files as $k=>$file){
 				$sorted[$k]=array(
 					'is_dir'=>false,
 					'file'=>$file,
-					'file_lcase'=>strtolower($file),
+					'file_lcase'=>strtolowers($file),
 					'date'=>$date,
 					'size'=>$size,
 					'permissions' =>'',
-					'extension'=>strtolower($file_ext)
+					'extension'=>strtolowers($file_ext)
 				);
 			}
 		}
@@ -731,7 +731,7 @@ function filenameSort($x, $y) {
 	if($x['is_dir'] !== $y['is_dir']){
 		return $y['is_dir'];
 	} else {
-		return $descending ? strnatcmp($x['file_lcase'], $y['file_lcase']) : strnatcmp($y['file_lcase'], $x['file_lcase']);
+		return $descending ? strnatcasecmp($x['file_lcase'], $y['file_lcase']) : strnatcasecmp($y['file_lcase'], $x['file_lcase']);
 	}
 }
 

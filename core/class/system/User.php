@@ -6,6 +6,8 @@ die();
 
 class User {
 	
+	public static $loadUserFromFile = true;
+	public static $callbackLoadUser = false;
 	private static $userInfo = array();
 	private static $callLogin = array();
 	private static $path = "";
@@ -33,9 +35,17 @@ class User {
 		}
 	}
 
+	final private static function copy() {
+		$path = self::PathUsers();
+		if(file_exists($path."userList.php") && !file_exists($path."userList-".date("d-m-Y").".php")) {
+			copy($path."userList.php", $path."userList-".date("d-m-Y").".php");
+		}
+	}
+
 	final private static function defend($users) {
 		$usersFile = false;
 		$php = self::PathUsers()."userList.php";
+		self::copy();
 		if(file_exists($php)) {
 			$usersFile = Defender::readFile($php, true);
 			$users = array_merge($users, $usersFile);
@@ -87,7 +97,11 @@ class User {
                 $userTypeInSystem[$k] = "file";
             }
         }
-		$users = self::defend($users);
+        if(self::$loadUserFromFile) {
+			$users = self::defend($users);
+		} else if(is_callable(self::$callbackLoadUser)) {
+			$users = call_user_func_array(self::$callbackLoadUser, array($users));
+		}
         foreach($userTypeInSystem as $k => $v) {
             $users[$k]['typeUserInSystem'] = "file";
         }
@@ -276,6 +290,7 @@ class User {
 		if(!is_writable($path)) {
 			@chmod($path, 0777);
 		}
+		self::copy();
 		Defender::safeSave($path."userList.php", ($users), true);
 		return true;
 	}
@@ -315,6 +330,7 @@ class User {
 		if(!is_writable($path)) {
 			@chmod($path, 0777);
 		}
+		self::copy();
 		Defender::safeSave($path."userList.php", CardinalJSON::save($users), true);
 		return true;
 	}
@@ -329,6 +345,7 @@ class User {
 		if(!is_writable($path)) {
 			@chmod($path, 0777);
 		}
+		self::copy();
 		Defender::safeSave($path."userList.php", CardinalJSON::save($users), true);
 		return true;
 	}

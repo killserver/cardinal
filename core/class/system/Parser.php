@@ -77,6 +77,7 @@ class Parser {
 	 * @var string
      */
 	private $proxy = "";
+	private $proxy_type = '';
 	/**
 	 * @var string
      */
@@ -89,6 +90,7 @@ class Parser {
 	 * @var string
      */
 	private $cookie_path = "";
+	private $cookie_fullpath = "";
 	/**
 	 * @var bool
      */
@@ -232,12 +234,13 @@ class Parser {
 	 * @param string $coopath Cookie path
 	 * @return $this Parser
      */
-	final public function cookie($coo = true, $coopath = "") {
+	final public function cookie($coo = true, $coopath = "", $cookie_fullpath = "") {
 		if(empty($coopath)) {
 			$coopath = rand(0, getrandmax());
 		}
 		$this->cookie = $coo;
 		$this->cookie_path = $coopath;
+		$this->cookie_fullpath = $cookie_fullpath;
 		return $this;
 	}
 
@@ -276,8 +279,11 @@ class Parser {
 	 * @param $proxy IP proxy
 	 * @return $this Parser
      */
-	final public function proxy($proxy) {
+	final public function proxy($proxy, $proxy_type = '') {
 		$this->proxy = $proxy;
+		if(!empty($proxy_type)) {
+			$this->proxy_type = $proxy_type;
+		}
 		return $this;
 	}
 
@@ -319,6 +325,13 @@ class Parser {
 	 * @return $this Parser
      */
 	final public function headers($h = array()) {
+		if(is_string($h) && strpos($h, "\n")!==false) {
+			$h = trim($h);
+			$h = explode("\n", $h);
+			$h = array_filter($h);
+		} else if(is_string($h)) {
+			$h = array($h);
+		}
 		$this->headerList = array_merge($this->headerList, $h);
 		return $this;
 	}
@@ -340,6 +353,17 @@ class Parser {
      */
 	final public function headerClear($headerClear = true) {
 		$this->header_clear = $headerClear;
+		return $this;
+	}
+
+	public function postJSON($arr) {
+		$this->post(json_encode($arr));
+		return $this;
+	}
+
+	public function clear() {
+		$this->customRequest = '';
+		$this->headerList = array();
 		return $this;
 	}
 
@@ -416,7 +440,7 @@ class Parser {
 	 * @param string $url Need link and start, or initialization parsing
 	 * @return array|bool|string|$this Result parsing
      */
-	final public function get($url = "") {
+	final public function get($url = "", $sss = false) {
 		if(empty($url)) {
 			$url = $this->url;
 		} else {
@@ -425,6 +449,7 @@ class Parser {
 		if(empty($url)) {
 			$url = $this->base_url;
 		}
+		$this->url = (!empty($this->base_url) ? str_replace($this->base_url, '', $url) : $url);
 		curl_setopt($this->ch, CURLOPT_URL, $url);
 		if(!empty($this->agent)) {
 			curl_setopt($this->ch, CURLOPT_USERAGENT, $this->agent);
@@ -446,9 +471,9 @@ class Parser {
 			}
 			curl_setopt($this->ch, CURLOPT_COOKIE, $this->cookie);
 		}
-		if($this->cookie && !empty($this->cookie_path)) {
-			curl_setopt($this->ch, CURLOPT_COOKIEJAR, (defined("PATH_CACHE") ? PATH_CACHE.$this->cookie_path.".txt" : $this->cookie_path));
-			curl_setopt($this->ch, CURLOPT_COOKIEFILE, (defined("PATH_CACHE") ? PATH_CACHE.$this->cookie_path.".txt" : $this->cookie_path));
+		if($this->cookie && (!empty($this->cookie_path) || !empty($this->cookie_fullpath))) {
+			curl_setopt($this->ch, CURLOPT_COOKIEJAR, (!empty($this->cookie_fullpath) ? $this->cookie_fullpath : (defined("PATH_CACHE") ? PATH_CACHE.$this->cookie_path.".txt" : $this->cookie_path)));
+			curl_setopt($this->ch, CURLOPT_COOKIEFILE, (!empty($this->cookie_fullpath) ? $this->cookie_fullpath : (defined("PATH_CACHE") ? PATH_CACHE.$this->cookie_path.".txt" : $this->cookie_path)));
 		}
 		if(sizeof($this->addCookie)>0) {
 			curl_setopt($this->ch, CURLOPT_COOKIE, implode("&", $this->addCookie));
@@ -466,7 +491,7 @@ class Parser {
 		} else {
 			curl_setopt($this->ch, CURLOPT_HEADER, 1);
 		}
-		if(sizeof($this->customRequestData)>0) {
+		if(!empty($this->customRequestData)) {
 			curl_setopt($this->ch, CURLOPT_POSTFIELDS, $this->customRequestData);
 		}
 		if(isset($this->headerList) && is_array($this->headerList) && sizeof($this->headerList)) {
@@ -529,6 +554,9 @@ class Parser {
 		if(!empty($this->proxy)) {
 			curl_setopt($this->ch, CURLOPT_PROXY, $this->proxy);
 		}
+		if(!empty($this->proxy_type)) {
+			curl_setopt($this->ch, CURLOPT_PROXYTYPE, 7);
+		}
 		if(!$this->error && ($this->html = curl_exec($this->ch)) === false) {
 			$this->html = curl_error($this->ch);
 		}
@@ -536,6 +564,7 @@ class Parser {
 			$header = substr($this->html, 0, strpos($this->html, "\r\n\r\n"));
 			$this->html = str_replace($header."\r\n\r\n", "", $this->html);
 			if($this->header_array) {
+				$this->headers = array();
 				$exp = explode("\n", $header);
 				for($i=0;$i<sizeof($exp);$i++) {
 					if($this->header_clear) {

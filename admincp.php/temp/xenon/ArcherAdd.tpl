@@ -348,7 +348,10 @@
 		console.log(e, data);
 		var cat = function(data) {
 			var link_now = data.http_link+applyAmp(data.http_link)+(new Date().getTime()/1000);
-			var tpl = $(".template_btn_access[data-template-id='"+$("#"+data.field_id).attr("name")+"']").last().html();
+			var name = $("#"+data.field_id).attr("name");
+			name = name.split("[");
+			name = name[0];
+			var tpl = $(".template_btn_access[data-template-id='"+name+"']").last().html();
 			if(typeof(tpl)!=="undefined") {
 				tpl = tpl.replace(new RegExp("{template_access_uid}", "ig"), data.field_id);
 				tpl = tpl.replace(new RegExp("{template_access_class}", "ig"), (data.type.indexOf("image")>-1 || data.type.indexOf("imageAccess")>-1 || data.type.indexOf("imageArrayAccess")>-1 ? " showPreview new" : ""));

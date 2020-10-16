@@ -153,12 +153,13 @@ class Archer extends Core {
 				foreach($modelData as $k => $v) {
 					if(!empty($uniq) && $k==$uniq) {
 						//$v .= "_-_1";
-						preg_match("#_-_(.*?)$#is", $v, $find);
+						/*preg_match("#_-_(.*?)$#is", $v, $find);
 						if($find) {
 							$v = str_replace($find[0], "", $v);
 							$iterable += floatval($find[1]);
 						}
-						$v .= "_-_".$iterable;
+						$v .= "_-_".$iterable;*/
+						$v = "";
 					}
 					$models->{$k} = $v;
 				}
@@ -205,12 +206,13 @@ class Archer extends Core {
 				foreach($modelData as $k => $v) {
 					if(!empty($uniq) && $k==$uniq) {
 						//$v .= "_-_1";
-						preg_match("#_-_(.*?)$#is", $v, $find);
+						/*preg_match("#_-_(.*?)$#is", $v, $find);
 						if($find) {
 							$v = str_replace($find[0], "", $v);
 							$iterable += floatval($find[1]);
 						}
-						$v .= "_-_".$iterable;
+						$v .= "_-_".$iterable;*/
+						$v = "";
 					}
 					$models->{$k} = $v;
 				}

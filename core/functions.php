@@ -52,6 +52,7 @@ global $globalClass;
 	$useNew = false;
 	if(is_dir($dir)) {
 		if($dh = dir($dir)) {
+			$developerLevel = userlevel::get("developer");
 			while(($file = $dh->read()) !== false) {
 				$strip_path = str_replace(ROOT_PATH, "", PATH_MODULES);
 				if($file != ".htaccess" && $file != "index.html" && $file != "index.".ROOT_EX && $file != "." && $file != "..") {
@@ -66,7 +67,7 @@ global $globalClass;
 					}
 					$replace = $modules;
 					if(strpos($file, "dev-")!==false) {
-						if(isset($_COOKIE['cardinal_debug']) || userlevel::get("developer")) {
+						if(isset($_COOKIE['cardinal_debug']) || $developerLevel) {
 							$replace = array($replace, "dev-");
 						} else {
 							continue;

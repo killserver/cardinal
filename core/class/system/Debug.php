@@ -401,20 +401,47 @@ class Debug {
 		return $var;
 	}
 
+	final private static function getExecutionFileStack($backtrace) {
+		$ret = array("file" => "cloud execution", "line" => -1);
+		for($i=0;$i<sizeof($backtrace);$i++) {
+			if(isset($backtrace[$i]['class']) && isset($backtrace[$i]['function']) && $backtrace[$i]['class']=="Debug" && $backtrace[$i]['function']=="vdump") {
+				continue;
+			}
+			if(isset($backtrace[$i]['file']) && strpos($backtrace[$i]['file'], "cardinalEvent.php")!==false) {
+				continue;
+			}
+			if(isset($backtrace[$i]['file']) && strpos($backtrace[$i]['file'], "loadConfig.php")!==false && isset($backtrace[$i]['class']) && $backtrace[$i]['class']=="cardinalEvent") {
+				continue;
+			}
+			$ret = $backtrace[$i];
+			break;
+		}
+		if(isset($ret['function']) && $ret['function']=="execEvent" && isset($ret['args']) && isset($ret['args'][0])) {
+			$eventer = cardinalEvent::getExecutors($ret['args'][0]);
+			if(isset($eventer[0]) && isset($eventer[0]['loader'])) {
+				$ret = $eventer[0]['loader'];
+			}
+		}
+		return $ret;
+	}
+
 	final public static function vdump() {
 		global $printedVdump;
 		$list = func_get_args();
-		$backtrace = debug_backtrace();
+		// $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+		$e = new \Exception;
+		$backtrace = $e->getTrace();
 		if(!defined("IS_CLI") && (!isset($printedVdump) || $printedVdump===false)) {
 			if(function_exists("nocache_headers")) { nocache_headers(); }
 			echo '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><meta name="viewport" content="width=device-width"><title>Cardinal &rsaquo; Debug</title><meta name="robots" content="noindex,follow"></head><style>html { background: #f1f1f1; } body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; } div.container { background: #fff; color: #444; margin: 2em auto; padding: 0em 2em 1em; max-width: 700px; -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.13); box-shadow: 0 1px 3px rgba(0,0,0,0.13); } div.info { border-bottom: 1px solid #dadada; clear: both; color: #666; background: #fff; word-break: break-all; max-width: 100%; font-size: 19px; padding: 1em 0px 7px; font-family: \'Roboto\'; margin-bottom: 1.5rem; } pre { text-align: left; margin: 0px 0px 1em; font-family: Consolas, Monaco, monospace; font-size: 12px; word-break: break-word; max-width: 100%; white-space: pre-wrap; line-height: 20px; }</style><body>';
 			if(function_exists("addEvent")) { addEvent("shutdownCardinal", function() { echo "</body></html>"; }, "", 999999999); }
 		}
+		$executionFile = self::getExecutionFileStack($backtrace);
 		if(!defined("IS_CLI")) {
-			echo PHP_EOL.'<div class="container"><div class="info">'. (isset($backtrace[2]) ? "<b>Called:</b><span> ".(defined("ROOT_PATH") ? str_replace(ROOT_PATH, DS, $backtrace[2]['file']) : $backtrace[2]['file'])." [".$backtrace[2]['line']."]&nbsp;<i>".date("d-m-Y H:i:s", fileatime($backtrace[2]['file']))."</i>" : "")."</span>".(isset($backtrace[2]) ? "<br>" : "")."</div>";
+			echo PHP_EOL.'<div class="container"><div class="info">'. "<b>Called:</b><span> ".(isset($executionFile['event']) ? "<span style='color:green'>(".$executionFile['event'].")</span> " : "").(defined("ROOT_PATH") ? str_replace(ROOT_PATH, DS, $executionFile['file']) : $executionFile['file'])." [".$executionFile['line']."]".(file_exists($executionFile['file']) ? "&nbsp;<i>".date("d-m-Y H:i:s", filectime($executionFile['file']))."</i>" : "")."</span><br></div>";
 			echo PHP_EOL.'<pre>';
 		} else {
-			echo (isset($backtrace[0]) ? "Called: ".$backtrace[2]['file']." [".$backtrace[2]['line']."] ".date("d-m-Y H:i:s", fileatime($backtrace[2]['file'])) : "")." ".(isset($backtrace[2]) ? PHP_EOL.PHP_EOL : "");
+			echo "Called: ".(isset($executionFile['event']) ? "(".$executionFile['event'].") " : "").$executionFile['file']." [".$executionFile['line']."]".(file_exists($executionFile['file']) ? " ".date("d-m-Y H:i:s", filectime($executionFile['file'])) : "")." ".PHP_EOL.PHP_EOL;
 		}
 		if(sizeof($list)>0) {
 			ob_start();
@@ -462,6 +489,14 @@ class Debug {
 		} else {
 			return self::StopBreakPoint($name, $data);
 		}
+	}
+
+	final public static function getCaller() {
+		$listener = debug_backtrace();
+		$file = $listener[0]['file'];
+		$exp = explode(DS, $file);
+		$end = end($exp);
+		return $end;
 	}
 
 	const LOG_LEVEL_NONE = 0;

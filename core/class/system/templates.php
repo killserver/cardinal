@@ -1374,7 +1374,7 @@ class templates {
 			$file = array($array[1]);
 		}
 		$files = self::load_templates($file[0], "", (isset($file[1]) && !empty($file[1]) ? $file[1] : "null"), "");
-		$files = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $files);
+		$files = str_replace("{THEME}", self::relative_path().self::$dir_skins."/".self::$skins, $files);
 		return $files;
 	}
 
@@ -1473,7 +1473,7 @@ class templates {
 		if(!isset($array[2]) || empty($array[2])) {
 			return "";
 		}
-		$file = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $array[2]);
+		$file = str_replace("{THEME}", self::relative_path().self::$dir_skins."/".self::$skins, $array[2]);
 		$file = substr(ROOT_PATH, 0, -1).$file;
 		$file = filemtime($file);
 		if($file===false) {
@@ -1895,11 +1895,11 @@ class templates {
 		$tpl = self::load_templates($file, "", $dir);
 		$tpl = self::comp_datas($tpl, $file);
 		if($dir == "null") {
-			$tpl = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $tpl);
+			$tpl = str_replace("{THEME}", self::relative_path().self::$dir_skins."/".self::$skins, $tpl);
 		} elseif(empty($dir)) {
-			$tpl = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins, $tpl);
+			$tpl = str_replace("{THEME}", self::relative_path().self::$dir_skins, $tpl);
 		} else {
-			$tpl = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".$dir, $tpl);
+			$tpl = str_replace("{THEME}", self::relative_path().self::$dir_skins."/".$dir, $tpl);
 		}
 		self::$time += self::time()-$time;
 		return $tpl;
@@ -1952,18 +1952,20 @@ class templates {
 	 * @param array|string $headerSet List headers or title
      */
 	final public static function completed($tmp, $headerSet = "") {
-	global $manifest;
+	global $manifest, $config;
 		$time = self::time();
 		if(!is_array($headerSet)) {
+			$descr = (class_Exists("lang") && method_exists("lang", "get_lang") ? lang::get_lang("s_description") : (isset($config['s_description']) ? $config['s_description'] : "Cardinal Engine"));
+			$site = (class_Exists("lang") && method_exists("lang", "get_lang") ? lang::get_lang("sitename") : (isset($config['sitename']) ? $config['sitename'] : "Cardinal Engine"));
 			$arr = array(
 				"meta" => array(
 					"og" => array(
-						"description" => htmlspecialchars(lang::get_lang("s_description")),
+						"description" => htmlspecialchars($descr),
 					),
 					"ogpr" => array(
-						"og:description" => htmlspecialchars(lang::get_lang("s_description")),
+						"og:description" => htmlspecialchars($descr),
 					),
-					"description" => htmlspecialchars(lang::get_lang("s_description")),
+					"description" => htmlspecialchars($descr),
 				),
 			);
 
@@ -1972,9 +1974,9 @@ class templates {
 				$arr['meta']['og']['title'] = $headerSet;
 				$arr['meta']['ogpr']['title'] = $headerSet;
 			} else {
-				$arr['title'] = htmlspecialchars(lang::get_lang("sitename"));
-				$arr['meta']['og']['title'] = htmlspecialchars(lang::get_lang("sitename"));
-				$arr['meta']['ogpr']['title'] = htmlspecialchars(lang::get_lang("sitename"));
+				$arr['title'] = htmlspecialchars($site);
+				$arr['meta']['og']['title'] = htmlspecialchars($site);
+				$arr['meta']['ogpr']['title'] = htmlspecialchars($site);
 			}
 
 			$header = $arr;
@@ -1984,10 +1986,12 @@ class templates {
 		if(!is_array(self::$header)) {
 			self::$header = array();
 		}
-		if(!self::$isChangeHead) {
-			self::$header = array_replace_recursive(self::$header, releaseSeo(array(), true), $header);
-		} else {
-			self::$header = array_replace_recursive($header, releaseSeo(array(), true), self::$header);
+		if(function_exists("releaseSeo")) {
+			if(!self::$isChangeHead) {
+				self::$header = array_replace_recursive(self::$header, releaseSeo(array(), true), $header);
+			} else {
+				self::$header = array_replace_recursive($header, releaseSeo(array(), true), self::$header);
+			}
 		}
 		if(function_exists("execEventRef")) {
 			execEventRef("change_header", self::$header);
@@ -2061,7 +2065,7 @@ class templates {
 				return $arr[0];
 			}
 		}
-		return langdate($date, $temp, $only_date);
+		return function_exists("langdate") ? langdate($date, $temp, $only_date) : date($temp, (!empty($date) ? $date : time()));
 	}
 
 	private static function set($arr) {
@@ -2179,7 +2183,7 @@ class templates {
 		}
 
 		if($type=="all") {
-			$tpl = self::callback_array("#\{FMK_(['\"])(.*?)\[(.*?)\]\}#", ("templates::fmk"), $tpl);
+			$tpl = self::callback_array("#\{FMK_(['\"])(.*?)(['\"])\}#", ("templates::fmk"), $tpl);
 			$tpl = self::callback_array("#\{M_\[(.+?)\]\}#", ("templates::checkMobile"), $tpl);
 			$tpl = self::callback_array("#\{foreach\}([0-9]+)\{/foreach\}#i", ("templates::foreach_set"), $tpl);
 			$tpl = self::callback_array("#\\[foreach block=(.+?)\\](.+?)\\[/foreach $1\\]#is", ("templates::foreachs"), $tpl);
@@ -2214,7 +2218,7 @@ class templates {
 
 			$tpl = self::callback_array("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
 			$tpl = self::callback_array("#\\[module_(.+?)\\](.+?)\\[/module_(.+?)\\]#i", ("templates::is"), $tpl);
-			$tpl = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $tpl);
+			$tpl = str_replace("{THEME}", self::relative_path().self::$dir_skins."/".self::$skins, $tpl);
 			$tpl = self::callback_array("#\{IMG_[\"'](.+?)[\"']\}#", ("templates::imageRes"), $tpl);
 			$tpl = self::callback_array("#\{FN_[\"'](.+?)[\"'](,[\"'](.*?)[\"'])\}#", "templates::callFn", $tpl);
 			$tpl = self::callback_array("#\{RETINA_[\"'](.+?)[\"'],[\"'](.+?)[\"'](|,[\"'](.+?)[\"'])\}#", ("templates::retinaImg"), $tpl);
@@ -2285,7 +2289,7 @@ class templates {
 		self::complited($data, $header);
 		$h = self::$tmp;
 		self::$tmp = $old;
-		$h = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $h);
+		$h = str_replace("{THEME}", self::relative_path().self::$dir_skins."/".self::$skins, $h);
 		if(config::Select("manifestCache")) {
 			$h = self::linkToHeader($h);
 		}
@@ -2322,7 +2326,7 @@ class templates {
 	* @access private
 	*/
 	final private static function minify($html, $force = false) {
-		if(!$force && !modules::get_config('tpl_minifier')) {
+		if(!$force && (class_exists("modules") && method_exists("modules", "get_config") && !modules::get_config('tpl_minifier'))) {
 			return $html;
 		}
 		// TODO: Match <code> and <pre> too - in separate arrays
@@ -2455,6 +2459,17 @@ class templates {
 			return true;
 		}
 	}
+
+	final public static function relative_path() {
+		$return = "/";
+		if(class_Exists("config") && method_exists("config", "Select")) {
+			$return = config::Select("default_http_local");
+		} else if(isset($_SERVER['REQUEST_URI'])) {
+			$exp = explode("?", $_SERVER['REQUEST_URI']);
+			$return = current($exp);
+		}
+		return $return;
+	}
 	
 	final public static function multipleHead() {
 		$ret = '<!--[if lt IE 7 ]> <html class="ie6"> <![endif]-->'.PHP_EOL.'<!--[if IE 7 ]> <html class="ie7"> <![endif]-->'.PHP_EOL.'<!--[if IE 8 ]> <html class="ie8"> <![endif]-->'.PHP_EOL.'<!--[if IE 9]> <html class="ie9"> <![endif]-->'.PHP_EOL.'<html class="no-js">';
@@ -2515,12 +2530,14 @@ class templates {
 			}
 			$h = str_replace("{create_css}", $header->create_css(), $h);
 		}
-		$head .= headers(self::$header, false, $no_js, $no_css);
+		if(function_exists("headers")) {
+			$head .= headers(self::$header, false, $no_js, $no_css);
+		}
 		if(isset(self::$module['head']['after'])) {
 			$head .= self::$module['head']['after'];
 		}
 		if(strpos($head, '<meta name="theme-color"')===false) {
-			$head .= '<meta name="theme-color" content="'.execEvent("titleColor", "#AC1F1F").'">';
+			$head .= '<meta name="theme-color" content="'.(function_exists("execEvent") ? execEvent("titleColor", "#AC1F1F") : "#AC1F1F").'">';
 		}
 		$h = str_replace("{headers}", $head, $h);
 
@@ -2543,7 +2560,7 @@ class templates {
 		} else {
 			$h = str_replace("{content}", $body, $h);
 		}
-		$h = str_replace("{THEME}", config::Select("default_http_local").self::$dir_skins."/".self::$skins, $h);
+		$h = str_replace("{THEME}", self::relative_path().self::$dir_skins."/".self::$skins, $h);
 		$h = self::ecomp($h);//, self::$dir_skins.DS.self::$skins.DS."main"
 		$find_preg = $replace_preg = array();
 		if(sizeof(self::$editor)) {
@@ -2553,24 +2570,26 @@ class templates {
 			}
 			$h = preg_replace($find_preg, $replace_preg, $h);
 		}
-		if(config::Select("manifestCache")) {
+		if(class_exists("config") && method_exists("config", "Select") && config::Select("manifestCache")) {
 			$h = self::linkToHeader($h);
-		} else if(config::Select("fastLoad")) {
+		} else if(class_exists("config") && method_exists("config", "Select") && config::Select("fastLoad")) {
 			$h = self::linkToHeader($h, false);
 		}
 		$h = self::callback_array("#\{<html>\}#", ("templates::multipleHead"), $h);
 		if(!preg_match("#<html.*?lang=['\"](.+?)['\"].*?>#iU", $h)) {
-			$rLang = Route::param('lang');
+			$rLang = (class_exists("Route") && method_exists("Route", "param") ? Route::param('lang') : false);
 			if(!$rLang && !empty($rLang)) {
 				$lang = $rLang;
 			} else if($mainLangSite) {
 				$lang = $mainLangSite;
-			} else {
+			} else if(class_exists("config") && method_exists("config", "Select")) {
 				$lang = config::Select("lang");
 			}
-			$h = preg_replace("#<html(.*?)>#is", "<html lang=\"".$lang."\"$1>", $h);
+			if(isset($lang)) {
+				$h = preg_replace("#<html(.*?)>#is", "<html lang=\"".$lang."\"$1>", $h);
+			}
 		}
-		if(!preg_match("#<html.*?prefix=['\"](.+?)['\"].*?>#is", $h)) {
+		if(class_exists("config") && method_exists("config", "Select") && !preg_match("#<html.*?prefix=['\"](.+?)['\"].*?>#is", $h)) {
 			$arr = array();
 			$prefix = config::Select("htmlPrefix");
 			foreach($prefix as $namespace => $link) {
@@ -2578,9 +2597,13 @@ class templates {
 			}
 			$h = preg_replace("#<html(.*?)>#is", "<html$1 prefix=\"".implode(" ", $arr)."\">", $h);
 		}
-		$h = self::minify($h);
-		$h = cardinalEvent::execute("templates::display", $h);
-		HTTP::echos($h);
+		// $h = self::minify($h);
+		$h = (class_Exists("cardinalEvent") && method_exists("cardinalEvent", "execute") ? cardinalEvent::execute("templates::display", $h) : $h);
+		if(class_exists("HTTP") && method_exists("HTTP", "echos")) {
+			HTTP::echos($h);
+		} else {
+			echo $h;
+		}
 		unset($h, $body, $lang);
 		self::clean();
 		if(function_exists("memory_get_usage")) {
@@ -2641,7 +2664,7 @@ class templates {
 				if(!file_exists(PATH_MANIFEST.$md5.".txt")) {
 					file_put_contents(PATH_MANIFEST.$md5.".txt", $linkAll);
 				}
-				$tpl = preg_replace("#<html(.*?)>#is", "<html$1 manifest=\"".config::Select("default_http_local")."manifest.cache?f=".urlencode($md5)."\">", $tpl);// type=\"text/cache-manifest\"
+				$tpl = preg_replace("#<html(.*?)>#is", "<html$1 manifest=\"".self::relative_path()."manifest.cache?f=".urlencode($md5)."\">", $tpl);// type=\"text/cache-manifest\"
 			}
 		}
 		return $tpl;
@@ -2659,6 +2682,14 @@ class templates {
 		self::$header = null;
 		self::$tmp = "";
 		self::$skins = "";
+	}
+
+	final public static function cleanData() {
+		self::$blocks = array();
+		self::$foreach = array("count" => 0, "all" => array());
+		self::$module = array("head" => array(), "body" => array(), "blocks" => array());
+		self::$editor = array();
+		self::$header = null;
 	}
 
 }

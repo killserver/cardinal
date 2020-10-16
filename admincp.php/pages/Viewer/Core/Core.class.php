@@ -616,7 +616,7 @@ class Core {
 				if(isset($arr['closed']) && $arr['closed']) {
 					$class[] = "is-dismissible";
 				}
-				$rt = '<div><div class="'.implode(" ", $class).'"><span>'.$arr['echo'].'</span>'.(isset($arr['closed']) && $arr['closed'] ? '<button type="button" class="dismiss" data-code="'.$arr['code'].'"><span class="text">{L_"Скрыть это уведомление"}.</span></button>' : '').'</div></div>';
+				$rt = '<div><div class="'.implode(" ", $class).'"'.(isset($arr['caller']) ? ' data-caller="'.$arr['caller'].'"' : "").'><span>'.$arr['echo'].'</span>'.(isset($arr['closed']) && $arr['closed'] ? '<button type="button" class="dismiss" data-code="'.$arr['code'].'"><span class="text">{L_"Скрыть это уведомление"}.</span></button>' : '').'</div></div>';
 				$ret .= $rt;
 			}
 			if($isUnset) {

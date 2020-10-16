@@ -7,6 +7,7 @@ die();
 class Headers {
 
 	private $configMetaData = false;
+	private static $links = array();
 
 	public function create_js() {
 		global $manifest;
@@ -407,24 +408,29 @@ class Headers {
 		$ignore = array();
 		execEventRef("admin_menu_ready_for_ignore", $ignore);
 		if($loadMenu) {
-			$menu = array();
-			if($dh = dir(ADMIN_MENU)) {
-				$i=1;
-				while(($file = $dh->read()) !== false) {
-					if($file != "index.".ROOT_EX && $file != "index.html" && $file != ".htaccess" && $file != "." && $file != "..") {
-						$menu[] = ($file);
+			if(sizeof(self::$links)==0) {
+				$menu = array();
+				if($dh = dir(ADMIN_MENU)) {
+					$i=1;
+					while(($file = $dh->read()) !== false) {
+						if($file != "index.".ROOT_EX && $file != "index.html" && $file != ".htaccess" && $file != "." && $file != "..") {
+							$menu[] = ($file);
+						}
 					}
+					$dh->close();
 				}
-				$dh->close();
-			}
-			sortByValue($menu);
-			for($i=0;$i<sizeof($menu);$i++) {
-				if(array_key_exists($menu[$i], $ignore) || in_array($menu[$i], $ignore)) {
-					continue;
+				sortByValue($menu);
+				for($i=0;$i<sizeof($menu);$i++) {
+					if(array_key_exists($menu[$i], $ignore) || in_array($menu[$i], $ignore)) {
+						continue;
+					}
+					include_once(ADMIN_MENU.$menu[$i]);
 				}
-				include_once(ADMIN_MENU.$menu[$i]);
+				unset($menu);
+				self::$links = $links;
+			} else {
+				$links = self::$links;
 			}
-			unset($menu);
 		}
 		$this->adminPanelVsort($links);
 		$page_v = HTTP::getServer("REQUEST_URI");

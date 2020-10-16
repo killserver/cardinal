@@ -379,13 +379,20 @@ class db {
 	final public static function getTables($columns = true, $andType = false, $full = false) {
 		$loaded = array();
 		if(sizeof(self::$loadedTable)==0 && self::connected()) {
-			$sel = db::doquery("SHOW FULL TABLES", true);
-			while($row = db::fetch_assoc($sel)) {
-				$loaded[$row['Tables_in_'.strtolower(self::$dbName)]] = array();
-				$res = db::query("SHOW COLUMNS FROM `".$row['Tables_in_'.strtolower(self::$dbName)]."`");
-				while($roz = db::fetch_assoc($res)) {
-					$loaded[$row['Tables_in_'.strtolower(self::$dbName)]][$roz['Field']] = $roz['Type'];
+			if(!file_exists(PATH_CACHE_SYSTEM."tables.".ROOT_EX) || !is_writable(PATH_CACHE_SYSTEM)) {
+				$sel = db::doquery("SHOW FULL TABLES", true);
+				while($row = db::fetch_assoc($sel)) {
+					$loaded[$row['Tables_in_'.strtolower(self::$dbName)]] = array();
+					$res = db::query("SHOW COLUMNS FROM `".$row['Tables_in_'.strtolower(self::$dbName)]."`");
+					while($roz = db::fetch_assoc($res)) {
+						$loaded[$row['Tables_in_'.strtolower(self::$dbName)]][$roz['Field']] = $roz['Type'];
+					}
 				}
+				if(is_writable(PATH_CACHE_SYSTEM)) {
+					file_put_contents(PATH_CACHE_SYSTEM."tables.".ROOT_EX, '<?php'.PHP_EOL.'if(!defined("IS_CORE")) die();'.PHP_EOL.'$loaded = '.var_export($loaded, true).";");
+				}
+			} else if(file_exists(PATH_CACHE_SYSTEM."tables.".ROOT_EX)) {
+				include(PATH_CACHE_SYSTEM."tables.".ROOT_EX);
 			}
 			self::$loadedTable = $loaded;
 		} else if(self::connected()) {
@@ -841,6 +848,12 @@ class db {
      * @param array $arr Info of query
      */
     final public static function error($arr) {
+    	$type = "html";
+    	if(class_exists("HTTP", false) && method_exists("HTTP", "hasAccepts")) {
+    		if(HTTP::hasAccepts(array("application/json", "text/json"))) {
+    			$type = "json";
+    		}
+    	}
 		if(function_exists("errorHeader")) { errorHeader(); }
 		$mysql_error = $arr['mysql_error'];
 		$mysql_error_num = $arr['mysql_error_num'];
@@ -874,7 +887,18 @@ class db {
 		if(defined("ROOT_PATH")) {
 			$trace[$level]['file'] = str_replace(ROOT_PATH, "", $trace[$level]['file']);
 		}
-		if(!defined("IS_CLI") && self::$driver->get_type() === 1 && class_exists("modules") && method_exists("modules", "init_templates")) {
+		if($type=="json") {
+			if(function_exists("callAjax")) {
+				callAjax();
+			}
+			echo json_encode(array("success" => false, "errorInfo" => array(
+				"query" => $queryS,
+				"error" => $mysql_error,
+				"error_num" => $mysql_error_num,
+				"file" => $trace[$level]['file'],
+				"line" => $trace[$level]['line'],
+			)));
+		} else if(!defined("IS_CLI") && self::$driver->get_type() === 1 && class_exists("modules") && method_exists("modules", "init_templates")) {
             $tmp = modules::init_templates();
             $tmp->dir_skins("skins".DS);
             $tmp->assign_vars(array(

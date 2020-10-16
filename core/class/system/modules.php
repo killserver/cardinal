@@ -544,8 +544,8 @@ class modules {
 		}
 	}
 	
-	final public static function AmperOr($str) {
-		return strpos($str, "?")===false ? "?" : "&";
+	final public static function AmperOr($str, $return = false) {
+		return ($return ? (strpos($str, "?")===false ? "?" : "&").$str : strpos($str, "?")===false ? "?" : "&");
 	}
 
 	final public static function unRegCssJs($js, $type = "null", $reforce = false) {

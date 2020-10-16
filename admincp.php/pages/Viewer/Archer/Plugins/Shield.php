@@ -190,7 +190,7 @@ class Archer_Shield {
 		$tpl = str_replace("{ArcherAll}", ($countAll+1), $tpl);
 		$tpl = str_replace("{ArcherNotTouch}", ($countAll), $tpl);
 		if(($get = Arr::get($_GET, "quickViewId", false))!==false) {
-			$archerCore = new KernelArcher();
+			$archerCore = new KernelArcher($modelName);
 			$objName = get_class($model);
 			$model = execEvent("KernelArcher-Shield-Before-Data", $model, $objName);
 			$list = $model->Select();
