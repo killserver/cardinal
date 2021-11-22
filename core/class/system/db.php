@@ -77,6 +77,7 @@ class db {
      */
 	private static $configInit = array();
 	private static $loadedTable = array();
+	private static $loadedTableInfo = array();
 
     /**
      * Check connection for database
@@ -192,6 +193,48 @@ class db {
 		}
 		return $drivers;
 	}
+	private static $dataConnect = array(
+		"host" => "",
+		"user" => "",
+		"pass" => "",
+		"db" => "",
+		"charset" => "",
+		"port" => "",
+	);
+	private static $openedConnect = false;
+
+	final public static function open_connect() {
+		if(self::$openedConnect) {
+			return;
+		}
+		if(!(is_string(self::$dataConnect['host']) && is_string(self::$dataConnect['user']) && is_string(self::$dataConnect['pass']) && is_string(self::$dataConnect['charset']) && is_string(self::$dataConnect['port'])) || (empty(self::$dataConnect['host']) && empty(self::$dataConnect['user']) && empty(self::$dataConnect['pass']) && empty(self::$dataConnect['charset']) && empty(self::$dataConnect['port']))) {
+			return;
+		}
+		//mysql_query ("set character_set_client='utf8'"); 
+		//mysql_query ("set character_set_results='utf8'"); 
+		//mysql_query ("set collation_connection='utf8_general_ci'");
+		$open = self::OpenDriver();
+		if($open) {
+			self::$driver->connect(self::$dataConnect['host'], self::$dataConnect['user'], self::$dataConnect['pass'], self::$dataConnect['db'], self::$dataConnect['charset'], self::$dataConnect['port']);
+			if(self::connected()) {
+				if(defined("ROOT_PATH") && defined("PATH_CACHE_SYSTEM") && !file_exists(PATH_CACHE_SYSTEM."db_charset.lock") && is_writable(PATH_CACHE_SYSTEM)) {
+					self::query("ALTER DATABASE `".self::$dataConnect['db']."` DEFAULT CHARSET=".self::$dataConnect['charset']." COLLATE ".self::$dataConnect['charset']."_general_ci;");
+					file_put_contents(PATH_CACHE_SYSTEM."db_charset.lock", "");
+				}
+				if(self::$driverGen && !empty(self::$driver_name)) {
+					if(defined("ROOT_PATH") && defined("PATH_CACHE_SYSTEM") && !file_exists(PATH_CACHE_SYSTEM."db_lock.lock") && is_writable(PATH_CACHE_SYSTEM)) {
+						file_put_contents(PATH_CACHE_SYSTEM."db_lock.lock", self::$driver_name);
+					}
+					if((!defined("ROOT_PATH") || !defined("PATH_CACHE_SYSTEM")) && !file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock") && is_writable(dirname(__FILE__).DIRECTORY_SEPARATOR)) {
+						file_put_contents(dirname(__FILE__).DIRECTORY_SEPARATOR."db_lock.lock", self::$driver_name);
+					}
+				}
+				// MySQL 5.7 Group by FIX
+				//self::query("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))");
+				self::$openedConnect = true;
+			}
+		}
+	}
 
     /**
      * Connect to database and create resource connection
@@ -202,11 +245,22 @@ class db {
      * @param string $charset Charset for connection
      * @param string $port Port for connection
      */
-    final public static function connect($host, $user, $pass, $db, $charset, $port) {
+    final public static function connect($host, $user, $pass, $db, $charset, $port, $autoConnect = true) {
+    	self::$dataConnect = array(
+			"host" => $host,
+			"user" => $user,
+			"pass" => $pass,
+			"db" => $db,
+			"charset" => $charset,
+			"port" => $port,
+    	);
+    	if($autoConnect) {
+    		self::open_connect();
+    	}
 		//mysql_query ("set character_set_client='utf8'"); 
 		//mysql_query ("set character_set_results='utf8'"); 
 		//mysql_query ("set collation_connection='utf8_general_ci'");
-		$open = self::OpenDriver();
+		/*$open = self::OpenDriver();
 		if($open) {
 			self::$driver->connect($host, $user, $pass, $db, $charset, $port);
 			if(self::connected()) {
@@ -225,7 +279,7 @@ class db {
 				// MySQL 5.7 Group by FIX
 				self::query("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))");
 			}
-		}
+		}*/
 	}
 
     /**
@@ -311,6 +365,7 @@ class db {
 			$pass = config::Select('db','pass');
 			$chst = config::Select('db', 'charset');
 			$port = config::Select('db', 'port');
+			$autoConnect = config::Select('db', 'autoConnect');
 		} else {
 			if(!isset(self::$configInit['driver'])) {
 				if(function_exists("errorHeader")) { errorHeader(); }
@@ -361,9 +416,10 @@ class db {
 			} else {
 				$port = self::$configInit['port'];
 			}
+			$autoConnect = (isset(self::$configInit['autoConnect']) ? self::$configInit['autoConnect'] : true);
 		}
 		if(is_string($host) && is_string($user) && is_string($pass) && is_string($chst) && is_string($port)) {
-			self::connect($host, $user, $pass, self::$dbName, $chst, $port);
+			self::connect($host, $user, $pass, self::$dbName, $chst, $port, $autoConnect);
 		}
 	}
 
@@ -376,8 +432,8 @@ class db {
 		return true;
 	}
 	
-	final public static function getTables($columns = true, $andType = false, $full = false) {
-		$loaded = array();
+	final public static function getTables($columns = true, $andType = false, $full = false, $additionals = false) {
+		$loaded = $infoTables = array();
 		if(sizeof(self::$loadedTable)==0 && self::connected()) {
 			if(!file_exists(PATH_CACHE_SYSTEM."tables.".ROOT_EX) || !is_writable(PATH_CACHE_SYSTEM)) {
 				$sel = db::doquery("SHOW FULL TABLES", true);
@@ -387,16 +443,23 @@ class db {
 					while($roz = db::fetch_assoc($res)) {
 						$loaded[$row['Tables_in_'.strtolower(self::$dbName)]][$roz['Field']] = $roz['Type'];
 					}
+					$res = db::doquery("SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE table_schema='".strtolower(self::$dbName)."' AND table_name='".$row['Tables_in_'.strtolower(self::$dbName)]."'");
+					$infoTables[$row['Tables_in_'.strtolower(self::$dbName)]] = array(
+						"comment" => $res['TABLE_COMMENT'],
+						"collation" => $res['TABLE_COLLATION'],
+					);
 				}
 				if(is_writable(PATH_CACHE_SYSTEM)) {
-					file_put_contents(PATH_CACHE_SYSTEM."tables.".ROOT_EX, '<?php'.PHP_EOL.'if(!defined("IS_CORE")) die();'.PHP_EOL.'$loaded = '.var_export($loaded, true).";");
+					file_put_contents(PATH_CACHE_SYSTEM."tables.".ROOT_EX, '<?php'.PHP_EOL.'if(!defined("IS_CORE")) die();'.PHP_EOL.'$loaded = '.var_export($loaded, true).";".'$infoTables = '.var_export($infoTables, true).";");
 				}
 			} else if(file_exists(PATH_CACHE_SYSTEM."tables.".ROOT_EX)) {
 				include(PATH_CACHE_SYSTEM."tables.".ROOT_EX);
 			}
 			self::$loadedTable = $loaded;
+			self::$loadedTableInfo = $infoTables;
 		} else if(self::connected()) {
 			$loaded = self::$loadedTable;
+			$infoTables = self::$loadedTableInfo;
 		}
 		$ret = array();
 		foreach($loaded as $name => $fields) {
@@ -419,11 +482,16 @@ class db {
 				$ret[$name] = $fields;
 			}
 		}
+		if($additionals) {
+			foreach($ret as $name => &$fields) {
+				$fields = array("fields" => $fields, "additionals" => (isset($infoTables[$name]) ? $infoTables[$name] : array()));
+			}
+		}
 		return $ret;
 	}
 	
-	final public static function getTable($name) {
-		$list = self::getTables();
+	final public static function getTable($name, $columns = true, $andType = false, $full = false, $additionals = false) {
+		$list = self::getTables($columns, $andType, $full, $additionals);
 		if(defined("PREFIX_DB") && PREFIX_DB!=="" && isset($list[PREFIX_DB.$name])) {
 			$name = PREFIX_DB.$name;
 		}
@@ -442,7 +510,7 @@ class db {
      * Creator timer for query time
      * @return string Time with microseconds
      */
-    final private static function time() {
+    private static function time() {
     	$time = microtime();
     	if(strpos($time, " ")!==false) {
     		$time = explode(" ", $time);
@@ -601,7 +669,7 @@ class db {
     /**
      * Try repair all tables in database
      */
-    final private static function RePair() {
+    private static function RePair() {
 		if(class_exists("config")) {
 			$db_name = config::Select('db','db');
 		} else {
@@ -639,7 +707,7 @@ class db {
 		}
 	}
 
-	final private static function getTrace($backtrace) {
+	private static function getTrace($backtrace) {
 		$file = __FILE__;
 		$ret = false;
 		for($i=0;$i<sizeof($backtrace);$i++) {

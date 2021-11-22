@@ -238,11 +238,11 @@ class templates {
 	 * @access private
 	 * @return mixed time with microseconds
      */
-	final private static function time() {
+	private static function time() {
 		return microtime(true);
 	}
 
-	final private static function gen_uuid() {
+	private static function gen_uuid() {
 		return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
 		// 32 bits for "time_low"
 		mt_rand(0, 0xffff), mt_rand(0, 0xffff),
@@ -470,7 +470,7 @@ class templates {
 		return $arr[0];
 	}
 
-	final private static function getElementBlock($array) {
+	private static function getElementBlock($array) {
 		if(!isset(self::$blocks[$array[1]])) {
 			return $array[0];
 		}
@@ -517,7 +517,7 @@ class templates {
 	 * @param string $data Original data
 	 * @return array|mixed|NUll Return data after replace
      */
-	final private static function callback_array($pattern, $func, $data) {
+	private static function callback_array($pattern, $func, $data) {
 		if(function_exists("preg_replace_callback_array")) {
 			return preg_replace_callback_array(array($pattern => $func), $data);
 		} else {
@@ -531,7 +531,7 @@ class templates {
 	 * @param array $array Array data
 	 * @return string|void Return result replacing
      */
-	final private static function foreachs($array) {
+	private static function foreachs($array) {
 		if(!isset(self::$blocks[$array[1]])) {
 			return false;
 		}
@@ -566,10 +566,10 @@ class templates {
 			$dd = str_replace('{$size_for}', $all+1, $dd);
 			$dd = self::callback_array(self::experementalIFFn(7), ("templates::is"), $dd);
 			$dd = self::callback_array(self::experementalIFFn(8), ("templates::is"), $dd);
-			$dd = self::callback_array('#\[foreachif (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/foreachif \\1\]#i', ("templates::is"), $dd);
-			$dd = self::callback_array('#\[foreachif (.*?)\]([\s\S]*?)\[/foreachif \\1\]#i', ("templates::is"), $dd);
-			$dd = self::callback_array("#\\[foreachif (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/foreachif\\]#i", ("templates::is"), $dd);
-			$dd = self::callback_array("#\\[foreachif (.*?)\\]([\s\S]*?)\\[/foreachif\\]#i", ("templates::is"), $dd);
+			$dd = self::callback_array('#\[foreachif (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/foreachif \\1\]#is', ("templates::is"), $dd);
+			$dd = self::callback_array('#\[foreachif (.*?)\]([\s\S]*?)\[/foreachif \\1\]#is', ("templates::is"), $dd);
+			$dd = self::callback_array("#\\[foreachif (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/foreachif\\]#is", ("templates::is"), $dd);
+			$dd = self::callback_array("#\\[foreachif (.*?)\\]([\s\S]*?)\\[/foreachif\\]#is", ("templates::is"), $dd);
 			$num++;
 			$rnum--;
 			$tt .= str_replace('\n', "\n", $dd);
@@ -583,7 +583,7 @@ class templates {
 	 * @param array $array Array data about user
 	 * @return bool|string Result get information about user
      */
-	final private static function user($array) {
+	private static function user($array) {
 		if(isset($array[2])) {
 			$mod = modules::get_user(array($array[1], $array[2]));
 		} else {
@@ -605,7 +605,7 @@ class templates {
 	 * @param array $arr Array gets params
 	 * @return mixed Return data in routification or original line
      */
-	final private static function routeparam($arr) {
+	private static function routeparam($arr) {
 		$list = Route::param();
 		if(isset($arr[1]) && !empty($arr[1]) && isset($list[$arr[1]])) {
 			return $list[$arr[1]];
@@ -620,7 +620,7 @@ class templates {
 	 * @param array $array Params for routification
 	 * @return mixed Return routification link or original line
      */
-	final private static function route($array) {
+	private static function route($array) {
 		if(isset($array[1])) {
 			$route = Route::get($array[1]);
 			if(!is_bool($route)) {
@@ -657,7 +657,7 @@ class templates {
 	 * @param array $array Data for getting
 	 * @return int|mixed Return safe data system function or original line
      */
-	final private static function systems($array) {
+	private static function systems($array) {
 		switch($array[1]) {
 			case "rand":
 				$ret = self::mrand();
@@ -685,7 +685,7 @@ class templates {
 	 * @param int $max Maximal integer for random numeric
 	 * @return int Return random numeric
      */
-	final private static function mrand($min = 0, $max = 0) {
+	private static function mrand($min = 0, $max = 0) {
 		if($min==0 && $max==0) {
 			if(function_exists("random_int") && defined("PHP_INT_MIN")) {
 				$min = PHP_INT_MIN;
@@ -718,7 +718,7 @@ class templates {
 	 * @param array $array Params for get config
 	 * @return bool Return data in config or original line
      */
-	final private static function config($array) {
+	private static function config($array) {
 		if(class_exists("config") && method_exists("config", "Select")) {
 			if(isset($array[3])) {
 				$isset = config::Select($array[1], $array[2], $array[3]);
@@ -737,6 +737,9 @@ class templates {
 				$isset = (isset($config[$array[1]]) ? $config[$array[1]] : false);
 			}
 		}
+		if(is_array($isset)) {
+			return "";
+		}
 		if(!empty($isset)) {
 			return $isset;
 		} else {
@@ -744,7 +747,7 @@ class templates {
 		}
 	}
 
-	final private static function empty_config($array) {
+	private static function empty_config($array) {
 		$else = "";
 		if(class_exists("config") && method_exists("config", "Select")) {
 			if(isset($array[4])) {
@@ -783,7 +786,7 @@ class templates {
 	 * @param array $array Params for get language
 	 * @return bool Return data in language or original line
      */
-	final private static function lang($array) {
+	private static function lang($array) {
 		if(isset($array[4])) {
 			$array[2] = preg_replace("/\s{2,}/", ' ', $array[2]);
 			$array[4] = preg_replace("/\s{2,}/", ' ', $array[4]);
@@ -801,7 +804,7 @@ class templates {
 		}
 	}
 
-	final private static function slang($arr) {
+	private static function slang($arr) {
 		$sprintf = end($arr);
 		$arr = array_slice($arr, 0, -1);
 		$lang = self::lang($arr);
@@ -818,7 +821,7 @@ class templates {
 	 * @param array $arr Array data for replacing
 	 * @return string Return replaced string
      */
-	final private static function sprintf($text, $arr=array()) {
+	private static function sprintf($text, $arr=array()) {
 		for($i=0;$i<sizeof($arr); $i++) {
 			$text = str_replace("%s[".($i+1)."]", $arr[$i], $text);
 		}
@@ -831,7 +834,7 @@ class templates {
 	 * @param array $array Get constant
 	 * @return string Return data in constant or original line
      */
-	final private static function define($array) {
+	private static function define($array) {
 	global $manifest;
 		if(defined($array[1])) {
 			return constant($array[1]);
@@ -850,7 +853,7 @@ class templates {
 	 * @param array $data Array data for rebuild view time
 	 * @return bool|string Return DateTime to template
      */
-	final private static function sys_date($data) {
+	private static function sys_date($data) {
 		if(is_array($data)) {
 			if(empty($data[2])) {
 				return date($data[1]);
@@ -872,7 +875,7 @@ class templates {
 	 * @throws Exception If is not desktop, tablet, mobile, iOS, androidOS
      * @return int Result checking
      */
-    final private static function checkMobileExec($type) {
+    private static function checkMobileExec($type) {
 	global $mobileDetect;
 		if(!in_array($type, array('desktop', 'tablet', 'mobile', 'iOS', 'androidOS'))) {
 			throw new Exception("ERROR check type device");
@@ -901,7 +904,7 @@ class templates {
 	 * @throws Exception If is not desktop, tablet, mobile, iOS, androidOS
      * @return string Return checking
      */
-    final private static function checkMobile($array) {
+    private static function checkMobile($array) {
 		if(strpos($array[1], "|")!==false) {
 			$exp = explode("|", $array[1]);
 			$ret = false;
@@ -944,7 +947,7 @@ class templates {
 		return "";
 	}
 
-	final private static function include_mixin($arr) {
+	private static function include_mixin($arr) {
 		$ret = $arr[0];
 		if(isset(self::$mixins[$arr[1]])) {
 			$ret = self::$mixins[$arr[1]];
@@ -952,7 +955,7 @@ class templates {
 		return $ret;																																								
 	}
 
-	final private static function declension($arr) {
+	private static function declension($arr) {
 		if(strpos($arr[3], "|")!==false) {
 			$arr[3] = explode("|", $arr[3]);
 		} else {
@@ -972,7 +975,7 @@ class templates {
 	 * @param array $array Group and template
 	 * @return string Result checking
      */
-	final private static function group($array) {
+	private static function group($array) {
 		$level = modules::get_user('level');
 		if($level==0) {
 			$level = 5;
@@ -1020,7 +1023,7 @@ class templates {
 	 * @param array $array Array data
 	 * @return string Result review
      */
-	final private static function ajax_click($array) {
+	private static function ajax_click($array) {
 		if(strpos($array[0], "!ajax_click") !== false) {
 			if(!isset($_GET['tajax']) && !isset($_GET['jajax'])) {
 				return $array[1];
@@ -1043,7 +1046,7 @@ class templates {
 	 * @throws Exception error access level
 	 * @return string Return "true" or "false"
      */
-	final private static function level($array) {
+	private static function level($array) {
 		if(isset($array[3])) {
 			$array[3] = str_replace("\"", "", $array[3]);
 			return userlevel::check($array[1], $array[2]);
@@ -1060,7 +1063,7 @@ class templates {
 	 * @param bool|false $elseif Check elseif or not
 	 * @return array|bool|string Return result conditions
      */
-	final private static function is($array, $elseif=false) {
+	private static function is($array, $elseif=false) {
 		$else=false;
 		$good = true;
 		$ret = (isset($array[3]) ? (!$elseif ? $array[3] : false) : "");
@@ -1311,7 +1314,7 @@ class templates {
 	 * @access private
 	 * @param array $array Count elements in array
      */
-	final private static function foreach_set($array) {
+	private static function foreach_set($array) {
 		self::$foreach = array_merge(self::$foreach, array("count" => $array[1]));
 	}
 
@@ -1321,7 +1324,7 @@ class templates {
 	 * @param array $array Needed array for count elements in he'm
 	 * @return int
      */
-	final private static function countforeach($array) {
+	private static function countforeach($array) {
 		if(isset(self::$foreach["all"][$array[1]])) {
 			$data = self::$foreach["all"][$array[1]]+1;
 		} else if(isset(self::$blocks[$array[1]])) {
@@ -1338,7 +1341,7 @@ class templates {
 	 * @param array $array Array data for replacing
 	 * @return mixed Return part template or original line
      */
-	final private static function replace_tmp($array) {
+	private static function replace_tmp($array) {
 		if(isset(self::$blocks[$array[1]][$array[2]])) {
 			return self::$blocks[$array[1]][$array[2]];
 		} else {
@@ -1351,7 +1354,7 @@ class templates {
 	 * @param $arr Parameters for sub functions
 	 * @return string Result working
      */
-	final private static function includeFile($arr) {
+	private static function includeFile($arr) {
 		if($arr[1]=="module") {
 			unset($arr[1]);$arr = array_values($arr);
 			return self::include_module($arr);
@@ -1367,7 +1370,7 @@ class templates {
 		}
 	}
 
-	final private static function include_content($array) {
+	private static function include_content($array) {
 		if(strpos($array[1], ",") !== false) {
 			$file = explode(",", $array[1]);
 		} else {
@@ -1384,7 +1387,7 @@ class templates {
 	 * @param array $array Array data for including
 	 * @return array|mixed|NUll|string Return part template for insert in main template
      */
-	final private static function include_tpl($array) {
+	private static function include_tpl($array) {
 		if(strpos($array[1], ",") !== false) {
 			$file = explode(",", $array[1]);
 		} else {
@@ -1404,7 +1407,7 @@ class templates {
 	 * @param array $array Array data for initialize module-file
 	 * @return mixed Result work module or original line
      */
-	final private static function include_module($array) {
+	private static function include_module($array) {
 		$params = array();
 		if(strpos($array[1], "&")!==false) {
 			$exp = explode("&", $array[1]);
@@ -1461,7 +1464,7 @@ class templates {
 	 * @param array $array Block-data
 	 * @return int Return count block-data
      */
-	final private static function count_blocks($array) {
+	private static function count_blocks($array) {
 		if(isset($array[2]) && isset(self::$blocks[$array[2]])) {
 			return sizeof(self::$blocks[$array[2]]);
 		} else {
@@ -1469,7 +1472,7 @@ class templates {
 		}
 	}
 
-	final private static function fmk($array) {
+	private static function fmk($array) {
 		if(!isset($array[2]) || empty($array[2])) {
 			return "";
 		}
@@ -1482,7 +1485,7 @@ class templates {
 		return $file;
 	}
 
-	final private static function callFn($arr) {
+	private static function callFn($arr) {
 		if(is_callable($arr[1])) {
 			if(isset($arr[3])) {
 				if(strpos($arr[3], ";")!==false) {
@@ -1575,7 +1578,7 @@ class templates {
 		return (sizeof($rets)>0 ? $rets : $link);
 	}
 
-	final private static function retinaImg($arr) {
+	private static function retinaImg($arr) {
 		$link = $arr[1];
 		$size = false;
 		$type = "img";
@@ -1624,7 +1627,7 @@ class templates {
 		return $html;
 	}
 	
-	final private static function imageRes($arrData) {
+	private static function imageRes($arrData) {
 		$arr = array();
 		$exp = explode("&", $arrData[1]);
 		$arr['link'] = $exp[0];
@@ -1807,7 +1810,7 @@ class templates {
 		return $file;
 	}
 
-	final private static function fors($data) {
+	private static function fors($data) {
 		$step = 1;
 		if(!empty($data[4]) && is_numeric($data[4]) && $data[4]>0) {
 			$step = intval($data[4]);
@@ -1870,7 +1873,7 @@ class templates {
 		return $tpl;
 	}
 
-	final private static function loadFile($file) {
+	private static function loadFile($file) {
 		try {
 			$tpl = file_get_contents($file);
 		} catch(Exception $ex) {
@@ -1960,12 +1963,12 @@ class templates {
 			$arr = array(
 				"meta" => array(
 					"og" => array(
-						"description" => htmlspecialchars($descr),
+						"description" => htmlspecialchars_decode($descr),
 					),
 					"ogpr" => array(
-						"og:description" => htmlspecialchars($descr),
+						"og:description" => htmlspecialchars_decode($descr),
 					),
-					"description" => htmlspecialchars($descr),
+					"description" => htmlspecialchars_decode($descr),
 				),
 			);
 
@@ -1974,9 +1977,9 @@ class templates {
 				$arr['meta']['og']['title'] = $headerSet;
 				$arr['meta']['ogpr']['title'] = $headerSet;
 			} else {
-				$arr['title'] = htmlspecialchars($site);
-				$arr['meta']['og']['title'] = htmlspecialchars($site);
-				$arr['meta']['ogpr']['title'] = htmlspecialchars($site);
+				$arr['title'] = htmlspecialchars_decode($site);
+				$arr['meta']['og']['title'] = htmlspecialchars_decode($site);
+				$arr['meta']['ogpr']['title'] = htmlspecialchars_decode($site);
 			}
 
 			$header = $arr;
@@ -2038,12 +2041,12 @@ class templates {
 	 * @param string $file Execute file
 	 * @return array|mixed|NUll|string Result rebuild
      */
-	final private static function ecomp($tmp, $file = "null") {
+	private static function ecomp($tmp, $file = "null") {
 		$tmp = self::comp_datas($tmp, $file, "ecomp");
 		return $tmp;
 	}
 
-	final private static function langdate($arr) {
+	private static function langdate($arr) {
 		if(isset($arr[4]) && !empty($arr[4])) {
 			$temp = $arr[4];
 		} else {
@@ -2262,6 +2265,7 @@ class templates {
 				$size++;
 			}
 		}
+		$args = array_values($args);
 		$ret = call_user_func_array("cardinalEvent::execute", $args);
 		return ($ret===false ? "" : $ret);
 	}
@@ -2325,7 +2329,7 @@ class templates {
 	* Minifies template w/i PHP code by removing extra spaces
 	* @access private
 	*/
-	final private static function minify($html, $force = false) {
+	private static function minify($html, $force = false) {
 		if(!$force && (class_exists("modules") && method_exists("modules", "get_config") && !modules::get_config('tpl_minifier'))) {
 			return $html;
 		}
@@ -2405,7 +2409,7 @@ class templates {
 	 * @param string $msg Error message
 	 * @param string $file Error in file
      */
-	final private static function ErrorTemplate($msg, $file = "") {
+	private static function ErrorTemplate($msg, $file = "") {
 		errorHeader();
 		$type = "main";
 		$orFile = $file;
@@ -2612,7 +2616,7 @@ class templates {
 		self::$time += self::time()-$time;
 	}
 
-	final private static function linkToHeader($tpl, $manifestAccess = true) {
+	private static function linkToHeader($tpl, $manifestAccess = true) {
 		if(!isset($_SERVER['REQUEST_URI'])) {
 			return $tpl;
 		}

@@ -219,7 +219,7 @@ class modules {
 		}
 	}
 	
-	final private static function implodeData($del, $arr) {
+	private static function implodeData($del, $arr) {
 		$err = false;
 		$arr = array_values($arr);
 		for($i=0;$i<sizeof($arr);$i++) {
@@ -545,7 +545,7 @@ class modules {
 	}
 	
 	final public static function AmperOr($str, $return = false) {
-		return ($return ? (strpos($str, "?")===false ? "?" : "&").$str : strpos($str, "?")===false ? "?" : "&");
+		return ($return ? (strpos($str, "?")===false ? "?" : "&").$str : (strpos($str, "?")===false ? "?" : "&"));
 	}
 
 	final public static function unRegCssJs($js, $type = "null", $reforce = false) {
@@ -751,7 +751,7 @@ class modules {
 		}
 	}
 	
-	final private static function langURL() {
+	private static function langURL() {
 		$server = HTTP::getServer("REDIRECT_URL");
 		if(!$server) {
 			return self::get_config("default_http_local");
@@ -835,18 +835,36 @@ class modules {
 			}
 		} else {
 			$d = array();
-			foreach($data as $k => $v) {
-				$key = substr($k, -2);
-				if(!in_array($key, $slang)) {
-					$d[$k] = $v;
-				} else if($key===$lang) {
-					$k = substr($k, 0, -2);
-					$d[$k] = $v;
+			if(is_array($data)) {
+				foreach($data as $k => $v) {
+					$key = substr($k, -2);
+					if(!in_array($key, $slang)) {
+						$d[$k] = $v;
+					} else if($key===$lang) {
+						$k = substr($k, 0, -2);
+						$d[$k] = $v;
+					}
 				}
 			}
 			$data = $d;
 		}
 		return $data;
+	}
+
+	public static function loadStruct($name) {
+		$resp = false;
+		if(file_exists(PATH_CACHE_USERDATA."struct".DS) && file_exists(PATH_CACHE_USERDATA."struct".DS."file_".$name.".txt")) {
+			$s = file_get_contents(PATH_CACHE_USERDATA."struct".DS."file_".$name.".txt");
+			if(!empty($s)) {
+				$s = json_decode($s, true);
+				$newS = array();
+				for($i=0;$i<sizeof($s['data']);$i++) {
+					$newS[$s['data'][$i]['altName']] = $s['data'][$i];
+				}
+				$resp = $newS;
+			}
+		}
+		return $resp;
 	}
 
 }

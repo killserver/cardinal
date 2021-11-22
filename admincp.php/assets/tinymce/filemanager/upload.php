@@ -6,7 +6,6 @@ try {
     }
 
     include 'include/utils.php';
-
     if ($_SESSION['RF']["verify"] != "RESPONSIVEfilemanager") {
         response(trans('forbiden') . AddErrorLocation(), 403)->send();
         exit;

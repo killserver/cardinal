@@ -118,7 +118,7 @@ class Headers {
 		$header = "";
 		$getMeta = Arr::get($array, 'meta', false);
 		$getMeta = cardinalEvent::execute("loaded_meta_collection", $getMeta);
-		$sitename = htmlspecialchars(lang::get_lang("sitename"));
+		$sitename = htmlspecialchars_decode(lang::get_lang("sitename"));
 		$sitename = cardinalEvent::execute("before_show_sitename", $sitename);
 		if(!Arr::get($array, 'title', false) && empty($array['title'])) {
 			$array['title'] = $sitename;
@@ -258,6 +258,7 @@ class Headers {
 				if(is_object($v)) {
 					$v = get_class($v);
 				}
+				if(is_array($v)) continue;
 				$param[] = "\"".$k."\": \"".$v."\"";
 			}
 			unset($dprm);
@@ -399,7 +400,7 @@ class Headers {
 			cardinalEvent::addListener("templates::display", array($this, "addAdminPanelToPage"), $menu);
 		}
 		unset($array);
-		return $header;
+		return execEvent("modify_before_show_head", $header);
 	}
 
 	function loadMenuAdmin(&$links, &$now = "") {

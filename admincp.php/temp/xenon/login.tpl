@@ -163,6 +163,7 @@
 		</div>
 		
 	</div>
+	{E_[admin_footer_login]}
 
 	<script type="text/javascript">
 			jQuery(document).ready(function($) {

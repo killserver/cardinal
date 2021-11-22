@@ -351,6 +351,8 @@ if(file_exists(PATH_CACHE_USERDATA."trashBin.lock") && file_exists(PATH_MEDIA."d
 		db::query("ALTER TABLE {{trashBin}} RENAME TO {{trashbin}}");
 	}
 }//
-echo file_get_contents(PATH_SKINS."core".DS."updater.html");
+$f = file_get_contents(PATH_SKINS."core".DS."updater.html");
+$f = str_replace("{path}", (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], "admincp.php")!==false ? "../" : "./"), $f);
+echo $f;
 @unlink(__FILE__);
 die();

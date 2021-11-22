@@ -77,7 +77,7 @@ class cardinalError {
 		}
 	}
 	
-	final private static function viewOnPage($data) {
+	private static function viewOnPage($data) {
 		errorHeader();
 		return Debug::viewOnPage($data);
 	}
@@ -197,7 +197,7 @@ class cardinalError {
 		catch (Exception $e) {}
 	}
 	
-	final private static function getExceptionTraceAsString($exception) {
+	private static function getExceptionTraceAsString($exception) {
 		$rtn = "";
 		$count = 0;
 		foreach ($exception->getTrace() as $frame) {
@@ -233,7 +233,7 @@ class cardinalError {
 		return $rtn;
 	}
 	
-	final private static function saves($data, $save = false) {
+	private static function saves($data, $save = false) {
 		if(is_string($data)) {
 			if($save) {
 				$data = str_replace("\"", '\"', $data);

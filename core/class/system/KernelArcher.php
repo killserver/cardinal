@@ -12,6 +12,7 @@ class KernelArcher {
 	public static $orderBy = false;
 	public static $disabledQuickEditor = true;
 	public static $quickEdit = array();
+	public static $quickEditNew = array();
 	
 	function __construct($table, $model = false) {
 		$this->selectTable = $table;
@@ -22,6 +23,16 @@ class KernelArcher {
 
 	public static function getCallback() {
 		return self::$callbackFunc;
+	}
+
+	public static function addQuickEdit($fields, $table = "default") {
+		if(!is_array($fields)) {
+			$fields = array($fields);
+		}
+		if(!isset(self::$quickEditNew[$table])) {
+			self::$quickEditNew[$table] = array();
+		}
+		self::$quickEditNew[$table] = array_merge($fields, self::$quickEditNew[$table]);
 	}
 	
 	public static function callback($page, $name, $call = "") {
@@ -223,6 +234,7 @@ class KernelArcher {
 			$addition .= "&WhereData=".Arr::get($_GET, "WhereData");
 		}
 		$ref = Arr::get($_GET, "ref", false);
+		$ref = execEvent("ref_Kernel_Archer_add", $ref, $addition, $model);
 		if($ref===false) {
 			$ref = "{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition;
 		} else {
@@ -529,6 +541,7 @@ class KernelArcher {
 			$addition .= "&WhereData=".Arr::get($_GET, "WhereData");
 		}
 		$ref = Arr::get($_GET, "ref", false);
+		$ref = execEvent("ref_Kernel_Archer_edit", $ref, $addition, $model, $selectedId);
 		if($ref===false) {
 			$ref = "{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition;
 		} else {
@@ -585,6 +598,7 @@ class KernelArcher {
 			throw new Exception("Error type kernal get data");
 			die();
 		}
+		$list = execEvent("KernelArcher-EditModel", $list, $this->selectTable);
 		$this->AddBlocks("EditData", $list);
 		$tpl = $this->TraceOn("Edit", $model, "ArcherAdd");
 		if(!empty($objTemplate)) {
@@ -612,7 +626,8 @@ class KernelArcher {
 		}
 		$list = $model->getArray(false);
 		foreach($list as $k => $v) {
-			if($model->getAttribute($k, "type")=="fileArray" || $model->getAttribute($k, "type")=="imageArray" || $model->getAttribute($k, "type")=="fileArrayAccess" || $model->getAttribute($k, "type")=="imageArrayAccess") {
+			$type = $model->getAttribute($k, "Type", "", $model->getAttribute($k, "type"));
+			if($type=="fileArray" || $type=="imageArray" || $type=="fileArrayAccess" || $type=="imageArrayAccess") {
 				if(Validate::is_serialized($v)) {
 					$t = unserialize($v);
 				} else {
@@ -631,6 +646,7 @@ class KernelArcher {
 			throw new Exception("Error type kernal get data");
 			die();
 		}
+		$list = execEvent("KernelArcher-EditModel", $list, $this->selectTable);
 		$this->AddBlocks("EditData", $list);
 		$tpl = $this->TraceOn("CustomEdit", $model, "ArcherAdd");
 		if(!empty($objTemplate)) {
@@ -733,6 +749,7 @@ class KernelArcher {
 			$addition .= "&orderTo=".Arr::get($_GET, "orderTo");
 		}
 		$ref = Arr::get($_GET, "ref", false);
+		$ref = execEvent("ref_Kernel_Archer_delete", $ref, $addition, $model, $first);
 		if($ref===false) {
 			$ref = "{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition;
 		} else {
@@ -803,6 +820,7 @@ class KernelArcher {
 		$list = execEvent("KernelArcher-Shield-Data", $list, $objName);
 		if(is_object($list)) {
 			$list = $list->getArray(false);
+			$list = execEvent("KernelArcher-Shield-Data-Item", $list, $objName);
 			$first = current($list);
 			if(!is_null($first)) {
 				$list = $this->callArr($list, "ShieldFunc", array($list, $this->selectTable));
@@ -811,6 +829,7 @@ class KernelArcher {
 		} elseif(is_array($list)) {
 			for($i=0;$i<sizeof($list);$i++) {
 				$subList = $list[$i]->getArray(false);
+				$subList = execEvent("KernelArcher-Shield-Data-Item", $subList, $objName);
 				$first = current($subList);
 				if(is_null($first)) {
 					continue;
@@ -951,8 +970,10 @@ class KernelArcher {
 			case "radio":
 				$radio = explode(",", $val);
 				$radio = array_map("trim", $radio);
+				$radioTitle = ($models instanceof DBOBject ? $models->getAttribute($name, "radioTitle", "", array()) : array());
+				$radioBreak = ($models instanceof DBOBject ? $models->getAttribute($name, "radioBreak", "", true) : true);
 				for($i=0;$i<sizeof($radio);$i++) {
-					$retType .= "<label for=\"".$name."-".$i."\"><input type=\"radio\" id=\"".$name."-".$i."\" name=\"".$name."\" class=\"cbr cbr-blue\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "")."".(!empty($default) && $default==$radio[$i] ? " checked=\"checked\"" : "")." value=\"".htmlspecialchars($radio[$i])."\">".($open ? "{L_'" : "").htmlspecialchars($radio[$i]).($open ? "'}" : "")."</label><br>";
+					$retType .= "<label for=\"".$name."-".$i."\"><input type=\"radio\" id=\"".$name."-".$i."\" name=\"".$name."\" class=\"cbr cbr-blue\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "")."".($default!=="" && $default==$radio[$i] ? " checked=\"checked\"" : "")." value=\"".htmlspecialchars($radio[$i])."\">".(isset($radioTitle[$radio[$i]]) ? $radioTitle[$radio[$i]] : ($open ? "{L_'" : "").htmlspecialchars($radio[$i]).($open ? "'}" : ""))."</label>".($radioBreak ? "<br>" : "");
 				}
 			break;
 			case "multiple-array":
@@ -1015,7 +1036,10 @@ class KernelArcher {
 				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"text\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "")." style=\"".($height!="auto" ? "height:".$height."px" : "")."\">";
 			break;
 			case "price":
-				$retType = "<div class=\"input-group\"><span class=\"input-group-addon\">$</span><input id=\"".$name."\" type=\"number\" step=\"0.01\" class=\"form-control\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "")." style=\"".($height!="auto" ? "height:".$height."px" : "")."\"></div>";
+				$symbolPrice = ($models instanceof DBOBject ? $models->getAttribute($name, "symbolPrice", "", "$") : "$");
+				$symbolPricePosition = ($models instanceof DBOBject ? $models->getAttribute($name, "symbolPricePosition", "", "before") : "before");
+				$symbol = "<span class=\"input-group-addon\">".$symbolPrice."</span>";
+				$retType = "<div class=\"input-group\">".($symbolPricePosition=="before" ? $symbol : "")."<input id=\"".$name."\" type=\"number\" step=\"0.01\" class=\"form-control\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Введите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\" value=\"".htmlspecialchars($val)."\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "")." style=\"".($height!="auto" ? "height:".$height."px" : "")."\">".($symbolPricePosition=="after" ? $symbol : "")."</div>";
 			break;
 			case "image":
 			case "file":
@@ -1103,7 +1127,7 @@ class KernelArcher {
 				$tplS = str_replace("{placeholder}", ($loadPlaceHolder ? "{L_'Выберите'}&nbsp;"."{L_'".$name."'}" : ""), $tplS);
 				$tplS = str_replace("{__*__}", "{template_access_id}", $tplS);
 				$tplS = str_replace("{sType}", $sType, $tplS);
-				$tmpImg = (!empty($val) ? "<a href=\"{C_default_http_local}{enum}\" data-link=\"{C_default_http_local}{enum}\" class=\"showPreview new\" id=\"img{template_access_uid}\" target=\"_blank\">"."{L_'Просмотреть'}</a>" : "");
+				$tmpImg = (!empty($val) ? "<a href=\"{C_default_http_local}{enum}\" data-link=\"{C_default_http_local}{enum}\"".($type=="imageArrayAccess" ? " class=\"showPreview new\"" : "")." id=\"img{template_access_uid}\" target=\"_blank\">"."{L_'Просмотреть'}</a>" : "");
 				for($i=0;$i<$size;$i++) {
 					$uid = rand();
 					$tpl = $tmp;
@@ -1158,7 +1182,7 @@ class KernelArcher {
 				if(!is_array($default)) {
 					$default = array($default, $default);
 				}
-				$retType = "<div class=\"col-sm-12\"><div class=\"date-and-time\"><input type=\"text\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "")." name=\"".$name."[]\" class=\"form-control datepicker\" data-format=\"dd/mm/yyyy\" value=\"".($val!=="" && $val!==0 ? date("d/m/Y", $val) : ($default[0]!=="" ? $default[0] : date("d/m/Y")))."\" style=\"width:50%;".($height!="auto" ? "height:".$height."px" : "")."\"><input type=\"text\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "")." name=\"".$name."[]\" class=\"form-control timepicker\" data-template=\"dropdown\" data-show-seconds=\"true\" value=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : ($default[1]!=="" ? $default[1] : date("H:i:s")))."\" data-default-time=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : ($default!=="" ? $default : date("H:i:s")))."\" data-show-meridian=\"false\" data-minute-step=\"5\" data-second-step=\"5\" style=\"width:50%;".($height!="auto" ? "height:".$height."px" : "")."\" /></div></div>";
+				$retType = "<div class=\"row\"><div class=\"col-sm-12\"><div class=\"date-and-time\"><input type=\"text\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "")." name=\"".$name."[]\" class=\"form-control datepicker\" data-format=\"dd/mm/yyyy\" value=\"".($val!=="" && $val!==0 ? date("d/m/Y", $val) : ($default[0]!=="" ? $default[0] : date("d/m/Y")))."\" style=\"width:50%;".($height!="auto" ? "height:".$height."px" : "")."\"><input type=\"text\"".($block ? " readonly=\"readonly\"" : "")."".($required ? " required=\"required\"" : "")." name=\"".$name."[]\" class=\"form-control timepicker\" data-template=\"dropdown\" data-show-seconds=\"true\" value=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : ($default[1]!=="" ? $default[1] : date("H:i:s")))."\" data-default-time=\"".($val!=="" && $val!==0 ? date("H:i:s", $val) : ($default!=="" ? $default : date("H:i:s")))."\" data-show-meridian=\"false\" data-minute-step=\"5\" data-second-step=\"5\" style=\"width:50%;".($height!="auto" ? "height:".$height."px" : "")."\" /></div></div></div>";
 			break;
 		}
 		if(is_array($val) && !isset($val['type'])) {
@@ -1198,8 +1222,10 @@ class KernelArcher {
 			}
 			$retType = self::Viewing($type, $name, $val, $height, $default, $block, $isAjax, $lang, $models, $hide, $args);
 		}
+		$beforeField = ($models instanceof DBOBject ? $models->getAttribute($name, "beforeField") : "");
+		$afterField = ($models instanceof DBOBject ? $models->getAttribute($name, "afterField") : "");
 		execEventRef("KernelArcher::Viewing-After", $retType, $hide, $name, $val, $type, $height, $default, $empted);
-		$ret = (!$hide ? "<div class=\"".(!$block ? "form-group" : "row")." block-".$name."\"".($lang!=="" ? " data-group=\"".$grouper."\" data-lang=\"".$grouperLang."\"" : "")."><label class=\"col-sm-".($isAjax ? "3" : "3")." control-label\" for=\"".$name."\">{L_".$name."}".($required ? "<span style=\"color:red\">*</span>" : "").execEvent("KernalArcherAddToLabel-".$name.($lang!=="" ? "-".$grouperLang : ""), "")."</label><div class=\"col-sm-".($isAjax ? ($empted!==true ? "9" : "9") : ($empted!==true ? "9" : "8"))."\">" : "").$retType.(!$hide && $placeholder!=="" ? "<small class=\"".(!$block ? "form-group" : "row")." block-".$name."\"".($lang!=="" ? " data-group=\"".$grouper."\" data-lang=\"".$grouperLang."\"" : "").">".$placeholder."</small>" : "").(!$hide ? "</div>".($empted===true ? '<div class="col-sm-1"><a href="#" class="btn btn-red btn-icon btn-block btn-single removeImg" id="remove_'.$name.'"><i class="fa fa-remove"></i></a></div>' : "")."</div>\n" : "");
+		$ret = (!$hide ? "<div class=\"form-group block-".$name."\"".($lang!=="" ? " data-group=\"".$grouper."\" data-lang=\"".$grouperLang."\"" : "")."><label class=\"col-sm-".($isAjax ? "3" : "3")." control-label\" for=\"".$name."\">{L_".$name."}".($required ? "<span style=\"color:red\">*</span>" : "").execEvent("KernalArcherAddToLabel-".$name.($lang!=="" ? "-".$grouperLang : ""), "")."</label><div class=\"col-sm-".($isAjax ? ($empted!==true ? "9" : "8") : ($empted!==true ? "9" : "8"))."\">" : "").$beforeField.$retType.$afterField.(!$hide && $placeholder!=="" ? "<small class=\"".(!$block ? "form-group" : "row")." block-".$name."\"".($lang!=="" ? " data-group=\"".$grouper."\" data-lang=\"".$grouperLang."\"" : "").">".$placeholder."</small>" : "").(!$hide ? "</div>".($empted===true ? '<div class="col-sm-2"><a href="#" class="btn btn-red btn-icon btn-block btn-single removeImg" id="remove_'.$name.'"><i class="fa fa-remove"></i></a></div>' : "")."</div>\n" : "");
 		return $ret;
 	}
 	

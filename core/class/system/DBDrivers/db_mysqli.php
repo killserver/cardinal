@@ -120,7 +120,7 @@ class db_mysqli extends DriverParam implements drivers {
 						echo ("Connect to database in not exists, server database is not exists");
 						break;
 					default:
-						echo ("[".$this->mc->connect_errno."]: ".$this->mc->connect_error);
+						echo ("MYSQL [".$this->mc->connect_errno."]: ".$this->mc->connect_error);
 						break;
 				}
 				die();
@@ -144,6 +144,7 @@ class db_mysqli extends DriverParam implements drivers {
 	public function get_type() {
 		return $this->type_error;
 	}
+	private $last_id = 0;
 	public function query($query) {
 		if(PHP_VERSION_ID>=55000) {
 			$this->mc->begin_transaction();
@@ -153,6 +154,7 @@ class db_mysqli extends DriverParam implements drivers {
 		if(!($return = $this->mc->query($query))) {
 			$this->error($query);
 		}
+		$this->last_id = $this->mc->insert_id;
 		$this->mc->commit();
 		return $return;
 	}
@@ -160,7 +162,7 @@ class db_mysqli extends DriverParam implements drivers {
 		return $this->mc->affected_rows;
 	}
 	public function insert_id() {
-		return $this->mc->insert_id;
+		return $this->last_id;
 	}
 	public function escape($str, $saved = true) {
 		$save = preg_match("/(SELECT(.+?)FROM|UNIX_TIMESTAMP|WHERE(.+?)IN)/", $str);

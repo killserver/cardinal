@@ -78,10 +78,10 @@ global $seoBlock;
 	}
 	$sitename = lang::get_lang("sitename");
 	$ogpr = array(
-		"og:site_name" => htmlspecialchars($sitename),
+		"og:site_name" => htmlspecialchars_decode($sitename),
 		"og:url" => "{C_default_http_host}".$link,
-		"og:title" => htmlspecialchars($title),
-		"og:description" => htmlspecialchars($description),
+		"og:title" => htmlspecialchars_decode($title),
+		"og:description" => htmlspecialchars_decode($description),
 		"og:type" => $type,
 	);
 	if($imageCheck && !empty($imageLink)) {
@@ -90,8 +90,8 @@ global $seoBlock;
 		));
 	}
 	$og = array(
-		"title" => htmlspecialchars($title),
-		"description" => htmlspecialchars($description),
+		"title" => htmlspecialchars_decode($title),
+		"description" => htmlspecialchars_decode($description),
 	);
 	if($imageCheck && !empty($imageLink)) {
 		$og = array_merge($og, array(
@@ -101,9 +101,9 @@ global $seoBlock;
 	$meta = array(
 		"og" => $og,
 		"ogpr" => $ogpr,
-		"title" => htmlspecialchars($title),
+		"title" => htmlspecialchars_decode($title),
 		"robots" => $robots,
-		"description" => htmlspecialchars($description),
+		"description" => htmlspecialchars_decode($description),
 	);
 	if(!empty($keywords)) {
 		$meta = array_merge($meta, array(

@@ -342,13 +342,13 @@ class ProfileSettings extends Core {
 					$v['default'] = (isset($field[$value]) ? $field[$value] : $v['default']);
 					$value = $v['field'];
 				}
-				$arrViewing = array($v['type'], $v['name'], $value, $v['default'], isset($v['required']), ($v['altName']=="username" && isset($users['typeUserInSystem']) && $users['typeUserInSystem']=="file"), false, "", "", false, $args);
+				$arrViewing = array($v['type'], $v['name'], $value, "auto", $v['default'], isset($v['required']), ($v['altName']=="username" && isset($users['typeUserInSystem']) && $users['typeUserInSystem']=="file"), false, "", "", false, $args);
 				$arrViewing = execEvent("profile-user-change-".$v['name'], $arrViewing);
 				$call = call_user_func_array("KernelArcher::Viewing", $arrViewing);
 				$tmp .= $call;
 			}
 			templates::assign_var("data", $tmp);
-			templates::assign_var("typeForm", "Edit=".$_GET['Edit']);
+			templates::assign_var("typeForm", execEvent("profile-user-change-title-edit", "Edit=".$_GET['Edit'], $users));
 			templates::assign_var("id_edit", $_GET['Edit']);
 			$this->Prints("ProfileSettingsAdd");
 			return;
@@ -381,7 +381,7 @@ class ProfileSettings extends Core {
 				$tmp .= call_user_func_array("KernelArcher::Viewing", $arrViewing);
 			}
 			templates::assign_var("data", $tmp);
-			templates::assign_var("typeForm", "Add");
+			templates::assign_var("typeForm", execEvent("profile-user-change-title-add", "Add"));
 			templates::assign_var("id_edit", "");
 			$this->Prints("ProfileSettingsAdd");
 			return;

@@ -90,13 +90,13 @@ if(!defined("DEBUG_ALL")) {
 }
 
 if(!defined("VERSION")) {
-	define("VERSION", "12.1");
+	define("VERSION", "12.3");
 }
 if(!defined("VERSION_ADMIN_STYLE")) {
 	define("VERSION_ADMIN_STYLE", "1.10");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "120101");
+	define("INTVERSION", "120302");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "6.5");
@@ -137,6 +137,7 @@ $config = array_merge($config, array(
 		//"127.0.0.1",
 	),
 	"date_timezone" => 'Europe/Kiev',
+	"copySession" => false,
 	"cache" => array(
 		"type" => CACHE_NONE,
 		"server" => "localhost",
@@ -187,6 +188,7 @@ $config = array_merge($config, array(
 	"logoAdminMainWidth" => "110",
 	"logoAdminMobile" => "assets/xenon/images/logo-collapsed.svg",
 	"logoAdminMobileWidth" => "40",
+	"access_collapsed_menu" => "true",
 	"defaultAdminSkin" => " ",
 	"accessChangeSkin" => "true",
 	"mainPageAdmin" => "?pages=main",
@@ -211,6 +213,7 @@ $config = array_merge($config, array(
 	),
 	"filemanager_sort_by" => "date",
 	"filemanager_custom_folder_header" => array(),
+	"accessToSite" => "show",
 ));
 
 ?>

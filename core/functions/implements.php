@@ -154,3 +154,16 @@ if(!function_exists("hrtime")) {
 		return array($s, (int) $ns);
 	}
 }
+
+if(version_compare(PHP_VERSION, '7.4.0', '<')) {
+	function password_algos()  {
+		$algos = array(PASSWORD_BCRYPT);
+		if(defined('PASSWORD_ARGON2I')) {
+			$algos[] = PASSWORD_ARGON2I;
+		}
+		if(defined('PASSWORD_ARGON2ID')) {
+			$algos[] = PASSWORD_ARGON2ID;
+		}
+		return $algos;
+	}
+}

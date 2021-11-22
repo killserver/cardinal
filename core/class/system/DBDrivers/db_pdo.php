@@ -93,7 +93,7 @@ class db_pdo extends DriverParam implements drivers {
 						echo ("Connect to database in not exists, server database is not exists");
 						break;
 					default:
-						echo ("[".$this->mc->errorCode()."]: ".var_export($this->mc->errorInfo(), true));
+						echo ("MYSQL [".$this->mc->errorCode()."]: ".var_export($this->mc->errorInfo(), true));
 						break;
 				}
 				die();

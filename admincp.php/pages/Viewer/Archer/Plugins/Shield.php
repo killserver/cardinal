@@ -46,8 +46,15 @@ class Archer_Shield {
 	}
 	
 	public function Headers($table, $page, $model, $tpl) {
+		$table = $model->loadedTable;
+		if(defined("PREFIX_DB")) {
+			if(PREFIX_DB!=='') {
+				$table = nsubstr($table, nstrlen(PREFIX_DB));
+			} 
+		}
 		$modelName = get_class($model);
 		$getExclude = KernelArcher::excludeField("get", "Shield");
+		execEventRef("Archer-Shield", $modelName, $table);
 		/*$first = $model->getFirst();*/
 		$h = $model->getComments(true);
 		$h = array_values($h);
@@ -114,10 +121,42 @@ class Archer_Shield {
 					(is_string(KernelArcher::$disabledQuickEditor[$d[$i]]) && KernelArcher::$disabledQuickEditor[$d[$i]]==="yes")
 					||
 					(is_numeric(KernelArcher::$disabledQuickEditor[$d[$i]]) && KernelArcher::$disabledQuickEditor[$d[$i]]===1)
+					||
+					in_array($d[$i], KernelArcher::$disabledQuickEditor)
 				)) {
 					$activeQ = true;
 				}
 			}
+			if(is_array(KernelArcher::$quickEditNew)) {
+				if(isset(KernelArcher::$quickEditNew[$modelName])) {
+					if(
+						(isset(KernelArcher::$quickEditNew[$modelName][$d[$i]]) && is_bool(KernelArcher::$quickEditNew[$modelName][$d[$i]]) && KernelArcher::$quickEditNew[$modelName][$d[$i]]===true)
+						||
+						(isset(KernelArcher::$quickEditNew[$modelName][$d[$i]]) && is_string(KernelArcher::$quickEditNew[$modelName][$d[$i]]) && KernelArcher::$quickEditNew[$modelName][$d[$i]]==="yes")
+						||
+						(isset(KernelArcher::$quickEditNew[$modelName][$d[$i]]) && is_numeric(KernelArcher::$quickEditNew[$modelName][$d[$i]]) && KernelArcher::$quickEditNew[$modelName][$d[$i]]===1)
+						||
+						in_array($d[$i], KernelArcher::$quickEditNew[$modelName])
+					) {
+						$activeQ = true;
+					}
+				} else if(isset(KernelArcher::$quickEditNew['default'])) {
+					if(
+						(isset(KernelArcher::$quickEditNew['default'][$d[$i]]) && is_bool(KernelArcher::$quickEditNew['default'][$d[$i]]) && KernelArcher::$quickEditNew['default'][$d[$i]]===true)
+						||
+						(isset(KernelArcher::$quickEditNew['default'][$d[$i]]) && is_string(KernelArcher::$quickEditNew['default'][$d[$i]]) && KernelArcher::$quickEditNew['default'][$d[$i]]==="yes")
+						||
+						(isset(KernelArcher::$quickEditNew['default'][$d[$i]]) && is_numeric(KernelArcher::$quickEditNew['default'][$d[$i]]) && KernelArcher::$quickEditNew['default'][$d[$i]]===1)
+						||
+						in_array($d[$i], KernelArcher::$quickEditNew['default'])
+					) {
+						$activeQ = true;
+					}
+				}
+			}
+			/*if(isset($_GET['test']) && $activeQ) {
+				var_dump($val, $type);die();
+			}*/
 			if($type=="date") {
 				$val = "{S_langdata=\"{".$modelName.".".$d[$i]."}\",\"d F Y\",true}";
 			} else if($type=="time") {
@@ -127,12 +166,13 @@ class Archer_Shield {
 			} else {
 				$val = "{L_\"{".$modelName.".".$d[$i]."}\"}";
 			}
+			$val = execEvent("KernelArcher::Shield::Element", $val, $modelName, $first, $d[$i], $infoField);
 			$quickEditor = "";
 			if($i!=0 && $activeQ) {
-				$quickEditor = " data-pk=\"{".$modelName.".".$first."}\" data-name=\"".$d[$i]."\"";
+				$quickEditor = " data-pk=\"{".$modelName.".".$first."}\" data-placeholder=\"{L_'Не задано'}\" data-emptytext=\"{L_\"Не задано\"}\" data-value=\"".$val."\" data-name=\"".$d[$i]."\""; // data-sub-id=\"test\" 
 				if($type=="select" || $type=="array" || $type=="enum") {
 					$infoField = "";
-					//$quickEditor .= " data-type=\"select\" data-source=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Archer&type=".$modelName."&pageType=QuickEdit&loadSelect=".$d[$i]."\"";
+					$quickEditor .= " data-sub-id=\"{".$modelName.".".$first."}\" data-type=\"select\" data-source=\"{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Archer&type=".$table."&pageType=QuickEdit&loadSelect=".$d[$i]."\"";
 				} else if($type=="date") {
 					$quickEditor .= " data-type=\"date\"";
 				} else if($type=="time") {
@@ -152,7 +192,7 @@ class Archer_Shield {
 			execEventRef("KernelArcher::Shield::Element-before", $modelName, $first, $d[$i], $infoField);
 			$data .= execEvent("KernelArcher::Shield::Element-before", "", $modelName, $first, $d[$i], $infoField);
 			$data .= execEvent("KernelArcher::Shield::Element-".$i."-before", "", $modelName, $first, $d[$i], $infoField);
-			$data .= "<td data-id=\"{".$modelName.".".$first."}\" data-table=\"".$modelName."\" data-name=\"".$d[$i]."\" class=\"".$infoField."\"".$quickEditor."><span".$quickEditor.">".execEvent("KernelArcher::Shield::Element", $val, $modelName, $first, $d[$i], $infoField)."</span></td>";
+			$data .= "<td data-id=\"{".$modelName.".".$first."}\" data-table=\"".$modelName."\" data-name=\"".$d[$i]."\" class=\"".$infoField."\"".$quickEditor."><span".$quickEditor.">".$val."</span></td>";
 			$data .= execEvent("KernelArcher::Shield::Element-".$i."-after", "", $modelName, $first, $d[$i], $infoField);
 			$data .= execEvent("KernelArcher::Shield::Element-after", "", $modelName, $first, $d[$i], $infoField);
 			execEventRef("KernelArcher::Shield::Element-after", $modelName, $first, $d[$i], $infoField);
@@ -190,13 +230,14 @@ class Archer_Shield {
 		$tpl = str_replace("{ArcherAll}", ($countAll+1), $tpl);
 		$tpl = str_replace("{ArcherNotTouch}", ($countAll), $tpl);
 		if(($get = Arr::get($_GET, "quickViewId", false))!==false) {
-			$archerCore = new KernelArcher($modelName);
+			$archerCore = new KernelArcher();
 			$objName = get_class($model);
 			$model = execEvent("KernelArcher-Shield-Before-Data", $model, $objName);
 			$list = $model->Select();
 			$list = execEvent("KernelArcher-Shield-Data", $list, $objName);
 			if(is_object($list)) {
 				$list = $list->getArray();
+				$list = execEvent("KernelArcher-Shield-Data-Item", $list, $objName);
 				$firsts = current($list);
 				if(!is_null($firsts)) {
 					$list = $archerCore->callArr($list, "ShieldFunc", array($list, $objName), array());
@@ -205,6 +246,7 @@ class Archer_Shield {
 			} elseif(is_array($list)) {
 				for($i=0;$i<sizeof($list);$i++) {
 					$subList = $list[$i]->getArray();
+					$subList = execEvent("KernelArcher-Shield-Data-Item", $subList, $objName);
 					$firsts = current($subList);
 					if(is_null($firsts)) {
 						continue;

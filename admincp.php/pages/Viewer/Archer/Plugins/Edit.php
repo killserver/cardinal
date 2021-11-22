@@ -72,7 +72,7 @@ class Archer_Edit {
 				$lang = $models->getAttribute($k, "Lang");
 				$supportedLang[$lang] = array("lang" => $lang);
 			}
-			$l = $models->getAttribute($k, 'type');
+			$l = $models->getAttribute($k, 'Type', "", $models->getAttribute($k, 'type'));
 			$height = $models->getAttribute($k, 'height');
 			if(empty($height)) {
 				$height = "auto";

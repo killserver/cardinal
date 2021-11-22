@@ -94,7 +94,7 @@ class Route {
 		extract($arrs);
 	}
 	
-	final private static function GetBuild($n = "") {
+	private static function GetBuild($n = "") {
 		if(is_array($n)) {
 			$b = self::$_secret;
 			global $$b;
@@ -428,7 +428,7 @@ class Route {
 		return array('params' => $param, 'route' => "");
 	}
 
-	final private static function langParams($params) {
+	private static function langParams($params) {
 		global $mainLangSite;
 		$params['default_lang'] = (!empty($mainLangSite) && class_exists("lang", false) && method_exists("lang", "get_lg") && $mainLangSite==lang::get_lg() ? $mainLangSite."/" : "");
 		$params['now_lang'] = (isset($params['lang']) && !empty($params['lang']) ? $params['lang']."/" : "");
@@ -476,11 +476,14 @@ class Route {
 	}
 
 	final public function Uri($params = array()) {
+		if(!empty(self::$_lang)) {
+			$params['lang'] = self::$_lang;
+		}
 		if(!empty(self::$_langForce) && (!isset($params['lang']) || $params['lang'] == config::Select("lang"))) {
 			$params['lang'] = self::$_langForce;
 		}
-		if(!empty(self::$_lang)) {
-			$params['lang'] = self::$_lang;
+		if(isset($params['lang']) && $params['lang'] == config::Select("lang")) {
+			unset($params['lang']);
 		}
 		$uri = $this->_uri;
 		if(strpos($uri, '<') === false && strpos($uri, '(') === false) {

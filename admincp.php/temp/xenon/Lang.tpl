@@ -150,9 +150,19 @@ jQuery(".changed").change(function() {
 	});
 });
 </script>
+<style>
+	table.dataTable td, 
+	table.dataTable th {
+		white-space: nowrap;
+	}
+</style>
 <script>
 jQuery(document).ready(function($){	
 	jQuery("#example-1").dataTable({
+		"sScrollX": "100%",
+		"scrollY": false,
+		"sScrollXInner": "110%",
+		"bScrollCollapse": true,
 		language: {
 			"processing": "{L_"Подождите"}...",
 			"search": "{L_"Поиск"}:",

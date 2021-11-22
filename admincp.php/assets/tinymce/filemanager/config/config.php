@@ -24,7 +24,11 @@ function hidden_mask($file, $mask) {
 }
 
 $skin = (!config::Select("skins", "admincp") ? "xenon" : config::Select("skins", "admincp"));
-$local = str_replace(array(ROOT_PATH, DS), array("", "/"), PATH_UPLOADS);
+$uploads = ROOT_PATH;
+if(isset($_SERVER['DOCUMENT_ROOT']) && !empty($_SERVER['DOCUMENT_ROOT'])) {
+	$uploads = $_SERVER['DOCUMENT_ROOT'];
+}
+$local = str_replace(array($uploads, DS), array("", "/"), PATH_UPLOADS);
 $exec = substr($_SERVER['SCRIPT_NAME'], 1);
 $exp = explode("/", $exec);
 $path = "";
@@ -41,7 +45,7 @@ if (session_id() == '') session_start();
 
 mb_internal_encoding('UTF-8');
 mb_http_output('UTF-8');
-mb_http_input('UTF-8');
+/*mb_http_input('UTF-8');*/
 mb_language('uni');
 mb_regex_encoding('UTF-8');
 ob_start('mb_output_handler');
@@ -269,6 +273,7 @@ $config = array(
 
 	//Show or not total size in filemanager (is possible to greatly increase the calculations)
 	'show_total_size'						=> false,
+	'show_total_files' => false,
 	//Show or not show folder size in list view feature in filemanager (is possible, if there is a large folder, to greatly increase the calculations)
 	'show_folder_size'						=> false,
 	//Show or not show sorting feature in filemanager

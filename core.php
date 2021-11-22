@@ -258,11 +258,6 @@ Validate::$host = config::Select("default_http_host");
 if(!isset($lang) || !is_Array($lang)) {
 	$lang = array();
 }
-$host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua");
-if(file_exists(PATH_MEDIA."db.".ROOT_EX) || file_exists(PATH_MEDIA."db.".$host.".".ROOT_EX)) {
-	$db = new db();
-	$db = execEvent("init_db", $db);
-}
 $cache = new cache();
 $cache = execEvent("init_cache", $cache);
 $cnf = new config();
@@ -284,9 +279,9 @@ if(function_exists("mb_regex_encoding") && mb_regex_encoding($config['charset'])
 if(function_exists("mb_http_output") && mb_http_output($config['charset'])) {
 	mb_http_output($config['charset']);
 }
-if(function_exists("mb_http_input") && mb_http_input($config['charset'])) {
+/*if(function_exists("mb_http_input") && mb_http_input($config['charset'])) {
 	mb_http_input($config['charset']);
-}
+}*/
 if(strpos($config['charset'], "UTF")!==false && function_exists('mb_language')) {
 	mb_language('uni');
 }
@@ -296,10 +291,10 @@ if(PHP_VERSION_ID>50600) {
 	ini_set("iconv.internal_encoding", $config['charset']);
 }
 
-/*cardinal::StartSession();
-execEvent("init_session");*/
+cardinal::StartSession();
+execEvent("init_session");
 
-if(isset($sessionOnline) && is_writeable(PATH_CACHE_USERDATA)) {
+if(isset($config['copySession']) && $config['copySession'] && isset($sessionOnline) && is_writeable(PATH_CACHE_USERDATA)) {
 	clearstatcache();
 	$SessionDir = PATH_CACHE_SESSION;
 	$Timeout = 3 * 60;

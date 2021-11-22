@@ -36,6 +36,12 @@ if(defined("PATH_MODULES") && file_exists(PATH_MODULES."loader.default.".ROOT_EX
 	@rename(PATH_MODULES."loader.default.".ROOT_EX, PATH_MODULES."loader.".ROOT_EX);
 }
 
+$host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "online-killer.pp.ua");
+if(file_exists(PATH_MEDIA."db.".ROOT_EX) || file_exists(PATH_MEDIA."db.".$host.".".ROOT_EX)) {
+	$db = new db();
+	$db->open_connect();
+	$db = execEvent("init_db", $db);
+}
 function require_dir($dir = "", $modules = "", $force = false, $globs = false) { include_dir($dir, $modules, $force, $globs); }
 
 function include_dir($dir = "", $modules = "", $force = false, $globs = false) {

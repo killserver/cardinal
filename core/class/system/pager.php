@@ -25,8 +25,9 @@ class pager {
 	private $pages = array();
 	private $limits = array(0,0);
 	private $links = array("next" => "", "prev" => "");
+	private $data = array();
 	
-	final private function Route($array) {
+	private function Route($array) {
 		$route = Route::get($array[0]);
 		if(!is_bool($route)) {
 			$params = array();
@@ -51,6 +52,10 @@ class pager {
 		}
 	}
 
+	final public function getData() {
+		return $this->data;
+	}
+
 	final public function __construct($rpp, $count_all, $on_page, $url_page, $p_page = "/page/", $max_view = 10, $route = false) {
 		if(!is_numeric($rpp) || !is_numeric($count_all) || !is_numeric($on_page) || empty($url_page) || $on_page == 0) {
 			return false;
@@ -61,6 +66,9 @@ class pager {
 			$rpp = $rpp*$on_page;
 			$enpages_count = @ceil($count_all/$on_page);
 			$rpp = ($rpp/$on_page) + 1;
+			$this->data['maxPages'] = $enpages_count;
+			$this->data['allDatas'] = $count_all;
+			$this->data['currentPage'] = $rpp;
 			if($enpages_count<=$max_view) {
 				for($j=1;$j<=$enpages_count;$j++) {
 					if($j!=$rpp) {
@@ -142,9 +150,6 @@ class pager {
 							$nav_prefix = "";
 						} else {
 							$nav_prefix = "...";
-						}
-						if($start<=0) {
-							$start = 1;
 						}
 					}
 				}

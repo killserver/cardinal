@@ -19,7 +19,7 @@ class Files {
      * @param string $type Needed type file
      * @return bool Check necessary type file
      */
-    final private static function typeFile($file, $type) {
+    private static function typeFile($file, $type) {
 		if(!is_array($file) || !isset($file['type']) || (isset($file['error']) && $file['error'] != 0)) {
 			return false;
 		}
@@ -98,7 +98,13 @@ class Files {
 		if(empty($filename)) {
 			$filename = uniqid().$file['name'];
 		}
+		if(!defined("DS")) {
+			define("DS", DIRECTORY_SEPARATOR);
+		}
 		$filename = preg_replace('/\s+/u', '_', $filename);
+		if(!defined("PATH_UPLOADS") && empty($directory)) {
+			throw new Exception("directory is not set");
+		}
 		if(empty($directory)) {
 			$directory = substr(PATH_UPLOADS, 0, (-(strlen(DS))));
 		}

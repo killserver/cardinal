@@ -33,10 +33,14 @@ jQuery('.btn-for-search').on('click', function() {window.location.href = '?pages
 			[if {C_disableMassAction}!=1]<td><label class="checkbox"><input type="checkbox" class="cbr" name="delete[]" value="{{ArcherPage}.{ArcherFirst}}"></label></td>[/if {C_disableMassAction}!=1]
 			{ArcherData}
 			<td>
-				[if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=CopyEdit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-turquoise btn-block">{L_"Клонировать и редактировать"}</a>[/if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]
-				[if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Copy&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-turquoise btn-block">{L_"Клонировать"}</a>[/if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]
-				[if {C_disableEdit}!=1&&{{ArcherPage}.DisableEdit}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Edit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-edit btn-block">{L_"Редактировать"}</a>[/if {C_disableEdit}!=1&&{{ArcherPage}.DisableEdit}!="yes"]
-				[if {C_disableDelete}!=1&&{{ArcherPage}.DisableRemove}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Delete&viewId={{ArcherPage}.{ArcherFirst}}{addition}" onclick="return confirmDelete();" class="btn btn-red btn-block">{L_"Удалить"}</a>[/if {C_disableDelete}!=1&&{{ArcherPage}.DisableRemove}!="yes"]
+				[if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]
+					[if {C_disableCopyEdit}!=1&&{{ArcherPage}.DisableCopyEdit}!="yes"]
+						<a href="./?pages=Archer&type={ArcherTable}&pageType=CopyEdit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-turquoise btn-block btn-copy btn-copy-edit">{L_"Клонировать и редактировать"}</a>
+					[/if {C_disableCopyEdit}!=1&&{{ArcherPage}.DisableCopyEdit}!="yes"]
+				[/if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]
+				[if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Copy&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-turquoise btn-block btn-copy">{L_"Клонировать"}</a>[/if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]
+				[if {C_disableEdit}!=1&&{{ArcherPage}.DisableEdit}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Edit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-block btn-edit">{L_"Редактировать"}</a>[/if {C_disableEdit}!=1&&{{ArcherPage}.DisableEdit}!="yes"]
+				[if {C_disableDelete}!=1&&{{ArcherPage}.DisableRemove}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Delete&viewId={{ArcherPage}.{ArcherFirst}}{addition}" onclick="return confirmDelete();" class="btn btn-red btn-block btn-remove">{L_"Удалить"}</a>[/if {C_disableDelete}!=1&&{{ArcherPage}.DisableRemove}!="yes"]
 				{E_[customOptions][type={ArcherTable};id={{ArcherPage}.{ArcherFirst}}]}
 			</td>
 		</tr>[/foreach]
@@ -87,8 +91,18 @@ jQuery('.btn-for-search').on('click', function() {window.location.href = '?pages
 	}
 </style>
 [/if {activate_pager}==yes]
+<style>
+	table.dataTable td, 
+	table.dataTable th {
+		white-space: nowrap;
+	}
+</style>
 <script type="text/javascript">
 	var settingDataTable = {
+		"sScrollX": false,
+		"scrollY": false,
+		"sScrollXInner": "100%",
+		// "bScrollCollapse": true,
 		language: {
 			"processing": "{L_"Подождите"}...",
 			"search": "{L_"Поиск"}:",
@@ -364,6 +378,17 @@ jQuery(document).ready(function() {
 					return '{L_"Данное поле не может быть пустым"}';
 				}
 			}
+		});
+		$('#example-1').on('page.dt,search.dt', function () {
+			$('.quickEdit span').destroy();
+			$('.quickEdit span').editable({
+				url: '{C_default_http_local}{D_ADMINCP_DIRECTORY}/?pages=Archer&type={ArcherTable}&pageType=QuickEdit&Save=true',
+				validate: function(value) {
+					if($.trim(value) == '') {
+						return '{L_"Данное поле не может быть пустым"}';
+					}
+				}
+			});
 		});
 	}
 	jQuery(".deleteAll").click(function() {

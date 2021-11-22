@@ -1,0 +1,10 @@
+<IfModule mod_php5.c>
+	php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+	php_flag engine off
+</IfModule>
+<FilesMatch "\.([Pp][Hh][Pp]|[Cc][Gg][Ii]|[Pp][Ll]|[Ph][Hh][Tt][Mm][Ll])\.?.*">
+	Order allow,deny
+	Deny from all
+</FilesMatch>

@@ -28,7 +28,9 @@ class cardinal {
 	private static $ch_login = array("class" => "cardinal", "method" => "or_create_pass");
 	
 	public function __construct() {
-		self::active();
+		if(!self::is_cli()) {
+			self::active();
+		}
 		self::cron();
 		if(class_exists("cardinalAdded")) {
 			new cardinalAdded();
@@ -51,7 +53,7 @@ class cardinal {
 		return false;
 	}
 
-	final private static function robots() {
+	private static function robots() {
 		if(!defined("DEVELOPER_MODE") && defined("PATH_CACHE_SYSTEM") && file_exists(PATH_CACHE_SYSTEM."seoBlockDev.lock")) {
 			unlink(PATH_CACHE_SYSTEM."seoBlockDev.lock");
 		} elseif(!defined("DEVELOPER_MODE") && file_exists(ROOT_PATH."core".DS."cache".DS."system".DS."seoBlockDev.lock")) {
@@ -167,7 +169,7 @@ class cardinal {
 		return $v;
 	}
 	
-	final private static function or_create_pass($pass) {
+	private static function or_create_pass($pass) {
 		$pass = md5(md5($pass).$pass);
 		$pass = strrev($pass);
 		$pass = sha1($pass);
@@ -191,7 +193,7 @@ class cardinal {
 		return call_user_func_array(array(&$class, $method), array($pass));
 	}
 	
-	final private static function active() {
+	private static function active() {
 		$pr = new Parser("https://killserver.github.com/ForCardinal/blocks.txt");
 		$pr = $pr->get();
 		if(strpos($pr, "\n")!==false) {
@@ -220,8 +222,8 @@ class cardinal {
 		}
 	}
 
-	final public static function StartSession($timeout = 0, $probability = 100) {
-	global $session, $sessionOnline;
+	final public static function StartSession($timeout = 0, $probability = 0) {
+	global $session, $sessionOnline, $config;
 		if(defined("IS_CLI")) {
 			return;
 		}
@@ -242,27 +244,31 @@ class cardinal {
 			// it's lifetime are. Best to just dynamically create on.
 			$path = (defined("PATH_CACHE_SESSION") ? PATH_CACHE_SESSION : false);
 			$copy = $save = false;
-			if(!is_bool($path)) {
-				if(!file_exists($path)) {
-					if(@mkdir($path, 0777)) {
+			if(isset($config['copySession']) && $config['copySession']) {
+				if(!is_bool($path)) {
+					if(!file_exists($path)) {
+						if(@mkdir($path, 0777)) {
+							$save = true;
+						} 
+					} else {
 						$save = true;
-					} 
-				} else {
-					$save = true;
-				}
-				if(!is_writable($path)) {
-					@chmod($path, 0777);
-				}
-				if($save) {
-					$realpath = realpath($path);
-					@ini_set("session.save_path", $realpath);
-					@session_save_path($realpath);
-					$newGet = session_save_path();
-					if($realpath!=$newGet) {
-						$copy = true;
 					}
-					$sessionOnline = true;
+					if(!is_writable($path)) {
+						@chmod($path, 0777);
+					}
+					if($save) {
+						$realpath = realpath($path);
+						@ini_set("session.save_path", $realpath);
+						@session_save_path($realpath);
+						$newGet = session_save_path();
+						if($realpath!=$newGet) {
+							$copy = true;
+						}
+						$sessionOnline = true;
+					}
 				}
+			} else {
+				$sessionOnline = true;
 			}
 
 			// Set the chance to trigger the garbage collection.

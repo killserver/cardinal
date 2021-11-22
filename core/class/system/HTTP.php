@@ -97,10 +97,10 @@ if(!class_exists("AcceptHeader", false)) {
                         return $this->_compareSubType($a['type'], $b['type']);
                     }
                 } else {
-                    return $a_count < $b_count;
+                    return $a_count < $b_count ? 1 : -1;
                 }
             } else {
-                return $a_q < $b_q;
+                return $a_q < $b_q ? 1 : -1;
             }
         }
 
@@ -155,7 +155,7 @@ class HTTP {
 		}
 	}
 	
-	final private static function execHTTPLang($res, $el) {
+	private static function execHTTPLang($res, $el) {
 		$el = explode(';q=', $el);
 		list($l, $q) = array_merge($el, array(1)); 
 		$res[$l] = floatval($q);

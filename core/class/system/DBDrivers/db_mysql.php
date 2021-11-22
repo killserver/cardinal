@@ -96,7 +96,7 @@ class db_mysql extends DriverParam implements drivers {
 						echo ("Connect to database in not exists, server database is not exists");
 						break;
 					default:
-						echo "[".mysql_errno($this->mc)."]: ".mysql_error($this->mc);
+						echo "MYSQL [".mysql_errno($this->mc)."]: ".mysql_error($this->mc);
 						break;
 				}
 				die();

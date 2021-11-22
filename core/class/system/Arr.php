@@ -88,7 +88,7 @@ class Arr {
 		}
 	}
 	
-	final private static function getArr(array $arr, $key, $default = "") {
+	private static function getArr(array $arr, $key, $default = "") {
 		if(self::$empty) {
 			return isset($arr[$key]) && !empty($arr[$key]) ? $arr[$key] : $default;
 		} else {
@@ -96,7 +96,7 @@ class Arr {
 		}
 	}
 	
-	final private static function getSelf($key, $default = "") {
+	private static function getSelf($key, $default = "") {
 		if(self::$empty) {
 			return isset(self::$array[$key]) && !empty(self::$array[$key]) ? self::$array[$key] : $default;
 		} else {
@@ -113,7 +113,7 @@ class Arr {
 		}
 	}
 	
-	final private static function foundArr(array $arr, array $keys, $default = "") {
+	private static function foundArr(array $arr, array $keys, $default = "") {
 		$found = array();
 		foreach($keys as $key) {
 			if(self::$empty) {
@@ -125,7 +125,7 @@ class Arr {
 		return $found;
 	}
 	
-	final private static function foundSelf(array $keys, $default = "") {
+	private static function foundSelf(array $keys, $default = "") {
 		$found = array();
 		foreach($keys as $key) {
 			if(self::$empty) {
@@ -146,12 +146,12 @@ class Arr {
 		}
 	}
 	
-	final private static function pushArr($arr, $mixed) {
+	private static function pushArr($arr, $mixed) {
 		array_push($arr, $mixed);
 		return $arr;
 	}
 	
-	final private static function pushSelf($mixed) {
+	private static function pushSelf($mixed) {
 		array_push(self::$array, $mixed);
 		return self::$array;
 	}
@@ -165,14 +165,14 @@ class Arr {
 		}
     }
 	
-	final private static function divideArr($arr) {
+	private static function divideArr($arr) {
 		$arrs = array();
 		$arrs[] = array_keys($arr);
 		$arrs[] = array_values($arr);
 		return $arrs;
 	}
 	
-	final private static function divideSelf() {
+	private static function divideSelf() {
 		$arrs = array();
 		$arrs[] = array_keys(self::$array);
 		$arrs[] = array_values(self::$array);
@@ -188,7 +188,7 @@ class Arr {
 		}
 	}
 	
-	final private static function pullArr($arr, $mixed, $default = "") {
+	private static function pullArr($arr, $mixed, $default = "") {
 		$val = false;
 		if(self::get($arr, $mixed, $default)) {
 			$val = self::$array[$mixed];
@@ -197,7 +197,7 @@ class Arr {
 		return $val;
 	}
 	
-	final private static function pullSelf($mixed, $default = "") {
+	private static function pullSelf($mixed, $default = "") {
 		$val = false;
 		if(self::get($mixed, $default)) {
 			$val = self::$array[$mixed];
@@ -237,7 +237,7 @@ class Arr {
 		}
 	}
 	
-	final private static function mapSelf($callback) {
+	private static function mapSelf($callback) {
 		foreach(self::$array as $key => $val) {
 			if(is_array($val)) {
 				self::$array[$key] = self::mapSelf($callback, $val);
@@ -248,7 +248,7 @@ class Arr {
 		return self::$array;
 	}
 	
-	final private static function mapArr($array, $callback) {
+	private static function mapArr($array, $callback) {
 		foreach($array as $key => $val) {
 			if(is_array($val)) {
 				$array[$key] = self::mapArr($val, $callback);
@@ -268,7 +268,7 @@ class Arr {
 		}
 	}
 	
-	final private static function filterSelf($callback) {
+	private static function filterSelf($callback) {
 		foreach(self::$array as $key => $val) {
 			if(is_array($val)) {
 				self::$array[$key] = self::filterSelf($callback, $val);
@@ -279,7 +279,7 @@ class Arr {
 		return self::$array;
 	}
 	
-	final private static function filterArr($array, $callback) {
+	private static function filterArr($array, $callback) {
 		foreach($array as $key => $val) {
 			if(is_array($val)) {
 				$array[$key] = self::filterArr($val, $callback);
@@ -386,7 +386,7 @@ class Arr {
 	 * @access private
 	 * @return bool Ban from clone class
 	 */
-	final private function __clone() {
+	private function __clone() {
 		return false;
 	}
 	

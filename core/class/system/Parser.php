@@ -423,7 +423,7 @@ class Parser {
 	 * @param $header Full request
 	 * @return integer Code response
      */
-	final private function getResponseCode($header) {
+	private function getResponseCode($header) {
 		return (int) substr($header, 9, 3);
 	}
 

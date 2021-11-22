@@ -93,7 +93,7 @@ class userlevel {
 	 * @param array $array All change level
 	 * @return array Result rebuilding
      */
-	final private static function define($array) {
+	private static function define($array) {
 		$def = array();
 		for($i=0;$i<sizeof($array);$i++) {
 			$array[$i]['id'] -= 1;

@@ -60,6 +60,26 @@
 	    margin-bottom: 20px;
 	    display: table;
 	}
+	.form-control[data-upload-type='fileArrayAccess'] + .btn-add-image {
+		min-height: 180px;
+		background: rgba(0,0,0,0.75);
+		margin-bottom: 20px;
+		position: relative;
+		z-index: 1;
+	}
+	.form-control[data-upload-type='fileArrayAccess'] + .btn-add-image + .children {
+		position: relative;
+		z-index: 2;
+	}
+	.form-control[data-upload-type='fileArrayAccess'] + .btn-add-image a[target='_blank'] {
+		position: absolute;
+		bottom: -5px;
+		left: 0;
+		z-index: 2;
+	}
+	[data-accept=''] [data-show] {
+		overflow: initial;
+	}
 </style>
 <script type="text/javascript">
 	// Dynamically load images while scrolling
@@ -74,7 +94,9 @@
 	    	if(elem) {
 	    		$window = $(elem);
 	    	}
+	    	console.warn('scroll', $window)
 	        var images = this,
+	            images = this,
 	            inview,
 	            loaded;
 
@@ -157,6 +179,13 @@
 	var onInteractive = {};
 	var editorReady = function() {
 		jQuery("body").trigger("before_editorReady");
+		var timer = setTimeout(function() {
+			clearTimeout(timer);
+			console.warn('scroller')
+			jQuery("html").animate({
+				scrollTop: jQuery("html").scrollTop()+1
+			}, 100);
+		}, 500);
 		$("body").off("click").on("click", ".removeImg", function() {
 			var id = $(this).attr("id");
 			id = id.replace("remove_", "");
@@ -258,6 +287,15 @@
 	jQuery(document).ready(function() {
 		editorReady();
 		minHeightForAdd();
+		$("body").off("click", ".btn-save-success").on("click", ".btn-save-success", function() {
+			$(this).attr("disabled", "disabled");
+			$(this).parents("form").submit()
+			var th = this
+			setTimeout(function() {
+				$(th).removeAttr("disabled");
+			}, 2000);
+			return true;
+		});
 		$("body").off("click", ".showPreview.new").on("click", ".showPreview.new", function(e) {
 			if($(e.target).is(".showPreview.new") || e.target.closest(".showPreview.new")) {
 				var item = $(e.target).is(".showPreview.new") ? e.target : e.target.closest(".showPreview.new");
@@ -290,6 +328,7 @@
 			jQuery(elem).after("<img src='https://placehold.it/600x350&text=Loading...' data-src='"+jQuery(elem).attr("href")+"' width='200' style='background:#333; display: table;'>");
 		});
     	$('img').loadScroll(500);
+    	console.warn('loadScroll')
 	}
 	function addInputFile(th, name) {
 		var elem = jQuery(th).parent().find("div#inputForFile");
@@ -354,12 +393,12 @@
 			var tpl = $(".template_btn_access[data-template-id='"+name+"']").last().html();
 			if(typeof(tpl)!=="undefined") {
 				tpl = tpl.replace(new RegExp("{template_access_uid}", "ig"), data.field_id);
-				tpl = tpl.replace(new RegExp("{template_access_class}", "ig"), (data.type.indexOf("image")>-1 || data.type.indexOf("imageAccess")>-1 || data.type.indexOf("imageArrayAccess")>-1 ? " showPreview new" : ""));
+				tpl = tpl.replace(new RegExp("{template_access_class}", "ig"), (typeof(data.type)!=="undefined" && (data.type.indexOf("image")>-1 || data.type.indexOf("imageAccess")>-1 || data.type.indexOf("imageArrayAccess")>-1) ? " showPreview new" : ""));
 				tpl = tpl.replace(new RegExp("{template_access_val}", "ig"), link_now);
 
 				$(data.parent).parents("[data-for-btn-data]").find(".btn-add-image").append(tpl);
 			} else {
-				data.parent.append('<a data-link="'+data.field_id+'" id="img'+data.field_id+'" href="'+link_now+'"'+(data.type.indexOf("image")>-1 || data.type.indexOf("imageAccess")>-1 || data.type.indexOf("imageArrayAccess")>-1 ? " class=\"showPreview new\"" : "")+' target="_blank">Просмотреть</a>');
+				data.parent.append('<a data-link="'+data.field_id+'" id="img'+data.field_id+'" href="'+link_now+'"'+(typeof(data.type)!=="undefined" && (data.type.indexOf("image")>-1 || data.type.indexOf("imageAccess")>-1 || data.type.indexOf("imageArrayAccess")>-1) ? " class=\"showPreview new\"" : "")+' target="_blank">Просмотреть</a>');
 			}
 			$("#"+data.field_id).val(link_now.replace(default_link, ""))
 			minHeightForAdd();
@@ -372,7 +411,7 @@
 				for(var z=0;z<data.http_link.length;z++) {
 					var link_now = data.http_link[z]+applyAmp(data.http_link[z])+(new Date().getTime()/1000);
 					var id = addInputFileAccess(parent, name, "1", link_now.replace(default_link, ""), true)
-					$("input#"+id).parent().append('<a data-link="'+data.field_id+'" id="img'+data.field_id+'" href="'+link_now+'"'+(data.type.indexOf("image")>-1 || data.type.indexOf("imageAccess")>-1 || data.type.indexOf("imageArrayAccess")>-1 ? " class=\"showPreview new\"" : "")+' target="_blank">Просмотреть</a>');
+					$("input#"+id).parent().append('<a data-link="'+data.field_id+'" id="img'+data.field_id+'" href="'+link_now+'"'+(typeof(data.type)!=="undefined" && (data.type.indexOf("image")>-1 || data.type.indexOf("imageAccess")>-1 || data.type.indexOf("imageArrayAccess")>-1) ? " class=\"showPreview new\"" : "")+' target="_blank">Просмотреть</a>');
 				}
 				$(data.parent).parents("[data-for-btn-data]").remove()
 			} else {

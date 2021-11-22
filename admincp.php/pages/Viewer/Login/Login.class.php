@@ -139,7 +139,7 @@ class Login extends Core {
 				HTTP::set_cookie('failed-attempts', 0, time()+(5*60), false);
 				HTTP::set_cookie(COOK_ADMIN_USER, $given_username);
 				HTTP::set_cookie(COOK_ADMIN_PASS, $sendPass);
-				$resp['ref'] = Arr::get($_POST, 'ref', "./?pages=main");
+				$resp['ref'] = execEvent("loginRef", Arr::get($_POST, 'ref', "./?pages=main"));
 			} else {
 				User::logout();
 				cardinal::RegAction("Провальная попытка авторизации в админ-панели. Пользователь \"".$given_username."\"");
@@ -157,13 +157,14 @@ class Login extends Core {
 			if(ajax_check()=="ajax") {
 				HTTP::echos(json_encode($resp));
 			} else {
-				location("{C_default_http_host}{D_ADMINCP_DIRECTORY}/".(isset($_POST['ref']) ? $_POST['ref'] : ""));
+				location("{C_default_http_host}{D_ADMINCP_DIRECTORY}/".execEvent("loginRef", Arr::get($_POST, 'ref', "./?pages=main")));
 			}
 			return;
 		}
 		$echos = "";
 		$link = config::Select("mainPageAdmin");
 		$ref = (isset($_GET['ref']) && !empty($_GET['ref']) && strpos($_GET['ref'], "http")===false ? urldecode($_GET['ref']) : ($link!==false ? $link : "?pages=main"));
+		$ref = execEvent("loginRefRedirect", $ref);
 		templates::assign_var("ref", $ref);
 		if(User::checkLogin()) {
 			location("{C_default_http_host}{D_ADMINCP_DIRECTORY}/".$ref);

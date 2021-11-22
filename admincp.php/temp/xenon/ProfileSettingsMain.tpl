@@ -1,4 +1,4 @@
-[if {C_disableAdd}!=1]<center><a href="./?pages=ProfileSettings&Add" class="btn btn-secondary">{L_add}</a><a href="./?pages=ProfileSettings&Settings" class="btn btn-purple pull-right">{L_"Настроить поля"}</a></center>[/if {C_disableAdd}!=1]
+[if {C_disableAdd}!=1&&{C_disableProfileAdd}!=1]<center><a href="./?pages=ProfileSettings&Add" class="btn btn-secondary">{L_add}</a><a href="./?pages=ProfileSettings&Settings" class="btn btn-purple pull-right">{L_"Настроить поля"}</a></center>[/if {C_disableAdd}!=1&&{C_disableProfileAdd}!=1]
 {E_[customHeaders][type={ArcherTable}]}
 <form method="post" action="./?pages=Archer&type={ArcherTable}&pageType=MultiAction" class="form_profile_list">
 	<table id="example-1" class="table table-striped table-bordered" cellspacing="0" width="100%">
@@ -17,6 +17,10 @@
 <script type="text/javascript">
 var dTable;
 var settingDataTable = {
+	"sScrollX": "100%",
+	"scrollY": false,
+	"sScrollXInner": "110%",
+	"bScrollCollapse": true,
 	language: {
 		"processing": "{L_"Подождите"}...",
 		"search": "{L_"Поиск"}:",
@@ -119,3 +123,9 @@ function confirmDelete() {
 	}
 }
 </script>
+<style>
+	table.dataTable td, 
+	table.dataTable th {
+		white-space: nowrap;
+	}
+</style>

@@ -135,12 +135,24 @@ jQuery(document).ready(function() {
 				});
 			} else if(elem.checkValidity()===false && $(elem).hasClass("onlyText")===false && $(elem).hasClass("onlytext")===false) {
 				if(first===0) {
-					first = document.documentElement.scrollTop + $(elem).parent().find(".mce-tinymce")[0].getBoundingClientRect().top - 50;
+					if($(elem).parent().find(".mce-tinymce") && $(elem).parent().find(".mce-tinymce")[0]) {
+						first = document.documentElement.scrollTop + $(elem).parent().find(".mce-tinymce")[0].getBoundingClientRect().top - 50;
+					} else {
+						console.log(elem.getBoundingClientRect().top, document.documentElement.scrollTop)
+						first = ((document.documentElement.scrollTop) + elem.getBoundingClientRect().top)-150;
+						console.log(first)
+					}
 				}
 				ret = false;
-				$(elem).parent().find(".mce-tinymce").removeClass("errorInput").delay(1).queue(function(){
-					$(this).addClass("errorInput").dequeue();
-				});
+				if($(elem).parent().find(".mce-tinymce") && $(elem).parent().find(".mce-tinymce")[0]) {
+					$(elem).parent().find(".mce-tinymce").removeClass("errorInput").delay(1).queue(function(){
+						$(this).addClass("errorInput").dequeue();
+					});
+				} else {
+					$(elem).removeClass("errorInput").delay(1).queue(function() {
+						$(this).addClass("errorInput").dequeue();
+					});
+				}
 			} else if(elem.checkValidity()===false) {
 				ret = false;
 				$(elem).removeClass("errorInput").delay(1).queue(function(){

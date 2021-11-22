@@ -284,7 +284,7 @@ class Core {
 						"existSub" => ($type=="cat"&&sizeof($datas)>1 ? "true" : "false"),
 						"value" => $datas[$i][$is]['title'],
 						"link" => $datas[$i][$is]['link'],
-						"is_now" => (!empty($is_now) && strpos($now, $is_now)!==false ? "1" : "0"),
+						"is_now" => (!empty($is_now) && ($now==$is_now || strpos($now, $is_now."&")!==false || strpos($is_now, $now."&")!==false) ? "1" : "0"),
 						"type" => $type,
 						"type_st" => ($type=="cat"&&$datas[$i][$is]['type']=="cat" ? "start" : ""),
 						"type_end" => ($type=="cat"&&$count==$is&&$datas[$i][$is]['type']=="item" ? "end" : ""),

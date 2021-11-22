@@ -43,12 +43,15 @@ class Archer extends Core {
 		$orderBy = execEvent("change-orderBy", $orderBy, $typeUni);
 		$orderTo = $request->get->get("orderTo", "ASC");
 		$orderTo = execEvent("change-orderTo", $orderTo, $typeUni);
-		execEventRef("changeInfoArcher", $typeUni, $page, $viewId, $andWhere, $typeWhere, $dataWhere, $orderBy, $orderTo);
+		$ShowPages = $request->get->get("ShowPages", false);
+		execEventRef("changeInfoArcher", $typeUni, $page, $viewId, $andWhere, $typeWhere, $dataWhere, $orderBy, $orderTo, $ShowPages);
+		execEventRef("changeInfoArcher_".$typeUni, $typeUni, $page, $viewId, $andWhere, $typeWhere, $dataWhere, $orderBy, $orderTo, $ShowPages);
 		if(defined("PREFIX_DB") && PREFIX_DB!=="" && strpos($typeUni, PREFIX_DB)!==false) {
 			$typeUni = str_replace(PREFIX_DB, "", $typeUni);
 			$nameTableWithoutPrefix = str_replace(PREFIX_DB, "", $nameTableWithoutPrefix);
 		}
 		$upFirst = (function_exists("nucfirst") ? nucfirst($typeUni) : $this->nucfirst($typeUni));
+		addEvent("on_load_".$typeUni);
 		if(defined("PREFIX_DB") && PREFIX_DB!=="") {
 			$typeUni = PREFIX_DB.$typeUni;
 		}
@@ -62,6 +65,59 @@ class Archer extends Core {
 			case "QuickEdit":
 				$model = modules::loadModels("Model".$upFirst, $typeUni);
 				$model->SetTable($typeUni);
+				if(($table = $request->get->get("type", false))!==false && ($name = $request->get->get("loadSelect", false))!==false) {
+					$data = db::getTables(true, true, true);
+					if(defined("PREFIX_DB") && PREFIX_DB!=="" && isset($data[PREFIX_DB.$table])) {
+						$table = PREFIX_DB.$table;
+					}
+					if(isset($data[$table][$name])) {
+						if(strpos($data[$table][$name], "enum(")!==false) {
+							$data[$table][$name] = nsubstr($data[$table][$name], nstrlen("enum("), -1);
+							$data[$table][$name] = explode(",", $data[$table][$name]);
+							$data[$table][$name] = array_map(function($item) {
+								$item = str_replace("'", "", $item);
+								return array("value" => $item, "text" => $item);
+							}, $data[$table][$name]);
+							HTTP::ajax($data[$table][$name]);
+						} else {
+							$struct = modules::loadStruct($request->get->get("type", false));
+							if($struct!==false) {
+								if($struct[$name]['selectedData']=="dataOnTable") {
+									$resp = array();
+									db::doquery("SELECT `".$struct[$name]['loadDB']['key']."`, `".$struct[$name]['loadDB']['value']."` FROM `".$struct[$name]['loadDB']['name']."`", true);
+									while($row = db::fetch_assoc()) {
+										$resp[] = array(
+											"value" => $row[$struct[$name]['loadDB']['key']],
+											"text" => $row[$struct[$name]['loadDB']['value']],
+										);
+									}
+									HTTP::ajax($resp);
+								}
+							}
+							var_dump($data[$table], $struct[$name]);die();
+						}
+						/*$callback = KernelArcher::getCallback();
+						if(isset($callback['EditModel'])) {
+							for($i=0;$i<sizeof($callback['EditModel']);$i++) {
+								$current = call_user_func_array($callback['EditModel'][$i], array($model));
+								$model = current($current);
+							}
+						}
+						$data = array();
+						if(method_exists($model, 'getArray')) {
+							$data = $model->getArray();
+						}
+						if(isset($data[$name]['default'])) {
+							unset($data[$name]['default']);
+						}
+						$data = array_map(function($item) {
+							$item = str_replace("'", "", $item);
+							return array("value" => $item, "text" => $item);
+						}, array_values($data[$name]));
+						HTTP::ajax($data);*/
+					}
+					return;
+				}
 				if($request->get->get("Save", false)) {
 					$id = $request->post->get("pk");
 					$name = $request->post->get("name");
@@ -71,7 +127,7 @@ class Archer extends Core {
 					$mod = $model->Select();
 					$model = $model->getInstance();
 					foreach($mod as $k => $v) {
-						$model->{$k} = $v;
+						$model->{$k} = !empty($v) ? $v : '';
 					}
 					$model->{$name} = $value;
 					$model->WhereTo("", $id);
@@ -316,7 +372,7 @@ class Archer extends Core {
 						$model->OrderBy($model->getFirst(), "DESC");
 					}
 				} else {
-					if($request->get->get("ShowPages", false)) {
+					if($ShowPages) {
 						if($andWhere!==false && $typeWhere!==false && $dataWhere!==false) {
 							$model->Where($andWhere, $typeWhere, $dataWhere);
 						} else if($andWhere!==false && $dataWhere!==false) {
@@ -352,7 +408,7 @@ class Archer extends Core {
 				templates::assign_var("LinkorderTo", $orderTo);
 				$univ = new KernelArcher($typeUni, $model);
 				$tmps = "ArcherMain";
-				if($request->get->get("ShowPages", false)) {
+				if($ShowPages) {
 					templates::assign_var("activate_pager", "yes");
 				} else {
 					templates::assign_var("activate_pager", "no");

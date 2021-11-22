@@ -26,7 +26,7 @@ class config implements ArrayAccess {
 		self::$config = array_merge($config, self::$config);
 	}
 	
-	final private static function initWithoutDB($action = "read", $name = "", $val = "", $valS = "", $valTh = "", $valF = "") {
+	private static function initWithoutDB($action = "read", $name = "", $val = "", $valS = "", $valTh = "", $valF = "") {
 		global $configWDB;
 		if(!isset($configWDB) || !is_array($configWDB)) {
 			$configWDB = array();

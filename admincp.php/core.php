@@ -6,6 +6,8 @@ define("IS_CORE", true);
 define("IS_ADMINCP", true);
 include_once(dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR."core.php");
 
+db::open_connect();
+
 $defined = array("Cardinal" => "Cardin");
 
 function ReadPlugins($dir, $page, $include=true) {
@@ -48,15 +50,9 @@ function cardinalAutoloadAdmin($class) {
     }
 }
 if(version_compare(PHP_VERSION, '5.1.2', '>=')) {
-	if(version_compare(PHP_VERSION, '5.3.0', '>=')) {
-		spl_autoload_register('cardinalAutoloadAdmin', true, false);
-	} else {
-		spl_autoload_register('cardinalAutoloadAdmin');
-	}
+	include(dirname(__FILE__).DIRECTORY_SEPARATOR."register70.php");
 } else {
-	function __autoload($class) {
-		cardinalAutoloadAdmin($class);
-	}
+	include(dirname(__FILE__).DIRECTORY_SEPARATOR."register53.php");
 }
 
 $in_page = "Main";

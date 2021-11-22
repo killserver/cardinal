@@ -84,7 +84,9 @@ Route::Config(array(
 ));
 Route::Load($page);
 execEventRef("route_completed");
+$coreLang = $lang;
 extract(Route::param());
+$lang = $coreLang;
 $pages = Route::param('page');
 if(isset($GLOBALS['parsedArgv']) && isset($GLOBALS['parsedArgv']['page'])) {
 	$page = $GLOBALS['parsedArgv']['page'];

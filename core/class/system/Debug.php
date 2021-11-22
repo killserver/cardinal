@@ -223,7 +223,7 @@ class Debug {
 		return $lines;
 	}
 
-	final private static function switcher() {
+	private static function switcher() {
 		$fn = func_get_args();
 		$check = $fn[0];
 		$array = $fn[1];
@@ -363,18 +363,18 @@ class Debug {
 		}
 	}
 	
-	final private static function strip_ascii_ctrl($str) {
+	private static function strip_ascii_ctrl($str) {
 		return preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]+/S', '', $str);
 	}
 	
-	final private static function is_ascii($str) {
+	private static function is_ascii($str) {
 		if(is_array($str)) {
 			$str = implode($str);
 		}
 		return !preg_match('/[^\x00-\x7F]/S', $str);
 	}
 	
-	final private static function clean($var, $charset = "") {
+	private static function clean($var, $charset = "") {
 		if(!$charset) {
 			// Use the application character set
 			$charset = self::$charset;
@@ -401,7 +401,7 @@ class Debug {
 		return $var;
 	}
 
-	final private static function getExecutionFileStack($backtrace) {
+	private static function getExecutionFileStack($backtrace) {
 		$ret = array("file" => "cloud execution", "line" => -1);
 		for($i=0;$i<sizeof($backtrace);$i++) {
 			if(isset($backtrace[$i]['class']) && isset($backtrace[$i]['function']) && $backtrace[$i]['class']=="Debug" && $backtrace[$i]['function']=="vdump") {
@@ -421,6 +421,7 @@ class Debug {
 			if(isset($eventer[0]) && isset($eventer[0]['loader'])) {
 				$ret = $eventer[0]['loader'];
 			}
+			$ret['event'] = $ret['args'][0];
 		}
 		return $ret;
 	}

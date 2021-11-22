@@ -44,6 +44,8 @@ class Image {
 	private $filter = false;
 	private $coefficientX = 0;
 	private $coefficientY = 0;
+	private $dpi = 0;
+	private $return = false;
 
 	function __construct($imgUrl) {
 		$what = getimagesize($imgUrl);
@@ -149,6 +151,26 @@ class Image {
 		}
 		$this->fill = $color;
 		return $this;
+	}
+
+	function dpi($width, $height = null) {
+		if($height===null) {
+			$this->dpi = array($width);
+		} else {
+			$this->dpi = array($width, $height);
+		}
+        return $this;
+	}
+
+	function returned($return = true) {
+		$this->return = $return;
+        return $this;
+	}
+
+	function type($type = "") {
+		if(!empty($type)) {
+			$this->typeImage = $type;
+		}
 	}
 
 	function transparent($persent = 100) {
@@ -314,6 +336,29 @@ class Image {
 			imageantialias($new_image, true);
 		}
 
+		$changedDPI = false;
+		if(!is_numeric($this->dpi)) {
+			if(function_exists("imageresolution")) {
+				if(isset($this->dpi[1])) {
+					imageresolution($this->source_image, $this->dpi[0], $this->dpi[1]);
+					$changedDPI = true;
+				} else {
+					imageresolution($this->source_image, $this->dpi[0]);
+					$changedDPI = true;
+				}
+			} else if(class_exists("Imagick")) {
+				$img = new Imagick(self::$imgUrl);
+				if(isset($this->dpi[1])) {
+					$img->setResolution($this->dpi[0], $this->dpi[1]);
+					$changedDPI = true;
+				} else {
+					$img->setResolution($this->dpi[0], $this->dpi[0]);
+					$changedDPI = true;
+				}
+				$this->source_image = $imagick->getImageBlob();
+			}
+		}
+
 		if($this->filter!==false && is_object($this->filter) && method_exists($this->filter, "apply")) {
 			$this->filter->apply($this->source_image);
 		}
@@ -381,11 +426,27 @@ class Image {
         if(!is_callable($imgt)) {
             return false;
         }
-        if(!empty(self::$newName)) {
-            return call_user_func_array($imgt, array($rotated_image, self::$newName, $this->compress));
+        if($this->return) {
+        	ob_start();
+	        call_user_func_array($imgt, array($rotated_image, null, $this->compress));
+	        imagedestroy($rotated_image);
+        	$image_data = ob_get_contents();
+        	if(!$changedDPI) {
+				if(isset($this->dpi[1])) {
+        			$image_data = substr_replace($image_data, pack("cnn", 1, $this->dpi[0], $this->dpi[1]), 13, 5);
+				} else {
+        			$image_data = substr_replace($image_data, pack("cnn", 1, $this->dpi[0], $this->dpi[0]), 13, 5);
+				}
+        	}
+        	ob_end_clean();
+        	return $image_data;
         } else {
-            return call_user_func_array($imgt, array($rotated_image, null, $this->compress));
-        }
+	        if(!empty(self::$newName)) {
+	            return call_user_func_array($imgt, array($rotated_image, self::$newName, $this->compress));
+	        } else {
+	            return call_user_func_array($imgt, array($rotated_image, null, $this->compress));
+	        }
+	    }
 	}
 
 }

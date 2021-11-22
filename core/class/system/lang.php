@@ -67,7 +67,7 @@ class lang implements ArrayAccess {
 		return $ret;
 	}
 
-	final private static function read_dir($dir, $type = "all", $exclusions = array()) {
+	private static function read_dir($dir, $type = "all", $exclusions = array()) {
 		if(function_exists("read_dir")) {
 			return read_dir($dir, $type, false, false, $exclusions);
 		}
@@ -90,7 +90,7 @@ class lang implements ArrayAccess {
 	return $files;
 	}
 	
-	final private static function nsubstr($text, $start, $end = "") {
+	private static function nsubstr($text, $start, $end = "") {
 		if(empty($end)) {
 			$end = strlen($text);
 		}
@@ -213,7 +213,7 @@ class lang implements ArrayAccess {
 		return self::$lang;
 	}
 	
-	final private static function hex2bin($hexstr) {
+	private static function hex2bin($hexstr) {
 		$n = strlen($hexstr);
 		$sbin = "";
 		$i = 0;
@@ -232,7 +232,7 @@ class lang implements ArrayAccess {
 
 	private static $fileLang = array();
 	
-	final private static function merge($langSelect, $orig = "", $tr = "", $type = "get") {
+	private static function merge($langSelect, $orig = "", $tr = "", $type = "get") {
 		global $lang;
 		$dirLangs = defined("PATH_CACHE_LANGS") ? PATH_CACHE_LANGS : dirname(__FILE__).DIRECTORY_SEPARATOR;
 		if($type=="edit") {

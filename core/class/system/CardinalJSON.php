@@ -22,7 +22,7 @@ class CardinalJSON {
 		}
 	}
 
-	final private static function json_encode_unicode_fn($m) {
+	private static function json_encode_unicode_fn($m) {
 		$d = pack("H*", $m[1]);
 		$r = mb_convert_encoding($d, "UTF8", "UTF-16BE");
 		return $r!=="?" && $r!=="" ? $r : $m[0];

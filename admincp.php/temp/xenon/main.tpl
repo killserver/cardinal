@@ -246,10 +246,9 @@
 							<i class="fa-bell-o"></i>
 							<span class="badge badge-success">7</span>
 						</a-->
-
-						<a href="{C_default_http_local}" class="visible-xs-inline-block visible-sm-inline-block" title="{L_"Перейти на сайт"}" alt="{L_"Перейти на сайт"}">
+						[if {C_accessToSite}=="show"]<a href="{C_default_http_local}" class="visible-xs-inline-block visible-sm-inline-block" title="{L_"Перейти на сайт"}" alt="{L_"Перейти на сайт"}">
 							<i class="fa fa-paper-plane"></i>
-						</a>
+						</a>[/if {C_accessToSite}=="show"]
 						
 						<a href="#" data-toggle="mobile-menu">
 							<i class="fa-bars"></i>
@@ -310,17 +309,17 @@
 				<!-- Left links for user info navbar -->
 				<ul class="user-info-menu left-links list-inline list-unstyled">
 					
-					<li class="hidden-sm hidden-xs">
+					[if {C_access_collapsed_menu}==true]<li class="hidden-sm hidden-xs">
 						<a href="#" data-toggle="sidebar">
 							<i class="fa-bars"></i>
 						</a>
-					</li>
+					</li>[/if {C_access_collapsed_menu}==true]
 					
-					<li class="dropdown hover-line">
-						<a href="{C_default_http_host}" target="_blank" class="dropdown-toggle" aria-expanded="true" title="{L_"Перейти на сайт"}" alt="{L_"Перейти на сайт"}">
+					[if {C_accessToSite}=="show"]<li class="dropdown hover-line">
+						<a href="{C_default_http_host}" class="dropdown-toggle" aria-expanded="true" title="{L_"Перейти на сайт"}" alt="{L_"Перейти на сайт"}">
 							<i class="fa-paper-plane"></i>
 						</a>
-					</li>
+					</li>[/if {C_accessToSite}=="show"]
 					
 					[if {count[langListSupport]}>=2]<li class="dropdown hover-line language-switcher" style="min-height: 76px;">
 						<a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><img src="{nowLangImg}">{nowLangText}</a>
@@ -501,7 +500,7 @@
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/TweenMax.min.js?1"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/resizeable.js?1"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/joinable.js?2"></script>
-	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-api.js?2"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-api.js?3"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-toggles.js?1"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-widgets.js?1"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/tinymce/tinymce.min.js?{S_time}"></script>

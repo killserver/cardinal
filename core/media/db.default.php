@@ -17,6 +17,7 @@ $config = array_merge($config, array(
 		"db" => "",
 		"charset" => "utf8",
 		"driver" => "db_mysqli",
+		"autoConnect" => true,
 	),
 ));
 

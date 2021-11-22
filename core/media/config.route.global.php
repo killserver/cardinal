@@ -8,7 +8,7 @@ Route::Set("manifest", "manifest.cache")->defaults(array(
           'page' => 'manifest',
 ));
 
-Route::Set("changeLangInMainRoute", "changeLang(-<lang>).php")->defaults(array(
+Route::Set("changeLangInMainRoute", "changeLang(-<langs>).php")->defaults(array(
 	"callback" => array("changeLangInMainRoute"),
 	"lang" => lang::get_lg(),
 ));
@@ -18,9 +18,9 @@ function fixGoToHomeWithLang() {
 	global $mainLangSite;
 	$selectLang = Route::param("lang");
 	if(empty($selectLang) || $selectLang==$mainLangSite) {
-		return config::Select("default_http_local");
+		return config::Select("default_http_host");
 	} else if(!empty($selectLang)) {
-		return config::Select("default_http_local").Route::param("lang")."/";
+		return config::Select("default_http_host").Route::param("lang")."/";
 	}
 }
 
@@ -29,14 +29,16 @@ function changeLangInMainRoute($lang, $langDB) {//
 	$server = config::Select("default_http_host");
 	$uri = HTTP::getServer("HTTP_REFERER");
 	$uri = substr($uri, strlen($server));
-	$uri = substr($uri, 3);
-	if(!isset($_GET['lang'])) {
+	if(substr($uri, 2, 1)=="/") {
+		$uri = substr($uri, 3);
+	}
+	if(!isset($_GET['lang']) && $mainLangSite!=Route::param("langs")) {
 		$_GET['lang'] = Route::param("langs");
 	}
 	if($mainLangSite!=$_GET['lang']) {
-		$_GET['lang'] = $_GET['lang']."/".$uri;
+		$_GET['lang'] = (!empty($_GET['lang']) ? $_GET['lang']."/" : "").$uri;
 	} else if(!empty($uri) && $mainLangSite==$_GET['lang']) {
-		$_GET['lang'] = $_GET['lang']."/".$uri;
+		$_GET['lang'] = (!empty($_GET['lang']) ? $_GET['lang']."/" : "").$uri;
 	} else {
 		$_GET['lang'] = "";
 	}
@@ -66,3 +68,28 @@ function routeDefault($uri, $page) {
 	}
 }
 Route::Set("default", "routeDefault");
+
+  addEvent("change_lang_current_page", "changeLangCurrentPageCore");
+  function changeLangCurrentPageCore($ret, $changeOnLang, $comments = "\"") {
+	global $mainLangSite;
+	$uriCurrent = HTTP::getServer("REQUEST_URI");
+  	$originalUri = $uri = substr($uriCurrent, 1);
+	$originalUri = substr($originalUri, 1);
+	$lang = $mainLangSite;
+	if(substr($uri, 2, 1)=="/") {
+		$lang = substr($uri, 0, 2);
+		$uri = substr($uri, 3);
+	}
+	$currentLang = "";
+	if($lang!=$changeOnLang) {
+	  $currentLang = $changeOnLang;
+	}
+	if(!empty($currentLang)) {
+		$currentLang = config::Select("default_http_local").($mainLangSite!=$changeOnLang ? $changeOnLang."/" : "").$uri;
+	}
+	if($lang!=$changeOnLang) {
+		return ' href='.$comments.$currentLang.$comments.' ';
+	} else {
+		return '';
+	}
+  }

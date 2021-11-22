@@ -380,7 +380,7 @@ class DBObject implements ArrayAccess {
 		return true;
 	}
 	
-	final public function getAttribute($field, $attr, $table = "") {
+	final public function getAttribute($field, $attr, $table = "", $default = "") {
 		if(empty($table)) {
 			$table = $this->loadedTable;
 		}
@@ -399,7 +399,7 @@ class DBObject implements ArrayAccess {
 			throw new Exception("Attribute \"".$attr."\" for field \"".$field."\" is not found in ".$table);
 			die();
 		} else {
-			return "";
+			return $default;
 		}
 	}
 	
