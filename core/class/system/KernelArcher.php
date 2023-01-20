@@ -180,6 +180,17 @@ class KernelArcher {
 				} else {
 					$type = $v;
 				}
+				if($model->getAttribute($k, "type")=="fileArrayAccess" || $model->getAttribute($k, "type")=="imageArrayAccess") {
+					if(is_array($type)) {
+						$type = array_filter($type, function($item) {
+							return $item!="/";
+						});
+						if(sizeof($type)==0) {
+							$type = "";
+						}
+					}
+					// var_dump($type);die();
+				}
 				$type = str_replace(DS, "/", $type);
 			} else if($model->getAttribute($k, "type")=="date") {
                 $post = str_replace("/", "-", $post);
@@ -240,15 +251,19 @@ class KernelArcher {
 		} else {
 			$ref = htmlspecialchars_decode($ref);
 		}
-		call_user_func_array("Core::addInfo", array("<b>Успешно добавили запись</b>", "info", false, (3), true));
-		if(!empty($objTemplate)) {
-			if(isset($_GET['type'])) {
+		// call_user_func_array("Core::addInfo", array("<b>Успешно добавили запись</b>", "info", false, (3), true));
+		if(!isset($_GET['ajax']) && !isset($_GET['jajax'])) {
+			if(!empty($objTemplate)) {
+				if(isset($_GET['type'])) {
+					location($ref);
+					//location($ref, 3, false);
+				}
+				//$this->UnlimitedBladeWorks($objTemplate, $template, $load);
+			} else if(isset($_GET['type'])) {
 				location($ref);
-				//location($ref, 3, false);
 			}
-			//$this->UnlimitedBladeWorks($objTemplate, $template, $load);
-		} else if(isset($_GET['type'])) {
-			location($ref);
+		} else {
+			HTTP::ajax(array("success" => true));
 		}
 	}
 	
@@ -334,6 +349,7 @@ class KernelArcher {
 	}
 	
 	private function UploadFile($model, $key, $id, $file, $path, $type = "", $i = -1) {
+		// var_dump(func_get_args());die();
 		$file = $this->callArr($file, "TakeUpload", func_get_args(), array(), false);
 		if(!is_array($file)
 			||
@@ -398,8 +414,8 @@ class KernelArcher {
 		$models->SetTable($this->selectTable);
 		$firstId = $models->getFirst();
 		$selectId = $models->{$firstId};
-		$model = execEvent("KernelArcher-TakeEditModel-Before", $model, $firstId);
-		$model = execEvent("KernelArcher-TakeEditModel", $model, $firstId);
+		$model = execEvent("KernelArcher-TakeEditModel-Before", $model, $firstId, $models);
+		$model = execEvent("KernelArcher-TakeEditModel", $model, $firstId, $models);
 		$models = $this->callArr($models, "TakeEditModel", array($models, $firstId, "countCall" => ""));
 		unset($model->{$firstId});
 		$list = $models->getArray(false);
@@ -429,7 +445,7 @@ class KernelArcher {
 		$delArray = $request->post->get("deleteArray", array());
 		$delArray = array_map(function($v) { $arr = explode(",", $v); return array_filter($arr, 'strlen'); }, ($delArray));
 		foreach($list as $k => $v) {
-			if($k == 'createdTime') { continue; }
+			if($k == 'createdTime') { unset($model->{$k}); continue; }
 			if($k == 'editedTime') { $model->{'editedTime'} = time(); continue; }
 			$files = $request->files->get($k, "");
 			$post = $request->post->get($k, "");
@@ -487,6 +503,17 @@ class KernelArcher {
 				} else {
 					$type = $v;
 				}
+				if($models->getAttribute($k, "Type")=="fileArrayAccess" || $models->getAttribute($k, "Type")=="imageArrayAccess") {
+					if(is_array($type)) {
+						$type = array_filter($type, function($item) {
+							return $item!="/";
+						});
+						if(sizeof($type)==0) {
+							$type = "";
+						}
+					}
+					// var_dump($type);die();
+				}
 				$type = str_replace(DS, "/", $type);
 			} else if($models->getAttribute($k, "Type")=="date") {
                 $post = str_replace("/", "-", $post);
@@ -508,7 +535,7 @@ class KernelArcher {
 			$type = trim($type);
 			$model->{$k} = $type;
 		}
-		$model = execEvent("KernelArcher-TakeEditModel-After", $model, $firstId);
+		$model = execEvent("KernelArcher-TakeEditModel-After", $model, $firstId, $selectId);
 		$model = $this->callArr($model, "TakeEditModel", array($model, $firstId, "countCall" => ""));
 		$getExclude = KernelArcher::excludeField("get", "Edit");
 		for($i=0;$i<sizeof($getExclude);$i++) {
@@ -523,7 +550,7 @@ class KernelArcher {
 		}
 		cardinal::RegAction("Обновление данных в Арчере. Модель \"".$modelName."\". ИД: \"".$selectId."\"");
 		$model->Update();
-		execEvent("KernelArcher-TakeEditModel-Completed", $model);
+		execEvent("KernelArcher-TakeEditModel-Completed", $model, $selectId);
 		$addition = "";
 		if(Arr::get($_GET, "ShowPages", false)) {
 			$addition .= "&ShowPages=".Arr::get($_GET, "ShowPages");
@@ -541,21 +568,25 @@ class KernelArcher {
 			$addition .= "&WhereData=".Arr::get($_GET, "WhereData");
 		}
 		$ref = Arr::get($_GET, "ref", false);
-		$ref = execEvent("ref_Kernel_Archer_edit", $ref, $addition, $model, $selectedId);
+		$ref = execEvent("ref_Kernel_Archer_edit", $ref, $addition, $model, $selectId);
 		if($ref===false) {
 			$ref = "{C_default_http_local}".(defined("ADMINCP_DIRECTORY") ? "{D_ADMINCP_DIRECTORY}" : "admincp.php")."?pages=Archer&type=".Saves::SaveOld($_GET['type']).$addition;
 		} else {
 			$ref = htmlspecialchars_decode($ref);
 		}
-		call_user_func_array("Core::addInfo", array("<b>Изменения успешно сохранены</b> ID записи: ".$selectId, "info", false, (3), true));
-		if(!empty($objTemplate)) {
-			if(isset($_GET['type'])) {
+		// call_user_func_array("Core::addInfo", array("<b>Изменения успешно сохранены</b> ID записи: ".$selectId, "info", false, (3), true));
+		if(!isset($_GET['ajax']) && !isset($_GET['jajax'])) {
+			if(!empty($objTemplate)) {
+				if(isset($_GET['type'])) {
+					location($ref);
+					//location($ref, 3, false);
+				}
+				//$this->UnlimitedBladeWorks($objTemplate, $template, $load);
+			} else if(isset($_GET['type'])) {
 				location($ref);
-				//location($ref, 3, false);
 			}
-			//$this->UnlimitedBladeWorks($objTemplate, $template, $load);
-		} else if(isset($_GET['type'])) {
-			location($ref);
+		} else {
+			HTTP::ajax(array("success" => true));
 		}
 	}
 	
@@ -687,6 +718,9 @@ class KernelArcher {
 			if(!file_exists(PATH_CACHE_USERDATA."trashbin.lock")) {
 				db::query("CREATE TABLE IF NOT EXISTS {{trashbin}} ( `tId` int not null auto_increment, `tTable` varchar(255) not null, `tData` longtext not null, `tTime` int(11) not null, `tIp` varchar(255) not null, primary key `id`(`tId`) ) ENGINE=MyISAM;");
 				file_put_contents(PATH_CACHE_USERDATA."trashbin.lock", "");
+				if(defined("PATH_CACHE_SYSTEM") && file_exists(PATH_CACHE_SYSTEM."tables.php")) {
+					@unlink(PATH_CACHE_SYSTEM."tables.php");
+				}
 			}
 			$trash = true;
 		}
@@ -732,7 +766,7 @@ class KernelArcher {
 			}
 			cardinal::RegAction("Удаление данных в Арчере. Модель \"".$modelName."\". ИД: \"".$first."\"");
 		} else {
-			db::doquery("INSERT INTO {{trashbin}} SET `tTable` = ".db::escape($this->selectTable).", `tData` = ".db::escape(json_encode($models)).", `tTime`= UNIX_TIMESTAMP(), `tIp` = '".HTTP::getip()."'");
+			db::query("INSERT INTO {{trashbin}} SET `tTable` = ".db::escape($this->selectTable).", `tData` = ".db::escape(json_encode($models)).", `tTime`= UNIX_TIMESTAMP(), `tIp` = '".HTTP::getip()."'");
 			cardinal::RegAction("Перемещение данных в Арчере в корзину. Модель \"".$modelName."\". ИД: \"".$first."\"");
 		}
 		$del = execEvent("KernelArcher-TakeDelete-After", $model);
@@ -755,15 +789,19 @@ class KernelArcher {
 		} else {
 			$ref = htmlspecialchars_decode($ref);
 		}
-		call_user_func_array("Core::addInfo", array("<b>Запись успешно удалена</b> ID записи: ".$first, "info", false, (60), true));
-		if(!empty($objTemplate)) {
-			if(isset($_GET['type'])) {
-				//location($ref, 3, false);
+		// call_user_func_array("Core::addInfo", array("<b>Запись успешно удалена</b> ID записи: ".$first, "info", false, (60), true));
+		if(!isset($_GET['ajax']) && !isset($_GET['jajax'])) {
+			if(!empty($objTemplate)) {
+				if(isset($_GET['type'])) {
+					//location($ref, 3, false);
+					location($ref);
+				}
+				//$this->UnlimitedBladeWorks($objTemplate, $template, $load);
+			} else if(isset($_GET['type'])) {
 				location($ref);
 			}
-			//$this->UnlimitedBladeWorks($objTemplate, $template, $load);
-		} else if(isset($_GET['type'])) {
-			location($ref);
+		} else {
+			HTTP::ajax(array("success" => true));
 		}
 	}
 	
@@ -807,7 +845,7 @@ class KernelArcher {
 		}
 	}
 	
-	function Shield($model = "", $objTemplate = "", $template = "", $load = true) {
+	function Shield($model = "", $objTemplate = "", $template = "", $load = true, $dbLoad = true) {
 		if((empty($model) && (gettype($model)!=="object" || !method_exists($model, "getArray"))) && (gettype($this->localModel)!=="object" || !method_exists($this->localModel, "getArray"))) {
 			errorHeader();
 			throw new Exception("Error type kernal #1 parameter");
@@ -815,27 +853,29 @@ class KernelArcher {
 		}
 		$objName = get_class($model);
 		$model->SetTable($this->selectTable);
-		$model = execEvent("KernelArcher-Shield-Before-Data", $model, $objName);
-		$list = $model->Select();
-		$list = execEvent("KernelArcher-Shield-Data", $list, $objName);
-		if(is_object($list)) {
-			$list = $list->getArray(false);
-			$list = execEvent("KernelArcher-Shield-Data-Item", $list, $objName);
-			$first = current($list);
-			if(!is_null($first)) {
-				$list = $this->callArr($list, "ShieldFunc", array($list, $this->selectTable));
-				$this->AddBlocks("Mains", $list, $objName, $objName."-".current($list));
-			}
-		} elseif(is_array($list)) {
-			for($i=0;$i<sizeof($list);$i++) {
-				$subList = $list[$i]->getArray(false);
-				$subList = execEvent("KernelArcher-Shield-Data-Item", $subList, $objName);
-				$first = current($subList);
-				if(is_null($first)) {
-					continue;
+		if($dbLoad) {
+			$model = execEvent("KernelArcher-Shield-Before-Data", $model, $objName);
+			$list = $model->Select();
+			$list = execEvent("KernelArcher-Shield-Data", $list, $objName);
+			if(is_object($list)) {
+				$list = $list->getArray(false);
+				$list = execEvent("KernelArcher-Shield-Data-Item", $list, $objName);
+				$first = current($list);
+				if(!is_null($first)) {
+					$list = $this->callArr($list, "ShieldFunc", array($list, $this->selectTable));
+					$this->AddBlocks("Mains", $list, $objName, $objName."-".current($list));
 				}
-				$subList = $this->callArr($subList, "ShieldFunc", array($subList, $this->selectTable), array());
-				$this->AddBlocks("Mains", $subList, $objName, $objName."-".current($subList));
+			} elseif(is_array($list)) {
+				for($i=0;$i<sizeof($list);$i++) {
+					$subList = $list[$i]->getArray(false);
+					$subList = execEvent("KernelArcher-Shield-Data-Item", $subList, $objName);
+					$first = current($subList);
+					if(is_null($first)) {
+						continue;
+					}
+					$subList = $this->callArr($subList, "ShieldFunc", array($subList, $this->selectTable), array());
+					$this->AddBlocks("Mains", $subList, $objName, $objName."-".current($subList));
+				}
 			}
 		}
 		if(!empty($objTemplate)) {
@@ -861,7 +901,8 @@ class KernelArcher {
 		} else if(isset(self::$callbackFunc[$page]) && is_array($func)) {
 			$call = $func;
 			for($i=0;$i<sizeof(self::$callbackFunc[$page]);$i++) {
-				$call1 = call_user_func_array(self::$callbackFunc[$page][$i], $call);
+				// var_dump(self::$callbackFunc[$page][$i]);
+				$call1 = call_user_func_array(self::$callbackFunc[$page][$i], array_values($call));
 				if(is_array($call1)) {
 					$call = $call1;
 				} else {
@@ -1049,7 +1090,7 @@ class KernelArcher {
 					$vals = $val;
 				}
 				$empted = true;
-				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"file\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\"".(empty($vals) && $required ? " required=\"required\"" : "")."".($block ? " readonly=\"readonly\"" : "").($type=="image" ? " accept=\"image/*\"" : "")." style=\"".($height!="auto" ? "height:".$height."px" : "")."\">".(!empty($val) ? "&nbsp;&nbsp;<a href=\"".$vals."\"".($type=="image" ? " class=\"showPreview\"" : "")." target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "")."<br>";
+				$retType = "<input id=\"".$name."\" class=\"form-control\" type=\"file\" name=\"".$name."\" placeholder=\"".($loadPlaceHolder ? ($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "")."\"".(empty($vals) && $required ? " required=\"required\"" : "")."".($block ? " readonly=\"readonly\"" : "").($type=="image" ? " accept=\"image/*\"" : "")." style=\"".($height!="auto" ? "height:".$height."px" : "")."\">".(!empty($val) ? "<a href=\"".$vals."\"".($type=="image" ? " class=\"showPreview new\"" : "")." target=\"_blank\">".($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : ""); // ."<br>"
 			break;
 			case "imageAccess":
 			case "fileAccess":
@@ -1066,8 +1107,8 @@ class KernelArcher {
 							'<a href="#" class="btn btn-icon btn-red accessRemove pull-right" data-parent="'.$parent.'"><i class="fa-remove"></i></a>'.
 							'<input class="form-control '.$sType.'Access" id="'.$name.'" name="'.$name.'" type="text" value="'.$val.'" data-upload-type="'.$type.'" placeholder="'.($loadPlaceHolder ? ($open ? "{L_'" : "")."Выберите".($open ? "'}" : "")."&nbsp;".($open ? "{L_'" : "").$name.($open ? "'}" : "") : "").'"'.($block ? " readonly=\"readonly\"" : "").($type=="imageAccess" ? " data-accept=\"image\"" : "").' value="'.htmlspecialchars($val).'"'.(empty($val) && $required ? " required=\"required\"" : "").' style="position:fixed;top:-99999px;left:-99999px;z-index:-1000;">'.
 							'<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/assets/tinymce/filemanager/dialog.php?type='.($type=="imageAccess" ? "1" : "2").'&field_id='.$name.'&relative_url=0" class="btn btn-icon btn-success iframe-btn"><i class="fa-plus"></i></a>'.
-							'<div class="children"><br>'.
-							(!empty($val) ? '&nbsp;&nbsp;<a data-link="'.$vals.'" href="'.$vals.'"'.($type=="imageAccess" ? " class=\"showPreview new\"" : "").' target="_blank">'.($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : "").
+							'<div class="children">'. // <br>
+							(!empty($val) ? '<a data-link="'.$vals.'" href="'.$vals.'"'.($type=="imageAccess" ? " class=\"showPreview new\"" : "").' target="_blank">'.($open ? "{L_'" : "")."Просмотреть".($open ? "'}" : "")."</a>" : ""). // &nbsp;&nbsp;
 							'</div>'.
 						'</div>'.
 					'</div>';
@@ -1225,7 +1266,13 @@ class KernelArcher {
 		$beforeField = ($models instanceof DBOBject ? $models->getAttribute($name, "beforeField") : "");
 		$afterField = ($models instanceof DBOBject ? $models->getAttribute($name, "afterField") : "");
 		execEventRef("KernelArcher::Viewing-After", $retType, $hide, $name, $val, $type, $height, $default, $empted);
-		$ret = (!$hide ? "<div class=\"form-group block-".$name."\"".($lang!=="" ? " data-group=\"".$grouper."\" data-lang=\"".$grouperLang."\"" : "")."><label class=\"col-sm-".($isAjax ? "3" : "3")." control-label\" for=\"".$name."\">{L_".$name."}".($required ? "<span style=\"color:red\">*</span>" : "").execEvent("KernalArcherAddToLabel-".$name.($lang!=="" ? "-".$grouperLang : ""), "")."</label><div class=\"col-sm-".($isAjax ? ($empted!==true ? "9" : "8") : ($empted!==true ? "9" : "8"))."\">" : "").$beforeField.$retType.$afterField.(!$hide && $placeholder!=="" ? "<small class=\"".(!$block ? "form-group" : "row")." block-".$name."\"".($lang!=="" ? " data-group=\"".$grouper."\" data-lang=\"".$grouperLang."\"" : "").">".$placeholder."</small>" : "").(!$hide ? "</div>".($empted===true ? '<div class="col-sm-2"><a href="#" class="btn btn-red btn-icon btn-block btn-single removeImg" id="remove_'.$name.'"><i class="fa fa-remove"></i></a></div>' : "")."</div>\n" : "");
+		$ret = (!$hide ? "<div class=\"form-group block-".$name."\"".($lang!=="" ? " data-group=\"".$grouper."\" data-lang=\"".$grouperLang."\"" : "").">".
+					"<label class=\"col-sm-".($isAjax ? "3" : "3")." control-label\" for=\"".$name."\">{L_".$name."}".($required ? "<span style=\"color:red\">*</span>" : "").execEvent("KernalArcherAddToLabel-".$name.($lang!=="" ? "-".$grouperLang : ""), "")."</label>".
+					"<div class=\"col-sm-9\">" : "").
+				'<span class="cont">'.$beforeField.$retType.$afterField.
+				($empted===true ? '<a href="#" class="btn btn-red btn-icon btn-block btn-single removeImg" id="remove_'.$name.'"><i class="fa fa-remove"></i></a>' : "").'</span>'.
+				(!$hide && $placeholder!=="" ? "<small class=\"".(!$block ? "form-group" : "row")." block-".$name."\"".($lang!=="" ? " data-group=\"".$grouper."\" data-lang=\"".$grouperLang."\"" : "").">".$placeholder."</small>" : "").
+				(!$hide ? "</div></div>\n" : "");
 		return $ret;
 	}
 	

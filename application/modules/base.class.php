@@ -21,10 +21,15 @@ class base extends modules {
 
 	function __construct() {
 		$this->manifest_log('load_modules', array('base', __FILE__));
-		$this->regCssJs("https://cdn.polyfill.io/v2/polyfill.min.js?ua=" . urlencode(HTTP::getServer("HTTP_USER_AGENT")) . "&features=es6&notPack", "js", false, "polyfill");
-		$this->regCssJs("{C_default_http_local}js/helpers/apng-canvas.min.js?notPack", "js", false, "apng");
-		$this->regCssJs("{C_default_http_local}js/helpers/libwebp.min.js?notPack", "js", false, "webp");
-		$this->regCssJs("{C_default_http_local}js/helpers/polyCss.min.js?notPack", "js", false, "polyCss");
+		if(defined("IS_HTTPS")) {
+			if(HTTP::$protocol!=="https") {
+				HTTP::location("https://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
+			}
+		}
+		// $this->regCssJs("https://cdn.polyfill.io/v2/polyfill.min.js?ua=" . urlencode(HTTP::getServer("HTTP_USER_AGENT")) . "&features=es6&notPack", "js", false, "polyfill");
+		// $this->regCssJs("{C_default_http_local}js/helpers/apng-canvas.min.js?notPack", "js", false, "apng");
+		// $this->regCssJs("{C_default_http_local}js/helpers/libwebp.min.js?notPack", "js", false, "webp");
+		// $this->regCssJs("{C_default_http_local}js/helpers/polyCss.min.js?notPack", "js", false, "polyCss");
 	}
 
 }

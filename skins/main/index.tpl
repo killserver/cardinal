@@ -28,7 +28,7 @@
 	}
 	.centred:before {
 		content: '';
-		background: url('https://images5.alphacoders.com/700/thumb-1920-700049.jpg');
+		background: url('{THEME}/img/thumb-1920-700049.jpg');
 		position: absolute;
 		top: 0em;
 		left: 0em;

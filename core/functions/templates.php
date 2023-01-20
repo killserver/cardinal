@@ -164,4 +164,25 @@ function ajax($arr) {
 	HTTP::ajax($arr);
 }
 
+function changeSortAdminMenu($menuName, $sort = 0) {
+	addEventRef("admin_menu_sort", function(&$menu) use ($menuName, $sort) {
+		if(isset($menu[$menuName])) {
+			$menu[$menuName]['cat']['sort'] = $sort;
+		}
+	});
+}
+
+function changeSortAdminMenuItem($menuName, $linkPart, $sort = 0) {
+	addEventRef("admin_menu_sort", function(&$menu) use ($menuName, $linkPart, $sort) {
+		if(isset($menu[$menuName]['item'])) {
+			for($i=0;$i<sizeof($menu[$menuName]['item']);$i++) {
+				if(strpos($menu[$menuName]['item'][$i]['link'], $linkPart)!==false) {
+					$menu[$menuName]['item'][$i]['sort'] = $sort;
+					break;
+				}
+			}
+		}
+	});
+}
+
 ?>

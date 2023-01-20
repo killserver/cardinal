@@ -566,10 +566,20 @@ class templates {
 			$dd = str_replace('{$size_for}', $all+1, $dd);
 			$dd = self::callback_array(self::experementalIFFn(7), ("templates::is"), $dd);
 			$dd = self::callback_array(self::experementalIFFn(8), ("templates::is"), $dd);
-			$dd = self::callback_array('#\[foreachif (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/foreachif \\1\]#is', ("templates::is"), $dd);
-			$dd = self::callback_array('#\[foreachif (.*?)\]([\s\S]*?)\[/foreachif \\1\]#is', ("templates::is"), $dd);
-			$dd = self::callback_array("#\\[foreachif (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/foreachif\\]#is", ("templates::is"), $dd);
-			$dd = self::callback_array("#\\[foreachif (.*?)\\]([\s\S]*?)\\[/foreachif\\]#is", ("templates::is"), $dd);
+			while(preg_match('#\[foreachif (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/foreachif \\1\]#is', $dd)) {
+				$dd = self::callback_array('#\[foreachif (.*?)\]([\s\S]*?)\[else \\1\]([\s\S]*?)\[/foreachif \\1\]#is', ("templates::is"), $dd);
+			}
+			while(preg_match('#\[foreachif (.*?)\]([\s\S]*?)\[/foreachif \\1\]#is', $dd)) {
+				$dd = self::callback_array('#\[foreachif (.*?)\]([\s\S]*?)\[/foreachif \\1\]#is', ("templates::is"), $dd);
+			}
+			// var_dump($dd);
+			// die();
+			while(preg_match("#\\[foreachif (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/foreachif\\]#is", $dd)) {
+				$dd = self::callback_array("#\\[foreachif (.*?)\\]([\s\S]*?)\\[else\\]([\s\S]*?)\\[/foreachif\\]#is", ("templates::is"), $dd);
+			}
+			while(preg_match("#\\[foreachif (.*?)\\]([\s\S]*?)\\[/foreachif\\]#is", $dd)) {
+				$dd = self::callback_array("#\\[foreachif (.*?)\\]([\s\S]*?)\\[/foreachif\\]#is", ("templates::is"), $dd);
+			}
 			$num++;
 			$rnum--;
 			$tt .= str_replace('\n', "\n", $dd);
@@ -1083,6 +1093,7 @@ class templates {
 			$data = true;
 		}
 		$e = array();
+		$type = "";
 		if(strpos($array[1], "UL") !== false) {
 			$type = "true";
 		} elseif(strpos($array[1], "!ajax") !== false) {
@@ -1125,17 +1136,27 @@ class templates {
 			$e = str_replace(array("(", ")"), "", $e);
 		} elseif(strpos($array[1], "!empty(") !== false) {
 			$type = "not_empty";
-			$e = preg_replace("/!empty(.+?)/", "$1", $array[1]);
+			$e = preg_replace("/!empty(.+?)/is", "$1", $array[1]);
 			$e = str_replace(array("(", ")"), "", $e);
-			if(strpos($e, "{")!==false) {
+			if(strpos($e, "{")===0) {
 				$e = preg_replace("#\{(.+?)\}#", "$1", $e);
+				if(isset(self::$blocks[$e])) {
+					$e = self::$blocks[$e];
+				} else {
+					$e = "";
+				}
 			}
 		} elseif(strpos($array[1], "empty(") !== false) {
 			$type = "empty";
-			$e = preg_replace("/empty(.+?)/", "$1", $array[1]);
+			$e = preg_replace("/empty(.+?)/is", "$1", $array[1]);
 			$e = str_replace(array("(", ")"), "", $e);
-			if(strpos($e, "{")!==false) {
+			if(strpos($e, "{")===0) {
 				$e = preg_replace("#\{(.+?)\}#", "$1", $e);
+				if(isset(self::$blocks[$e])) {
+					$e = self::$blocks[$e];
+				} else {
+					$e = "";
+				}
 			}
 		} elseif($array[1]=="true") {
 			$type = "yes";
@@ -1143,6 +1164,56 @@ class templates {
 		} elseif($array[1]=="false") {
 			$type = "not";
 			$e = array($array[1], $array[1]);
+		} else if(!$type) {
+			if(strpos($array[1], "{")===0) {
+				$type = "not_empty";
+				$e = preg_replace("/!empty(.+?)/is", "$1", $array[1]);
+				$e = str_replace(array("(", ")"), "", $e);
+				if(strpos($e, "{")===0) {
+					$e = preg_replace("#\{(.+?)\}#", "$1", $e);
+					if(isset(self::$blocks[$e])) {
+						$e = self::$blocks[$e];
+					} else {
+						$e = "";
+					}
+				}
+			} elseif(strpos($array[1], "!{")===0) {
+				$type = "empty";
+				$e = preg_replace("/empty(.+?)/is", "$1", $array[1]);
+				$e = str_replace(array("(", ")"), "", $e);
+				if(strpos($e, "{")===0) {
+					$e = preg_replace("#\{(.+?)\}#", "$1", $e);
+					if(isset(self::$blocks[$e])) {
+						$e = self::$blocks[$e];
+					} else {
+						$e = "";
+					}
+				}
+			} elseif(strpos($array[1], "!")===0) {
+				$type = "empty";
+				$e = preg_replace("/empty(.+?)/is", "$1", $array[1]);
+				$e = str_replace(array("(", ")"), "", $e);
+				if(strpos($e, "{")===0) {
+					$e = preg_replace("#\{(.+?)\}#", "$1", $e);
+					if(isset(self::$blocks[$e])) {
+						$e = self::$blocks[$e];
+					} else {
+						$e = "";
+					}
+				}
+			} else {
+				$type = "not_empty";
+				$e = preg_replace("/!empty(.+?)/is", "$1", $array[1]);
+				$e = str_replace(array("(", ")"), "", $e);
+				if(strpos($e, "{")===0) {
+					$e = preg_replace("#\{(.+?)\}#", "$1", $e);
+					if(isset(self::$blocks[$e])) {
+						$e = self::$blocks[$e];
+					} else {
+						$e = "";
+					}
+				}
+			}
 		}
 		if(!isset($type)) return false;
 		if($type == "UL") {
@@ -2134,7 +2205,7 @@ class templates {
 			$tpl = self::callback_array("#\\[(not-group)=(.+?)\\](.+?)\\[/not-group\\]#is", ("templates::group"), $tpl);
 			$tpl = self::callback_array("#\\[(group)=(.+?)\\](.+?)\\[/group\\]#is", ("templates::group"), $tpl);
 			$tpl = self::callback_array("#\[MIXIN name=(.+?)\](.*?)\[/MIXIN\]#is", "templates::mixinCache", $tpl);
-			$tpl = self::callback_array("#\{include (.+?)=['\"](.*?)['\"](|[\"'](.+?)[\"'])\}#", ("templates::includeFile"), $tpl);
+			$tpl = self::callback_array("#\{include (.+?)=['\"](.*?)['\"](|,[\"'](.+?)[\"'])\}#", ("templates::includeFile"), $tpl);
 			$tpl = self::callback_array("~\{is_last\[(\"|)(.+?)(\"|)\]\}~", ("templates::count_blocks"), $tpl);
 			$tpl = self::callback_array("#\{UL_(.*?)(|\[(.*?)\])\}#", ("templates::level"), $tpl);
 			if(function_exists("plural_form")) {
@@ -2238,6 +2309,8 @@ class templates {
 		if(function_exists("execEvent")) {
 			$tpl = execEvent("templates::compile::after", $tpl, $file, $type);
 		}
+
+		$tpl = self::callback_array("#\{\%\% (.+?) \%\%\}#is", "templates::execEval", $tpl);
 
 		return $tpl;
 	}
@@ -2480,6 +2553,19 @@ class templates {
 		return $ret;
 	}
 
+	final public static function build($h) {
+		$find_preg = $replace_preg = array();
+		// var_dump(self::$editor);die();
+		if(sizeof(self::$editor)) {
+			foreach(self::$editor as $key_find => $key_replace) {
+				$find_preg[] = $key_find;
+				$replace_preg[] = $key_replace;
+			}
+			$h = preg_replace($find_preg, $replace_preg, $h);
+		}
+		return $h;
+	}
+
 	/**
 	 * Display done completed page
 	 * @access public
@@ -2541,7 +2627,7 @@ class templates {
 			$head .= self::$module['head']['after'];
 		}
 		if(strpos($head, '<meta name="theme-color"')===false) {
-			$head .= '<meta name="theme-color" content="'.(function_exists("execEvent") ? execEvent("titleColor", "#AC1F1F") : "#AC1F1F").'">';
+			$head .= '<meta name="theme-color" content="'.(function_exists("execEvent") ? execEvent("titleColor", "#000") : "#000").'">';
 		}
 		$h = str_replace("{headers}", $head, $h);
 

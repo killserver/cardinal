@@ -6,7 +6,7 @@
 		<div name="editor" id="editor" style="height:600px;"></div>
 	</div>
 	<div class="col-md-12">
-		<button class="btn btn-turquoise send pull-right">Save</button>
+		<button class="btn btn-turquoise send pull-right">Сохранить</button>
 	</div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/ace.js"></script>
@@ -76,8 +76,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/worker-xml.js"></script>
 
 
-<script src="https://labs.abeautifulsite.net/archived/jquery-fileTree/demo/jqueryFileTree.js"></script>
-<link href="https://labs.abeautifulsite.net/archived/jquery-fileTree/demo/jqueryFileTree.css" rel="stylesheet" type="text/css">
+<script src="https://jqueryfiletree.github.io/bower_components/jqueryfiletree/dist/jQueryFileTree.min.js"></script>
+<link href="https://jqueryfiletree.github.io/bower_components/jqueryfiletree/dist/jQueryFileTree.min.css" rel="stylesheet" type="text/css">
 <script>
 var editor = ace.edit("editor");
 var type = "text";
@@ -107,7 +107,7 @@ jQuery('#fileTree').fileTree({ root: '/', script: './?pages=Editor&tree=1', fold
 });
 $(".send").click(function() {
 	$.post("./?pages=Editor&save="+loadedFile, {data: editor.getValue()}, function(data) {
-		toastr.info(data, "Saved");
+		toastr.info(data, "Сохранено");
 	});
 });
 var disableAllEditors = true;
@@ -127,6 +127,9 @@ UL.jqueryFileTree LI {
     padding: 0.5em 0px 0.5em 20px !important;
     margin: 1em 0px !important;
     background-position: 0px 50% !important;
+}
+UL.jqueryFileTree LI.directory.expanded {
+    background-position: 0px 1% !important;
 }
 .ace_editor {
 	font-size: 13px;

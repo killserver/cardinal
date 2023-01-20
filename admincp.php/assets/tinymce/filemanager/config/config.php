@@ -5,6 +5,7 @@ define("IS_CORE", true);
 
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
+define("SESSION_DISABLE", true);
 require_once(dirname(__FILE__).DIRECTORY_SEPARATOR."..".DIRECTORY_SEPARATOR."..".DIRECTORY_SEPARATOR."..".DIRECTORY_SEPARATOR."..".DIRECTORY_SEPARATOR."..".DIRECTORY_SEPARATOR."core.php");
 if(!userlevel::get("admin")) {
 	die();
@@ -29,14 +30,17 @@ if(isset($_SERVER['DOCUMENT_ROOT']) && !empty($_SERVER['DOCUMENT_ROOT'])) {
 	$uploads = $_SERVER['DOCUMENT_ROOT'];
 }
 $local = str_replace(array($uploads, DS), array("", "/"), PATH_UPLOADS);
+// var_dump($local);die();
+// var_dump($local);die();
+// var_dump($local, ROOT_PATH, $_SERVER);die();
 $exec = substr($_SERVER['SCRIPT_NAME'], 1);
 $exp = explode("/", $exec);
 $path = "";
 for($i=0;$i<(sizeof($exp)-1);$i++) {
 	$path .= "../";
 }
-$path .= $local;
-$local = "/".$local;
+$local = (strpos($local, "/")===0 ? $local : "/".$local);
+$path .= substr($local, 1);
 
 
 
@@ -461,7 +465,7 @@ $config = array(
 	'hidden_folders'                          => array( 'manifest', "_thumbs" ),
 	// set the names of any files you want hidden. Remember these names will be hidden in all folders (eg "this_document.pdf", "that_image.jpg" )
 	'hidden_files'                            => array( '.htaccess', 'config.php', 'index.php', 'index.html', 'robots.txt' ),
-	'hidden_mask'                            => array( '\.min' ),
+	'hidden_mask'                            => array_merge(array( '\.min' ), $config['createMin']),
 
 	/*******************
 	* URL upload

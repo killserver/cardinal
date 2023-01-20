@@ -27,7 +27,7 @@ class UserLevels extends Core {
 			"updates" => "возможности обновлять движок из админ-панели",
 			"userlevels" => "редактору уровней доступа сайта",
 			"users" => "списку пользователей",
-			"yui_admin" => "настройке системы YUI",
+			"yui" => "настройке системы YUI",
 			"site" => "сайту",
 		);
 		$userlevelName = execEvent("userlevel_all", $userlevelName);

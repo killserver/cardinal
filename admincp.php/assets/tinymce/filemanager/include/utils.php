@@ -1,5 +1,5 @@
 <?php
-session_start();
+if (session_id() == '') session_start();
 if (!isset($_SESSION['RF']) || $_SESSION['RF']["verify"] != "RESPONSIVEfilemanager")
 {
 	die('forbiden');

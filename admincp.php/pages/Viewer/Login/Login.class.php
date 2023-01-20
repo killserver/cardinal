@@ -113,7 +113,12 @@ class Login extends Core {
 		templates::assign_var("langPanel", $lang);
 		$resp = array('accessGranted' => false, 'errors' => '');
 		if(isset($_POST['do_login'])) {
-			Debug::activShow(false);
+			// Debug::activShow(false);
+			$fa = Arr::get($_COOKIE, 'failed-attempts', 0);
+			if($fa && $fa>5) {
+				$resp['errors'] = 'Вы ввели не правильный логин или пароль. Пожалуйста попробуйте еще раз';
+				HTTP::ajax($resp);
+			}
 			$check = false;
 			$is_admin = false;
             $given_username = $sendPass = "";
@@ -148,14 +153,11 @@ class Login extends Core {
 				$fa++;
 				HTTP::set_cookie('failed-attempts', $fa, time()+(5*60), false);
 				// Error message
-				if(isset($_POST['page']) && $_POST['page']=="alogin")
-					$resp['errors'] = 'You have entered wrong password, please try again.<br />Failed attempts: ' . $fa;
-				else
-					$resp['errors'] = 'You have entered wrong login or password, please try again.<br />Failed attempts: ' . $fa;
+				$resp['errors'] = 'Вы ввели не правильный логин или пароль. Пожалуйста попробуйте еще раз.<br />Ошибочных попыток: ' . $fa;
 			}
 			templates::$gzip=false;
 			if(ajax_check()=="ajax") {
-				HTTP::echos(json_encode($resp));
+				HTTP::ajax($resp);
 			} else {
 				location("{C_default_http_host}{D_ADMINCP_DIRECTORY}/".execEvent("loginRef", Arr::get($_POST, 'ref', "./?pages=main")));
 			}
@@ -170,11 +172,7 @@ class Login extends Core {
 			location("{C_default_http_host}{D_ADMINCP_DIRECTORY}/".$ref);
 			return;
 		}
-		if(!config::Select("again_login_admin") && isset($_COOKIE['is_admin_login']) && !empty($user['username'])) {
-			$echos = templates::view(templates::completed_assign_vars("again_login", null));
-		} else {
-			$echos = templates::view(templates::completed_assign_vars("login", null));
-		}
+		$echos = templates::view(templates::completed_assign_vars((templates::check_exists("login_custom") ? "login_custom" : "login"), null));
 		$js_echo = "";
 		if(sizeof(self::$js)>0) {
 			$js = array_values(self::$js);

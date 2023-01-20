@@ -9,7 +9,7 @@ class CoreDataTables extends Core {
 		$this->InsertList("DataTables4", config::Select("default_http_local").(defined("ADMINCP_DIRECTORY") ? ADMINCP_DIRECTORY : "admincp.php")."/assets/".config::Select('skins','admincp')."/js/datatables/tabletools/dataTables.tableTools.min.js?1", "js");
 		$this->InsertList("BootstrapTourCSS", config::Select("default_http_local").(defined("ADMINCP_DIRECTORY") ? ADMINCP_DIRECTORY : "admincp.php")."/assets/".config::Select('skins','admincp')."/css/bootstrap-tour.css", "css");
 		$this->InsertList("BootstrapTourJS", config::Select("default_http_local").(defined("ADMINCP_DIRECTORY") ? ADMINCP_DIRECTORY : "admincp.php")."/assets/".config::Select('skins','admincp')."/js/bootstrap-tour.js", "js");
-		$this->InsertList("Yui", config::Select("default_http_local").(defined("ADMINCP_DIRECTORY") ? ADMINCP_DIRECTORY : "admincp.php")."/assets/".config::Select('skins','admincp')."/js/tour.min.js", "js");
+		$this->InsertList("Yui", config::Select("default_http_local").(defined("ADMINCP_DIRECTORY") ? ADMINCP_DIRECTORY : "admincp.php")."/assets/".config::Select('skins','admincp')."/js/tour.min.js?1", "js");
 	}
 	
 }

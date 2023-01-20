@@ -53,6 +53,7 @@ $userlevels = array_replace($userlevels, array(
 		"access_settinguser" => "yes",
 		"access_users" => "yes",
 		"access_yui" => "yes",
+		"access_skins" => "yes",
 		"access_site" => "yes",
 	),
 	"3" => array(

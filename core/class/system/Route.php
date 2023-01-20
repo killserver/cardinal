@@ -201,6 +201,7 @@ class Route {
 		if($regex) {
 			$search = $replace = array();
 			foreach($regex as $key => $value) {
+				if(!is_string($key) || !is_string($value)) continue;
 				$search[]  = "<".$key.">".Route::REGEX_SEGMENT;
 				$replace[] = "<".$key.">".$value;
 			}
@@ -305,6 +306,10 @@ class Route {
 		if($v!=="/") {
 			$uri = str_replace($v, "", $uri);
 		}
+		return self::FindRoute($uri, $v, $default);
+	}
+
+	public static function FindRoute($uri, $v = "", $default = "") {
 		if(!isset($GLOBALS[self::$_secret])) {
 			if($uri==="") {
 				return array('params' => array("pages" => "main"), 'route' => "");
@@ -312,6 +317,10 @@ class Route {
 			return false;
 		}
 		$routes = $GLOBALS[self::$_secret];
+		$originalUrl = $uri;
+		if(substr($originalUrl, 0, 1)!="/") {
+			$originalUrl = (!empty($v) ? $v : "/").$originalUrl;
+		}
 		// var_dump($routes);die();
 		foreach($routes as $name => $route) {
 			if($params = $route->Matches($uri, $default)) {
@@ -332,9 +341,15 @@ class Route {
 				} else if(isset($params['now_lang']) && !empty($params['now_lang']) && sizeof($newLang)>0 && (empty($params['now_lang']) || isset($newLang[$params['now_lang']]))) {
 					$params['lang'] = $params['now_lang'];
 				} else if(isset($params['now_lang']) && !empty($params['now_lang']) && sizeof($newLang)>0 && !isset($newLang[$params['now_lang']])) {
-					header("HTTP/1.1 301 Moved Permanently");
+					/*header("HTTP/1.1 301 Moved Permanently");
 					header("Location: ".$v.substr($uri, 3));
-					die();
+					die();*/
+					$newLink = (!empty($v) ? $v : "/").$uri;
+					if($originalUrl!=$newLink) {
+						header("HTTP/1.1 301 Moved Permanently");
+						header("Location: ".$newLink);
+						die();
+					}
 				}
 				$params['default_lang'] = (!empty($mainLangSite) && class_exists("lang", false) && method_exists("lang", "get_lg") && $mainLangSite==lang::get_lg() ? $mainLangSite."/" : "");
 				$params['now_lang'] = (isset($params['lang']) && !empty($params['lang']) ? $params['lang']."/" : (class_exists("lang", false) && method_exists("lang", "get_lg") ? lang::get_lg()."/" : ""));
@@ -425,7 +440,7 @@ class Route {
 		}
 		$param = self::langParams($param);
 		self::$_params = array_merge(self::$_params, $param);
-		return array('params' => $param, 'route' => "");
+		return array('params' => $param, 'route' => "", "not_found" => true);
 	}
 
 	private static function langParams($params) {

@@ -246,6 +246,14 @@ if(defined("PATH_CACHE_USERDATA") && file_exists(PATH_CACHE_USERDATA."configWith
 	@file_put_contents(PATH_CACHE_USERDATA."configWithoutDB.php", $file);
 	@unlink(PATH_CACHE_USERDATA."configWithoutDB.txt");
 }
+if(defined("PATH_CACHE_USERDATA") && file_exists(PATH_CACHE_USERDATA."configWithoutDB.php")) {
+	$file = file_get_contents(PATH_CACHE_USERDATA."configWithoutDB.php");
+	$file = str_replace('<?php die(); ?>', '', $file);
+	if(is_serialized($file)) {
+		$file = unserialize($file);
+		@file_put_contents(PATH_CACHE_USERDATA."configWithoutDB.php", '<?php'.PHP_EOL.'return '.var_export($file, true).';');
+	}
+}
 if(defined("PATH_FUNCTIONS") && file_exists(PATH_FUNCTIONS."login.".ROOT_EX)) {
 	@unlink(PATH_FUNCTIONS."login.".ROOT_EX);
 }

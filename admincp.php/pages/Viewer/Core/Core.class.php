@@ -248,6 +248,7 @@ class Core {
 		$l = new Headers();
 		$l->loadMenuAdmin($links, $now);
 		$all = 0;
+		$findActive = false;
 		foreach($links as $name => $datas) {
 			if(isset($datas['item']) && is_array($datas['item'])) {
 				$newArr = array();
@@ -280,11 +281,17 @@ class Core {
 						$count = sizeof($datas[$i])-1;
 					}
 					$is_now = str_replace(array("{C_default_http_host}", ADMINCP_DIRECTORY."/?", "{D_ADMINCP_DIRECTORY}/?", ADMINCP_DIRECTORY."/", "{D_ADMINCP_DIRECTORY}/"), "", $datas[$i][$is]['link']);
+					// var_dump($active);
+					$active = !empty($is_now) && ($now==$is_now || strpos($now, $is_now."&")!==false || strpos($is_now, $now."&")!==false) && !$findActive;
+					if($active) {
+						$findActive = true;
+						// var_dump($active);
+					}
 					templates::assign_vars(array(
 						"existSub" => ($type=="cat"&&sizeof($datas)>1 ? "true" : "false"),
 						"value" => $datas[$i][$is]['title'],
 						"link" => $datas[$i][$is]['link'],
-						"is_now" => (!empty($is_now) && ($now==$is_now || strpos($now, $is_now."&")!==false || strpos($is_now, $now."&")!==false) ? "1" : "0"),
+						"is_now" => $active ? "1" : "0",
 						"type" => $type,
 						"type_st" => ($type=="cat"&&$datas[$i][$is]['type']=="cat" ? "start" : ""),
 						"type_end" => ($type=="cat"&&$count==$is&&$datas[$i][$is]['type']=="item" ? "end" : ""),
@@ -298,6 +305,7 @@ class Core {
 			}
 			$all++;
 		}
+		// die();
 	}
 	
 	private function CheckLoadPlugins($file) {
@@ -439,10 +447,14 @@ class Core {
 		$f = file_get_contents(PATH_TEMPLATE.$file.".".templates::changeTypeTpl());
 		return templates::view($f);
 	}
+
+	public function checkLogin() {
+		return isset($_COOKIE[COOK_ADMIN_USER]) && isset($_COOKIE[COOK_ADMIN_PASS]) && userlevel::get("admin");
+	}
 	
 	public function Prints($echo, $print = false, $force = false) {
 		global $lang;
-		if(!userlevel::get("admin") || !isset($_COOKIE[COOK_ADMIN_USER]) || !isset($_COOKIE[COOK_ADMIN_PASS])) {
+		if(!$this->checkLogin()) {
 			$ref = urlencode(str_replace(ROOT_PATH, "", cut(getenv("REQUEST_URI"), "/".ADMINCP_DIRECTORY."/")));
 			location("{C_default_http_host}".ADMINCP_DIRECTORY."/?pages=Login".(!empty($ref) ? "&ref=".$ref : ""));
 			return false;

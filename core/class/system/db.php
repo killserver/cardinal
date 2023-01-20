@@ -154,7 +154,21 @@ class db {
 			} else {
 				self::$driverGen = true;
 				$driv = self::DriverList();
-				$driv = $driv[array_rand($driv)];
+				$configInside = self::$configInit;
+				if(isset($configInside['driver'])) {
+					$find = false;
+					for($i=0;$i<sizeof($driv);$i++) {
+						if($driv[$i]==$configInside['driver']) {
+							$find = $driv[$i];
+							break;
+						}
+					}
+				}
+				if(!$find) {
+					$driv = $driv[array_rand($driv)];
+				} else {
+					$driv = $find;
+				}
 				self::$driver_name = $driv;
 			}
 			if(!defined("PATH_CACHE_USERDATA")) {

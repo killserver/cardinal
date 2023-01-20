@@ -14,7 +14,6 @@
  *
 */
 
-
 class FileParser {
 	private $name;
 	private $mime;
@@ -634,6 +633,20 @@ class Parser {
 		} else {
 			return $this;
 		}
+	}
+
+	function isJson($str) {
+		return $str === '""' || $str === '[]' || $str === '{}' || $str[0] === '"' && substr($str, -1) === '"' || $str[0] === '[' && substr($str, -1) === ']' || $str[0] === '{' && substr($str, -1) === '}';
+	}
+
+	final public function getJSONData($url = "", $sss = false) {
+		$this->get($url, $sss);
+		if($this->isJson($this->html)) {
+			$decode = json_decode($this->html, true);
+		} else {
+			$decode = $this->html;
+		}
+		return $decode;
 	}
 	
 	final public function __toString() {

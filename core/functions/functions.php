@@ -662,4 +662,9 @@ function parser_video($content, $start, $end = "") {
 return $content;
 }
 
+function addSupportMin($size) {
+	global $config;
+	$config['createMin'][] = $size;
+}
+
 ?>

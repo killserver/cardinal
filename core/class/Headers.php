@@ -433,7 +433,8 @@ class Headers {
 				$links = self::$links;
 			}
 		}
-		$this->adminPanelVsort($links);
+		// $this->adminPanelVsort($links);
+		// addEventRef("admin_menu_sort", $links, $now);
 		$page_v = HTTP::getServer("REQUEST_URI");
 		$local = config::Select("default_http_local");
 		if(strlen($local)>1) {
@@ -444,6 +445,8 @@ class Headers {
 			$now = "pages=main";
 		}
 		execEventRef("admin_menu_loaded", $links, $now);
+		execEventRef("admin_menu_sort", $links, $now);
+		$this->adminPanelVsort($links);
 	}
 
 	private function menuAdminHeader($arr, $isCat = false, $isSite = false, $id = 0) {
@@ -478,13 +481,39 @@ class Headers {
 		return $menu;
 	}
 
-	private function adminPanelVsort(&$array) {
+	/*private function adminPanelVsort(&$array) {
 		$arrs = array();
 		foreach($array as $key => $val) {
 			asort($val);
 			$arrs[$key] = $val;
 		}
 		$array = $arrs;
+	}*/
+
+	private function adminPanelVsort(&$array) {
+		$arrs = array();
+		$sort = array();
+		foreach($array as $key => $val) {
+			$sort[$key] = (isset($val['cat']['sort']) ? $val['cat']['sort'] : 0);
+			$sortValues = array();
+			for($i=0;$i<sizeof($val['item']);$i++) {
+				$val['item'][$i]['sort'] = (isset($val['item'][$i]['sort']) ? $val['item'][$i]['sort'] : 0);
+			}
+			//$val['item'] = array_reverse($val['item']);
+			usort($val['item'], function($a, $b) {
+				return $a['sort']-$b['sort'];
+			});
+			// asort($val);
+			$arrs[$key] = $val;
+		}
+		$arrs = array_reverse($arrs, true);
+		uksort($arrs, function($a, $b) use ($sort) {
+			return $sort[$a]-$sort[$b];
+		});
+		// $arrs = array_reverse($arrs, true);
+		// vdump($arrs, $sort);die();
+		$array = $arrs;
+		// vdump($array);die();
 	}
 
 	function addAdminPanelToPage($page, $data) {

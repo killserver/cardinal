@@ -291,33 +291,35 @@ if(PHP_VERSION_ID>50600) {
 	ini_set("iconv.internal_encoding", $config['charset']);
 }
 
-cardinal::StartSession();
-execEvent("init_session");
+if(!defined("SESSION_DISABLE")) {
+	cardinal::StartSession();
+	execEvent("init_session");
 
-if(isset($config['copySession']) && $config['copySession'] && isset($sessionOnline) && is_writeable(PATH_CACHE_USERDATA)) {
-	clearstatcache();
-	$SessionDir = PATH_CACHE_SESSION;
-	$Timeout = 3 * 60;
-	$Timeout = execEvent("timeout_session_online", $Timeout);
-	$usersOnline = 0;
-	$online = 0;
-	if($Handler = @scandir($SessionDir)) {
-		for($i=0;$i<sizeof($Handler);$i++) {
-			if($Handler[$i]=="index.html"||$Handler[$i]=="index.".ROOT_EX||$Handler[$i]==".htaccess") {
-				continue;
-			}
-			if(time()-@filemtime($SessionDir.$Handler[$i])<$Timeout) {
-				$usersOnline++;
+	if(isset($config['copySession']) && $config['copySession'] && isset($sessionOnline) && is_writeable(PATH_CACHE_USERDATA)) {
+		clearstatcache();
+		$SessionDir = PATH_CACHE_SESSION;
+		$Timeout = 3 * 60;
+		$Timeout = execEvent("timeout_session_online", $Timeout);
+		$usersOnline = 0;
+		$online = 0;
+		if($Handler = @scandir($SessionDir)) {
+			for($i=0;$i<sizeof($Handler);$i++) {
+				if($Handler[$i]=="index.html"||$Handler[$i]=="index.".ROOT_EX||$Handler[$i]==".htaccess") {
+					continue;
+				}
+				if(time()-@filemtime($SessionDir.$Handler[$i])<$Timeout) {
+					$usersOnline++;
+				}
 			}
 		}
+		$usersOnline = execEvent("get_session_online", $usersOnline);
+		if(file_exists(PATH_CACHE_USERDATA."userOnline.txt")) {
+			$online = file_get_contents(PATH_CACHE_USERDATA."userOnline.txt");
+		}
+		$online = max($online, $usersOnline);
+		$online = execEvent("max_session_online", $online);
+		@file_put_contents(PATH_CACHE_USERDATA."userOnline.txt", $online);
 	}
-	$usersOnline = execEvent("get_session_online", $usersOnline);
-	if(file_exists(PATH_CACHE_USERDATA."userOnline.txt")) {
-		$online = file_get_contents(PATH_CACHE_USERDATA."userOnline.txt");
-	}
-	$online = max($online, $usersOnline);
-	$online = execEvent("max_session_online", $online);
-	@file_put_contents(PATH_CACHE_USERDATA."userOnline.txt", $online);
 }
 
 if(isset($config['date_timezone'])) {
@@ -395,6 +397,7 @@ if(cardinal::is_cli()) {
 	}
 	if(!defined("CLEAR_CLI") && !getArgv("clear", false)) {
 		$cols = getCmd("tput cols");
+		$cols = intval($cols);
 		system("clear");
 		system("clear");
 		system("clear");

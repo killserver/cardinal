@@ -1,4 +1,4 @@
-[if {C_disableAdd}!=1]<center><a href="./?pages=Archer&type={ArcherTable}&pageType=Add{addition}" class="btn btn-secondary">{L_add}</a>
+[if {C_disableAdd}!=1]<center><a href="./?pages=Archer&type={ArcherTable}&pageType=Add{addition}" class="btn btn-secondary btn-add"><span>{L_add}</span></a>
 [if {activate_pager}==yes]<div class="search-block-input" style="display: inline-flex;width: 31%;justify-content: space-around;margin: 0px auto;float: right;position: absolute;right: 2.8em;">
 	<input type="text" name="search" id="text-search" value="" class="form-control input-sm" placeholder="Поиск"><button style="padding: 0.35em;width: 16%;" class="btn btn-edit btn-block btn-for-search">Поиск</button>
 </div>
@@ -14,38 +14,46 @@ jQuery('.btn-for-search').on('click', function() {window.location.href = '?pages
 </center>[/if {C_disableAdd}!=1]
 {E_[customHeaders][type={ArcherTable}]}
 <form method="post" action="./?pages=Archer&type={ArcherTable}&pageType=MultiAction">
-	<table id="example-1" class="table table-striped table-bordered" cellspacing="0" width="100%">
-		<thead>
-			<tr>
-				[if {C_disableMassAction}!=1]<th><label class="checkbox"><input type="checkbox" class="cbr deleteAll"></label></th>[/if {C_disableMassAction}!=1]
-				{ArcherMind}
-			</tr>
-		</thead>
-		<tfoot>
-			<tr>
-				[if {C_disableMassAction}!=1]<th><label class="checkbox"><input type="checkbox" class="cbr deleteAll"></label></th>[/if {C_disableMassAction}!=1]
-				{ArcherMind}
-			</tr>
-			[if {C_disableMassAction}!=1]<tr><td colspan="{ArcherAll}"><div class="row"><div class="col-sm-offset-9"><div class="col-sm-7"><select name="action" class="form-control" style="width:100%;"><option value="">{L_"Выберите действие"}</option><option value="delete">{L_"Удалить"}</option></select></div><div class="col-sm-5"><input type="submit" class="btn btn-purple" value="{L_"Выполнить"}"></div></div></div></td></tr>[/if {C_disableMassAction}!=1]
-		</tfoot>
-		<tbody>
-		[foreach block={ArcherPage}]<tr>
-			[if {C_disableMassAction}!=1]<td><label class="checkbox"><input type="checkbox" class="cbr" name="delete[]" value="{{ArcherPage}.{ArcherFirst}}"></label></td>[/if {C_disableMassAction}!=1]
-			{ArcherData}
-			<td>
-				[if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]
-					[if {C_disableCopyEdit}!=1&&{{ArcherPage}.DisableCopyEdit}!="yes"]
-						<a href="./?pages=Archer&type={ArcherTable}&pageType=CopyEdit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-turquoise btn-block btn-copy btn-copy-edit">{L_"Клонировать и редактировать"}</a>
-					[/if {C_disableCopyEdit}!=1&&{{ArcherPage}.DisableCopyEdit}!="yes"]
-				[/if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]
-				[if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Copy&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-turquoise btn-block btn-copy">{L_"Клонировать"}</a>[/if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]
-				[if {C_disableEdit}!=1&&{{ArcherPage}.DisableEdit}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Edit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-block btn-edit">{L_"Редактировать"}</a>[/if {C_disableEdit}!=1&&{{ArcherPage}.DisableEdit}!="yes"]
-				[if {C_disableDelete}!=1&&{{ArcherPage}.DisableRemove}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Delete&viewId={{ArcherPage}.{ArcherFirst}}{addition}" onclick="return confirmDelete();" class="btn btn-red btn-block btn-remove">{L_"Удалить"}</a>[/if {C_disableDelete}!=1&&{{ArcherPage}.DisableRemove}!="yes"]
-				{E_[customOptions][type={ArcherTable};id={{ArcherPage}.{ArcherFirst}}]}
-			</td>
-		</tr>[/foreach]
-		</tbody>
-	</table>
+	<div class="container_table">
+		<table id="example-1" class="table table-striped table-bordered" cellspacing="0" width="100%">
+			<thead>
+				<tr>
+					[if {C_disableMassAction}!=1]<th><label class="checkbox"><input type="checkbox" class="cbr deleteAll"></label></th>[/if {C_disableMassAction}!=1]
+					{ArcherMind}
+				</tr>
+			</thead>
+			<tfoot>
+				<tr>
+					[if {C_disableMassAction}!=1]<th><label class="checkbox"><input type="checkbox" class="cbr deleteAll"></label></th>[/if {C_disableMassAction}!=1]
+					{ArcherMind}
+				</tr>
+			</tfoot>
+			<tbody>
+			[foreach block={ArcherPage}]<tr>
+				[if {C_disableMassAction}!=1]<td><label class="checkbox"><input type="checkbox" class="cbr" name="delete[]" value="{{ArcherPage}.{ArcherFirst}}"></label></td>[/if {C_disableMassAction}!=1]
+				{ArcherData}
+				[if {C_disableOptions}!=true]<td class="td_options">
+					{E_[customOptionsBefore][type={ArcherTable};id={{ArcherPage}.{ArcherFirst}}]}
+					[if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]
+						[if {C_disableCopyEdit}!=1&&{{ArcherPage}.DisableCopyEdit}!="yes"]
+							<a href="./?pages=Archer&type={ArcherTable}&pageType=CopyEdit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-turquoise btn-block btn-copy btn-copy-edit"><span>{L_"Клонировать и редактировать"}</span></a>
+						[/if {C_disableCopyEdit}!=1&&{{ArcherPage}.DisableCopyEdit}!="yes"]
+					[/if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]
+					[if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Copy&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-turquoise btn-block btn-copy"><span>{L_"Клонировать"}</span></a>[/if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]
+					[if {C_disableEdit}!=1&&{{ArcherPage}.DisableEdit}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Edit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-block btn-edit"><span>{L_"Редактировать"}</span></a>[/if {C_disableEdit}!=1&&{{ArcherPage}.DisableEdit}!="yes"]
+					[if {C_disableDelete}!=1&&{{ArcherPage}.DisableRemove}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Delete&viewId={{ArcherPage}.{ArcherFirst}}{addition}" data-type="{ArcherTable}" data-id="{{ArcherPage}.{ArcherFirst}}" class="btn btn-red btn-block btn-remove"><span>{L_"Удалить"}</span></a>[/if {C_disableDelete}!=1&&{{ArcherPage}.DisableRemove}!="yes"]
+					{E_[customOptions][type={ArcherTable};id={{ArcherPage}.{ArcherFirst}}]}
+				</td>[/if {C_disableOptions}!=true]
+			</tr>[/foreach]
+			</tbody>
+		</table>
+		<table class="table table-striped table-bordered" cellspacing="0" width="100%">
+			<tbody>
+				
+				[if {C_disableMassAction}!=1]<tr><td colspan="{ArcherAll}"><div class="row"><div class="col-sm-offset-9"><div class="col-xs-7" style="padding-right:0"><select name="action" class="form-control" style="width:100%;"><option value="">{L_"Выберите действие"}</option><option value="delete">{L_"Удалить"}</option></select></div><div class="col-xs-5"><input type="submit" class="btn btn-purple" value="{L_"Выполнить"}"></div></div></div></td></tr>[/if {C_disableMassAction}!=1]
+			</tbody>
+		</table>
+	</div>
 </form>
 {E_[KernalArcher::AfterMain][table={ArcherTable};type=not_ajax]}
 [if {activate_pager}==yes]
@@ -98,11 +106,68 @@ jQuery('.btn-for-search').on('click', function() {window.location.href = '?pages
 	}
 </style>
 <script type="text/javascript">
+	// Dynamically load images while scrolling
+	// Source: github.com/ByNathan/jQuery.loadScroll
+	// Version: 1.0.1
+
+	(function($) {
+	    
+	    $.fn.loadScroll = function(duration, elem) {
+	    
+	        var $window = $(window);
+	    	if(elem) {
+	    		$window = $(elem);
+	    	}
+	    	console.warn('scroll', $window)
+	        var images = this,
+	            images = this,
+	            inview,
+	            loaded;
+
+	        images.one('loadScroll', function() {
+	            
+	            if (this.getAttribute('data-src')) {
+	                this.setAttribute('src',
+	                this.getAttribute('data-src'));
+	                this.removeAttribute('data-src');
+	                
+	                if (duration) {
+	                    
+	                    $(this).hide()
+	                           .fadeIn(duration)
+	                           .add('img');
+	                    
+	                } else return false;
+	            }
+	            
+	        });
+	    
+	        $window.scroll(function() {
+	        
+	            inview = images.filter(function() {
+	                
+	                var a = $window.scrollTop(),
+	                    b = $window.height(),
+	                    c = $(this).offset().top,
+	                    d = $(this).height();
+	                    
+	                return c + d >= a && c <= a + b;
+	                
+	            });
+	            
+	            loaded = inview.trigger('loadScroll');
+	            images = images.not(loaded);
+	                    
+	        });
+	    };
+	    
+	})(jQuery);
+</script>
+<script type="text/javascript">
 	var settingDataTable = {
-		"sScrollX": false,
-		"scrollY": false,
-		"sScrollXInner": "100%",
-		// "bScrollCollapse": true,
+		// "sScrollX": false,
+		// "scrollY": false,
+		// "sScrollXInner": "100%",
 		language: {
 			"processing": "{L_"Подождите"}...",
 			"search": "{L_"Поиск"}:",
@@ -134,7 +199,8 @@ jQuery('.btn-for-search').on('click', function() {window.location.href = '?pages
 				0, {ArcherNotTouch}
 			]
 		}],
-		"order": [[ 0, false ], [ {orderById}, "{orderBySort}" ]]
+		"order": [[ 0, false ], [ {orderById}, "{orderBySort}" ]],
+		dom: 'fr<"table_container"t>ip', // l
 	};
 	var dTable;
 	var referer = decodeURIComponent("{S_referer}").replace(new RegExp("&amp;", "g"), "&");
@@ -260,6 +326,14 @@ jQuery('.btn-for-search').on('click', function() {window.location.href = '?pages
 		}
 	}
 jQuery(document).ready(function() {
+	$('img').loadScroll(500);
+	var timer = setTimeout(function() {
+		clearTimeout(timer);
+		console.warn('scroller')
+		jQuery("html").animate({
+			scrollTop: jQuery("html").scrollTop()+1
+		}, 100);
+	}, 500);
 [if {activate_pager}==yes]
 	var btns = jQuery(".pagination a:not(.prev-page):not(.next-page)");
 	min = btns.eq(0).html();
@@ -310,28 +384,31 @@ jQuery(document).ready(function() {
 	});
 [/if {activate_pager}==yes]
 [if {activate_pager}==no]
-	dTable = jQuery("#example-1").dataTable(settingDataTable);
-	var sorted = [{ArcherSort}];
-	if(sorted.length>0) {
-		for(var i=0;i<sorted.length;i++) {
-			var th = $("table#example-1").find('th');
-			var getId = -1;
-			var count = 0;
-			th.each(function(is, k) {
-				if($(k).attr("data-AltName") == sorted[i] && getId===-1) {
-					getId = count;
-					return;
-				}
-				count++;
-			});
-			dTable.yadcf([{column_number: getId}]);
+	function createTable() {
+		dTable = jQuery("#example-1").dataTable(settingDataTable);
+		var sorted = [{ArcherSort}];
+		if(sorted.length>0) {
+			for(var i=0;i<sorted.length;i++) {
+				var th = $("table#example-1").find('th');
+				var getId = -1;
+				var count = 0;
+				th.each(function(is, k) {
+					if($(k).attr("data-AltName") == sorted[i] && getId===-1) {
+						getId = count;
+						return;
+					}
+					count++;
+				});
+				dTable.yadcf([{column_number: getId}]);
+			}
+		}
+		if(arrToLoad!=null) {
+			if(typeof(arrToLoad.page)!=="undefined") {
+				dTable.fnPageChange(arrToLoad.page)
+			}
 		}
 	}
-	if(arrToLoad!=null) {
-		if(typeof(arrToLoad.page)!=="undefined") {
-			dTable.fnPageChange(arrToLoad.page)
-		}
-	}
+	createTable();
 	//
 	jQuery("#example-1").on('page.dt', function() {
 		$("html,body").animate({scrollTop: 0}, 600);
@@ -368,6 +445,22 @@ jQuery(document).ready(function() {
 		});
 	}
 [/if {activate_pager}==no]
+	if($(window).width()<=900) {
+		$(".td_options").each(function(_, option) {
+			var list = [];
+			var bId = 0;
+			$(option).find("a").each(function(i, elem) {
+				if(i>0 && i%2===0) {
+					bId++;
+				}
+				!list[bId] && (list[bId] = [])
+				list[bId].push(elem)
+			});
+			$(option).html(list.map(item => {
+				return `<div>${item.map(elem => elem.outerHTML).join("")}</div>`
+			}).join(""));
+		});
+	}
 	if(typeof($.fn.editableform)!=="undefined") {
 		console.log("Test");
 		$.fn.editableform.buttons = '<button type="submit" class="btn btn-primary btn-sm editable-submit"><i class="fa fa-check"></i></button><button type="button" class="btn btn-default btn-sm editable-cancel"><i class="fa fa-close"></i></button>';
@@ -394,7 +487,51 @@ jQuery(document).ready(function() {
 	jQuery(".deleteAll").click(function() {
 		jQuery("label.checkbox").click();
 	});
+	jQuery("body").on('page.dt,search.dt', "#example-1", function() {
+		var timer = setTimeout(function() {
+			clearTimeout(timer);
+			cbr_replace();
+		}, 100);
+		if($(window).width()<=900) {
+			var timers = setTimeout(function() {
+				clearTimeout(timers);
+				$(".td_options").each(function(_, option) {
+					var list = [];
+					var bId = 0;
+					$(option).find("a").each(function(i, elem) {
+						if(i>0 && i%2===0) {
+							bId++;
+						}
+						!list[bId] && (list[bId] = [])
+						list[bId].push(elem)
+					});
+					$(option).html(list.map(item => {
+						return `<div>${item.map(elem => elem.outerHTML).join("")}</div>`
+					}).join(""));
+				});
+			}, 100);
+		}
+	});
 	cbr_replace();
+	jQuery("body").on("click", ".btn-remove", function(e) {
+		e.preventDefault();
+		if(confirmDelete()) {
+			var type = $(this).attr("data-type");
+			var id = $(this).attr("data-id");
+			var th = this;
+			dTable.fnDestroy();
+			$(th).parents("tr").remove();
+			createTable();
+			cbr_replace();
+			jQuery.get("./?pages=Archer&type="+type+"&pageType=Delete&viewId="+id+"&ajax", function(data) {
+				if(data.success) {
+					dTable.fnDestroy();
+					createTable();
+					cbr_replace();
+				}
+			}, "json");
+		}
+	});
 });
 function confirmDelete() {
 	if (confirm("{L_"Вы подтверждаете удаление?(Данную операцию невозможно будет обратить)"}")) {

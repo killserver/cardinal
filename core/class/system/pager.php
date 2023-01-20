@@ -27,7 +27,7 @@ class pager {
 	private $links = array("next" => "", "prev" => "");
 	private $data = array();
 	
-	private function Route($array) {
+	final private function Route($array) {
 		$route = Route::get($array[0]);
 		if(!is_bool($route)) {
 			$params = array();
@@ -145,7 +145,7 @@ class pager {
 						}
 						$end = $start + ($max_view*2);
 						if($end>=$enpages_count) {
-							$start = $enpages_count - 9;
+							$start = $enpages_count - $max_view*2;
 							$end = $enpages_count - 1;
 							$nav_prefix = "";
 						} else {
@@ -163,12 +163,15 @@ class pager {
 					}
 					$this->pages[$c_link]['title'] = "1";
 					$c_link++;
-					$this->pages[$c_link]['is_link'] = 0;
-					$this->pages[$c_link]['now'] = 0;
-					$this->pages[$c_link]['title'] = "...";
-					$c_link++;
+					if($start>=3) {
+						$this->pages[$c_link]['is_link'] = 0;
+						$this->pages[$c_link]['now'] = 0;
+						$this->pages[$c_link]['link'] = "#";
+						$this->pages[$c_link]['title'] = "...";
+						$c_link++;
+					}
 				}
-				for($j=$start;$j<=$end;$j++) {
+				for($j=max($start, 1);$j<=$end;$j++) {
 					if($j!=$rpp) {
 						if($j==($rpp+1)) {
 							$this->pages[$c_link]['prev'] = 0;
@@ -223,10 +226,13 @@ class pager {
 					}
 				}
 				if($rpp!=$enpages_count) {
-					$this->pages[$c_link]['is_link'] = 0;
-					$this->pages[$c_link]['now'] = 0;
-					$this->pages[$c_link]['title'] = "...";
-					$c_link++;
+					if($rpp<$enpages_count-2) {
+						$this->pages[$c_link]['is_link'] = 0;
+						$this->pages[$c_link]['now'] = 0;
+						$this->pages[$c_link]['link'] = "#";
+						$this->pages[$c_link]['title'] = "...";
+						$c_link++;
+					}
 					$this->pages[$c_link]['is_link'] = 1;
 					if($route) {
 						$this->pages[$c_link]['link'] = $this->Route(array($url_page, "".$p_page."=".$enpages_count.""));

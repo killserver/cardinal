@@ -1,4 +1,4 @@
-[if {C_disableAdd}!=1]<center><a href="./?pages=Archer&type={ArcherTable}&pageType=Add{addition}" class="btn btn-secondary quickAdd">{L_add}</a></center>[/if {C_disableAdd}!=1]
+[if {C_disableAdd}!=1]<center><a href="./?pages=Archer&type={ArcherTable}&pageType=Add{addition}" class="btn btn-secondary quickAdd btn-add"><span>{L_add}</span></a></center>[/if {C_disableAdd}!=1]
 {E_[customHeaders][type={ArcherTable}]}
 <table id="example-1" class="table table-striped table-bordered" cellspacing="0" width="100%">
 <thead>
@@ -14,12 +14,13 @@
 <tbody>
 [foreach block={ArcherPage}]<tr>
 	{ArcherData}
-	<td>
-		[if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Copy&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-turquoise btn-block btn-copy btn-copy-edit">{L_"Клонировать"}</a>[/if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]
-		[if {{ArcherPage}.DisableEdit}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Edit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-purple btn-block quickView btn-edit">{L_quickEdit}</a>[/if {{ArcherPage}.DisableEdit}!="yes"]
-		[if {{ArcherPage}.DisableRemove}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Delete&viewId={{ArcherPage}.{ArcherFirst}}{addition}" onclick="return confirmDelete();" class="btn btn-red btn-block btn-remove">{L_delete}</a>[/if {{ArcherPage}.DisableRemove}!="yes"]
+	[if {C_disableOptions}!=true]<td class="td_options">
+		{E_[customOptionsBefore][type={ArcherTable};id={{ArcherPage}.{ArcherFirst}}]}
+		[if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Copy&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-turquoise btn-block btn-copy btn-copy-edit"><span>{L_"Клонировать"}</span></a>[/if {C_disableCopy}!=1&&{{ArcherPage}.DisableCopy}!="yes"]
+		[if {C_disableEdit}!=1&&{{ArcherPage}.DisableEdit}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Edit&viewId={{ArcherPage}.{ArcherFirst}}{addition}" class="btn btn-purple btn-block quickView btn-edit"><span>{L_quickEdit}</span></a>[/if {C_disableEdit}!=1&&{{ArcherPage}.DisableEdit}!="yes"]
+		[if {C_disableDelete}!=1&&{{ArcherPage}.DisableRemove}!="yes"]<a href="./?pages=Archer&type={ArcherTable}&pageType=Delete&viewId={{ArcherPage}.{ArcherFirst}}{addition}" data-type="{ArcherTable}" data-id="{{ArcherPage}.{ArcherFirst}}" class="btn btn-red btn-block btn-remove"><span>{L_delete}</span></a>[/if {C_disableDelete}!=1&&{{ArcherPage}.DisableRemove}!="yes"]
 		{E_[customOptions][type={ArcherTable};id={{ArcherPage}.{ArcherFirst}}]}
-	</td>
+	</td>[/if {C_disableOptions}!=true]
 </tr>[/foreach]
 </tbody>
 </table>
@@ -89,6 +90,12 @@
 	    
 	})(jQuery);
 </script>
+<style>
+	table.dataTable td, 
+	table.dataTable th {
+		white-space: nowrap;
+	}
+</style>
 <script type="text/javascript">
 var dTable
 function showPreviewFnAnother() {
@@ -98,62 +105,76 @@ function showPreviewFnAnother() {
 	}, 100)
 }
 jQuery(document).ready(function() {
+	$('img').loadScroll(500);
+	var timer = setTimeout(function() {
+		clearTimeout(timer);
+		console.warn('scroller')
+		jQuery("html").animate({
+			scrollTop: jQuery("html").scrollTop()+1
+		}, 100);
+	}, 500);
 [if {activate_pager}==no]
-	dTable = jQuery("#example-1").dataTable({
-		language: {
-			"processing": "{L_"Подождите"}...",
-			"search": "{L_"Поиск"}:",
-			"lengthMenu": "{L_"Показать"} _MENU_ {L_"записей"}",
-			"info": "{L_"Записи с"} _START_ {L_"до"} _END_ {L_"из"} _TOTAL_ {L_"записей"}",
-			"infoEmpty": "{L_"Записи с"} 0 {L_"до"} 0 {L_"из"} 0 {L_"записей"}",
-			"infoFiltered": "({L_"отфильтровано"} {L_"из"} _MAX_ {L_"записей"})",
-			"infoPostFix": "",
-			"loadingRecords": "{L_"Загрузка записей"}...",
-			"zeroRecords": "{L_"Записи отсутствуют"}.",
-			"emptyTable": "{L_"В таблице отсутствуют данные"}",
-			"paginate": {
-				"first": "{L_"Первая"}",
-				"previous": "{L_"Предыдущая"}",
-				"next": "{L_"Следующая"}",
-				"last": "{L_"Последняя"}"
-			},
-			"aria": {
-				"sortAscending": ": {L_"активировать для сортировки столбца по возрастанию"}",
-				"sortDescending": ": {L_"активировать для сортировки столбца по убыванию"}"
-			}
-		},
-		aLengthMenu: [
-			[10, 25, 50, 100, -1], [10, 25, 50, 100, "{L_"Всё"}"]
-		],
-		"aoColumnDefs": [{
-			'bSortable': false,
-			'aTargets': [
-				{ArcherNotTouch}
-			]
-		}]
-	});
-	var sorted = [{ArcherSort}];
-	if(sorted.length>0) {
-		for(var i=0;i<sorted.length;i++) {
-			var th = $("table#example-1").find('th');
-			var getId = -1;
-			var count = 0;
-			th.each(function(is, k) {
-				if($(k).attr("data-AltName") == sorted[i] && getId===-1) {
-					getId = count;
-					return;
+	function createTable() {
+		dTable = jQuery("#example-1").dataTable({
+			language: {
+				"processing": "{L_"Подождите"}...",
+				"search": "{L_"Поиск"}:",
+				"lengthMenu": "{L_"Показать"} _MENU_ {L_"записей"}",
+				"info": "{L_"Записи с"} _START_ {L_"до"} _END_ {L_"из"} _TOTAL_ {L_"записей"}",
+				"infoEmpty": "{L_"Записи с"} 0 {L_"до"} 0 {L_"из"} 0 {L_"записей"}",
+				"infoFiltered": "({L_"отфильтровано"} {L_"из"} _MAX_ {L_"записей"})",
+				"infoPostFix": "",
+				"loadingRecords": "{L_"Загрузка записей"}...",
+				"zeroRecords": "{L_"Записи отсутствуют"}.",
+				"emptyTable": "{L_"В таблице отсутствуют данные"}",
+				"paginate": {
+					"first": "{L_"Первая"}",
+					"previous": "{L_"Предыдущая"}",
+					"next": "{L_"Следующая"}",
+					"last": "{L_"Последняя"}"
+				},
+				"aria": {
+					"sortAscending": ": {L_"активировать для сортировки столбца по возрастанию"}",
+					"sortDescending": ": {L_"активировать для сортировки столбца по убыванию"}"
 				}
-				count++;
-			});
-			dTable.yadcf([{column_number: getId}]);
+			},
+			aLengthMenu: [
+				[10, 25, 50, 100, -1], [10, 25, 50, 100, "{L_"Всё"}"]
+			],
+			"aoColumnDefs": [{
+				'bSortable': false,
+				'aTargets': [
+					{ArcherNotTouch}-1
+				]
+			}],
+			dom: 'fr<"table_container"t>ip', // l
+		});
+		var sorted = [{ArcherSort}];
+		if(sorted.length>0) {
+			for(var i=0;i<sorted.length;i++) {
+				var th = $("table#example-1").find('th');
+				var getId = -1;
+				var count = 0;
+				th.each(function(is, k) {
+					if($(k).attr("data-AltName") == sorted[i] && getId===-1) {
+						getId = count;
+						return;
+					}
+					count++;
+				});
+				dTable.yadcf([{column_number: getId}]);
+			}
 		}
 	}
+	createTable();
 [/if {activate_pager}==no]
 	jQuery(".quickAdd").click(function() {
 		jQuery("#title_video").html("{L_"Быстрое добавление"}");
 		jQuery.post(jQuery(this).attr("href"), function(data) {
 			jQuery("#content_video").css({"overflow": "auto", "overflow-x": "hidden", "padding": "20px 50px 20px 20px"}).html(data);
-			jQuery("#modal-3 .modal-dialog").css("width", "60%");
+			if($(window).width()>900) {
+				jQuery("#modal-3 .modal-dialog").css("width", "60%");
+			}
 			jQuery("#modal-3 .modal-header .close:not(#closeIco)").remove();
 			jQuery('#modal-3').modal('show');
 			jQuery('.timepicker').each(function(i, elem) {
@@ -223,7 +244,9 @@ jQuery(document).ready(function() {
 		jQuery("#title_video").html("{L_"Быстрое редактирование"}");
 		jQuery.post(jQuery(this).attr("href"), function(data) {
 			jQuery("#content_video").css({"overflow": "auto", "overflow-x": "hidden", "padding": "20px 50px 20px 20px"}).html(data);
-			jQuery("#modal-3 .modal-dialog").css("width", "60%");
+			if($(window).width()>900) {
+				jQuery("#modal-3 .modal-dialog").css("width", "60%");
+			}
 			jQuery("#modal-3 .modal-header .close:not(#closeIco)").remove();
 			jQuery('#modal-3').modal('show');
 			jQuery('.timepicker').each(function(i, elem) {
@@ -289,6 +312,47 @@ jQuery(document).ready(function() {
 		});
 		return false;
 	});
+	if($(window).width()<=900) {
+		$(".td_options").each(function(_, option) {
+			var list = [];
+			var bId = 0;
+			$(option).find("a").each(function(i, elem) {
+				if(i>0 && i%2===0) {
+					bId++;
+				}
+				!list[bId] && (list[bId] = [])
+				list[bId].push(elem)
+			});
+			$(option).html(list.map(item => {
+				return `<div>${item.map(elem => elem.outerHTML).join("")}</div>`
+			}).join(""));
+		});
+	}
+	jQuery("body").on('page.dt,search.dt', "#example-1", function() {
+		var timer = setTimeout(function() {
+			clearTimeout(timer);
+			cbr_replace();
+		}, 100);
+		if($(window).width()<=900) {
+			var timers = setTimeout(function() {
+				clearTimeout(timers);
+				$(".td_options").each(function(_, option) {
+					var list = [];
+					var bId = 0;
+					$(option).find("a").each(function(i, elem) {
+						if(i>0 && i%2===0) {
+							bId++;
+						}
+						!list[bId] && (list[bId] = [])
+						list[bId].push(elem)
+					});
+					$(option).html(list.map(item => {
+						return `<div>${item.map(elem => elem.outerHTML).join("")}</div>`
+					}).join(""));
+				});
+			}, 100);
+		}
+	});
 	if(typeof($.fn.editableform)!=="undefined") {
 		$.fn.editableform.buttons = '<button type="submit" class="btn btn-primary btn-sm editable-submit"><i class="fa fa-check"></i></button><button type="button" class="btn btn-default btn-sm editable-cancel"><i class="fa fa-close"></i></button>';
 		$('.quickEdit').editable({
@@ -326,6 +390,23 @@ jQuery(document).ready(function() {
 			});
 		});
 	}
+	jQuery("body").on("click", ".btn-remove", function(e) {
+		e.preventDefault();
+		if(confirmDelete()) {
+			var type = $(this).attr("data-type");
+			var id = $(this).attr("data-id");
+			var th = this;
+			dTable.fnDestroy();
+			$(th).parents("tr").remove();
+			createTable();
+			jQuery.get("./?pages=Archer&type="+type+"&pageType=Delete&viewId="+id+"&ajax", function(data) {
+				if(data.success) {
+					dTable.fnDestroy();
+					createTable();
+				}
+			}, "json");
+		}
+	});
 });
 function confirmDelete() {
 	if (confirm("{L_"Вы подтверждаете удаление?(Данную операцию невозможно будет обратить)"}")) {

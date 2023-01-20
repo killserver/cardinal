@@ -33,6 +33,12 @@
 	"fix_table_elements": false,
 	"fix_list_elements": false,
 	"paste_as_text": true,
+	"formats": {
+		"alignleft": {"selector": "p,em,i,b,strong", "inline": "p", "block": "p", "styles": {"display": "block", "text-align":"left"}},
+		"aligncenter": {"selector": "p,em,i,b,strong", "inline": "p", "block": "p", "styles": {"display": "block", "text-align":"center"}},
+		"alignright": {"selector": "p,em,i,b,strong", "inline": "p", "block": "p", "styles": {"display": "block", "text-align":"right"}},
+		"alignfull": {"selector": "p,em,i,b,strong", "inline": "p", "block": "p", "styles": {"display": "block", "text-align":"full"}}
+	},
 /* remove this */
 	"las_callback": function() { var content = this.content; /*content saved*/ var time = this.time; /* time on save action */ console.log(content); console.log(time); },
 	"external_filemanager_path": default_admin_link+"assets/tinymce/filemanager/",

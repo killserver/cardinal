@@ -3,9 +3,9 @@
 	<div class="row">
 		<div class="col-sm-12">
 			<div class="panel panel-default">
-				<div class="panel-heading">
+				///***<div class="panel-heading">
 					<h3 class="panel-title">{ArcherMind}</h3>
-				</div>
+				</div>***///
 				<div class="panel-body">[/!ajax]
 						[if {count[supportedLang]}>=1]
 							</div></div>
@@ -23,7 +23,9 @@
 						[/if {count[supportedLang]}>=1]
 						<br><br>
 						<input type="hidden" name="removeImg" class="removeImages" value="">
-						{ArcherData}
+						<div class="row">
+							{ArcherData}
+						</div>
 						[!ajax]
 				</div>
 			</div>
@@ -40,6 +42,9 @@
 	{E_[KernalArcher::AfterForm][type={ArcherPath};action={ArcherPage};data={addition}]}
 [!ajax]</form>[/!ajax]
 <style>
+	.form-group .removeImg {
+		opacity: 0;
+	}
 	#inputForFile .array {
 		padding-bottom: 2.5em;
 		border-bottom: 0.1em solid #e4e4e4;
@@ -79,6 +84,49 @@
 	}
 	[data-accept=''] [data-show] {
 		overflow: initial;
+	}
+	.tempImageShow {
+		position: absolute;
+		z-index: 20;
+		left: 10px;
+		top: 50px;
+		width: 30px;
+		height: 30px;
+		border-radius: 6px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+		background: #2c2e2f;
+		color: #fff;
+	}
+	.tempImageShow:hover,
+	.tempImageShow:focus {
+		color: #fff;
+	}
+	.children .tempImageShow {
+		top: 45px;
+		left: 30px;
+	}
+	.tempImageShow:before, .children .tempImageShow:before {
+		font-family: "FontAwesome";
+		content: "\f002";
+	}
+	.tempImageShow.dataFileAccess {
+		top: 10px;
+		left: 30px;
+	}
+	@media(max-width: 900px) {
+		.tempImageShow {
+			top: 10px;
+			left: 10px;
+			width: 30px;
+			height: 30px;
+		}
+		.children .tempImageShow {
+			top: 15px;
+			left: 30px;
+		}
 	}
 </style>
 <script type="text/javascript">
@@ -139,7 +187,94 @@
 	    
 	})(jQuery);
 </script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css" />
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js"></script>
 <script type="text/javascript">
+	$(".panel .panel-body").each(function() {
+		$(this).html().trim().length===0 && $(this).remove();
+	});
+	$(".panel.panel-default").each(function() {
+		$(this).html().trim().length===0 && $(this).remove();
+	});
+	$("body").on("change", ".form-group input[type='file']", function() {
+		if($(this)[0].files.length) {
+			$(this).parents(".form-group").addClass("selectedFile");
+			$(this).parents(".form-group").find(".removeImg").css({opacity: 1})
+		} else {
+			$(this).parents(".form-group").removeClass("selectedFile");
+			$(this).parents(".form-group").find(".removeImg").css({opacity: 0})
+		}
+	});
+	$("body").on("change", ".form-group input[data-upload-type]", function() {
+		if($(this).val()) {
+			$(this).parents(".form-group").addClass("selectedFile");
+			$(this).parents(".form-group").find(".removeImg").css({opacity: 1})
+		} else {
+			$(this).parents(".form-group").removeClass("selectedFile");
+			$(this).parents(".form-group").find(".removeImg").css({opacity: 0})
+		}
+		var th = this;
+		var time = setTimeout(function() {
+			clearTimeout(time);
+			console.log('tester', $(th).parents(".form-group").find(".tempImageShow"))
+			$(th).parents(".form-group").find(".tempImageShow").remove();
+			$(th).parents(".form-group").find(".showPreview.new").each(function() {
+				if($(this).attr("completedTemp")) {
+					return;
+				}
+				$(this).attr("completedTemp", "true");
+				var link = $(this).attr("href");
+				$(this).after('<a href="'+link+'" data-fancybox class="tempImageShow '+($(this).parents(".col-sm-9").find(".containerFiles")[0] ? "dataFileAccess" : "")+' "></a>')
+			});
+			Fancybox.bind("[data-fancybox]", {
+				// Your options go here
+				Image: {
+					zoom: false,
+					click: "close",
+					groupAll: false,
+					groupAttr: false,
+				},
+			});
+		}, 300);
+	});
+	jQuery(document).ready(function($) {
+		$(".form-group input[data-upload-type]").each(function() {
+			if($(this).val()) {
+				$(this).parents(".form-group").addClass("selectedFile");
+				$(this).parents(".form-group").find(".removeImg").css({opacity: 1})
+			} else {
+				$(this).parents(".form-group").removeClass("selectedFile");
+				$(this).parents(".form-group").find(".removeImg").css({opacity: 0})
+				$(this).parents(".form-group").find(".tempImageShow").remove();
+			}
+		});
+		$(".form-group input[type='file']").each(function() {
+			$(this).parents(".form-group").addClass("uploadFileInput {ArcherPage}");
+			if(!!$(this).parent().find(".showPreview")[0]) {
+				$(this).parents(".form-group").addClass("selectedFile");
+				$(this).parents(".form-group").find(".removeImg").css({opacity: 1})
+			} else {
+				$(this).parents(".form-group").removeClass("selectedFile");
+				$(this).parents(".form-group").find(".removeImg").css({opacity: 0})
+				$(this).parents(".form-group").find(".tempImageShow").remove();
+			}
+		});
+		$(".showPreview.new").each(function() {
+			$(this).attr("completed", "true");
+			$(this).attr("completedTemp", "true");
+			var link = $(this).attr("href");
+			$(this).after('<a href="'+link+'" data-fancybox class="tempImageShow '+($(this).parents(".col-sm-9").find(".containerFiles")[0] ? "dataFileAccess" : "")+' "></a>')
+		});
+		Fancybox.bind("[data-fancybox]", {
+			// Your options go here
+			Image: {
+				zoom: false,
+				click: "close",
+				groupAll: false,
+				groupAttr: false,
+			},
+		});
+	});
 	function ucfirst(text) {
 		var textNew = "";
 		textNew += text.substr(0, 1).toUpperCase();
@@ -147,18 +282,23 @@
 		return textNew;
 	}
 	var removeImg = {};
-	function reinitLang() {
-		var selectLangForm = ucfirst(selectLang);
-		$(".form-horizontal ul li a[data-lang='"+selectLangForm+"']").parent().addClass("active");
+	var optionSelectLang = ucfirst(selectLang)
+	function reinitPartLang() {
 		$(".form-horizontal .form-group[data-group][data-lang]").each(function(i, elem) {
-			if($(elem).attr("data-lang")===selectLangForm) {
+			if($(elem).attr("data-lang")===optionSelectLang) {
 				$(elem).css("display", "block");
 			} else {
 				$(elem).css("display", "none");
 			}
 		});
+	}
+	function reinitLang() {
+		var selectLangForm = ucfirst(selectLang);
+		$(".form-horizontal ul li a[data-lang='"+selectLangForm+"']").parent().addClass("active");
+		reinitPartLang()
 		$(".form-horizontal ul li a").off("click").click(function() {
 			var lang = $(this).attr("data-lang");
+			optionSelectLang = lang
 			$(".form-horizontal .form-group[data-group][data-lang]").each(function(i, elem) {
 				if($(elem).attr("data-lang")===lang) {
 					$(elem).css("display", "block");
@@ -189,7 +329,7 @@
 		$("body").off("click").on("click", ".removeImg", function() {
 			var id = $(this).attr("id");
 			id = id.replace("remove_", "");
-			$("input[id='"+id+"']").parent().find(".tmpImage,img").remove();
+			$("input[id='"+id+"']").parent().find(".tmpImage,img,.tempImageShow,.showPreview.new").remove();
 			removeImg[id] = true;
 			var get = $("#"+id+"").parent().html();
 			$("#"+id+"").parent().html(get);
@@ -198,6 +338,10 @@
 				delete removeImg[id];
 				$(".removeImages").val(Object.keys(removeImg).join(","));
 			});
+			if(!$("input[id='"+id+"']")[0].files.length) {
+				$("input[id='"+id+"']").parents(".form-group").removeClass("selectedFile");
+				$("input[id='"+id+"']").parents(".form-group").find(".removeImg").css({opacity: 0})
+			}
 			return false;
 		});
 		setTimeout(function() {
@@ -297,6 +441,10 @@
 			return true;
 		});
 		$("body").off("click", ".showPreview.new").on("click", ".showPreview.new", function(e) {
+			if($(this).parents(".cont").find("input[type='file']")) {
+				e.preventDefault();
+				$(this).parents(".cont").find("input[type='file']")[0].click();
+			}
 			if($(e.target).is(".showPreview.new") || e.target.closest(".showPreview.new")) {
 				var item = $(e.target).is(".showPreview.new") ? e.target : e.target.closest(".showPreview.new");
 				if($(item).parent().children("a.btn-success").hasClass("iframe-btn")) {
@@ -305,6 +453,11 @@
 		        }
 		    }
 		})
+		jQuery("body").on("click", "[data-for-btn-data] .children a.showPreview", function(e) {
+			e.preventDefault();
+			console.warn('test', $(e.target).parents("[data-for-btn-data]").find(".iframe-btn"))
+			$(e.target).parents("[data-for-btn-data]").find(".iframe-btn")[0].click();
+		});
 	});
 	jQuery(window).load(function() {
 		console.log("test");
@@ -322,10 +475,10 @@
 	function showPreviewFn() {
 		jQuery(".showPreview.new").each(function(i, elem) {
 			jQuery(elem).parent().find("img").remove();
-			jQuery(elem).html("<img src='https://placehold.it/600x350&text=Loading...' data-src='"+jQuery(elem).attr("href")+"' data-link='"+jQuery(elem).attr("data-link")+"' style='max-width:100%; background:#333; display: table;max-height:400px'>");
+			jQuery(elem).html("<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQMAAADCCAMAAAB6zFdcAAAAM1BMVEXf39+goKDe3t6dnZ3i4uKmpqabm5vS0tLV1dW3t7fLy8vDw8O6urqqqqqioqLKysqwsLA0gLe7AAAE+ElEQVR4nO2di3KDIBBFCaB5iv7/15aLihCNtcmAKd470+Yh4npcloVIIuQGiS2FNlQjwoeP69lcfL6/iLaIvkoR6JeDokRfbDwlX6WQi7sP1YfWPB9PPGmxgtj2uGxcj1yvaConZzXFZoSPT7VP+84rGV9GcKPK3XMd2Y+Xz3ik/++vQ3y1liyeTjM66dDy6XSDFyI2cH5VIk9Z3B7sGNJaLrlUzeuSwzUe/ma7y/jc1ixcrloIsbV8ySKDVXc9jMiADCDGAzKANnemBYsIGBMh+gEF0Q3IAGI8YH4AEYFgQBBEALEtCDqCIAKIDBgPICIAA314DIcHIMgAIgMygMiA+QFEBGQAsS1wPhEigv6uwb1t2FtkQAYQGZABRAZkADE/wHiBEMiADCASEIQgiABi30g/gNgvkAFEBmQAkQEZQGTgGOi9bdhb9AIygDhe4GeuUHIG+nOlNTB9W9CPj3W9pDUxeUzUplZOtZUKFb6uVbzNv+3+nxPbmJxBdYLM6X2pIhgsXeONKoWB6q5vKwuD1DHRMqhv7/cJphAG6vb27jITg6QUdKUsg7e6eGdaUQwuf5cojIG+23Sg/otUlZFBUg0MpL6rv+YFTUkMahsTLYMhTzLB32pq1GD/LAwS17/AwNicyRJQv1BwDPL0C4nr7xnYmOgZ2JO6nqW83Kv11pGPQWrNGChlzhrrCbW81t/BIFdbCPzgrIcv3NTNqicUFw8mP7hOi0ovtVmJCQUzuExJo26+wg9SQxgYSN8vGP9NrvbNh/oGP8jBQIV9YxV8Ae564lRUjhQxOIUMrpEfmP0YZBgvBAyQOPuNZjpvVVV7tYWsDIy/vP22tja+MajrTc0ZlDN/0AYx8aQeuj+kvoQnbROpp8SxLD+IGJi6k26arI1PWcItwqBQMgObLnf3+8PUYQxUnXZlg/dKZmCGyfbQCRTGFE+eUdR4QcXjhQUZpdy1CLsGla9vTFz/NgauKUg4gjksAzQFKfwnc55BtniQVFv9oDcjTJ5z+kFaCPNcOQ4ECJF2Qzckj0gZxnIZx867MnAUbMpwG60JRtPHYWDP8VTXozVhYzgOA1XXXTuZcdmBQWqNcyjzmGhcxqi61t0kOvy8jhCNzxXLnUsLPcABiD+P1Xc/2VxU3/iCwegB/e8ujXZMjSEjg/TxYImBqpwHLBzdT7gXxUBFc6ruQTWvDjs1hqLaAsaNkR8YVb06rJwaQ1lzqtHYGQiatQUDTXYGieuftYWhIbz0AynaukQ/iO7BMK9jwbCLm1w1hcWDWzgi/A2Bm0ZQp7zzykk1tYXxvuVfELjP4FoUrkRJDFo7Mj7fB20ZoegbSuJZKQzceMEvZIiO/no/3adQp0L6BTAIftZ3o/qyuHupCD9oewcIbjwY3GFpkUroLFpn8YMc8eBxe1ulMPhs/YIpIh58KDIogUFnqk/13+OB7QyWlyz68P8F6xtTH2D2s/Phr6wvbX9+L7mBXPMt/sWa7+QW/gMGycXvEiUDiAzIACIDMoDIgPkBRAT0A4jfj0QGELsFMoDIgH0jRAZkALFvdDHx8BDYL0R3Ch9WbAtsCxAZkAFEBpxHgjivTAYQGTAeQBw30g8gMiADiAw4eQCRAdsCRARkAJEB4wHEcSMZQGTAeADRDcgAIgPmSE6EQASCDCAyYI4EEQH9AMqzuv67RQRsCxARkIHVD9yhN0e3gqRsAAAAAElFTkSuQmCC' data-src='"+jQuery(elem).attr("href")+"' data-link='"+jQuery(elem).attr("data-link")+"' style='max-width:100%; background:#333; display: table;max-height:400px'>");
 		});
 		jQuery(".showPreview:not(.new)").each(function(i, elem) {
-			jQuery(elem).after("<img src='https://placehold.it/600x350&text=Loading...' data-src='"+jQuery(elem).attr("href")+"' width='200' style='background:#333; display: table;'>");
+			jQuery(elem).after("<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQMAAADCCAMAAAB6zFdcAAAAM1BMVEXf39+goKDe3t6dnZ3i4uKmpqabm5vS0tLV1dW3t7fLy8vDw8O6urqqqqqioqLKysqwsLA0gLe7AAAE+ElEQVR4nO2di3KDIBBFCaB5iv7/15aLihCNtcmAKd470+Yh4npcloVIIuQGiS2FNlQjwoeP69lcfL6/iLaIvkoR6JeDokRfbDwlX6WQi7sP1YfWPB9PPGmxgtj2uGxcj1yvaConZzXFZoSPT7VP+84rGV9GcKPK3XMd2Y+Xz3ik/++vQ3y1liyeTjM66dDy6XSDFyI2cH5VIk9Z3B7sGNJaLrlUzeuSwzUe/ma7y/jc1ixcrloIsbV8ySKDVXc9jMiADCDGAzKANnemBYsIGBMh+gEF0Q3IAGI8YH4AEYFgQBBEALEtCDqCIAKIDBgPICIAA314DIcHIMgAIgMygMiA+QFEBGQAsS1wPhEigv6uwb1t2FtkQAYQGZABRAZkADE/wHiBEMiADCASEIQgiABi30g/gNgvkAFEBmQAkQEZQGTgGOi9bdhb9AIygDhe4GeuUHIG+nOlNTB9W9CPj3W9pDUxeUzUplZOtZUKFb6uVbzNv+3+nxPbmJxBdYLM6X2pIhgsXeONKoWB6q5vKwuD1DHRMqhv7/cJphAG6vb27jITg6QUdKUsg7e6eGdaUQwuf5cojIG+23Sg/otUlZFBUg0MpL6rv+YFTUkMahsTLYMhTzLB32pq1GD/LAwS17/AwNicyRJQv1BwDPL0C4nr7xnYmOgZ2JO6nqW83Kv11pGPQWrNGChlzhrrCbW81t/BIFdbCPzgrIcv3NTNqicUFw8mP7hOi0ovtVmJCQUzuExJo26+wg9SQxgYSN8vGP9NrvbNh/oGP8jBQIV9YxV8Ae564lRUjhQxOIUMrpEfmP0YZBgvBAyQOPuNZjpvVVV7tYWsDIy/vP22tja+MajrTc0ZlDN/0AYx8aQeuj+kvoQnbROpp8SxLD+IGJi6k26arI1PWcItwqBQMgObLnf3+8PUYQxUnXZlg/dKZmCGyfbQCRTGFE+eUdR4QcXjhQUZpdy1CLsGla9vTFz/NgauKUg4gjksAzQFKfwnc55BtniQVFv9oDcjTJ5z+kFaCPNcOQ4ECJF2Qzckj0gZxnIZx867MnAUbMpwG60JRtPHYWDP8VTXozVhYzgOA1XXXTuZcdmBQWqNcyjzmGhcxqi61t0kOvy8jhCNzxXLnUsLPcABiD+P1Xc/2VxU3/iCwegB/e8ujXZMjSEjg/TxYImBqpwHLBzdT7gXxUBFc6ruQTWvDjs1hqLaAsaNkR8YVb06rJwaQ1lzqtHYGQiatQUDTXYGieuftYWhIbz0AynaukQ/iO7BMK9jwbCLm1w1hcWDWzgi/A2Bm0ZQp7zzykk1tYXxvuVfELjP4FoUrkRJDFo7Mj7fB20ZoegbSuJZKQzceMEvZIiO/no/3adQp0L6BTAIftZ3o/qyuHupCD9oewcIbjwY3GFpkUroLFpn8YMc8eBxe1ulMPhs/YIpIh58KDIogUFnqk/13+OB7QyWlyz68P8F6xtTH2D2s/Phr6wvbX9+L7mBXPMt/sWa7+QW/gMGycXvEiUDiAzIACIDMoDIgPkBRAT0A4jfj0QGELsFMoDIgH0jRAZkALFvdDHx8BDYL0R3Ch9WbAtsCxAZkAFEBpxHgjivTAYQGTAeQBw30g8gMiADiAw4eQCRAdsCRARkAJEB4wHEcSMZQGTAeADRDcgAIgPmSE6EQASCDCAyYI4EEQH9AMqzuv67RQRsCxARkIHVD9yhN0e3gqRsAAAAAElFTkSuQmCC' data-src='"+jQuery(elem).attr("href")+"' width='100%' style='background:#333; display: table;'>");
 		});
     	$('img').loadScroll(500);
     	console.warn('loadScroll')
@@ -384,10 +537,13 @@
 		return val.indexOf("&")>-1 ? "&" : "?"
 	}
 	jQuery("body").on("change_filemanager", function(e, data) {
-		console.log(e, data);
+		//console.log(e, data);
 		var cat = function(data) {
 			var link_now = data.http_link+applyAmp(data.http_link)+(new Date().getTime()/1000);
 			var name = $("#"+data.field_id).attr("name");
+			if(!name) {
+				return;
+			}
 			name = name.split("[");
 			name = name[0];
 			var tpl = $(".template_btn_access[data-template-id='"+name+"']").last().html();
@@ -408,6 +564,9 @@
 			if(typeof(data.http_link)==="object") {
 				var parent = data.parent.parents(".form-group");
 				var name = $("#"+data.field_id).attr("name");
+				if(!name) {
+					return;
+				}
 				for(var z=0;z<data.http_link.length;z++) {
 					var link_now = data.http_link[z]+applyAmp(data.http_link[z])+(new Date().getTime()/1000);
 					var id = addInputFileAccess(parent, name, "1", link_now.replace(default_link, ""), true)
@@ -421,6 +580,10 @@
 			cat(data)
 		}
 		jQuery(".showPreview.new").each(function(i, elem) {
+			if($(this).attr("completed")) {
+				return;
+			}
+			$(this).attr("completed", "true");
 			jQuery(elem).parent().find("img").remove();
 			jQuery(elem).html("<img src='"+jQuery(elem).attr("href")+"' data-link='"+jQuery(elem).attr("data-link")+"' style='max-width:100%; background:#333; display: table;max-height:400px'>");
 		});
@@ -429,9 +592,27 @@
 		if(input.files && input.files[input.files.length-1]) {
 			var reader = new FileReader();
 			reader.onload = function(e) {
-				jQuery(input).parent().find(".tmpImage").remove();
+				jQuery(input).parent().find(".showPreview.new").remove();
 				jQuery(input).parent().find("img").remove();
-				jQuery(input).parent().append('<div class="tmpImage" style="background: #333; display: table;"><img src="'+e.target.result+'" width="200" style="opacity: 0.75;"></div>');
+				jQuery(input).parent().append('<a class="showPreview new" href="'+e.target.result+'" style="background: #333; display: table;"><img src="'+e.target.result+'" width="100%" style="opacity: 0.75;"></a>');
+				jQuery(input).parents(".col-sm-9").find(".tempImageShow").remove();
+				$(".showPreview.new").each(function() {
+					if($(this).attr("completedTemp")) {
+						return;
+					}
+					$(this).attr("completedTemp", "true");
+					var link = $(this).attr("href");
+					$(this).after('<a href="'+link+'" data-fancybox class="tempImageShow '+($(this).parents(".col-sm-9").find(".containerFiles")[0] ? "dataFileAccess" : "")+' "></a>')
+				});
+				Fancybox.bind("[data-fancybox]", {
+					// Your options go here
+					Image: {
+						zoom: false,
+						click: "close",
+						groupAll: false,
+						groupAttr: false,
+					},
+				});
 			}
 			reader.readAsDataURL(input.files[input.files.length-1]);
 		}

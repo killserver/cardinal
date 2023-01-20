@@ -12,6 +12,7 @@
 	<title>{head_title}</title>
 
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Arimo:400,700,400italic">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/fonts/linecons/css/linecons.css?1">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/fonts/fontawesome/css/font-awesome.min.css?1">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/bootstrap.css?1">
@@ -19,7 +20,23 @@
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-forms.css?1">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-components.css?10">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-skins.css?1">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/cardinal.css?{S_time}">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/custom.css?{S_time}">
+
+	<link rel="manifest" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/manifest.php" />
+	<script type="module">
+		if ('serviceWorker' in navigator) {
+			window.addEventListener('load', function() {
+				navigator.serviceWorker.register('{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/sw.js').then(function(registration) {
+				// Registration was successful
+					console.log('ServiceWorker registration successful with scope: ', registration.scope);
+				}, function(err) {
+				// registration failed :(
+					console.log('ServiceWorker registration failed: ', err);
+				});
+			});
+		}
+	</script>
 
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/jquery-1.11.1.min.js?1"></script>
 	<script>
@@ -39,185 +56,6 @@
 </head>
 <body class="page-body {C_defaultAdminSkin} level_{U_level}">
 
-	[if {C_accessChangeSkin}==true]<div class="settings-pane accessChangeSkin">
-			
-		<a href="#" data-toggle="settings-pane" data-animate="true">
-			&times;
-		</a>
-		
-		<div class="settings-pane-inner">
-			
-			<div class="row">
-				
-				<div class="col-md-4">
-					
-					<div class="user-info">
-						
-						<div class="user-details">
-							
-							<h3>
-								<a href="#">{U_username}</a>
-								<span class="user-status is-online"></span>
-							</h3>
-
-							<a href="{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Login&out" class="btn btn-warning btn-logout-mobile btn-single visible-xs visible-sm" style="margin-top: 1em;">Logout</a>
-							
-						</div>
-						
-					</div>
-					
-				</div>
-				
-				<div class="col-md-8 link-blocks-env">
-					
-					<div class="links-block left-sep">
-						<h4>
-							<a href="#">
-								<span>Skins part 1</span>
-							</a>
-						</h4>
-						
-						<ul class="list-unstyled">
-							<li data-skin="">
-								<a href="#" class="skin-color-palette" data-set-skin="">
-									<span style="background-color: #2c2e2f"></span>
-									<span style="background-color: #EEE"></span>
-									<span style="background-color: #FFFFFF"></span>
-									<span style="background-color: #68b828"></span>
-									<span style="background-color: #27292a"></span>
-									<span style="background-color: #323435"></span>
-								</a>
-							</li>
-							<li data-skin="aero">
-								<a href="#" class="skin-color-palette">
-									<span style="background-color: #558C89"></span>
-									<span style="background-color: #ECECEA"></span>
-									<span style="background-color: #FFFFFF"></span>
-									<span style="background-color: #5F9A97"></span>
-									<span style="background-color: #558C89"></span>
-									<span style="background-color: #255E5b"></span>
-								</a>
-							</li>
-							<li data-skin="navy">
-								<a href="#" class="skin-color-palette">
-									<span style="background-color: #2c3e50"></span>
-									<span style="background-color: #a7bfd6"></span>
-									<span style="background-color: #FFFFFF"></span>
-									<span style="background-color: #34495e"></span>
-									<span style="background-color: #2c3e50"></span>
-									<span style="background-color: #ff4e50"></span>
-								</a>
-							</li>
-							<li data-skin="facebook">
-								<a href="#" class="skin-color-palette">
-									<span style="background-color: #3b5998"></span>
-									<span style="background-color: #8b9dc3"></span>
-									<span style="background-color: #FFFFFF"></span>
-									<span style="background-color: #4160a0"></span>
-									<span style="background-color: #3b5998"></span>
-									<span style="background-color: #8b9dc3"></span>
-								</a>
-							</li>
-							<li data-skin="turquoise">
-								<a href="#" class="skin-color-palette">
-									<span style="background-color: #16a085"></span>
-									<span style="background-color: #96ead9"></span>
-									<span style="background-color: #FFFFFF"></span>
-									<span style="background-color: #1daf92"></span>
-									<span style="background-color: #16a085"></span>
-									<span style="background-color: #0f7e68"></span>
-								</a>
-							</li>
-							<li data-skin="lime">
-								<a href="#" class="skin-color-palette">
-									<span style="background-color: #8cc657"></span>
-									<span style="background-color: #ffffff"></span>
-									<span style="background-color: #FFFFFF"></span>
-									<span style="background-color: #95cd62"></span>
-									<span style="background-color: #8cc657"></span>
-									<span style="background-color: #70a93c"></span>
-								</a>
-							</li>
-						</ul>
-					</div>
-					<div class="links-block left-sep">
-						<h4>
-							<a href="#">
-								<span>Skins part 2</span>
-							</a>
-						</h4>
-						<ul class="list-unstyled">
-							<li data-skin="green">
-								<a href="#" class="skin-color-palette">
-									<span style="background-color: #27ae60"></span>
-									<span style="background-color: #a2f9c7"></span>
-									<span style="background-color: #FFFFFF"></span>
-									<span style="background-color: #2fbd6b"></span>
-									<span style="background-color: #27ae60"></span>
-									<span style="background-color: #1c954f"></span>
-								</a>
-							</li>
-							<li data-skin="purple">
-								<a href="#" class="skin-color-palette">
-									<span style="background-color: #795b95"></span>
-									<span style="background-color: #c2afd4"></span>
-									<span style="background-color: #FFFFFF"></span>
-									<span style="background-color: #795b95"></span>
-									<span style="background-color: #27ae60"></span>
-									<span style="background-color: #5f3d7e"></span>
-								</a>
-							</li>
-							<li data-skin="white">
-								<a href="#" class="skin-color-palette">
-									<span style="background-color: #FFF"></span>
-									<span style="background-color: #666"></span>
-									<span style="background-color: #95cd62"></span>
-									<span style="background-color: #EEE"></span>
-									<span style="background-color: #95cd62"></span>
-									<span style="background-color: #555"></span>
-								</a>
-							</li>
-							<li data-skin="concrete">
-								<a href="#" class="skin-color-palette">
-									<span style="background-color: #a8aba2"></span>
-									<span style="background-color: #666"></span>
-									<span style="background-color: #a40f37"></span>
-									<span style="background-color: #b8bbb3"></span>
-									<span style="background-color: #a40f37"></span>
-									<span style="background-color: #323232"></span>
-								</a>
-							</li>
-							<li data-skin="watermelon">
-								<a href="#" class="skin-color-palette">
-									<span style="background-color: #b63131"></span>
-									<span style="background-color: #f7b2b2"></span>
-									<span style="background-color: #FFF"></span>
-									<span style="background-color: #c03737"></span>
-									<span style="background-color: #b63131"></span>
-									<span style="background-color: #32932e"></span>
-								</a>
-							</li>
-							<li data-skin="lemonade">
-								<a href="#" class="skin-color-palette">
-									<span style="background-color: #f5c150"></span>
-									<span style="background-color: #ffeec9"></span>
-									<span style="background-color: #FFF"></span>
-									<span style="background-color: #ffcf67"></span>
-									<span style="background-color: #f5c150"></span>
-									<span style="background-color: #d9a940"></span>
-								</a>
-							</li>
-						</ul>
-					</div>
-					
-				</div>
-				
-			</div>
-		
-		</div>
-		
-	</div>[/if {C_accessChangeSkin}==true]
-	
 	<div class="page-container"><!-- add class "sidebar-collapsed" to close sidebar by default, "chat-visible" to make chat appear always -->
 			
 		<!-- Add "fixed" class to make the sidebar fixed always to the browser viewport. -->
@@ -253,16 +91,7 @@
 						<a href="#" data-toggle="mobile-menu">
 							<i class="fa-bars"></i>
 						</a>
-					</div>
-					
-					<!-- This will open the popup with user profile settings, you can use for any purpose, just be creative -->
-					[if {C_accessChangeSkin}==true]<div class="settings-icon accessChangeSkin">
-						<a href="#" data-toggle="settings-pane" data-animate="true">
-							<i class="linecons-cog"></i>
-						</a>
-					</div>[/if {C_accessChangeSkin}==true]
-					
-								
+					</div>		
 				</header>
 				<ul id="main-menu" class="main-menu">
 					<!-- add class "multiple-expanded" to allow multiple submenus to open -->
@@ -321,22 +150,16 @@
 						</a>
 					</li>[/if {C_accessToSite}=="show"]
 					
-					[if {count[langListSupport]}>=2]<li class="dropdown hover-line language-switcher" style="min-height: 76px;">
-						<a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><img src="{nowLangImg}">{nowLangText}</a>
+					[if {count[langListSupport]}>=2]<li class="dropdown hover-line language-switcher">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><img src="{nowLangImg}"><!-- {nowLangText} --></a>
 						<ul class="dropdown-menu languages">
 							[foreach block=langListSupport]<li><a href="./?setLanguage={langListSupport.langMenu}"><img src="{langListSupport.img}">{langListSupport.lang}</a></li>[/foreach]
 						</ul>
 					</li>[/if {count[langListSupport]}>=2]
 					
-					[if {count_Yui}==true]<li class="dropdown hover-line">
-						<a href="#" onclick="jQuery('#modal-yui').modal('show', {backdrop: 'static'});" title="{L_"Панель запуска Yui"}" alt="{L_"Панель запуска Yui"}">
-							<i class="fa-info"></i>
-						</a>
-					</li>[/if {count_Yui}==true]
-					
 				</ul>
 				
-				<div class="versionCardinal">{L_"Версия"}: {D_VERSION}</div>
+				<!-- <div class="versionCardinal">{L_"Версия"}: {D_VERSION}</div> -->
 				
 				<!-- Right links for user info navbar -->
 				<ul class="user-info-menu right-links list-inline list-unstyled">
@@ -367,14 +190,14 @@
 					
 				</ul>
 
-				<span id="doc_time"></span>
+				<!-- <span id="doc_time"></span> -->
 				
 			</nav>
-			<div class="page-title">
+			<!-- <div class="page-title">
 				<div class="title-env">
 					<h1 class="title">{title_admin}</h1>
 				</div>
-			</div>
+			</div> -->
 			<span class="content_admin">
 				{E_[print_before_admin]}
 				{info}
@@ -537,7 +360,11 @@
 			}
 			e.preventDefault();
 			var elem = ($(e.target).is('.iframe-btn') ? e.target : e.target.closest('.iframe-btn'));
-			jQuery.fancybox.open({'href': jQuery(elem).attr("href"), 'width': (jQuery("body").width()/1.5), 'height': (jQuery("body").height()/1.5), 'type': 'iframe', 'autoScale': false});
+			var width = (jQuery("body").width()/1.5);
+			if($(window).width()<=900) {
+				width = $("body").width()-40;
+			}
+			jQuery.fancybox.open({'href': jQuery(elem).attr("href"), 'width': width, 'height': (jQuery("body").height()/1.5), 'type': 'iframe', 'autoScale': false});
 		}
 		document.body.removeEventListener("click", iframeBtn);
 		document.body.addEventListener("click", iframeBtn);
@@ -550,6 +377,9 @@
 	function responsive_filemanager_callback(field_id) {
 		var type = jQuery("#"+field_id).attr("data-accept");
 		var link = jQuery("#"+field_id).val();
+		if(!link) {
+			return;
+		}
 		var http_link = link;
 		link = link.replace(default_link, "");
 		jQuery("#"+field_id).val(link).change();
@@ -564,12 +394,38 @@
 			jQuery(elem).after("<br><img src='"+jQuery(elem).attr("href")+"' data-link='"+jQuery(elem).attr("data-link")+"' width='200'>");
 		});*/
 	}
+	if(window.matchMedia) {
+		if(window.matchMedia('(prefers-color-scheme: dark)').matches) {
+			$("html").removeClass("currentSkin-light").addClass("currentSkin-dark");
+		} else {
+			$("html").removeClass("currentSkin-dark").addClass("currentSkin-light");
+		}
+		window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+			var newColorScheme = event.matches ? "dark" : "light";
+			$("html").removeClass("currentSkin-light currentSkin-dark").addClass("currentSkin-"+newColorScheme);
+		});
+	} else {
+		$("html").removeClass("currentSkin-dark").addClass("currentSkin-default");
+	}
+	jQuery(document).ready(function($) {
+		SmoothScroll({
+			stepSize: 80,
+			animationTime: 600,
+			frameRate: 120,
+			touchpadSupport: true,
+			fixedBackground: false
+		});
+		$("body").on("click", ".page-container .sidebar-menu .sidebar-menu-inner .logo-env .mobile-menu-toggle a", function() {
+			$("html").toggleClass("showMenuFull");
+		});
+	});
 	</script>
 
 	<style type="text/css">.mce-branding-powered-by { display: none !important; }</style>
 
 	<!-- JavaScripts initializations and stuff -->
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/xenon-custom.js?2"></script>
+	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/smoothScroll.js"></script>
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/toastr/toastr.min.js?1"></script>
 </body>
 </html>

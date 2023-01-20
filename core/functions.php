@@ -73,12 +73,13 @@ global $globalClass;
 					}
 					$replace = $modules;
 					if(strpos($file, "dev-")!==false) {
-						if(isset($_COOKIE['cardinal_debug']) || $developerLevel) {
+						if(isset($_COOKIE['cardinal_debug']) || isset($_GET['mdebug']) || $developerLevel) {
 							$replace = array($replace, "dev-");
 						} else {
 							continue;
 						}
 					}
+					$useNew = false;
 					if(is_dir($dir.DS.$file)) {
 						$useNew = true;
 					}

@@ -494,7 +494,7 @@ class HTTP {
 			if(class_exists("cardinalEvent") && method_exists("cardinalEvent", "execute")) {
 				$link = cardinalEvent::execute("HTTP::Location", $link);
 			}
-			header("Location: ".$link);
+			header("Location: ".$link, true, $code);
 		} else {
 			if(function_exists("header_remove")) {
 				header_remove("Refresh");

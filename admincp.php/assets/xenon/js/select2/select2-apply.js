@@ -3,8 +3,10 @@ var select2Init = function() {
 		var el = $(elem).attr("data-options");
 		el = $("script#"+el).html();
 		el = JSON.parse(el);
-		console.warn(el)
-		$(elem).select2({
+		if(typeof(window.select2Options)==="undefined") {
+			window.select2Options = {}
+		}
+		$(elem).select2(Object.assign({
 			minimumInputLength: 0,
 			createSearchChoice: function(term, data) {
 				if($(data).filter(function() {
@@ -19,7 +21,7 @@ var select2Init = function() {
 			tags: el,
 			placeholder: $(elem).attr("placeholder") ? $(elem).attr("placeholder") : "",
 			dropdownAutoWidth: true
-		}).on('select2-open', function() {
+		}, window.select2Options)).on('select2-open', function() {
 			// Adding Custom Scrollbar
 			$(this).data('select2').results.addClass('overflow-hidden').perfectScrollbar();
 		});

@@ -57,6 +57,7 @@ if(version_compare(PHP_VERSION, '5.1.2', '>=')) {
 
 $in_page = "Main";
 execEvent("adminRoute");
+execEvent("core_ready_admin");
 Route::setError(0);
 if(config::Select("new_method_uri")) {
 	Route::newMethod();
@@ -105,12 +106,13 @@ if(isset($fnCall) && is_callable($fnCall)) {
 		define("ADMIN_PAGE_NOW", $view);
 	}
 	execEvent("admin_ready");
+	$core = new Core();
 	if(method_exists(''.$view, 'start')) {
-		call_user_func(array(&$view, "start"));
+		call_user_func_array(array(&$view, "start"),  array($core, $view));
 	}
 	$call = new $view();
 	if(isset($method) && method_exists($call, $method)) {
-		call_user_func_array(array($call, $method), array());
+		call_user_func_array(array($call, $method), array($core, $view));
 	}
 } else {
 	$in_page = "Errors";

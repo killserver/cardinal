@@ -51,7 +51,7 @@ class Archer extends Core {
 			$nameTableWithoutPrefix = str_replace(PREFIX_DB, "", $nameTableWithoutPrefix);
 		}
 		$upFirst = (function_exists("nucfirst") ? nucfirst($typeUni) : $this->nucfirst($typeUni));
-		addEvent("on_load_".$typeUni);
+		execEvent("on_load_".$typeUni);
 		if(defined("PREFIX_DB") && PREFIX_DB!=="") {
 			$typeUni = PREFIX_DB.$typeUni;
 		}
@@ -418,7 +418,17 @@ class Archer extends Core {
 				}
 				execEventRef("change_archer_shield_template", $tmps, $typeUni);
 				$tpl = $univ->TraceOn("Shield", $tmps);
-				$univ->Shield($model, array(&$this, "View"), $tpl, false);
+				$modelName = get_class($model);
+				$table = $model->loadedTable;
+				if(defined("PREFIX_DB")) {
+					if(PREFIX_DB!=='') {
+						$table = nsubstr($table, nstrlen(PREFIX_DB));
+					} 
+				}
+				$tplCustom = execEvent("custom_template_shield", "", $modelName, $table);
+				$isCustom = (!empty($tplCustom));
+		// var_dump(templates::$blocks, $tpl);die();
+				$univ->Shield($model, array(&$this, "View"), $tpl, false, !$isCustom);
 			break;
 		}
 	}

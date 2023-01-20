@@ -307,10 +307,14 @@ class modules {
 		if(!defined("START_VERSION")) {
 			return true;
 		}
+		$start_file = $file;
 		if($isDir) {
 			$bname = basename($file);
 			if(file_exists(ROOT_PATH.$file.DS.$bname.".".ROOT_EX) || file_exists(ROOT_PATH.$file.DS.$bname.".class.".ROOT_EX)) {
 				$file = $bname;
+			}
+			if(file_exists(ROOT_PATH.$start_file.DS) && is_dir(ROOT_PATH.$start_file.DS) && (file_exists(ROOT_PATH.$start_file.DS."init.".ROOT_EX) || file_exists(ROOT_PATH.$start_file.DS.$bname.".".ROOT_EX) || file_exists(ROOT_PATH.$start_file.DS.$bname.".class.".ROOT_EX))) {
+				$file = $start_file;
 			}
 		}
 		if(self::CheckVersion("3.1", START_VERSION)) {

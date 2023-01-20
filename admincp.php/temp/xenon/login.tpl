@@ -12,14 +12,30 @@
 	{header}
 
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Arimo:400,700,400italic">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/fonts/linecons/css/linecons.css?1">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/fonts/fontawesome/css/font-awesome.min.css?1">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/bootstrap.css?1">
-	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-core.css?3">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-core.css?4">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-forms.css?1">
-	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-components.css?14">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-components.css?18">
 	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/xenon-skins.css?1">
-	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/custom.css?{S_time}">
+	<link rel="stylesheet" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/css/cardinal.css?{S_time}">
+
+	<link rel="manifest" href="{C_default_http_local}{D_ADMINCP_DIRECTORY}/manifest.php" />
+	<script type="module">
+		if ('serviceWorker' in navigator) {
+			window.addEventListener('load', function() {
+				navigator.serviceWorker.register('{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/sw.js').then(function(registration) {
+				// Registration was successful
+					console.log('ServiceWorker registration successful with scope: ', registration.scope);
+				}, function(err) {
+				// registration failed :(
+					console.log('ServiceWorker registration failed: ', err);
+				});
+			});
+		}
+	</script>
 	{css_list}
 
 	<script src="{C_default_http_local}{D_ADMINCP_DIRECTORY}/assets/xenon/js/jquery-1.11.1.min.js?1"></script>
@@ -142,12 +158,12 @@
 					
 					<div class="form-group">
 						<label class="control-label" for="username">{L_"Имя пользователя"}</label>
-						<input type="text" class="form-control input-dark" name="username" id="username" autocomplete="off" readonly="readonly" style="cursor:text;" onclick="if(this.getAttribute('readonly') == 'readonly') this.removeAttribute('readonly')" />
+						<input type="text" class="form-control input-dark" name="username" id="username" autocomplete="off" />
 					</div>
 					
 					<div class="form-group">
 						<label class="control-label" for="passwd">{L_"Пароль"}</label>
-						<input type="password" class="form-control input-dark" name="passwd" id="passwd" autocomplete="off" readonly="readonly" style="cursor:text;" onclick="if(this.getAttribute('readonly') == 'readonly') this.removeAttribute('readonly')" />
+						<input type="password" class="form-control input-dark" name="passwd" id="passwd" autocomplete="off" />
 					</div>
 					
 					<div class="form-group">

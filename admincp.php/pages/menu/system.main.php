@@ -89,7 +89,7 @@ $links['System']["item"][] = array(
 'link' => "{C_default_http_host}{D_ADMINCP_DIRECTORY}/?pages=Yui",
 'title' => "{L_\"Администрирование Yui\"}",
 'type' => "item",
-'access' => userlevel::get("yui_admin"),
+'access' => userlevel::get("yui"),
 'icon' => 'fa-book',
 );
 $links['System']["item"][] = array(

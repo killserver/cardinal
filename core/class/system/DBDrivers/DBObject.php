@@ -77,7 +77,7 @@ class DBObject implements ArrayAccess {
 		return true;
 	}
 	
-	final private function clearCache($table) {
+	private function clearCache($table) {
 		if(!defined("PATH_CACHE_SYSTEM") || PATH_CACHE_SYSTEM==="") {
 			return false;
 		}
@@ -93,7 +93,7 @@ class DBObject implements ArrayAccess {
 		return true;
 	}
 	
-	final private function UnSetAll(&$ret) {
+	private function UnSetAll(&$ret) {
 		if(isset($ret['loadedTable'])) {
 			unset($ret['loadedTable']);
 		}
@@ -184,7 +184,7 @@ class DBObject implements ArrayAccess {
 		}
 	}
 	
-	final private function addPrefixTable($query, $addSave = "`", $force = false) {
+	private function addPrefixTable($query, $addSave = "`", $force = false) {
 		if($addSave===false) {
 			$save = "";
 		} else if($addSave===true) {
@@ -328,7 +328,7 @@ class DBObject implements ArrayAccess {
 			settype($var, "boolean");
 		} else if(preg_match("/^\\d+\\.\\d+$/", $var) === 1) {
 			settype($var, "float");
-		} else if(is_int($var) || is_integer($var) || is_numeric($var)) {
+		} else if((is_int($var) || is_integer($var) || is_numeric($var)) && substr($var, 0, 1)!="+") {
 			settype($var, "integer");
 		} else if(is_object($var)) {
 			settype($var, "object");
@@ -336,7 +336,7 @@ class DBObject implements ArrayAccess {
 		return $var;
 	}
 	
-	final private function TypeDataRebuild(&$arr) {
+	private function TypeDataRebuild(&$arr) {
 		return str_replace("'", "", $arr);
 	}
 	
@@ -346,6 +346,12 @@ class DBObject implements ArrayAccess {
 				errorHeader();
 				throw new Exception("Table for get comments is not set or empty");
 				die();
+			}
+			if(file_exists(PATH_CACHE_SYSTEM."tables-full-".db::$dbName."-".$table.".".ROOT_EX) && is_readable(PATH_CACHE_SYSTEM."tables-full-".db::$dbName."-".$table.".".ROOT_EX)) {
+				$tableFields = array();
+				include(PATH_CACHE_SYSTEM."tables-full-".db::$dbName."-".$table.".".ROOT_EX);
+				$this->Attributes = $tableFields;
+				return $tableFields;
 			}
 			db::doquery("SHOW FULL COLUMNS FROM ".$this->addPrefixTable($table), true);
 			while($row = db::fetch_assoc()) {
@@ -362,6 +368,9 @@ class DBObject implements ArrayAccess {
 				$default = (isset($this->setAttrFor[$row['Field']]) && isset($this->setAttrFor[$row['Field']]['Default']) ? $this->setAttrFor[$row['Field']]['Default'] : $row['Default']);
 				$typeData = (isset($this->setAttrFor[$row['Field']]) && isset($this->setAttrFor[$row['Field']]['typeData']) ? $this->setAttrFor[$row['Field']]['typeData'] : $typeData);
 				$this->Attributes[$row['Field']] = array("comment" => $comment, "type" => $type, "default" => $default, "typeData" => $typeData);
+			}
+			if(is_writable(PATH_CACHE_SYSTEM)) {
+				file_put_contents(PATH_CACHE_SYSTEM."tables-full-".db::$dbName."-".$table.".".ROOT_EX, '<?php'.PHP_EOL.'if(!defined("IS_CORE")) die();'.PHP_EOL.'$tableFields = '.var_export($this->Attributes, true).";");
 			}
 		}
 		return $this->Attributes;
@@ -529,7 +538,7 @@ class DBObject implements ArrayAccess {
 		$this->where = array();
 	}
 	
-	final private function ReleaseWhere($where = "") {
+	private function ReleaseWhere($where = "") {
 		$wheres = "";
 		if(!empty($where)) {
 			$wheres = $where;
@@ -548,7 +557,7 @@ class DBObject implements ArrayAccess {
 		return (!empty($wheres) ? " WHERE ".$wheres.(isset($this->addWhereModel) ? " AND ".$this->addWhereModel." " : " ") : "");
 	}
 	
-	final private function ReleaseOrder($orderBy = "") {
+	private function ReleaseOrder($orderBy = "") {
 		$orders = "";
 		if(!empty($orderBy)) {
 			$orders = $orderBy;
@@ -565,7 +574,7 @@ class DBObject implements ArrayAccess {
 		return (!empty($orders) ? " ORDER BY ".$orders." " : "");
 	}
 	
-	final private function ReleaseGroupBy($groupBy = "") {
+	private function ReleaseGroupBy($groupBy = "") {
 		$groupbys = "";
 		if($groupBy!=="") {
 			$groupbys = $groupBy;
@@ -576,7 +585,7 @@ class DBObject implements ArrayAccess {
 		return (!empty($groupbys) ? " GROUP BY `".$groupbys."` " : "");
 	}
 	
-	final private function ReleaseLimit($limit = "") {
+	private function ReleaseLimit($limit = "") {
 		$limits = "";
 		if(!empty($limit)) {
 			$limits = $limit;
@@ -589,7 +598,7 @@ class DBObject implements ArrayAccess {
 		return (!empty($limits) || $limits==1 ? " LIMIT ".$limits." " : "");
 	}
 	
-	final private function ReleaseOffset($offset = "") {
+	private function ReleaseOffset($offset = "") {
 		$offsets = "";
 		if(!empty($offset)) {
 			$offsets = $offset;
@@ -660,7 +669,7 @@ class DBObject implements ArrayAccess {
 		}
 	}
 	
-	final private function getFieldForSelect($data) {
+	private function getFieldForSelect($data) {
 		$save = "`";
 		if(strpos($data, "(")!==false || strpos($data, "AS")!==false) {
 			$save = "";
@@ -795,7 +804,7 @@ class DBObject implements ArrayAccess {
 		$this->allowedRus = $val;
 	}
 
-	final private function getRus($arr, $force = false) {
+	private function getRus($arr, $force = false) {
 		if($force===false && $this->allowedRus===false) {
 			return $arr;
 		}
@@ -965,14 +974,14 @@ class DBObject implements ArrayAccess {
 			$key = array_merge($key, $keys);
 			$val = array_merge($val, $vals);
 		}
-		return db::doquery("INSERT INTO ".$table." (".implode(", ", array_map(array(&$this, "buildKeyIn"), $key)).") VALUES(".implode(", ", array_map(array(&$this, "buildValueIn"), $val)).")");
+		return db::query("INSERT INTO ".$table." (".implode(", ", array_map(array(&$this, "buildKeyIn"), $key)).") VALUES(".implode(", ", array_map(array(&$this, "buildValueIn"), $val)).")");
 	}
 	
-	final private function buildKeyIn($d) {
+	private function buildKeyIn($d) {
 		return "`".$d."`";
 	}
 	
-	final private function buildValueIn($d) {
+	private function buildValueIn($d) {
 		return ("".str_replace("\\\\u", "\\u", db::escape($d))."");
 	}
 
@@ -1022,10 +1031,10 @@ class DBObject implements ArrayAccess {
 			$key = array_merge($key, $keys);
 			$val = array_merge($val, $vals);
 		}
-		return db::doquery("UPDATE ".$table." SET ".implode(", ", array_map(array(&$this, "buildUpdateKV"), $key, $val)).$where.$groupby.$orderBy.$limit);
+		return db::query("UPDATE ".$table." SET ".implode(", ", array_map(array(&$this, "buildUpdateKV"), $key, $val)).$where.$groupby.$orderBy.$limit);
 	}
 	
-	final private function buildUpdateKV($k, $v) {
+	private function buildUpdateKV($k, $v) {
 		return "`".$k."` = ".("".str_replace("\\\\u", "\\u", db::escape($v))."");
 	}
 

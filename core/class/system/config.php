@@ -36,20 +36,26 @@ class config implements ArrayAccess {
 			@chmod($dir, 0777);
 		}
 		$filePATH = $dir."configWithoutDB.php";
-		if($action == "read" && file_exists($filePATH)) {
-			$file = Defender::readFile($filePATH, true);
+		if($action == "read") {
+			/*$file = Defender::readFile($filePATH, true);
 			if(!empty($file)) {
 				$configWDB = unserialize($file);
+			}*/
+			if(file_exists($filePATH)) {
+				$configWDB = require($filePATH);
 			}
 		} elseif($action=="edit") {
 			if(!(!empty($name) && (file_exists($filePATH) || is_writable($dir)))) {
 				return false;
 			}
-			if(file_exists($filePATH)) {
+			/*if(file_exists($filePATH)) {
 				$file = Defender::readFile($filePATH, true);
 				if(!empty($file)) {
 					$configWDB = unserialize($file);
 				}
+			}*/
+			if(file_exists($filePATH)) {
+				$configWDB = require($filePATH);
 			}
 			if(!empty($valF)) {
 				if(!isset($configWDB[$name]) || !is_array($val)) {
@@ -93,17 +99,19 @@ class config implements ArrayAccess {
 			if(!is_writable($dir)) {
 				@chmod($dir, 0777);
 			}
-			Defender::safeSave($filePATH, serialize($configWDB), true);
+			@file_put_contents($filePATH, '<?php'.PHP_EOL.'return '.var_export($configWDB, true).';');
+			// Defender::safeSave($filePATH, serialize($configWDB), true);
 			return true;
 		} elseif($action=="delete") {
 			if(!(!empty($name) && (file_exists($filePATH) || is_writable($dir)))) {
 				return false;
 			}
 			if((!isset($configWDB[$name]) || !isset($configWDB[$name][$val])) && file_exists($filePATH)) {
-				$file = Defender::readFile($filePATH, true);
+				/*$file = Defender::readFile($filePATH, true);
 				if(!empty($file)) {
 					$configWDB = unserialize($file);
-				}
+				}*/
+				$configWDB = require($filePATH);
 			}
 			$update = false;
 			if(!empty($val) && !empty($valS) && !empty($valTh) && isset($configWDB[$name]) && isset($configWDB[$name][$val]) && isset($configWDB[$name][$valS])) {
@@ -121,7 +129,8 @@ class config implements ArrayAccess {
 			}
 			if($update) {
 				if(is_writable($dir)) {
-					Defender::safeSave($filePATH, serialize($configWDB), true);
+					@file_put_contents($filePATH, '<?php'.PHP_EOL.'return '.var_export($configWDB, true).';');
+					// Defender::safeSave($filePATH, serialize($configWDB), true);
 				}
 			}
 			return true;

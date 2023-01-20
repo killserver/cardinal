@@ -31,8 +31,8 @@ if(!userlevel::get("site")) {
 	templates::error("{L_error_level_full}", "{L_error_level}");
 }
 
-if(is_array($config) && sizeof($config)>0 && isset($config["default_http_local"]) && isset($_SERVER['REQUEST_URI']) && $_SERVER['REQUEST_URI']=="/index.php") {
-	header("Location: ".$config["default_http_local"], TRUE, 301);
+if(is_array($config) && sizeof($config)>0 && isset($config["default_http_local"]) && isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], "/index.php")!==false) {
+	header("Location: ".str_replace("/index.php", "/", $_SERVER['REQUEST_URI']), TRUE, 301);
 	exit();
 }
 
@@ -163,10 +163,14 @@ if(is_array($callback) && sizeof($callback)>0) {
 			}
 		}
 		if(method_exists($page, "start")) {
-			call_user_func_array(array(&$page, "start"), array_merge($langPanel, $defaultsCardinalRouterGetParams));
+			$params = array_merge($langPanel, $defaultsCardinalRouterGetParams);
+			$params = array_values($params);
+			call_user_func_array(array(&$page, "start"), $params);
 		}
 		if(!empty($method) && method_exists($page, $method)) {
-			call_user_func_array(array(&$page, $method), array_merge($langPanel, $defaultsCardinalRouterGetParams));
+			$params = array_merge($langPanel, $defaultsCardinalRouterGetParams);
+			$params = array_values($params);
+			call_user_func_array(array(&$page, $method), $params);
 		}
 	}
 } else if($is_file || !empty($file)) {

@@ -23,6 +23,9 @@ global $config, $manifest, $session;
 	$Timers += $tmp;
 	$Timers += $dbs;
 	$cli = defined("IS_CLI");
+	if($cli!==false) {
+		return;
+	}
 	if($debug) {
 		$s = "\n".($cli===false ? "<!-- " : "")."Время выполнения скрипта ".($Timers>0 ? $Timers : 0)." секунд".($cli===false ? " -->" : "")."\n".
 		"".($cli===false ? "<!-- " : "")."Время затраченное на компиляцию шаблонов ".($tmp>0 ? $tmp : 0)." секунд".($cli===false ? " -->" : "")."\n".

@@ -90,13 +90,13 @@ if(!defined("DEBUG_ALL")) {
 }
 
 if(!defined("VERSION")) {
-	define("VERSION", "12.3");
+	define("VERSION", "14.0");
 }
 if(!defined("VERSION_ADMIN_STYLE")) {
 	define("VERSION_ADMIN_STYLE", "1.10");
 }
 if(!defined("INTVERSION")) {
-	define("INTVERSION", "120302");
+	define("INTVERSION", "140001");
 }
 if(!defined("DB_VERSION")) {
 	define("DB_VERSION", "6.5");
@@ -214,6 +214,7 @@ $config = array_merge($config, array(
 	"filemanager_sort_by" => "date",
 	"filemanager_custom_folder_header" => array(),
 	"accessToSite" => "show",
+	"createMin" => array(),
 ));
 
 ?>

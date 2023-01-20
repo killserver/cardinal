@@ -142,7 +142,11 @@ class cache implements ArrayAccess {
 			return true;
 		}
 		if($autoclean) {
-			if((self::Mtime($data)+self::Get_timelive())<time()) {
+			$timeAdd = self::Get_timelive();
+			if(is_numeric($autoclean)) {
+				$timeAdd = $autoclean;
+			}
+			if((self::Mtime($data)+$timeAdd)<time()) {
 				self::Delete($data);
 			}
 		}
